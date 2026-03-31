@@ -6,15 +6,15 @@ import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'Microsoft 365',
+  topicName: 'Windows Server',
   description:
-    'Exchange Online, Teams, SharePoint, licensing, conditional access, and tenant governance for IT admins and sysadmins.',
-  slug: 'microsoft-365',
+    'Active Directory, DNS, DHCP, file services, and server hardening for Windows Server administrators.',
+  slug: 'windows-server',
 })
 
-export default function Microsoft365Page() {
+export default function WindowsServerPage() {
   const news = signals
-    .filter((s) => s.tags?.includes('Microsoft 365') || s.category === 'Microsoft 365')
+    .filter((s) => s.tags?.includes('Windows') || s.category === 'Windows Server')
     .slice(0, 3)
     .map((s) => ({
       title: s.title,
@@ -24,7 +24,7 @@ export default function Microsoft365Page() {
     }))
 
   const tutorials = guides
-    .filter((g) => g.tags?.includes('Microsoft 365') || g.category === 'Microsoft 365')
+    .filter((g) => g.tags?.includes('Windows Server') || g.tags?.includes('Active Directory'))
     .slice(0, 3)
     .map((g) => ({
       title: g.title,
@@ -34,7 +34,7 @@ export default function Microsoft365Page() {
     }))
 
   const scriptItems = scripts
-    .filter((s) => s.tags.includes('Graph API') || s.tags.includes('Intune'))
+    .filter((s) => s.tags.includes('Active Directory') || s.tags.includes('Windows Server'))
     .slice(0, 3)
     .map((s) => ({
       title: s.title,
@@ -45,17 +45,17 @@ export default function Microsoft365Page() {
 
   const relatedTopics = [
     { name: 'Microsoft Intune', href: '/intune' },
-    { name: 'Endpoint Security', href: '/endpoint-security' },
-    { name: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
-    { name: 'SCCM / MECM', href: '/sccm-mecm' },
+    { name: 'Group Policy', href: '/group-policy' },
+    { name: 'Patch Management', href: '/patch-management' },
     { name: 'PowerShell', href: '/powershell' },
+    { name: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
   ]
 
   return (
     <TopicHubPageTemplate
-      topicName="Microsoft 365"
-      description="Exchange Online, Teams, SharePoint, Entra ID, and tenant governance. Practical guidance for IT teams managing cloud-first Microsoft environments."
-      articleCount={174}
+      topicName="Windows Server"
+      description="Active Directory, DNS, DHCP, file services, and server hardening. Practical guidance for administrators managing Windows Server environments."
+      articleCount={214}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

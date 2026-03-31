@@ -6,15 +6,15 @@ import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'Microsoft 365',
+  topicName: 'Group Policy',
   description:
-    'Exchange Online, Teams, SharePoint, licensing, conditional access, and tenant governance for IT admins and sysadmins.',
-  slug: 'microsoft-365',
+    'GPO design, ADMX templates, WMI filters, and loopback processing for Windows administrators.',
+  slug: 'group-policy',
 })
 
-export default function Microsoft365Page() {
+export default function GroupPolicyPage() {
   const news = signals
-    .filter((s) => s.tags?.includes('Microsoft 365') || s.category === 'Microsoft 365')
+    .filter((s) => s.tags?.includes('Group Policy') || s.tags?.includes('ADMX'))
     .slice(0, 3)
     .map((s) => ({
       title: s.title,
@@ -24,7 +24,7 @@ export default function Microsoft365Page() {
     }))
 
   const tutorials = guides
-    .filter((g) => g.tags?.includes('Microsoft 365') || g.category === 'Microsoft 365')
+    .filter((g) => g.tags?.includes('Group Policy') || g.category === 'Group Policy')
     .slice(0, 3)
     .map((g) => ({
       title: g.title,
@@ -34,7 +34,7 @@ export default function Microsoft365Page() {
     }))
 
   const scriptItems = scripts
-    .filter((s) => s.tags.includes('Graph API') || s.tags.includes('Intune'))
+    .filter((s) => s.tags.includes('Group Policy') || s.tags.includes('Active Directory'))
     .slice(0, 3)
     .map((s) => ({
       title: s.title,
@@ -44,18 +44,18 @@ export default function Microsoft365Page() {
     }))
 
   const relatedTopics = [
-    { name: 'Microsoft Intune', href: '/intune' },
-    { name: 'Endpoint Security', href: '/endpoint-security' },
+    { name: 'Windows Server', href: '/windows-server' },
     { name: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
-    { name: 'SCCM / MECM', href: '/sccm-mecm' },
+    { name: 'Endpoint Security', href: '/endpoint-security' },
+    { name: 'Patch Management', href: '/patch-management' },
     { name: 'PowerShell', href: '/powershell' },
   ]
 
   return (
     <TopicHubPageTemplate
-      topicName="Microsoft 365"
-      description="Exchange Online, Teams, SharePoint, Entra ID, and tenant governance. Practical guidance for IT teams managing cloud-first Microsoft environments."
-      articleCount={174}
+      topicName="Group Policy"
+      description="GPO design, ADMX templates, WMI filters, and loopback processing. Deep-dive guidance for administrators managing Windows through Group Policy."
+      articleCount={97}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

@@ -15,10 +15,10 @@ export default function TopicHubsSection() {
           description="Focused hubs for every discipline in your stack — signals, guides, and scripts in one place."
           action={
             <Link
-              href="/topics"
+              href="/intune"
               className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
             >
-              All topics
+              Explore hubs
               <ArrowRight className="h-4 w-4" />
             </Link>
           }

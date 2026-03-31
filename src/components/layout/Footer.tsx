@@ -18,28 +18,24 @@ const footerLinks = [
     links: [
       { label: 'Microsoft Intune', href: '/intune' },
       { label: 'PowerShell', href: '/powershell' },
-      { label: 'Windows', href: '/windows' },
-      { label: 'Endpoint Security', href: '/security-defender' },
+      { label: 'Windows Server', href: '/windows-server' },
+      { label: 'Endpoint Security', href: '/endpoint-security' },
       { label: 'Microsoft 365', href: '/microsoft-365' },
     ],
   },
   {
     heading: 'Resources',
     links: [
-      { label: 'Newsletter', href: '/newsletter' },
       { label: 'Best Tools', href: '/best-tools' },
       { label: 'Script Library', href: '/scripts' },
-      { label: 'RSS Feed', href: '/rss.xml' },
+      { label: 'Comparisons', href: '/comparisons' },
+      { label: 'SCCM / MECM', href: '/sccm-mecm' },
     ],
   },
   {
     heading: 'Company',
     links: [
       { label: 'About', href: '/about' },
-      { label: 'Contact', href: '/contact' },
-      { label: 'Advertise', href: '/advertise' },
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms', href: '/terms' },
     ],
   },
 ]
@@ -95,14 +91,8 @@ export default function Footer() {
             © {new Date().getFullYear()} AdminSignal. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Terms
-            </Link>
-            <Link href="/rss.xml" className="text-sm text-muted/60 hover:text-foreground-soft">
-              RSS
+            <Link href="/about" className="text-sm text-muted/60 hover:text-foreground-soft">
+              About
             </Link>
           </div>
         </div>

@@ -13,7 +13,7 @@ export const topics: Topic[] = [
   {
     id: '1',
     name: 'Microsoft Intune',
-    slug: 'microsoft-intune',
+    slug: 'intune',
     description: 'MDM, MAM, Autopilot, compliance policies, and app deployment.',
     count: 148,
     icon: 'Monitor',

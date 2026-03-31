@@ -44,11 +44,11 @@ export default function IntunePage() {
     }))
 
   const relatedTopics = [
-    { name: 'Endpoint Management', href: '/endpoint-management' },
-    { name: 'Windows', href: '/windows' },
     { name: 'Microsoft 365', href: '/microsoft-365' },
+    { name: 'Windows Server', href: '/windows-server' },
     { name: 'PowerShell', href: '/powershell' },
-    { name: 'Security & Defender', href: '/security-defender' },
+    { name: 'Endpoint Security', href: '/endpoint-security' },
+    { name: 'SCCM / MECM', href: '/sccm-mecm' },
   ]
 
   return (

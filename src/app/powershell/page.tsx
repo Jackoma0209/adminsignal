@@ -6,15 +6,15 @@ import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'Microsoft 365',
+  topicName: 'PowerShell',
   description:
-    'Exchange Online, Teams, SharePoint, licensing, conditional access, and tenant governance for IT admins and sysadmins.',
-  slug: 'microsoft-365',
+    'Automation, scripting, modules, DSC, and Graph API integration for Windows and Microsoft 365 administrators.',
+  slug: 'powershell',
 })
 
-export default function Microsoft365Page() {
+export default function PowerShellPage() {
   const news = signals
-    .filter((s) => s.tags?.includes('Microsoft 365') || s.category === 'Microsoft 365')
+    .filter((s) => s.tags?.includes('PowerShell'))
     .slice(0, 3)
     .map((s) => ({
       title: s.title,
@@ -24,7 +24,7 @@ export default function Microsoft365Page() {
     }))
 
   const tutorials = guides
-    .filter((g) => g.tags?.includes('Microsoft 365') || g.category === 'Microsoft 365')
+    .filter((g) => g.tags?.includes('PowerShell') || g.category === 'PowerShell')
     .slice(0, 3)
     .map((g) => ({
       title: g.title,
@@ -34,7 +34,7 @@ export default function Microsoft365Page() {
     }))
 
   const scriptItems = scripts
-    .filter((s) => s.tags.includes('Graph API') || s.tags.includes('Intune'))
+    .filter((s) => s.language === 'PowerShell')
     .slice(0, 3)
     .map((s) => ({
       title: s.title,
@@ -45,17 +45,17 @@ export default function Microsoft365Page() {
 
   const relatedTopics = [
     { name: 'Microsoft Intune', href: '/intune' },
-    { name: 'Endpoint Security', href: '/endpoint-security' },
+    { name: 'Windows Server', href: '/windows-server' },
     { name: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
+    { name: 'Script Library', href: '/scripts' },
     { name: 'SCCM / MECM', href: '/sccm-mecm' },
-    { name: 'PowerShell', href: '/powershell' },
   ]
 
   return (
     <TopicHubPageTemplate
-      topicName="Microsoft 365"
-      description="Exchange Online, Teams, SharePoint, Entra ID, and tenant governance. Practical guidance for IT teams managing cloud-first Microsoft environments."
-      articleCount={174}
+      topicName="PowerShell"
+      description="Automation scripts, modules, DSC, and Graph API integration. Everything you need to automate your Windows and Microsoft 365 environment with PowerShell."
+      articleCount={311}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}
