@@ -45,8 +45,8 @@ export default function SccmMecmPage() {
 
   const relatedTopics = [
     { name: 'Microsoft Intune', href: '/intune' },
-    { name: 'Endpoint Management', href: '/endpoint-management' },
-    { name: 'Windows', href: '/windows' },
+    { name: 'Patch Management', href: '/patch-management' },
+    { name: 'Windows Server', href: '/windows-server' },
     { name: 'PowerShell', href: '/powershell' },
   ]
 

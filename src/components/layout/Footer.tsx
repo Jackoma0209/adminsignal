@@ -16,6 +16,7 @@ const footerLinks = [
   {
     heading: 'Topics',
     links: [
+      { label: 'All Topics', href: '/topics' },
       { label: 'Microsoft Intune', href: '/intune' },
       { label: 'PowerShell', href: '/powershell' },
       { label: 'Windows Server', href: '/windows-server' },
