@@ -1,0 +1,90 @@
+---
+title: "Invoke-WindowsHardening"
+category: "PowerShell"
+language: "PowerShell"
+date: "Mar 2025"
+authorId: "marcus-webb"
+tags: ["CIS", "Hardening", "Security", "Compliance"]
+stars: 502
+---
+
+## Overview
+
+`Invoke-WindowsHardening` applies a configurable subset of CIS Level 1 and Level 2 controls to Windows 10/11 endpoints. It runs locally or via Intune remediation script and generates a pre/post compliance delta report showing exactly what changed.
+
+The script is designed for environments that need to apply hardening without a full GPO infrastructure, or as a validation and gap-fill tool alongside existing Group Policy baselines.
+
+## Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `-Mode` | `[Audit\|Apply]` | Audit reports gaps without making changes. Apply enforces settings. Default: Audit |
+| `-Level` | `[CIS1\|CIS2\|Custom]` | CIS Level 1, Level 2, or custom profile. Default: CIS1 |
+| `-ReportPath` | `[string]` | Path for the HTML report output. Default: current directory |
+| `-ExcludeCategories` | `[string[]]` | Skip specific control categories. Use for scoped deployments. |
+| `-WhatIf` | `[switch]` | Preview changes without applying (Audit mode only) |
+
+## Usage Examples
+
+**Audit mode — generate compliance report without changes:**
+
+```powershell
+Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\Temp\HardeningAudit.html
+```
+
+**Apply CIS Level 1 hardening:**
+
+```powershell
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath C:\Temp\HardeningApplied.html
+```
+
+**Apply hardening excluding BitLocker controls (useful if managed separately):**
+
+```powershell
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -ExcludeCategories @('BitLocker', 'WindowsFirewall')
+```
+
+**Run as Intune remediation script:**
+
+Set the detection script to check for the compliance report file. Set the remediation script to:
+
+```powershell
+$reportPath = "C:\ProgramData\AdminSignal\HardeningReport-$(Get-Date -Format yyyyMMdd).html"
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath $reportPath
+```
+
+## What it Applies
+
+The script covers the following CIS Level 1 control categories. Each category can be individually excluded.
+
+| Category | Controls Applied |
+|---|---|
+| AccountPolicies | Password length, lockout threshold, lockout duration |
+| AuditPolicy | Logon, account management, policy change, process creation |
+| WindowsFirewall | Enable all profiles, default inbound block |
+| NetworkSecurity | LM authentication level, NTLM session security, SMBv1 disable |
+| UserRightsAssignment | Deny network logon to built-in accounts, restrict debug programs |
+| SecurityOptions | UAC settings, NTLMv2 enforcement, interactive logon configuration |
+| WindowsDefender | Real-time protection, PUA blocking, cloud protection |
+| BitLocker | Require TPM, enable for OS drive |
+| PowerShellLogging | Script block logging, module logging, transcription |
+
+## Report Output
+
+The HTML report includes:
+- **Pre-hardening state**: Current value of each setting before any changes
+- **Post-hardening state**: Value after script runs (in Apply mode)
+- **Compliance status**: Pass/Fail per control
+- **Summary**: Overall compliance percentage and list of failed controls
+
+## Requirements
+
+- Windows 10 22H2 / Windows 11 22H2 or later
+- Run as Local Administrator or SYSTEM (required for registry and security policy changes)
+- PowerShell 5.1 minimum (PowerShell 7 recommended for parallel execution and better error handling)
+
+## Known Limitations
+
+- **Does not apply Intune-specific controls**: Tamper Protection and some Defender settings require an Intune-enrolled device and cannot be set via registry/PowerShell. These are flagged in the report as `Intune-required`.
+- **Reboot required**: Some settings (including several BitLocker controls) do not take effect until the next reboot.
+- **Application conflicts**: The NTLM and legacy authentication restrictions can break older LOB applications. Test in a pilot environment before broad deployment.

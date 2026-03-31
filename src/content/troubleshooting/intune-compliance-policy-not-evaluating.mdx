@@ -1,0 +1,85 @@
+---
+title: "Intune Compliance Policy Not Evaluating: End-to-End Troubleshooting Checklist"
+category: "Microsoft Intune"
+date: "Feb 24, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Feb 24, 2025"
+tags: ["Intune", "Compliance", "Entra ID", "Windows 11"]
+---
+
+## The Four Root Causes
+
+When Intune reports a device as "Not evaluated" or stuck in a compliance state that does not reflect reality, it is almost always one of these four things:
+
+1. **The device has not synced recently enough** — Intune compliance evaluation requires a recent check-in
+2. **The compliance policy is not assigned to the device (or user)** — assignment scope mismatch
+3. **The compliance policy has a setting that cannot be evaluated** — usually a missing prerequisite
+4. **The device is in a grace period or has a noncompliance action configured** — the portal shows the grace state, not the underlying evaluation
+
+Work through this checklist in order.
+
+## Check 1: Last Sync Time
+
+On the device, open **Settings > Accounts > Access work or school > [account] > Info**. Scroll down to **Sync status**. If the last sync was more than 8 hours ago, trigger a manual sync here.
+
+Alternatively, from Intune:
+
+1. Navigate to **Devices > [device name]**
+2. Check **Last check-in** timestamp
+3. If stale, click **Sync** to push a sync request
+
+After sync, wait 5 minutes and re-check the compliance state.
+
+## Check 2: Policy Assignment
+
+1. In the Intune portal, navigate to **Devices > Compliance policies > [policy name] > Device status**
+2. Search for the device. If it does not appear, the policy is not assigned to this device.
+3. Check the assignment: Is the policy assigned to a group? Is the device (or the enrolled user) a member of that group?
+4. Check for conflicting **exclusion groups** — the device may be in a group that is excluded from the policy.
+
+## Check 3: Evaluate the Specific Setting
+
+If the policy is assigned and the device has synced but a specific setting is showing "Not evaluated" or "Error":
+
+1. Click on the device in the Intune portal and navigate to **Compliance > [policy name]**
+2. Expand the policy to see per-setting evaluation results
+3. Note any settings showing "Error" or "Not applicable"
+
+Common problematic settings:
+
+| Setting | Common issue |
+|---|---|
+| Require BitLocker | Device encryption has not been initialised yet — trigger BitLocker manually |
+| Require Secure Boot | VM or older hardware without UEFI; may need to exclude these devices |
+| Antivirus | Defender not reporting to Intune yet — check Security Center registration |
+| OS minimum version | Device is on an older build — check WUfB ring assignments |
+
+## Check 4: Grace Period and Noncompliance Actions
+
+If the compliance state shows a yellow status or "In grace period":
+
+1. Navigate to the compliance policy > **Actions for noncompliance**
+2. Check the configured grace period (default is 0 days — immediate)
+3. If a grace period is set, the device will show as noncompliant-grace, not noncompliant, during the grace window
+
+This is often confused with an evaluation failure but is actually working as intended.
+
+## Collecting Diagnostic Logs
+
+For persistent issues:
+
+```powershell
+# On the device, collect Intune diagnostic logs
+$logPath = "C:\Temp\IntuneDiag"
+mdmdiagnosticstool.exe -area DeviceEnrollment -cab "$logPath\diag.cab"
+```
+
+The IME log is also valuable:
+```
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\IntuneManagementExtension.log
+```
+
+## Related Resources
+
+- [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)

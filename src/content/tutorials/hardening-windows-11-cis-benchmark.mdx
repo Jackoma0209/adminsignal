@@ -1,0 +1,131 @@
+---
+title: "Hardening Windows 11 Endpoints with CIS Benchmark Level 1"
+category: "Endpoint Security"
+date: "Mar 14, 2025"
+authorId: "marcus-webb"
+lastReviewed: "Mar 14, 2025"
+tags: ["CIS Benchmark", "Windows 11", "Hardening", "Endpoint Security"]
+---
+
+## What the CIS Benchmark Is (and Isn't)
+
+The CIS Windows 11 Benchmark is a prescriptive set of configuration recommendations developed by the Center for Internet Security. Level 1 is designed to be deployable in most enterprise environments without significant operational disruption. Level 2 adds additional restrictions that may require more testing and exception management.
+
+**What it is**: A defensible, auditable baseline. It documents your organisation's intent to apply a recognised hardening standard.
+
+**What it isn't**: A guarantee of security. It addresses known configuration weaknesses but does not substitute for patch management, EDR, identity controls, or monitoring.
+
+This guide covers **Level 1 only**. Level 2 is appropriate for high-security environments and requires separate validation.
+
+## Prerequisites
+
+- Windows 11 22H2 or 24H2 (the benchmark versions differ slightly)
+- PolicyAnalyzer from Microsoft's Security Compliance Toolkit (for validation)
+- `Invoke-WindowsHardening` script if you prefer automated application
+- Group Policy Management Console or Intune admin access
+
+## Applying via Group Policy
+
+Download the CIS Windows 11 Benchmark GPO package from the CIS website (free with registration). The package includes importable `.PolicyRules` files for PolicyAnalyzer and a `PolicyDefinitions` folder.
+
+### Import the ADMX Templates
+
+1. Copy the `PolicyDefinitions` folder contents to `%SystemRoot%\PolicyDefinitions` on your domain controller (or to the SYSVOL central store if you use one).
+2. Verify the templates load in the GPMC by opening any GPO and confirming the new settings appear in **Administrative Templates**.
+
+### Create and Link the GPO
+
+1. In the GPMC, create a new GPO: `CIS-Win11-Level1-Computer`.
+2. Import the CIS benchmark settings using **Group Policy Management Editor > Action > Import Settings** and point to the CIS-provided `.xml` backup.
+3. Link the GPO to an OU containing pilot workstations.
+4. Do not link to all workstations yet — test first.
+
+## Applying via Microsoft Intune
+
+For Intune-managed devices, use a combination of **Settings Catalog** and **Endpoint Security** profiles:
+
+### Settings Catalog
+
+1. Navigate to **Devices > Configuration profiles > Create profile**.
+2. Select **Windows 10 and later** and **Settings catalog**.
+3. Search for settings by their CIS benchmark references. Key categories to configure:
+   - `Windows Security > App and browser protection`
+   - `Windows Firewall > Domain Profile`
+   - `User Rights Assignment` (via Settings Catalog)
+   - `Credential Guard > Enable Credential Guard`
+
+### Security Baseline
+
+Microsoft provides a **Windows 11 Security Baseline** in Intune that covers many of the same areas as CIS Level 1. It is not identical but is a defensible starting point. Apply it first, then use Settings Catalog to close gaps.
+
+## Key Controls at Level 1
+
+The following settings are the highest value in terms of risk reduction:
+
+### Account Controls
+
+- **Minimum password length**: 14 characters
+- **Account lockout threshold**: 5 invalid attempts
+- **Administrator account**: Renamed and disabled where possible (use LAPS for the local admin)
+- **Guest account**: Disabled
+
+### Audit Policy
+
+Enable the following audit subcategories at a minimum:
+
+```
+Audit Credential Validation: Success and Failure
+Audit Logon: Success and Failure  
+Audit Account Lockout: Success and Failure
+Audit Process Creation: Success
+Audit PowerShell Script Block Logging: Success
+```
+
+### Windows Defender Settings
+
+- **Real-time monitoring**: Enabled
+- **Cloud-delivered protection**: Enabled
+- **Potentially unwanted application (PUA) protection**: Block
+- **Tamper protection**: Enabled (via Intune Security Experience profile — cannot be set via Group Policy on enrolled devices)
+
+### Network Security
+
+- **LAN Manager Authentication Level**: Send NTLMv2 response only, refuse LM and NTLM
+- **Minimum session security for NTLM SSP**: Require NTLMv2 and 128-bit encryption
+- **SMB v1**: Disabled (set via PowerShell: `Set-SmbServerConfiguration -EnableSMB1Protocol $false`)
+- **Windows Firewall**: All three profiles (Domain, Private, Public) set to On with default inbound block
+
+## Validating Compliance
+
+After applying the baseline, validate with **PolicyAnalyzer**:
+
+1. Download PolicyAnalyzer from the Microsoft Security Compliance Toolkit.
+2. Open PolicyAnalyzer and click **Add > Files from GPO Backup** for your CIS GPO.
+3. Add the CIS benchmark `.PolicyRules` file as a reference.
+4. Compare and identify gaps or conflicts.
+
+For Intune-managed devices, use the `Invoke-WindowsHardening` script in audit mode to generate a compliance delta report:
+
+```powershell
+Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\Temp\HardeningReport.html
+```
+
+## Common Conflicts and Exceptions
+
+### LOB Application Conflicts
+
+The CIS benchmark restricts NTLM and disables older TLS cipher suites. Older line-of-business applications may break. Test with your critical application set before broad deployment.
+
+### BYOD and Guest Access Scenarios
+
+CIS Level 1 disables guest network access and restricts many network features. Review whether your guest Wi-Fi or BYOD workflows depend on settings that Level 1 restricts.
+
+### Developer Workstations
+
+Developer machines may require exceptions for settings like **Prevent access to registry editing tools** or **Script Execution Policy**. Consider a separate CIS-compliant profile with an approved exceptions list for developer endpoints.
+
+## Related Resources
+
+- [Invoke-WindowsHardening: Automated CIS hardening script](/scripts/invoke-windows-hardening)
+- [Windows 11 24H2 GPO and ADMX Changes](/news/windows-11-24h2-enterprise-gpo-changes)
+- [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)

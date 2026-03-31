@@ -1,0 +1,57 @@
+---
+title: "Intune Gains Native LAPS Integration for Microsoft Entra-Joined Devices"
+category: "Microsoft Intune"
+date: "Apr 2, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Apr 2, 2025"
+tags: ["Intune", "LAPS", "Entra ID", "Endpoint Management"]
+---
+
+## What Changed
+
+Microsoft has shipped native **Windows Local Administrator Password Solution (LAPS)** support for **Microsoft Entra ID-joined** devices through Microsoft Intune, removing the last significant dependency on legacy on-premises Active Directory LAPS infrastructure for cloud-managed fleets.
+
+This has been a long-requested capability. Previously, Intune-managed Entra-joined devices required either the legacy Microsoft LAPS agent (which needed an on-premises AD schema extension) or third-party tooling to manage local administrator passwords. That limitation is now resolved.
+
+## What it Enables
+
+With this update, you can configure LAPS policies directly in the Intune admin centre for:
+
+- **Entra ID-joined devices** (fully cloud-managed, no on-premises AD required)
+- **Entra ID hybrid-joined devices** (continuing to support existing deployments)
+- **Entra ID registered devices** (with appropriate policy scope)
+
+Password escrow goes to **Entra ID**, and recovery is handled through the Entra ID portal or via Microsoft Graph API — no on-premises Active Directory access required.
+
+## Prerequisites
+
+Before enabling native LAPS for Entra-joined devices, confirm:
+
+1. **Windows version**: Requires Windows 11 22H2 (April 2023 cumulative update or later) or Windows 10 22H2 with the same update applied. The built-in LAPS component is OS-native since these versions.
+2. **Intune tenant version**: Your tenant must be on or after the March 2025 service release.
+3. **Entra ID role**: A Privileged Role Administrator or Global Administrator must enable LAPS support in the Entra ID portal under **Devices > Device Settings**.
+4. **Existing legacy LAPS agent**: If the legacy LAPS agent (from Microsoft LAPS v1.x) is installed, remove it before enabling native LAPS to avoid policy conflicts.
+
+## Key Differences from Legacy LAPS
+
+| Feature | Legacy LAPS | Native LAPS (Entra-joined) |
+|---|---|---|
+| Password escrow | On-premises AD | Microsoft Entra ID |
+| Recovery interface | AD Users and Computers / PowerShell | Entra portal / Graph API |
+| Account scope | Local Administrator (fixed) | Configurable (any local account) |
+| Password complexity | Configurable via GPO | Configurable via Intune |
+| Rotation on demand | Not supported | Supported via Intune / Graph |
+| Audit log | AD attribute change log | Entra ID audit log |
+
+## Deployment Considerations
+
+For environments in the process of migrating from hybrid to cloud-native:
+
+- You can run **legacy LAPS (hybrid-joined) alongside native LAPS (Entra-joined)** during transition, but only if the two policy sets do not overlap on the same device.
+- Plan your **access recovery workflow** now. Entra LAPS recovery requires either the Intune Administrator role or a delegated custom role with the `microsoft.directory/deviceLocalCredentials/password/read` permission. Update your runbooks before go-live.
+- If you use **Microsoft Defender for Endpoint**, LAPS rotation events are now visible in the MDE device timeline, which is useful for incident response.
+
+## Related Coverage
+
+- [Deploying Windows LAPS with Microsoft Intune: A Complete Walkthrough](/tutorials/deploy-windows-laps-intune)
+- [Get-StaleDevices PowerShell script for LAPS reporting](/scripts/get-stale-devices)

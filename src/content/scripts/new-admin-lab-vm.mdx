@@ -1,0 +1,60 @@
+---
+title: "New-AdminLabVM"
+category: "PowerShell"
+language: "PowerShell"
+date: "Jan 2025"
+authorId: "james-holbrook"
+tags: ["Hyper-V", "Lab", "Automation", "Windows 11"]
+stars: 178
+---
+
+## Overview
+
+`New-AdminLabVM` provisions a clean Windows 11 test VM on Hyper-V using an unattend.xml answer file. It configures networking, WinRM, and optional domain join for a repeatable lab baseline.
+
+Stop building lab VMs manually. This script gives you a consistent, reproducible starting point for testing GPOs, Intune policies, or hardening scripts before deploying to production.
+
+## Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `-VMName` | `[string]` | Name for the new VM |
+| `-IsoPath` | `[string]` | Path to Windows 11 ISO |
+| `-VhdPath` | `[string]` | Directory where VHD will be created |
+| `-MemoryGB` | `[int]` | RAM in GB. Default: 4 |
+| `-CPUCount` | `[int]` | vCPU count. Default: 2 |
+| `-DomainJoin` | `[switch]` | Join the VM to the domain after provisioning |
+| `-DomainName` | `[string]` | AD domain to join (requires -DomainJoin) |
+
+## Usage Example
+
+```powershell
+# Create a standalone lab VM
+New-AdminLabVM -VMName "WIN11-LAB-01" `
+               -IsoPath "D:\ISOs\Win11_24H2_Enterprise.iso" `
+               -VhdPath "D:\VMs" `
+               -MemoryGB 8 -CPUCount 4
+
+# Create a domain-joined lab VM
+New-AdminLabVM -VMName "WIN11-DOMAIN-TEST" `
+               -IsoPath "D:\ISOs\Win11_24H2_Enterprise.iso" `
+               -VhdPath "D:\VMs" `
+               -DomainJoin -DomainName "corp.local"
+```
+
+## What Gets Configured
+
+The script automates:
+
+1. Creates a Gen 2 Hyper-V VM with specified resources
+2. Attaches the Windows 11 ISO and a dynamically expanding VHDX (default 127 GB)
+3. Injects an unattend.xml for unattended installation (sets locale, admin password, WinRM)
+4. Enables WinRM after first boot for remote management
+5. Optionally joins the specified AD domain
+
+## Requirements
+
+- Windows Server or Windows 11 host with Hyper-V role/feature enabled
+- PowerShell 5.1+ running as Administrator
+- Windows 11 ISO (Enterprise or Pro)
+- For domain join: Line of sight to a domain controller and credentials with domain join rights

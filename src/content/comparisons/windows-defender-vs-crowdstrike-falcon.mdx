@@ -1,0 +1,60 @@
+---
+title: "Windows Defender vs. CrowdStrike Falcon: Enterprise Endpoint Protection Compared"
+category: "Endpoint Security"
+date: "Mar 10, 2025"
+authorId: "marcus-webb"
+lastReviewed: "Mar 10, 2025"
+tags: ["Defender", "CrowdStrike", "EDR", "Endpoint Security"]
+---
+
+## Why This Comparison Matters Now
+
+Two years ago, this comparison had a clearer answer: CrowdStrike was significantly ahead. In 2025, Microsoft Defender for Endpoint Plan 2 has closed the gap substantially, particularly in detection engineering and integration with the Microsoft security stack. The answer is now more nuanced.
+
+## Detection and Prevention
+
+**Microsoft Defender for Endpoint Plan 2** uses a combination of cloud-delivered protection, behavioural analysis, and attack surface reduction rules. In recent independent evaluations (MITRE ATT&CK Evaluations), MDE has performed consistently well across technique coverage.
+
+**CrowdStrike Falcon** has been the benchmark for behavioural detection for several years. The threat intelligence integration, the depth of the process tree, and the speed of detection on novel techniques are genuine differentiators. CrowdStrike typically detects faster on techniques that require process chain analysis.
+
+**Verdict on detection**: CrowdStrike leads on novel technique detection and threat intelligence depth. MDE is competitive on coverage and has the advantage of native OS integration (Windows kernel visibility without an additional driver stack).
+
+## Investigation and Threat Hunting
+
+**MDE** provides the Microsoft 365 Defender portal with Advanced Hunting (KQL-based), the device timeline, and integration with Microsoft Sentinel. The investigation experience has improved significantly and is now genuinely usable for SOC analysts.
+
+**CrowdStrike** provides the Threat Graph — a process-tree based investigation interface that remains superior for incident response analysts. The ability to pivot through every process, network connection, and file operation on a device and see the full causal chain is more intuitive in Falcon than in MDE.
+
+For organisations with mature SOC teams doing threat hunting, CrowdStrike's investigation tools are still the leader.
+
+## Cross-Platform Coverage
+
+**MDE**: Available for Windows, macOS, Linux, iOS, and Android. The Windows coverage is the strongest; macOS and Linux agents are functional but have historically lagged behind the Windows sensor.
+
+**CrowdStrike**: Strong cross-platform coverage including Windows, macOS, Linux, ChromeOS, and cloud workloads (AWS, Azure, GCP). For organisations with significant non-Windows infrastructure, this is a meaningful advantage.
+
+## Integration with the Microsoft Security Stack
+
+**MDE** integrates natively with Microsoft Sentinel, Purview, Intune, Conditional Access, and Defender XDR. For organisations already invested in the Microsoft security stack, this integration reduces tool sprawl and correlation overhead.
+
+**CrowdStrike** integrates with Sentinel, Splunk, and most major SIEMs via API. The integrations work but are not first-party and require configuration and maintenance.
+
+## The July 2024 Consideration
+
+CrowdStrike's content update failure in July 2024 affected approximately 8.5 million Windows endpoints globally. The incident raised legitimate questions about update risk for a kernel-mode agent. CrowdStrike has since implemented ring-based update staging and additional validation controls (detailed in their PIR), but the reputational and operational risk is a real factor for risk-averse procurement decisions.
+
+## Pricing
+
+**MDE Plan 2** is included in Microsoft 365 E5 and Microsoft Defender for Endpoint standalone licences. For organisations on E5, the incremental cost of MDE is zero.
+
+**CrowdStrike Falcon** is per-endpoint per-year, with pricing varying by tier. At scale, CrowdStrike represents a meaningful per-seat cost that needs to be weighed against the capability delta.
+
+## Verdict
+
+For Microsoft-only environments already on E5 licensing, Defender for Endpoint is compelling and economical. CrowdStrike wins on threat intelligence depth, cross-platform coverage, and speed of novel technique detection. The right answer depends heavily on your environment composition, your SOC's investigation workflows, and your appetite for third-party agent risk after July 2024.
+
+## Related Reading
+
+- [CrowdStrike Falcon Go Review](/reviews/crowdstrike-falcon-go-review)
+- [CrowdStrike Post-Incident Report Analysis](/news/crowdstrike-post-incident-report-analysis)
+- [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)

@@ -1,0 +1,67 @@
+---
+title: "Export-IntuneDeviceReport"
+category: "PowerShell"
+language: "PowerShell"
+date: "Feb 2025"
+authorId: "sarah-chen"
+tags: ["Intune", "Graph API", "Reporting", "Inventory"]
+stars: 389
+---
+
+## Overview
+
+`Export-IntuneDeviceReport` uses the Microsoft Graph API to export a full Intune device inventory including compliance state, OS version, last check-in, and primary user to CSV or JSON. Useful for audits, licence reconciliation, and executive reporting.
+
+## Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `-TenantId` | `[string]` | Azure AD tenant ID |
+| `-ClientId` | `[string]` | App registration client ID |
+| `-ClientSecret` | `[string]` | App registration client secret |
+| `-OutputFormat` | `[CSV\|JSON\|Both]` | Export format. Default: CSV |
+| `-OutputPath` | `[string]` | Output directory |
+| `-FilterOS` | `[string]` | Filter by OS: Windows, iOS, Android, macOS |
+| `-IncludeCompliance` | `[switch]` | Include compliance policy evaluation results |
+
+## Usage Example
+
+```powershell
+Export-IntuneDeviceReport -TenantId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
+                          -ClientId "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
+                          -ClientSecret $secret `
+                          -OutputFormat Both `
+                          -OutputPath C:\Reports\Intune `
+                          -FilterOS Windows `
+                          -IncludeCompliance
+```
+
+## Graph API Permissions Required
+
+The app registration needs these Application permissions:
+
+- `DeviceManagementManagedDevices.Read.All`
+- `DeviceManagementConfiguration.Read.All` (for compliance data)
+- `Directory.Read.All` (for primary user resolution)
+
+## Output Fields
+
+The CSV/JSON output includes:
+
+| Field | Source |
+|---|---|
+| DeviceName | Intune display name |
+| DeviceId | Entra/Intune device ID |
+| OS | Operating system |
+| OSVersion | Build number |
+| LastCheckIn | Last Intune sync timestamp |
+| ComplianceState | Compliant / NonCompliant / Unknown |
+| PrimaryUserUPN | Enrolled user |
+| EnrollmentDate | Initial Intune enrollment |
+| ManagementAgent | MDM, ConfigurationManager, or EAS |
+| EncryptionState | Encrypted / Not encrypted (Windows only) |
+
+## Related Resources
+
+- [Get-StaleDevices script](/scripts/get-stale-devices)
+- [Intune Native LAPS Integration News](/news/intune-native-laps-entra-joined)

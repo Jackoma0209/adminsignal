@@ -1,0 +1,50 @@
+---
+title: "Get-PatchComplianceReport"
+category: "PowerShell"
+language: "PowerShell"
+date: "Jan 2025"
+authorId: "james-holbrook"
+tags: ["Patch Management", "WSUS", "WUfB", "Reporting"]
+stars: 241
+---
+
+## Overview
+
+`Get-PatchComplianceReport` queries WSUS or Windows Update for Business device status via WMI and the Graph API. It produces a per-device patch lag report with severity breakdown and an exportable HTML dashboard.
+
+Patch compliance reporting is a core deliverable for most IT governance frameworks. This script automates what is otherwise a painful manual export from WSUS or a partial view from Intune update compliance.
+
+## Parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `-Source` | `[WSUS\|WUfB\|Both]` | Data source for compliance data |
+| `-WsusServer` | `[string]` | WSUS server hostname (required when Source includes WSUS) |
+| `-CriticalOnly` | `[switch]` | Filter report to Critical and Important severity only |
+| `-OutputPath` | `[string]` | Output directory for HTML dashboard and CSV |
+| `-DaysBack` | `[int]` | Include patches released in the last N days. Default: 90 |
+
+## Usage Example
+
+```powershell
+# WSUS-based compliance report for critical patches
+Get-PatchComplianceReport -Source WSUS -WsusServer wsus01.corp.local `
+    -CriticalOnly -DaysBack 60 -OutputPath C:\Reports\Patches
+
+# Windows Update for Business via Graph API
+Get-PatchComplianceReport -Source WUfB -OutputPath C:\Reports\Patches
+```
+
+## Report Contents
+
+The HTML dashboard includes:
+
+- **Overall compliance percentage**: Percentage of devices with all Critical/Important patches applied
+- **Per-device breakdown**: Last check-in, missing patch count by severity, days since oldest missing patch
+- **Top missing patches**: Most common unpatched CVEs across the fleet with CVSS scores
+- **Patch age distribution**: Chart showing how many devices are 0–30, 31–60, 61–90, and 90+ days behind
+
+## Related Resources
+
+- [April 2025 Patch Tuesday — CVE-2025-21204](/news/april-2025-patch-tuesday-kernel-eop)
+- [Windows Update for Business Deferral Not Being Respected](/troubleshooting/wufb-deferral-not-respected)

@@ -1,0 +1,110 @@
+---
+title: "Deploying Windows LAPS with Microsoft Intune: A Complete Walkthrough"
+category: "Microsoft Intune"
+date: "Mar 20, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Apr 2, 2025"
+reviewNote: "Updated to reflect native Entra-joined LAPS support released April 2025."
+tags: ["Intune", "LAPS", "Entra ID", "Security Baseline"]
+---
+
+## Overview
+
+Windows Local Administrator Password Solution (LAPS) is a Microsoft-native control that generates unique, randomly-rotated local administrator passwords for each managed endpoint and escrows them to either Active Directory or Microsoft Entra ID. Without LAPS — or a comparable control — organisations risk lateral movement enabled by shared local administrator passwords.
+
+This guide covers the **native Windows LAPS deployment for Intune-managed, Entra ID-joined devices** — the recommended path for cloud-first environments. If you are managing hybrid-joined devices or running legacy LAPS alongside native LAPS, see the notes in each section.
+
+## Prerequisites
+
+Before starting, confirm:
+
+- **Windows 11 22H2** with KB5025239 (April 2023 CU) or later, **or Windows 10 22H2** with the same. The built-in LAPS component requires this build minimum.
+- **Intune tenant** on March 2025 service release or later.
+- **Entra ID**: LAPS support must be enabled in the Entra portal. Navigate to **Devices > Device Settings** and enable **"Enable Microsoft Entra Local Administrator Password Solution (LAPS)"**.
+- **Your Intune role**: Endpoint Security Manager or higher.
+- **Legacy LAPS agent removed**: If the Microsoft LAPS v1.x agent is installed on any devices, remove it before enabling native LAPS to prevent policy conflicts.
+
+## Step 1: Enable LAPS in Entra ID
+
+1. Sign in to the [Entra admin centre](https://entra.microsoft.com) as a Privileged Role Administrator or Global Administrator.
+2. Navigate to **Identity > Devices > Overview > Device Settings**.
+3. Set **Enable Microsoft Entra Local Administrator Password Solution (LAPS)** to **Yes**.
+4. Click **Save**.
+
+This is a tenant-wide setting — it does not automatically apply LAPS to any device. It enables the escrow capability that your Intune policy will activate on specific devices.
+
+## Step 2: Create the Intune Configuration Profile
+
+1. Navigate to the [Intune admin centre](https://intune.microsoft.com).
+2. Go to **Endpoint security > Account protection**.
+3. Click **Create policy** and select:
+   - **Platform**: Windows 10 and later
+   - **Profile type**: Local admin password solution (Windows LAPS)
+4. Give the policy a clear name, e.g. `LAPS - Entra ID Joined Devices`.
+
+### Recommended Settings
+
+| Setting | Recommended Value | Notes |
+|---|---|---|
+| Backup Directory | Azure Active Directory | Use for Entra-joined devices |
+| Password Age Days | 30 | Rotate every 30 days |
+| Administrator Account Name | (blank) | Targets the built-in local Administrator account |
+| Password Complexity | Large letters + small letters + numbers + special characters | Maximum complexity |
+| Password Length | 20 | Minimum 14 for CIS compliance, 20 is stronger |
+| Post Authentication Actions | Reset password and log off managed account | Rotates after any use |
+| Post Authentication Reset Delay | 24 | Hours before rotation after post-auth use |
+
+5. Click **Next**, configure scope tags if required, then proceed to **Assignments**.
+
+## Step 3: Assign to Device Groups
+
+Assign the policy to a device group, not a user group. LAPS is a device-level configuration.
+
+**Recommended group structure:**
+- Create an Entra ID dynamic device group with the rule: `(device.managementType -eq "MDM") and (device.deviceTrustType -eq "AzureAD")`
+- This automatically captures all Entra-joined, Intune-managed devices
+
+Do not assign this policy to hybrid-joined devices unless you have confirmed there is no legacy LAPS agent present.
+
+## Step 4: Verify and Test
+
+After the policy syncs (allow up to 8 hours, or trigger a manual sync via the Intune portal or `Sync-MDMClientWithManagementService` on the device), verify:
+
+1. **On the device**: Open an elevated PowerShell prompt and run:
+
+```powershell
+Get-LapsAADPassword -DeviceId (Get-AzureADDevice -ObjectId (dsregcmd /status | Select-String "DeviceId").ToString().Split(":")[1].Trim()).ObjectId
+```
+
+Alternatively, use the newer cmdlet if you have the LAPS PowerShell module:
+
+```powershell
+Get-LapsAADPassword -DeviceNameOrId $env:COMPUTERNAME -AsPlainText
+```
+
+2. **In the Intune portal**: Navigate to **Devices > [device name] > Local admin password**. You should see a password with a rotation date.
+
+3. **In Entra ID**: Navigate to **Devices > [device name] > Local administrator password recovery**. The password should be visible to accounts with appropriate permissions.
+
+## Step 5: Configure Password Recovery Access
+
+By default, Global Administrators and Privileged Role Administrators can recover LAPS passwords. For operational use, create a delegated role:
+
+1. In Entra ID, navigate to **Roles and administrators > All roles**.
+2. Locate **Cloud Device Administrator** — this role has `microsoft.directory/deviceLocalCredentials/password/read` by default.
+3. Alternatively, create a custom role with only that permission for a tighter least-privilege model.
+4. Assign the role to your IT support team via PIM if you have Entra ID P2.
+
+## Troubleshooting
+
+**Policy shows as "Not applicable"**: Confirm the device is Entra-joined (not hybrid-joined). Run `dsregcmd /status` on the device and check `AzureAdJoined: YES`.
+
+**Password not escrowing**: Confirm LAPS is enabled in Entra Device Settings at the tenant level. Check the device event log under `Applications and Services Logs > Microsoft > Windows > LAPS > Operational`.
+
+**Legacy LAPS conflicts**: If the device shows a LAPS policy conflict, check for the presence of the legacy `LAPS.exe` or `AdmPwd.dll`. Remove the legacy agent and run a policy sync.
+
+## Related Resources
+
+- [Intune Native LAPS for Entra-Joined Devices — News](/news/intune-native-laps-entra-joined)
+- [Get-StaleDevices script for LAPS coverage reporting](/scripts/get-stale-devices)
+- [Autopilot v2 Enrollment Troubleshooting](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)

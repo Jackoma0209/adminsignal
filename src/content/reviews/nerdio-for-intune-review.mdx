@@ -1,0 +1,48 @@
+---
+title: "Nerdio for Intune: Azure Virtual Desktop Management Reviewed"
+productName: "Nerdio for Intune"
+category: "Endpoint Management"
+rating: 4.5
+date: "Feb 28, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Feb 28, 2025"
+---
+
+## The Problem Nerdio Solves
+
+Azure Virtual Desktop management without Nerdio involves a lot of portal-switching: Intune for policy, Azure portal for host pool scaling, Entra ID for identity, Azure Monitor for logs. Nerdio consolidates this into a single pane with automation around the parts that Microsoft left as manual operations — primarily host pool scaling, session management, and image lifecycle.
+
+We used Nerdio for Intune in a 90-user AVD deployment across two host pools for six weeks.
+
+## Host Pool Scaling and Lifecycle
+
+The auto-scaling engine is the headline feature, and it works. Nerdio monitors active sessions and scales host pool capacity up and down based on configurable schedules and session thresholds. Over six weeks, our cost optimisation report showed a 23% reduction in compute costs compared to the pre-Nerdio baseline where hosts ran continuously.
+
+The image management workflow is genuinely useful. Nerdio provides a structured process for capturing base images, running scripted updates, and deploying updated images to host pools with minimal user disruption. What would otherwise be a 4-step manual Azure process becomes a guided wizard.
+
+## Intune Policy Integration
+
+The Intune integration is tighter than competing products. You can view per-session device compliance status, push policy syncs to session hosts, and see Intune-reported health data alongside AVD performance metrics in the same view.
+
+Session host provisioning from Nerdio automatically enrols new VMs in Intune via the configured Autopilot or direct enrolment profile. For environments with frequent scale-out, this removes a manual step that often gets missed.
+
+## Cost Optimisation Engine
+
+The cost report feature shows spend by host pool, by session, and by time-of-day pattern. It identifies hosts that are running with no active sessions and suggests schedule adjustments. For environments new to AVD, this is a practical tool for right-sizing deployment rings.
+
+## Weaknesses
+
+**Licensing complexity**: If you have a mix of persistent VDI, non-persistent pooled hosts, and physical Intune-managed devices, Nerdio's licensing model requires some planning. It is per-managed-endpoint, and the definition of "managed" includes AVD session hosts even when powered off.
+
+**Reporting gaps**: Some roadmap features (custom reporting dashboards, more granular session analytics) are still in development as of this review. The out-of-box reports are useful but not deeply configurable.
+
+**Documentation depth**: The official documentation is adequate for standard deployments but thinner on edge cases (custom network configurations, non-standard Intune policy architectures).
+
+## Verdict
+
+For organisations managing more than 50 concurrent AVD sessions, Nerdio pays for itself in operational overhead reduction within the first month. The Intune integration is the best we have seen in this category, and the scaling automation is reliable. The licensing model requires upfront planning but is not prohibitive.
+
+## Related Reading
+
+- [Microsoft Intune vs. SCCM in 2025](/comparisons/intune-vs-sccm-mecm-2025)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)

@@ -1,0 +1,90 @@
+---
+title: "Configuring Conditional Access for a Microsoft 365 Tenant: The Complete Policy Map"
+category: "Microsoft Entra ID"
+date: "Feb 21, 2025"
+authorId: "priya-nair"
+lastReviewed: "Feb 21, 2025"
+tags: ["Conditional Access", "Entra ID", "Microsoft 365", "Identity"]
+---
+
+## Why Policy Design Matters
+
+Conditional Access is powerful but unforgiving. A misconfigured policy can lock out your entire tenant — including administrators. A policy that is too permissive provides no protection. This guide builds a baseline policy map that is defensible, recoverable, and covers the most common attack vectors against Microsoft 365 tenants.
+
+**Before deploying any CA policy**: Create an emergency access account (break-glass account) that is excluded from all CA policies and stored in a physical safe. This is non-negotiable.
+
+## Policy 1: Require MFA for All Users
+
+**What it does**: Requires multi-factor authentication for any sign-in to Microsoft 365 resources.
+
+**Configuration**:
+- Users: All users
+- Cloud apps: All cloud apps
+- Conditions: None (apply to all)
+- Grant: Require multi-factor authentication
+
+**Exclusions**: Emergency access accounts, service accounts using certificate-based authentication.
+
+**Deploy in Report-only mode first**. Review the CA sign-in logs for 7–14 days before switching to enforcement.
+
+## Policy 2: Require Compliant or Hybrid-Joined Device
+
+**What it does**: Blocks access from devices that are not Intune-compliant or hybrid-joined. This prevents BYOD access from unmanaged endpoints.
+
+**Configuration**:
+- Users: All users (excluding emergency access accounts and service accounts)
+- Cloud apps: All cloud apps
+- Conditions: None
+- Grant: Require device to be marked as compliant **OR** require hybrid Azure AD joined device (choose based on your environment)
+
+**Warning**: Before enabling, ensure all users have at least one compliant device. Use Report-only mode and review the affected sign-ins — devices that have not checked in recently will show as non-compliant.
+
+## Policy 3: Block Legacy Authentication
+
+**What it does**: Blocks authentication protocols that do not support MFA (SMTP AUTH, IMAP, POP3, Basic Auth). Legacy auth is used in the majority of password spray attacks.
+
+**Configuration**:
+- Users: All users
+- Cloud apps: All cloud apps
+- Conditions: Client apps — select Exchange ActiveSync clients, Other clients
+- Grant: Block access
+
+**Test first**: Check your sign-in logs for any legitimate legacy auth usage (shared mailboxes, old MFP devices scanning to email, older applications). Migrate or exclude these before enabling.
+
+## Policy 4: Require MFA for Azure Management
+
+**What it does**: Requires MFA specifically for Azure portal, Azure CLI, and PowerShell access to Azure management APIs.
+
+**Configuration**:
+- Users: All users
+- Cloud apps: Microsoft Azure Management
+- Conditions: None
+- Grant: Require multi-factor authentication
+
+This is separate from Policy 1 because it targets Azure administration specifically and should be applied before the all-users MFA policy is fully enforced.
+
+## Policy 5: Sign-in Risk Policy (Requires Entra ID P2)
+
+**What it does**: Requires MFA step-up or blocks sign-in when Entra ID Identity Protection detects a risky sign-in (atypical travel, known malicious IP, leaked credentials).
+
+**Configuration**:
+- Users: All users
+- Cloud apps: All cloud apps
+- Conditions: Sign-in risk — High (require MFA), Medium (require MFA)
+- Grant: Require multi-factor authentication + Require password change for high risk
+
+## Emergency Access Account Design
+
+Your emergency access (break-glass) accounts must:
+
+1. Be **cloud-only accounts** (not synced from on-premises AD)
+2. Have **Global Administrator** role assigned directly (not via group)
+3. Be **excluded from all Conditional Access policies**
+4. Use a **long, randomly generated password** stored in a physical safe
+5. Have **MFA registered** but with the TOTP codes stored separately from the password
+6. Be **monitored**: Create an alert that fires any time these accounts sign in
+
+## Related Resources
+
+- [Entra ID P1 vs P2: Is the Upgrade Worth It?](/comparisons/entra-id-p1-vs-p2)
+- [Nerdio for Intune Review](/reviews/nerdio-for-intune-review)

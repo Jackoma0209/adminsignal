@@ -1,0 +1,81 @@
+---
+title: "Group Policy Not Applying to Users or Computers: A Systematic Diagnosis"
+category: "Group Policy"
+date: "Mar 5, 2025"
+authorId: "james-holbrook"
+lastReviewed: "Mar 5, 2025"
+tags: ["Group Policy", "Active Directory", "Windows Server"]
+---
+
+## Start Here: Confirm the Basics
+
+Before running any diagnostic tools, confirm:
+
+1. **Has enough time passed?** Group Policy applies at startup (computer policy) and at logon (user policy) by default. Background refresh runs every 90 minutes with a random offset. `gpupdate /force` forces an immediate refresh — run it and wait 2 minutes before concluding a policy is not applying.
+
+2. **Is the object in the right OU?** Confirm the user or computer is in the OU where the GPO is linked (or a child OU). Open ADUC and verify.
+
+3. **Is the GPO enabled?** In the GPMC, open the GPO's scope and confirm the link is enabled and the GPO status is not set to "All Settings Disabled".
+
+If all three are confirmed and the policy is still not applying, proceed to the diagnostic steps below.
+
+## Step 1: Run gpresult
+
+The fastest way to confirm what a client received:
+
+```cmd
+# Run on the affected computer as that user (or as admin with /USER)
+gpresult /R
+
+# For a full HTML report
+gpresult /H C:\Temp\gpresult.html /F
+```
+
+Open the HTML report and look at:
+- **Applied GPOs**: The GPO should appear here
+- **Denied GPOs**: If your GPO appears here, the reason tells you why it was filtered
+
+## Step 2: Check the Denied GPOs Reason
+
+| Reason shown | Meaning | Fix |
+|---|---|---|
+| Access Denied | Object does not have Read + Apply Group Policy permissions on the GPO | Check Security Filtering in GPMC — add the object's group or the object itself |
+| WMI Filter | The WMI filter evaluated to false on this client | Test the WMI query manually (see below) |
+| Disabled | The GPO or link is disabled | Re-enable |
+| Out of Scope | Object is not in the linked OU | Move object or link GPO to correct OU |
+
+## Step 3: Test WMI Filters Manually
+
+If a WMI filter is the culprit, test the WMI query on the affected device:
+
+```powershell
+# Example: Check if a WMI filter for Windows 11 is working
+Get-CimInstance -Query "SELECT * FROM Win32_OperatingSystem WHERE Caption LIKE '%Windows 11%'"
+```
+
+If this returns no results, the filter is correctly excluding the device — but that may not be what you intended.
+
+## Step 4: Check the Client Event Log
+
+Navigate to:
+```
+Event Viewer > Applications and Services Logs > Microsoft > Windows > GroupPolicy > Operational
+```
+
+Look for:
+- **Event 7017**: GP processing started — if absent, GP is not running at all
+- **Event 5016**: Completed CSE processing — check for errors
+- **Event 1129**: Could not apply policy due to network issues
+
+## Step 5: Loopback Processing and Inheritance Blockers
+
+If the above steps do not reveal the cause:
+
+- Check if **Block Inheritance** is set on the OU: GPMC > OU > right-click > check for the grey shield icon
+- Check if an **Enforced** GPO higher in the hierarchy is overriding your setting: Enforced GPOs win over Block Inheritance
+- Check if **Loopback Processing** is enabled elsewhere and replacing user policies
+
+## Related Resources
+
+- [Group Policy Troubleshooting with RSoP and gpresult — full guide](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Windows 11 24H2 ADMX Template Changes](/news/windows-11-24h2-enterprise-gpo-changes)

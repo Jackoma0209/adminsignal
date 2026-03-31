@@ -1,0 +1,118 @@
+---
+title: "Building a PowerShell-Driven Software Inventory System for Unmanaged Endpoints"
+category: "PowerShell"
+date: "Feb 28, 2025"
+authorId: "james-holbrook"
+lastReviewed: "Feb 28, 2025"
+tags: ["PowerShell", "WMI", "Inventory", "Automation"]
+---
+
+## Why Build Your Own
+
+Enterprise RMM tools and Intune both provide software inventory. But for legacy environments, air-gapped networks, or incident response scenarios where you need to know *right now* what is installed on a machine without an agent, a PowerShell-based pipeline is indispensable.
+
+This guide builds a three-source inventory system that combines:
+
+1. **Win32_Product WMI class** (installed MSI packages)
+2. **Registry uninstall keys** (broader coverage, including non-MSI installs)
+3. **A lightweight SQLite output** for persistence and querying across multiple hosts
+
+## Source 1: Registry-Based Inventory (Recommended Primary Source)
+
+The registry uninstall keys provide the most complete picture of installed software and are faster to query than WMI:
+
+```powershell
+function Get-InstalledSoftwareFromRegistry {
+    param([string]$ComputerName = $env:COMPUTERNAME)
+    
+    $uninstallPaths = @(
+        'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+        'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+    )
+    
+    $software = foreach ($path in $uninstallPaths) {
+        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue |
+            Where-Object { $_.DisplayName -and $_.DisplayVersion } |
+            Select-Object @{N='Name';E={$_.DisplayName}},
+                          @{N='Version';E={$_.DisplayVersion}},
+                          @{N='Publisher';E={$_.Publisher}},
+                          @{N='InstallDate';E={$_.InstallDate}},
+                          @{N='Source';E={'Registry'}},
+                          @{N='ComputerName';E={$ComputerName}}
+    }
+    return $software | Sort-Object Name -Unique
+}
+```
+
+## Source 2: WMI Win32_Product
+
+Use this as a supplementary source. Note that querying `Win32_Product` triggers an MSI reconfiguration check, which can cause performance issues on some systems. Do not use it as a primary source for frequent polling.
+
+```powershell
+function Get-InstalledSoftwareFromWmi {
+    param([string]$ComputerName = $env:COMPUTERNAME)
+    
+    Get-CimInstance -ClassName Win32_Product -ComputerName $ComputerName -ErrorAction SilentlyContinue |
+        Select-Object @{N='Name';E={$_.Name}},
+                      @{N='Version';E={$_.Version}},
+                      @{N='Publisher';E={$_.Vendor}},
+                      @{N='InstallDate';E={$_.InstallDate}},
+                      @{N='Source';E={'WMI'}},
+                      @{N='ComputerName';E={$ComputerName}}
+}
+```
+
+## Merging and Deduplicating
+
+```powershell
+function Get-CompleteSoftwareInventory {
+    param([string]$ComputerName = $env:COMPUTERNAME)
+    
+    $registry = Get-InstalledSoftwareFromRegistry -ComputerName $ComputerName
+    $wmi = Get-InstalledSoftwareFromWmi -ComputerName $ComputerName
+    
+    $combined = @($registry) + @($wmi)
+    
+    # Deduplicate by Name + Version, preferring registry source
+    $combined | Group-Object Name, Version | 
+        ForEach-Object { $_.Group | Where-Object { $_.Source -eq 'Registry' } | 
+            Select-Object -First 1 } |
+        Where-Object { $_ -ne $null }
+}
+```
+
+## Running Across Multiple Hosts
+
+For environments where WinRM is available:
+
+```powershell
+$computers = Get-Content "C:\Inventory\computers.txt"
+$results = foreach ($computer in $computers) {
+    try {
+        Get-CompleteSoftwareInventory -ComputerName $computer
+    } catch {
+        Write-Warning "Failed to inventory $computer`: $_"
+    }
+}
+
+$results | Export-Csv "C:\Inventory\software-inventory-$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
+```
+
+## Output and Querying
+
+Export to HTML for a shareable report:
+
+```powershell
+$results | 
+    Sort-Object ComputerName, Name |
+    ConvertTo-Html -Title "Software Inventory $(Get-Date -Format 'yyyy-MM-dd')" `
+                   -PreContent "<h1>Software Inventory Report</h1>" |
+    Out-File "C:\Inventory\report.html"
+```
+
+For environments where you want persistent, queryable results, consider exporting to CSV and importing into a scheduled task that builds a rolling inventory database.
+
+## Related Resources
+
+- [Get-StaleDevices script](/scripts/get-stale-devices)
+- [Export-IntuneDeviceReport script](/scripts/export-intune-device-report)

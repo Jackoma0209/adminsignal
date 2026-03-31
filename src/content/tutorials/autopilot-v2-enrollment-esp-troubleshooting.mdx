@@ -1,0 +1,98 @@
+---
+title: "Understanding Autopilot v2: Enrollment Profiles, ESP, and Common Failure Modes"
+category: "Microsoft Intune"
+date: "Mar 7, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Mar 7, 2025"
+tags: ["Autopilot", "Intune", "Windows 11", "Enrollment"]
+---
+
+## What Changed in Autopilot v2
+
+Windows Autopilot v2 (also known as Device Preparation) changes the enrollment architecture in ways that affect how you design profiles, handle the Enrollment Status Page, and diagnose failures. The legacy Autopilot flow remains available, but new deployments should target v2.
+
+The key architectural differences:
+
+- **Device Preparation policy** replaces the Autopilot deployment profile for v2 flows
+- **Provisioning package** is delivered more efficiently — fewer API calls during OOBE
+- **ESP replacement**: The Enrollment Status Page still exists in v2, but the tracking mechanism differs from v1
+- **Autopilot device registration** is now through Entra ID direct registration rather than hardware hash CSV upload in the preferred path
+
+## Prerequisites for v2
+
+- Windows 11 23H2 or later (24H2 recommended)
+- The device must be registered in Autopilot via one of:
+  - Entra ID device registration (preferred)
+  - Partner Center / OEM integration
+  - PPKG/CSV (still supported but not the v2-native path)
+- Intune tenant on September 2024 service release or later
+
+## Enrollment Profile Design
+
+In v2, the **Device Preparation policy** (under **Devices > Windows > Enrollment > Device Preparation policies**) controls the OOBE experience. Unlike v1, you do not assign this directly to a device group — it applies based on device registration attributes.
+
+### Key settings in the Device Preparation policy
+
+**User-driven vs Pre-provisioned**: For most enterprise deployments, **User-driven** is appropriate. Pre-provisioned (Technician Flow) is for environments where devices must be partially configured before reaching end users.
+
+**Deployment mode**: 
+- **Microsoft Entra joined**: Cloud-only, no on-premises domain join
+- **Microsoft Entra hybrid joined**: Requires line of sight to a domain controller and the Hybrid Entra Join connector
+
+**Enrollment Status Page assignment**: Assign your ESP profile to the same groups as your Device Preparation policy. If the ESP is not assigned, devices will proceed through provisioning without blocking on app install completion.
+
+## ESP Configuration for v2
+
+The ESP still serves its core function in v2: blocking the desktop from being presented until a defined set of applications are installed and policies are applied.
+
+### What to block on
+
+Only add apps to the ESP tracking list that are **truly required before the user can work**. Every app in the blocking list is a potential failure point. A practical blocking list might include:
+
+- Microsoft 365 Apps for Enterprise
+- Your endpoint security agent (CrowdStrike/Defender)
+- Any VPN client required to reach internal resources
+
+Do not add optional apps, drivers, or configuration packages to the blocking list.
+
+### Timeout settings
+
+The default ESP timeout is 60 minutes. For environments with large app payloads, increase this to 90–120 minutes. A device that times out will either continue past the ESP (if configured) or enter a failed state that requires re-enrollment.
+
+## Diagnosing ESP Failures
+
+When the ESP hangs or fails, the first step is always to check the logs before re-imaging.
+
+### Event log locations
+
+```
+Applications and Services Logs\Microsoft\Windows\DeviceManagement-Enterprise-Diagnostics-Provider\Admin
+Applications and Services Logs\Microsoft\Windows\ModernDeployment-Diagnostics-Provider\Autopilot
+Applications and Services Logs\Microsoft\Windows\AAD\Operational
+```
+
+### MDM diagnostic log
+
+Press **Ctrl+Shift+J** at the ESP screen to view the current provisioning status. This is the fastest way to see which step is hanging.
+
+For a complete MDM diagnostic report, press **Windows+I > System > Troubleshoot > Other troubleshooters > MDM Agent** or run:
+
+```powershell
+mdmdiagnosticstool.exe -area Autopilot -cab c:\temp\autopilot-diag.cab
+```
+
+### Common failure points
+
+| Symptom | Likely cause | Fix |
+|---|---|---|
+| ESP stuck at 0% for >10 minutes | Device cannot reach Intune endpoints | Check proxy/firewall for required Intune URLs |
+| App install hanging | Win32 app dependency conflict | Check Intune app install logs in `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs` |
+| "Identifying your device" loop | Device not registered in Autopilot | Verify registration via Entra portal |
+| Domain join fails (hybrid) | No DC line of sight | Verify ODJC connector and subnet coverage |
+| "Something went wrong" after user sign-in | Conditional Access blocking OOBE | Check CA policies for exclusions during provisioning |
+
+## Related Resources
+
+- [Autopilot Enrollment Status Page Stuck at 0% — Troubleshooting](/troubleshooting/autopilot-enrollment-status-page-stuck)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)

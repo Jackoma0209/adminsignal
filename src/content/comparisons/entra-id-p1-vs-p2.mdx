@@ -1,0 +1,94 @@
+---
+title: "Entra ID Premium P1 vs. P2: Is the Upgrade Worth It?"
+category: "Microsoft Entra ID"
+date: "Feb 20, 2025"
+authorId: "priya-nair"
+lastReviewed: "Feb 20, 2025"
+tags: ["Entra ID", "Conditional Access", "PIM", "Identity"]
+---
+
+## What P1 Gives You
+
+Entra ID Premium P1 is included in Microsoft 365 Business Premium and E3. For most organisations on these plans, P1 is already licensed without an additional spend decision.
+
+P1 includes the features that most enterprise tenants consider baseline:
+
+- **Conditional Access** (full policy engine including named locations, sign-in risk basics, compliance requirements)
+- **Self-Service Password Reset** with writeback to on-premises AD
+- **Hybrid identity** with seamless SSO and pass-through authentication
+- **Entra Application Proxy** for publishing on-premises web apps
+- **Group-based licensing** and dynamic group membership
+- **MFA registration and enforcement** via Conditional Access
+
+For organisations managing a Microsoft 365 tenant with standard identity requirements, P1 covers the fundamentals well.
+
+## What P2 Adds
+
+Entra ID Premium P2 is included in Microsoft 365 E5 and the Entra ID P2 standalone licence.
+
+The three meaningful additions are:
+
+### 1. Privileged Identity Management (PIM)
+
+PIM provides just-in-time (JIT) privileged access to Entra ID and Azure roles. Instead of users having permanent Global Administrator or Privileged Role Administrator assignment, they request elevation for a time-limited window.
+
+Features include:
+- **JIT activation**: Eligible role assignments that require approval or MFA to activate
+- **Activation duration limits**: Roles expire automatically after a configured window
+- **Approval workflows**: High-privilege roles can require a second approver
+- **Activation history and alerts**: Full audit trail of who elevated, when, and for how long
+
+For any organisation with more than one Global Administrator, PIM is the most impactful security control in P2.
+
+### 2. Identity Protection Risk Policies
+
+Identity Protection adds automated response to risky sign-in and risky user events. It analyses sign-in patterns and flags:
+- Atypical travel (impossible travel between sign-ins)
+- Leaked credentials (matched against breach databases)
+- Anomalous token usage
+- Malicious IP addresses
+
+With P2, you can create Conditional Access policies based on sign-in risk level (Low, Medium, High) and user risk level, triggering MFA step-up or password change requirements automatically.
+
+### 3. Access Reviews
+
+Access reviews allow you to schedule periodic certifications of group membership, application assignments, and privileged role assignments. Reviewers (managers or resource owners) are prompted to confirm that each access is still appropriate.
+
+This is a compliance feature as much as a security feature. Many audit frameworks (SOC 2, ISO 27001, HIPAA) require evidence of access certification.
+
+## P1 vs P2 Feature Table
+
+| Feature | P1 | P2 |
+|---|---|---|
+| Conditional Access (standard) | ✓ | ✓ |
+| Self-Service Password Reset | ✓ | ✓ |
+| MFA per user and CA | ✓ | ✓ |
+| Privileged Identity Management | ✗ | ✓ |
+| Identity Protection risk policies | ✗ | ✓ |
+| Access Reviews | ✗ | ✓ |
+| Entitlement Management (access packages) | ✗ | ✓ |
+| Conditional Access: sign-in risk | Partial | Full |
+
+## The Upgrade Decision
+
+P2 is worth the upgrade if your organisation has **any** of:
+
+- More than one person with Global Administrator or Privileged Role Administrator
+- External guests or contractors who need periodic access certification
+- Compliance requirements (SOC 2, ISO 27001, NIS2, HIPAA) that mandate JIT privileged access or access reviews
+- A history of credential-based attacks or account takeover incidents
+
+For small tenants with a single IT administrator and no compliance framework requirements, P1 provides adequate identity controls.
+
+## Cost Consideration
+
+If you are on Microsoft 365 E3, adding P2 to your entire tenant can be significant. Consider a **targeted P2 licensing approach**: licence P2 only for users in privileged roles (Global Admins, Privileged Role Admins, Security Admins) and leave standard users on E3 (which includes P1). This is a supported licensing configuration.
+
+## Verdict
+
+P2 is worth it if you have privileged accounts, external access to certify, or compliance requirements. For smaller tenants without those drivers, P1 covers the Conditional Access and SSPR fundamentals adequately.
+
+## Related Reading
+
+- [Configuring Conditional Access for Microsoft 365](/tutorials/conditional-access-m365-policy-map)
+- [Veeam Backup for Microsoft 365 Review](/reviews/veeam-backup-m365-review)

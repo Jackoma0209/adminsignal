@@ -1,0 +1,67 @@
+---
+title: "Windows 11 24H2 Enterprise Rollout Expands: GPO and ADMX Template Changes to Know"
+category: "Windows 11"
+date: "Mar 29, 2025"
+authorId: "james-holbrook"
+lastReviewed: "Mar 29, 2025"
+tags: ["Windows 11", "Group Policy", "ADMX", "Enterprise"]
+---
+
+## Rollout Status
+
+Windows 11 24H2 is now reaching **Autopilot-provisioned devices** and devices in the broad deployment ring on Windows Update for Business. Organisations that have not yet updated their ADMX templates and hardened baselines should do so before these devices start checking in.
+
+## New ADMX Entries to Know
+
+The 24H2 ADMX templates include several new policy areas that are likely to conflict with existing hardened baselines:
+
+### NPU and AI Feature Policies
+
+Windows 11 24H2 introduces Copilot+ PC capabilities tied to on-device neural processing. New ADMX categories have been added under `Computer Configuration\Administrative Templates\Windows Components\Windows AI`:
+
+- `Turn off Saving Snapshots for Windows Recall` — enable this in hardened environments. Recall stores screenshot snapshots locally; this policy disables the feature entirely.
+- `Turn off Click to Do` — disables the context-aware AI overlay.
+
+**Recommendation for hardened environments**: Enable both policies to remove AI features that may conflict with data handling policies.
+
+### Updated Edge Browser Policies
+
+Several Microsoft Edge policies have been deprecated in 24H2 in favour of newer equivalents:
+
+- `PreventSmartScreenPromptOverride` is deprecated — use `SmartScreenEnabled` and `SmartScreenPreventOverrideForFiles` instead.
+- `DefaultSearchProviderEnabled` behaviour has changed for managed devices.
+
+If you have CIS Level 1 or DISA STIG baselines deployed via Group Policy, review the Edge section for deprecated settings that will silently stop applying.
+
+### Deprecated Windows Settings
+
+The following settings from earlier ADMX templates no longer apply in 24H2:
+
+- `Allow Telemetry` values 0 and 1 have been consolidated — `0` (Security) is now `1` (Required). If you have a policy enforcing `0`, it will now have no effect.
+- `Configure Windows Spotlight on Lock Screen` has been moved and the old policy path is no longer processed.
+
+## Impact on CIS Benchmarks
+
+If your environment uses the **CIS Windows 11 Benchmark Level 1 or Level 2** baseline via Group Policy, you should:
+
+1. Download the updated CIS Windows 11 24H2 Benchmark (published March 2025) from the CIS website.
+2. Compare the new recommendations against your existing GPO settings using PolicyAnalyzer.
+3. Identify deprecated settings that will silently fail to apply — these create gaps in your hardened baseline.
+
+For Intune-managed devices, Microsoft has not yet released an updated Security Baseline for 24H2. The existing Windows 11 22H2 baseline will apply but will be missing 24H2-specific settings.
+
+## Action Items
+
+| Priority | Action |
+|---|---|
+| High | Update ADMX templates in SYSVOL/PolicyDefinitions to 24H2 versions |
+| High | Enable AI/Recall disable policies for hardened environments |
+| Medium | Review deprecated Edge policies in existing baselines |
+| Medium | Re-validate CIS baseline coverage against 24H2 changes |
+| Low | Update Intune baseline once Microsoft releases 24H2 Security Baseline |
+
+## Related Reading
+
+- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Invoke-WindowsHardening: Automated CIS hardening script](/scripts/invoke-windows-hardening)

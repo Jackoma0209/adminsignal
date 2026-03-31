@@ -1,0 +1,70 @@
+---
+title: "Microsoft Intune vs. SCCM/MECM in 2025: Which Should You Use?"
+category: "Endpoint Management"
+date: "Mar 24, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Mar 24, 2025"
+tags: ["Intune", "SCCM", "MECM", "Endpoint Management"]
+---
+
+## The Question Has Changed
+
+A few years ago, the question was "should we add Intune?" Today, for most organisations, the question is "how fast do we move away from SCCM?" The strategic direction from Microsoft is unambiguous: Intune is the future, SCCM is in maintenance mode.
+
+But "maintenance mode" does not mean "dead". There are specific scenarios where SCCM still genuinely earns its place in 2025. This comparison covers both the capability differences and the architectural considerations for migration planning.
+
+## Feature Comparison
+
+| Capability | Microsoft Intune | SCCM / MECM |
+|---|---|---|
+| OS deployment (bare metal) | Limited (Autopilot v2) | Full (PXE, task sequences, WinPE) |
+| Software distribution scale | Good (Win32, LOB, Microsoft Store) | Excellent (large packages, bandwidth throttling, BranchCache) |
+| Patch management | Good (WUfB integration, expedited rings) | Excellent (WSUS integration, detailed reporting, custom deadlines) |
+| Inventory and reporting | Good (Graph API reports, Endpoint Analytics) | Excellent (SQL-backed, fully customisable) |
+| Complex task sequences | Not supported | Full support |
+| Co-management | Supported | Required for co-management |
+| Cloud-native | Native | Not designed for cloud |
+| Identity requirement | Entra ID required | On-premises AD sufficient |
+| Infrastructure overhead | Near-zero | Significant (site servers, SQL, WSUS, DP) |
+| Licensing | Included in M365 E3/E5, Intune Plan 1/2 | Requires ConfigMgr licence (part of EMS or standalone) |
+
+## Where SCCM Still Wins
+
+**Large-scale OS deployment**: If you are regularly imaging hundreds or thousands of devices with complex task sequences (BitLocker pre-provisioning, driver injection, multi-step customisation), SCCM's OSD capability is still significantly more capable than Autopilot. Autopilot v2 has improved but requires pre-provisioned hardware and internet connectivity — neither of which works in all deployment scenarios.
+
+**Large package distribution**: SCCM's distribution point infrastructure (including BranchCache and Peer Cache) is designed for large payloads in bandwidth-constrained environments. Intune's Win32 app distribution works well for most software but does not have an equivalent to SCCM's optimised distribution hierarchy for very large packages (multi-GB application installs, OS upgrade packages).
+
+**Complex software dependency management**: SCCM's application model supports complex dependency chains, detection methods, and supersedence relationships that go beyond what Intune's Win32 app model supports today.
+
+**On-premises-only environments**: Organisations with air-gapped or internet-restricted networks cannot use Intune as a primary management plane without significant architectural changes.
+
+## Where Intune Wins
+
+**Cloud-native devices and remote workers**: Any device that is not permanently on-premises benefits enormously from Intune's cloud-native management plane. No VPN, no direct connectivity requirements, no infrastructure dependencies.
+
+**Zero-touch provisioning**: Autopilot (especially v2) provides a vastly better end-user provisioning experience than SCCM-based OSD for the scenarios it covers.
+
+**Operational overhead**: SCCM's infrastructure (site servers, distribution points, SQL, WSUS synchronisation, boundary groups) requires meaningful ongoing maintenance. Intune's operational overhead is close to zero.
+
+**Modern security controls**: Intune integrates natively with Defender for Endpoint, Conditional Access, Entra ID, and the Microsoft Purview compliance stack. These integrations are first-class in Intune and bolt-on in SCCM.
+
+**Licensing simplicity**: For organisations already on Microsoft 365 E3 or E5, Intune is included. SCCM requires either an EMS licence bundle or a standalone ConfigMgr licence.
+
+## The Migration Path
+
+Microsoft's co-management feature allows SCCM-managed devices to be co-managed by both SCCM and Intune simultaneously, with workload sliding between the two products on a per-capability basis. This is the recommended migration path:
+
+1. Enrol co-managed devices in Intune (retain SCCM)
+2. Slide workloads progressively to Intune: compliance policies first, then configuration profiles, then app management, then OSD (or accept SCCM for OSD long-term)
+3. Decommission SCCM infrastructure as workloads migrate
+
+For new device deployments, skip SCCM entirely — Autopilot + Intune is the right architecture.
+
+## Verdict
+
+For new deployments and cloud-first organisations, Intune is the clear path. SCCM still has a role where complex OSD, large software distribution, or significant on-premises infrastructure requirements exist — but plan your exit strategy. Microsoft's investment is firmly in the Intune direction.
+
+## Related Reading
+
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Understanding Autopilot v2](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)

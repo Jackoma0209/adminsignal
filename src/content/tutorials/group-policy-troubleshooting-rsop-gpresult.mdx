@@ -1,0 +1,115 @@
+---
+title: "Group Policy Troubleshooting with RSoP, gpresult, and Policy Scope Analysis"
+category: "Group Policy"
+date: "Feb 14, 2025"
+authorId: "james-holbrook"
+lastReviewed: "Feb 14, 2025"
+tags: ["Group Policy", "Active Directory", "Windows Server", "Troubleshooting"]
+---
+
+## The Diagnostic Sequence
+
+Group Policy troubleshooting has a reliable order of operations. Following it prevents wasted time on symptoms rather than causes.
+
+1. Confirm the policy is linked and enabled
+2. Confirm the object is in scope (correct OU, correct group)
+3. Confirm the policy is not being blocked or filtered
+4. Check the client event logs
+5. Use RSoP or gpresult to read the applied policy set
+
+Do not skip steps. "Did you try gpupdate /force?" is not a diagnostic methodology.
+
+## Step 1: Verify the GPO Link and Status
+
+In the Group Policy Management Console:
+
+1. Navigate to the OU where the GPO is linked.
+2. Confirm the GPO shows as **Enabled** (not disabled) in the link.
+3. Confirm the GPO itself is not disabled: Right-click the GPO > click **GPO Status** — it should be **All settings enabled** unless you intentionally disabled Computer or User settings.
+
+## Step 2: Verify Scope Filtering
+
+### Security filtering
+
+By default, the **Authenticated Users** group is in the security filter, which means the policy applies to all users and computers in the linked OU. If you have customised security filtering:
+
+1. Open the GPO > **Scope** tab > **Security Filtering**.
+2. Confirm the user or computer object is a member of any group listed.
+3. Also check **Delegation** tab: The group in the security filter needs both **Read** and **Apply Group Policy** permissions.
+
+### WMI filtering
+
+If a WMI filter is attached, the policy will not apply if the WMI query returns false. To test a WMI filter:
+
+```powershell
+# Test a WMI filter query manually
+Get-WmiObject -Query "SELECT * FROM Win32_OperatingSystem WHERE Version LIKE '10.%'"
+```
+
+If this returns no results on the target machine, the WMI filter is preventing the policy from applying.
+
+## Step 3: Check for Policy Inheritance Blocking
+
+Loopback processing, Enforced GPOs, and Block Inheritance can all affect what a client receives:
+
+- **Block Inheritance** on an OU prevents higher-level GPOs from applying (unless they are Enforced)
+- **Enforced** GPOs override Block Inheritance and cannot be filtered by security groups at child OUs
+- **Loopback processing** in Replace mode makes the user configuration from the computer's OU apply to all logged-on users, replacing user-OU policies
+
+To check: In GPMC, select the OU and look for the blue shield icon (Enforced) or the grey shield (Block Inheritance).
+
+## Using gpresult
+
+`gpresult` is the primary tool for reading the Resultant Set of Policy from the client side.
+
+### Generate an HTML report
+
+```cmd
+gpresult /H C:\Temp\gpresult.html /F
+```
+
+Open the HTML file in a browser. Look at:
+- **Applied GPOs**: GPOs that were applied
+- **Denied GPOs**: GPOs that were filtered (and the reason)
+- **The winning GPO**: For each setting, which GPO took precedence
+
+### Check for a specific user on the local machine
+
+```cmd
+gpresult /R /USER domain\username
+```
+
+### Check remotely (requires admin rights)
+
+```cmd
+gpresult /S COMPUTERNAME /H C:\Temp\remote-gpresult.html /F
+```
+
+## Reading the Event Log
+
+On the client, the GP event log is under:
+
+```
+Applications and Services Logs\Microsoft\Windows\GroupPolicy\Operational
+```
+
+Filter for:
+- **Event ID 7017**: Policy processing started
+- **Event ID 7016**: Completed security settings processing  
+- **Event ID 7016 with error code**: Failed to apply a specific CSE (Client Side Extension)
+- **Event ID 1129**: Policy processing failed because of no network connectivity (common with hybrid-joined devices)
+
+## Common Root Causes
+
+| Symptom | Likely cause |
+|---|---|
+| Policy in Denied GPOs, reason "Access Denied" | Object not in security filter group, or Read/Apply permissions missing |
+| Policy in Denied GPOs, reason "WMI Filter" | WMI filter returning false for this device |
+| Policy shows as Applied but setting not active | Another GPO with higher precedence overrides this setting |
+| gpresult shows no GPOs applied | Client not reaching a DC — check DNS and DC connectivity |
+| Computer policy not applying to users | Loopback processing not enabled, or policy linked to user OU instead of computer OU |
+
+## Related Resources
+
+- [Group Policy Not Applying to Users or Computers: Systematic Diagnosis](/troubleshooting/group-policy-not-applying-diagnosis)
+- [Windows 11 24H2 ADMX Template Changes](/news/windows-11-24h2-enterprise-gpo-changes)

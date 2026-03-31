@@ -1,0 +1,97 @@
+---
+title: "Windows Autopilot Enrollment Status Page Stuck at 0% — Causes and Fixes"
+category: "Microsoft Intune"
+date: "Mar 15, 2025"
+authorId: "sarah-chen"
+lastReviewed: "Mar 15, 2025"
+tags: ["Autopilot", "Intune", "Windows 11", "Enrollment"]
+---
+
+## When to Use This Guide
+
+Use this guide when:
+- The ESP shows "Setting up your device for work" and the progress bar never moves past 0%
+- The ESP shows 0% for more than 10 minutes
+- You see "Something went wrong" at the ESP phase of Autopilot provisioning
+
+Do not use this guide for ESP failures that occur after initial progress is shown — those are more likely app installation timeouts rather than the root causes covered here.
+
+## Quick Diagnostic: What Phase Is It Stuck In?
+
+Press **Ctrl+Shift+J** at the ESP screen to open the provisioning status page. This shows:
+
+- Which phase (Device preparation, Device setup, Account setup) is currently running
+- Which specific step within that phase is blocked
+- Whether any errors have been logged
+
+Identifying the stuck phase narrows the root cause significantly.
+
+## Cause 1: Device Cannot Reach Intune Endpoints
+
+The most common cause of 0% ESP is the device failing to authenticate with Intune services during OOBE.
+
+**How to confirm**: On the device, press **Shift+F10** to open a command prompt at the ESP screen. Run:
+
+```cmd
+ping graph.microsoft.com
+nslookup enterpriseregistration.windows.net
+```
+
+If either fails, the device has a network connectivity issue.
+
+**Common network issues**:
+- **Captive portal Wi-Fi**: The device needs network access before any browser is available. Use WPA2-Enterprise or a pre-shared key network during Autopilot provisioning.
+- **Proxy requiring authentication**: Windows OOBE does not send proxy credentials. Configure WPAD or use a transparent proxy.
+- **Firewall blocking required URLs**: Check the [Intune network requirements documentation](https://learn.microsoft.com/en-us/intune/fundamentals/intune-endpoints) and verify all required FQDNs are permitted.
+
+## Cause 2: Device Not Registered in Autopilot
+
+**How to confirm**: When the device reaches the "Let's set things up for your work or school" screen, press **Shift+F10** and run:
+
+```powershell
+Get-AutopilotEventLog | Select-Object -Last 20
+```
+
+Or check the Autopilot event log directly:
+
+```cmd
+eventvwr.msc
+# Navigate to: Applications and Services Logs > Microsoft > Windows > ModernDeployment-Diagnostics-Provider > Autopilot
+```
+
+Look for Event ID 108 (device not registered) or Event ID 110 (profile not assigned).
+
+**Fix**: Register the device in Autopilot via the Entra admin centre or re-import the hardware hash CSV.
+
+## Cause 3: Conditional Access Blocking OOBE
+
+CA policies that require a compliant device or MFA can block device enrollment during OOBE, because the device is not yet compliant at that stage.
+
+**Fix**: Exclude the **Microsoft Intune Enrollment** cloud app from any CA policies that require device compliance. Create a named location or user-based exclusion for the device setup period.
+
+## Cause 4: ESP Blocking on an App That Never Installs
+
+If the ESP has progressed past 0% but is blocking on a specific app:
+
+1. Check `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\IntuneManagementExtension.log`
+2. Look for the app name and any error codes
+
+Common app install failures:
+- **Error 0x87D1041C**: App not available/applicable for this device
+- **Error 0x80070005**: Access denied during installation (run as SYSTEM check)
+- **Timeout after 60 minutes**: ESP timeout exceeded — increase the timeout in the ESP profile
+
+## Escalation Path
+
+If you have exhausted these steps, collect the MDM diagnostic cab:
+
+```cmd
+mdmdiagnosticstool.exe -area Autopilot -cab C:\Temp\autopilot-diag.cab
+```
+
+Attach this file when opening a Microsoft Support case.
+
+## Related Resources
+
+- [Understanding Autopilot v2: Enrollment Profiles and ESP](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)

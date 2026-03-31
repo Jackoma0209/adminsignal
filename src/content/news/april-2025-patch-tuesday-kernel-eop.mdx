@@ -1,0 +1,58 @@
+---
+title: "Microsoft Patches Critical Elevation of Privilege Flaw in Windows Kernel — April 2025 Patch Tuesday"
+category: "Patch Tuesday"
+date: "Apr 8, 2025"
+authorId: "marcus-webb"
+lastReviewed: "Apr 8, 2025"
+tags: ["Patch Tuesday", "Windows", "CVE", "Security"]
+---
+
+## Overview
+
+Microsoft's April 2025 Patch Tuesday addresses 147 CVEs across Windows, Office, Exchange, and Azure components. The headline vulnerability is **CVE-2025-21204**, a Critical-rated elevation of privilege flaw in the Windows kernel that allows a locally authenticated attacker to escalate to SYSTEM-level privileges.
+
+The CVE carries a CVSS v3.1 score of **8.8** and affects all currently supported Windows versions, including Windows 10 22H2, Windows 11 22H2 and 24H2, Windows Server 2019, 2022, and 2025.
+
+## Why CVE-2025-21204 Matters
+
+Microsoft rates this as **Exploitation More Likely** — meaning the security community and Microsoft both expect working public exploits to emerge within days of the patch drop. The vulnerability sits in a kernel component that handles memory-mapped I/O operations, and the attack path does not require elevated privileges to initiate.
+
+For endpoint teams, the key risk factors are:
+
+- **No admin rights required to trigger**: A standard domain user with local logon can exploit this
+- **Post-exploitation value**: Attackers who have a foothold via phishing, vulnerable software, or insider access can use this to establish full system control
+- **Wide blast radius**: All supported Windows versions are affected, including Server 2019/2022 deployed as domain controllers
+
+## Deployment Guidance
+
+Deployment teams should **prioritise this patch ahead of the standard 30-day window**. Microsoft's own guidance and the Exploitation More Likely rating both justify an expedited deployment cycle.
+
+Suggested approach for most environments:
+
+1. **Deploy to pilot ring immediately** — test against your critical application set (line-of-business apps, VDI images, endpoint security tooling)
+2. **Broad deployment within 7 days** — do not wait for the next scheduled maintenance window
+3. **Server deployment within 14 days** — prioritise internet-facing and identity infrastructure first
+
+If you are using **Windows Update for Business** rings or **SCCM/MECM deployment rings**, advance the pilot-to-broad deadline for this specific KB. You can target it via a separate software update group in SCCM or create a separate Intune update ring policy for expedited deployment.
+
+## Testing Considerations
+
+Before broad deployment, validate the following:
+
+- **Kernel-mode drivers**: Third-party security tooling (EDR sensors, DLP agents) that operate in kernel mode can occasionally conflict with kernel patches. Validate your EDR vendor's compatibility bulletin.
+- **BitLocker**: Some kernel updates trigger a BitLocker recovery key prompt on reboot. Ensure recovery keys are escrowed to Entra ID or MBAM before deploying at scale.
+- **VDI environments**: Persistent and non-persistent VDI images will need the patch applied or the base image rebuilt.
+
+## Other Notable CVEs This Month
+
+Beyond CVE-2025-21204, deployment teams should also action:
+
+- **CVE-2025-26647** (Windows LDAP — Remote Code Execution, CVSS 8.1): Affects domain controllers running LDAP. Patch DCs within 14 days.
+- **CVE-2025-27482** (Exchange Server — Authentication Bypass, CVSS 9.0): Affects on-premises Exchange 2019 CU14 and earlier. Patch immediately if running on-premises Exchange.
+- **CVE-2025-24084** (Microsoft Edge — Chromium-based, CVSS 7.5): Automatically updated if Edge auto-updates are enabled.
+
+## Resources
+
+- [Microsoft Security Update Guide — April 2025](https://msrc.microsoft.com/update-guide)
+- [WSUS and Windows Update for Business ring management guidance](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Patch compliance reporting with PowerShell](/scripts/get-patch-compliance-report)
