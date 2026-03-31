@@ -47,7 +47,7 @@ export default function Header() {
           {/* Desktop CTA */}
           <div className="hidden items-center gap-3 md:flex">
             <Link
-              href="/newsletter"
+              href="/#newsletter"
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
             >
               Get the Newsletter
@@ -82,7 +82,7 @@ export default function Header() {
             ))}
             <div className="mt-2 border-t border-border pt-3">
               <Link
-                href="/newsletter"
+                href="/#newsletter"
                 className="block rounded-md bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-85"
                 onClick={() => setMobileOpen(false)}
               >

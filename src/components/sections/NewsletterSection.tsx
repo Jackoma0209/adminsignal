@@ -14,7 +14,7 @@ export default function NewsletterSection() {
   }
 
   return (
-    <section className="border-y border-border bg-surface/10 py-20">
+    <section id="newsletter" className="border-y border-border bg-surface/10 py-20">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft ring-1 ring-primary/20">

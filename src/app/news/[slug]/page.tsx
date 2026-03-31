@@ -119,7 +119,12 @@ export default async function NewsArticlePage({ params }: Props) {
               <header className="mb-8">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <Badge variant="category">{signal.category}</Badge>
-                  {signal.isNew && <Badge variant="new">New</Badge>}
+                  {signal.isNew && !signal.isDemo && <Badge variant="new">New</Badge>}
+                  {signal.isDemo && (
+                    <span className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
+                      Sample / Demo content
+                    </span>
+                  )}
                 </div>
                 <h1 className="mb-4 text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl lg:text-4xl">
                   {signal.title}
@@ -127,9 +132,25 @@ export default async function NewsArticlePage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
                   {author && <span>{author.name}</span>}
                   {author && <span aria-hidden="true">·</span>}
-                  <time dateTime={signal.date}>{signal.date}</time>
+                  <time dateTime={signal.publishedAt}>{signal.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{signal.readTime}</span>
+                  {signal.source && signal.sourceUrl && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <a
+                        href={signal.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-primary"
+                      >
+                        {signal.source}
+                      </a>
+                    </>
+                  )}
+                  {signal.source && !signal.sourceUrl && (
+                    <><span aria-hidden="true">·</span><span>{signal.source}</span></>
+                  )}
                 </div>
               </header>
 
