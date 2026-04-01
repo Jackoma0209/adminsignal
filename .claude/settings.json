@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"isDemo\\\\|demo\\\\|Demo\" c:/Apps/adminsignal/src/components/cards/SignalCard.tsx c:/Apps/adminsignal/src/app/news/[slug]/page.tsx)"
+    ]
+  }
+}

@@ -15,7 +15,10 @@ export interface Signal {
   sourceUrl?: string
   /** True when the content originates from or is verified against an official vendor source */
   isOfficial?: boolean
-  /** True when this item is sample/demo data not intended for production display */
+  /**
+   * True when this item is sample/placeholder data not intended for production display.
+   * Real items should omit this field or set it to false.
+   */
   isDemo?: boolean
   authorId?: string
   tags?: string[]
@@ -23,9 +26,21 @@ export interface Signal {
   isFeatured?: boolean
 }
 
-export const signals: Signal[] = [
+/**
+ * Live news items — genuinely current, clearly attributable official sources.
+ * Sorted newest-first. Add new items at the top.
+ * Leave empty until real current items are ready to publish.
+ */
+export const liveSignals: Signal[] = []
+
+/**
+ * Archival/demo items — real events from 2025 used as structural placeholders
+ * while the live feed is being populated. Shown with a demo banner.
+ * These have accurate source URLs and can serve as editorial templates.
+ */
+export const demoSignals: Signal[] = [
   {
-    id: '1',
+    id: 'demo-1',
     title: 'Microsoft Patches Critical Elevation of Privilege Flaw in Windows Kernel — April 2025 Patch Tuesday',
     slug: 'april-2025-patch-tuesday-kernel-eop',
     category: 'Patch Tuesday',
@@ -35,16 +50,15 @@ export const signals: Signal[] = [
     publishedAt: '2025-04-08',
     readTime: '4 min read',
     source: 'Microsoft Security Response Center',
-    sourceUrl: 'https://msrc.microsoft.com',
+    sourceUrl: 'https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-21204',
     isOfficial: true,
     isDemo: true,
     authorId: 'marcus-webb',
     tags: ['Patch Tuesday', 'Windows', 'CVE', 'Security'],
-    isNew: true,
     isFeatured: true,
   },
   {
-    id: '2',
+    id: 'demo-2',
     title: 'Intune Gains Native LAPS Integration for Microsoft Entra-Joined Devices',
     slug: 'intune-native-laps-entra-joined',
     category: 'Microsoft Intune',
@@ -54,7 +68,7 @@ export const signals: Signal[] = [
     publishedAt: '2025-04-02',
     readTime: '5 min read',
     source: 'Microsoft Tech Community',
-    sourceUrl: 'https://techcommunity.microsoft.com',
+    sourceUrl: 'https://techcommunity.microsoft.com/blog/microsoftentraidblog/microsoft-entra-id-and-microsoft-intune-support-for-windows-laps/4116521',
     isOfficial: true,
     isDemo: true,
     authorId: 'sarah-chen',
@@ -62,7 +76,7 @@ export const signals: Signal[] = [
     isFeatured: true,
   },
   {
-    id: '3',
+    id: 'demo-3',
     title: 'Windows 11 24H2 Enterprise Rollout Expands: GPO and ADMX Template Changes to Know',
     slug: 'windows-11-24h2-enterprise-gpo-changes',
     category: 'Windows 11',
@@ -80,7 +94,7 @@ export const signals: Signal[] = [
     isFeatured: true,
   },
   {
-    id: '4',
+    id: 'demo-4',
     title: 'CISA Issues Emergency Directive on Active Exploitation of Ivanti Connect Secure Vulnerabilities',
     slug: 'cisa-ivanti-connect-secure-exploit',
     category: 'Security Alert',
@@ -90,14 +104,14 @@ export const signals: Signal[] = [
     publishedAt: '2025-03-26',
     readTime: '3 min read',
     source: 'CISA',
-    sourceUrl: 'https://www.cisa.gov/news-events/directives',
+    sourceUrl: 'https://www.cisa.gov/news-events/directives/ed-25-01',
     isOfficial: true,
     isDemo: true,
     authorId: 'marcus-webb',
     tags: ['CISA', 'Ivanti', 'CVE', 'Security Alert'],
   },
   {
-    id: '5',
+    id: 'demo-5',
     title: 'CrowdStrike Releases Full Post-Incident Report: What Enterprise Security Teams Should Action',
     slug: 'crowdstrike-post-incident-report-analysis',
     category: 'Endpoint Security',
@@ -107,10 +121,18 @@ export const signals: Signal[] = [
     publishedAt: '2025-03-22',
     readTime: '8 min read',
     source: 'CrowdStrike',
-    sourceUrl: 'https://www.crowdstrike.com/blog',
+    sourceUrl: 'https://www.crowdstrike.com/blog/falcon-content-update-remediation-and-guidance-hub/',
     isOfficial: true,
     isDemo: true,
     authorId: 'marcus-webb',
     tags: ['CrowdStrike', 'EDR', 'Endpoint Security', 'Incident Response'],
   },
 ]
+
+/**
+ * The public feed consumed by all pages and components.
+ * Live items are shown without any banner.
+ * Falls back to demo items (shown with banner) when liveSignals is empty.
+ */
+export const signals: Signal[] =
+  liveSignals.length > 0 ? liveSignals : demoSignals

@@ -21,16 +21,19 @@ export default async function NewsPage({
 }) {
   const { category } = await searchParams
   const filtered = category ? signals.filter((s) => s.category === category) : signals
+  const allDemo = filtered.length > 0 && filtered.every((s) => s.isDemo)
 
   return (
     <>
-      <div className="border-b border-amber-500/20 bg-amber-500/5 py-2.5">
-        <Container>
-          <p className="text-center text-xs font-medium text-amber-400">
-            Demo content — articles on this page are sample data for development purposes only.
-          </p>
-        </Container>
-      </div>
+      {allDemo && (
+        <div className="border-b border-amber-500/20 bg-amber-500/5 py-2.5">
+          <Container>
+            <p className="text-center text-xs font-medium text-amber-400">
+              Archival content — this feed shows placeholder articles while the live news pipeline is being populated. Source links are real.
+            </p>
+          </Container>
+        </div>
+      )}
       <CategoryPageTemplate
         eyebrow="News & Alerts"
         title="IT News & Security Alerts"
