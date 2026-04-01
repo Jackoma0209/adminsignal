@@ -1,4 +1,3 @@
-import Script from 'next/script'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -38,6 +37,9 @@ export const metadata: Metadata = {
     siteName: 'AdminSignal',
     type: 'website',
   },
+  other: {
+    'google-adsense-account': 'ca-pub-5563142788194204',
+  },
 }
 
 export default function RootLayout({
@@ -47,18 +49,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-     <body className="flex min-h-full flex-col antialiased">
-  <Script
-    id="adsense-script"
-    strategy="beforeInteractive"
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5563142788194204"
-    crossOrigin="anonymous"
-  />
-  <GoogleAnalytics />
-  <Header />
-  <main className="flex-1">{children}</main>
-  <Footer />
-</body>
+      <body className="flex min-h-full flex-col antialiased">
+        <GoogleAnalytics />
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </body>
     </html>
   )
 }
