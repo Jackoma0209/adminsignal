@@ -1,3 +1,4 @@
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
@@ -45,11 +46,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-      <body className="flex min-h-full flex-col antialiased">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </body>
+     <body className="flex min-h-full flex-col antialiased">
+  <GoogleAnalytics />
+  <Header />
+  <main className="flex-1">{children}</main>
+  <Footer />
+</body>
     </html>
   )
 }
