@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: guide.title,
     description: guide.excerpt,
-    url: `https://adminsignal.com/tutorials/${slug}`,
+    url: `https://www.adminsignal.com/tutorials/${slug}`,
     category: guide.category,
     publishedTime: guide.publishedAt,
     tags: guide.tags,
@@ -77,13 +77,13 @@ export default async function TutorialPage({ params }: Props) {
     description: guide.excerpt,
     publishedTime: guide.publishedAt,
     authorName: author?.name,
-    url: `https://adminsignal.com/tutorials/${slug}`,
+    url: `https://www.adminsignal.com/tutorials/${slug}`,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://adminsignal.com' },
-    { name: 'Tutorials', url: 'https://adminsignal.com/tutorials' },
-    { name: guide.title, url: `https://adminsignal.com/tutorials/${slug}` },
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Tutorials', url: 'https://www.adminsignal.com/tutorials' },
+    { name: guide.title, url: `https://www.adminsignal.com/tutorials/${slug}` },
   ])
 
   const difficultyVariant: Record<typeof guide.difficulty, 'category' | 'difficulty' | 'language'> = {

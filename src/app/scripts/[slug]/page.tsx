@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: script.title,
     description: script.description,
-    url: `https://adminsignal.com/scripts/${slug}`,
+    url: `https://www.adminsignal.com/scripts/${slug}`,
     category: script.language,
   })
 }
@@ -61,14 +61,14 @@ export default async function ScriptDetailPage({ params }: Props) {
   const jsonLd = softwareApplicationSchema({
     name: script.title,
     description: script.description,
-    url: `https://adminsignal.com/scripts/${slug}`,
+    url: `https://www.adminsignal.com/scripts/${slug}`,
     applicationCategory: 'UtilitiesApplication',
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://adminsignal.com' },
-    { name: 'Scripts', url: 'https://adminsignal.com/scripts' },
-    { name: script.title, url: `https://adminsignal.com/scripts/${slug}` },
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Scripts', url: 'https://www.adminsignal.com/scripts' },
+    { name: script.title, url: `https://www.adminsignal.com/scripts/${slug}` },
   ])
 
   const languageVariant: Record<typeof script.language, 'category' | 'difficulty' | 'language' | 'new'> = {

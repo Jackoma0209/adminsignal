@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://adminsignal.com'),
+  metadataBase: new URL('https://www.adminsignal.com'),
   title: {
     default: 'AdminSignal — Intelligence for the Modern Sysadmin',
     template: '%s | AdminSignal',

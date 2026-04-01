@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: article.title,
     description: article.excerpt,
-    url: `https://adminsignal.com/troubleshooting/${slug}`,
+    url: `https://www.adminsignal.com/troubleshooting/${slug}`,
     category: article.category,
     publishedTime: article.publishedAt,
     authorName: author?.name,
@@ -75,13 +75,13 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
     description: article.excerpt,
     publishedTime: article.publishedAt,
     authorName: author?.name,
-    url: `https://adminsignal.com/troubleshooting/${slug}`,
+    url: `https://www.adminsignal.com/troubleshooting/${slug}`,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://adminsignal.com' },
-    { name: 'Troubleshooting', url: 'https://adminsignal.com/troubleshooting' },
-    { name: article.title, url: `https://adminsignal.com/troubleshooting/${slug}` },
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Troubleshooting', url: 'https://www.adminsignal.com/troubleshooting' },
+    { name: article.title, url: `https://www.adminsignal.com/troubleshooting/${slug}` },
   ])
 
   const difficultyVariant: Record<typeof article.difficulty, 'category' | 'difficulty' | 'language'> = {

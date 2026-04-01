@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: comparison.title,
     description: comparison.excerpt,
-    url: `https://adminsignal.com/comparisons/${slug}`,
+    url: `https://www.adminsignal.com/comparisons/${slug}`,
     category: comparison.category,
     publishedTime: comparison.publishedAt,
     authorName: author?.name,
@@ -76,13 +76,13 @@ export default async function ComparisonArticlePage({ params }: Props) {
     description: comparison.excerpt,
     publishedTime: comparison.publishedAt,
     authorName: author?.name,
-    url: `https://adminsignal.com/comparisons/${slug}`,
+    url: `https://www.adminsignal.com/comparisons/${slug}`,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://adminsignal.com' },
-    { name: 'Comparisons', url: 'https://adminsignal.com/comparisons' },
-    { name: comparison.title, url: `https://adminsignal.com/comparisons/${slug}` },
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Comparisons', url: 'https://www.adminsignal.com/comparisons' },
+    { name: comparison.title, url: `https://www.adminsignal.com/comparisons/${slug}` },
   ])
 
   return (

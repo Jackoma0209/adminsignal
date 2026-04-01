@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
 
 export const metadata: Metadata = {
-  alternates: { canonical: 'https://adminsignal.com' },
+  alternates: { canonical: 'https://www.adminsignal.com' },
   openGraph: {
-    url: 'https://adminsignal.com',
+    url: 'https://www.adminsignal.com',
     type: 'website',
   },
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const siteUrl = 'https://adminsignal.com'
+const siteUrl = 'https://www.adminsignal.com'
 const siteName = 'AdminSignal'
 
 export function buildArticleMetadata({

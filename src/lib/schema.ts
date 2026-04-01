@@ -36,7 +36,7 @@ export function articleSchema({
     publisher: {
       '@type': 'Organization',
       name: 'AdminSignal',
-      url: 'https://adminsignal.com',
+      url: 'https://www.adminsignal.com',
     },
     url,
     inLanguage: 'en-US',

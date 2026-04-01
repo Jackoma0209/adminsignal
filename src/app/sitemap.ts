@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { getContentSlugs } from '@/lib/content'
+import { liveSignals } from '@/data/signals'
 
-const BASE = 'https://adminsignal.com'
+const BASE = 'https://www.adminsignal.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
@@ -38,16 +39,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/terms`, priority: 0.3, changeFrequency: 'yearly' },
   ]
 
-  const contentTypes = [
+  const nonNewsTypes = [
     { type: 'tutorials', segment: 'tutorials', priority: 0.8 },
-    { type: 'news', segment: 'news', priority: 0.8 },
     { type: 'troubleshooting', segment: 'troubleshooting', priority: 0.8 },
     { type: 'scripts', segment: 'scripts', priority: 0.7 },
     { type: 'reviews', segment: 'reviews', priority: 0.7 },
     { type: 'comparisons', segment: 'comparisons', priority: 0.7 },
   ] as const
 
-  const dynamicRoutes: MetadataRoute.Sitemap = contentTypes.flatMap(
+  const nonNewsRoutes: MetadataRoute.Sitemap = nonNewsTypes.flatMap(
     ({ type, segment, priority }) =>
       getContentSlugs(type).map((slug) => ({
         url: `${BASE}/${segment}/${slug}`,
@@ -56,5 +56,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       }))
   )
 
-  return [...staticRoutes, ...dynamicRoutes]
+  // Only index live (non-demo) news articles
+  const newsRoutes: MetadataRoute.Sitemap = liveSignals.map((signal) => ({
+    url: `${BASE}/news/${signal.slug}`,
+    priority: 0.8,
+    changeFrequency: 'monthly' as const,
+    lastModified: signal.publishedAt,
+  }))
+
+  return [...staticRoutes, ...nonNewsRoutes, ...newsRoutes]
 }

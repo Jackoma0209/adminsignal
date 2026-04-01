@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: review.title,
     description: review.excerpt,
-    url: `https://adminsignal.com/reviews/${slug}`,
+    url: `https://www.adminsignal.com/reviews/${slug}`,
     category: review.category,
     publishedTime: review.publishedAt,
     authorName: author?.name,
@@ -98,7 +98,7 @@ export default async function ReviewArticlePage({ params }: Props) {
     description: review.excerpt,
     publishedTime: review.publishedAt,
     authorName: author?.name,
-    url: `https://adminsignal.com/reviews/${slug}`,
+    url: `https://www.adminsignal.com/reviews/${slug}`,
   })
 
   const jsonLdReview = reviewSchema({
@@ -111,9 +111,9 @@ export default async function ReviewArticlePage({ params }: Props) {
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://adminsignal.com' },
-    { name: 'Reviews', url: 'https://adminsignal.com/reviews' },
-    { name: review.title, url: `https://adminsignal.com/reviews/${slug}` },
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Reviews', url: 'https://www.adminsignal.com/reviews' },
+    { name: review.title, url: `https://www.adminsignal.com/reviews/${slug}` },
   ])
 
   const badgeVariant: Record<string, 'new' | 'difficulty' | 'category'> = {

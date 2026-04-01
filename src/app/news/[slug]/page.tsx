@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: signal.title,
     description: signal.excerpt,
-    url: `https://adminsignal.com/news/${slug}`,
+    url: `https://www.adminsignal.com/news/${slug}`,
     category: signal.category,
     publishedTime: signal.publishedAt,
     tags: signal.tags,
@@ -77,13 +77,13 @@ export default async function NewsArticlePage({ params }: Props) {
     description: signal.excerpt,
     publishedTime: signal.publishedAt,
     authorName: author?.name,
-    url: `https://adminsignal.com/news/${slug}`,
+    url: `https://www.adminsignal.com/news/${slug}`,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://adminsignal.com' },
-    { name: 'News', url: 'https://adminsignal.com/news' },
-    { name: signal.title, url: `https://adminsignal.com/news/${slug}` },
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'News', url: 'https://www.adminsignal.com/news' },
+    { name: signal.title, url: `https://www.adminsignal.com/news/${slug}` },
   ])
 
   return (
