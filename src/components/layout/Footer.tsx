@@ -39,6 +39,7 @@ const footerLinks = [
       { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
       { label: 'Editorial Policy', href: '/editorial-policy' },
+      { label: 'Affiliate Disclosure', href: '/affiliate-disclosure' },
       { label: 'Advertise', href: '/advertise' },
     ],
   },
@@ -103,6 +104,9 @@ export default function Footer() {
             </Link>
             <Link href="/editorial-policy" className="text-sm text-muted/60 hover:text-foreground-soft">
               Editorial Policy
+            </Link>
+            <Link href="/affiliate-disclosure" className="text-sm text-muted/60 hover:text-foreground-soft">
+              Affiliate Disclosure
             </Link>
           </div>
         </div>
