@@ -1,4 +1,14 @@
+import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
+
+export const metadata: Metadata = {
+  alternates: { canonical: 'https://adminsignal.com' },
+  openGraph: {
+    url: 'https://adminsignal.com',
+    type: 'website',
+  },
+}
+
 import ValuePropSection from '@/components/sections/ValuePropSection'
 import TrustStripSection from '@/components/sections/TrustStripSection'
 import FeaturedSignalsSection from '@/components/sections/FeaturedSignalsSection'

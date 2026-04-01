@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: guide.title,
     description: guide.excerpt,
+    url: `https://adminsignal.com/tutorials/${slug}`,
     category: guide.category,
     publishedTime: guide.date,
     tags: guide.tags,

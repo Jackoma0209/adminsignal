@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: signal.title,
     description: signal.excerpt,
+    url: `https://adminsignal.com/news/${slug}`,
     category: signal.category,
     publishedTime: signal.date,
     tags: signal.tags,

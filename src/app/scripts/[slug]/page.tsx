@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return buildArticleMetadata({
     title: script.title,
     description: script.description,
+    url: `https://adminsignal.com/scripts/${slug}`,
     category: script.language,
   })
 }

@@ -6,6 +6,7 @@ const siteName = 'AdminSignal'
 export function buildArticleMetadata({
   title,
   description,
+  url,
   category,
   publishedTime,
   modifiedTime,
@@ -14,6 +15,7 @@ export function buildArticleMetadata({
 }: {
   title: string
   description: string
+  url?: string
   category?: string
   publishedTime?: string
   modifiedTime?: string
@@ -24,11 +26,13 @@ export function buildArticleMetadata({
     title,
     description,
     keywords: tags,
+    ...(url && { alternates: { canonical: url } }),
     openGraph: {
       title,
       description,
       type: 'article',
       siteName,
+      url,
       publishedTime,
       modifiedTime,
       section: category,
