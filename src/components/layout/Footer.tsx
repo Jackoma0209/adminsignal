@@ -37,6 +37,9 @@ const footerLinks = [
     heading: 'Company',
     links: [
       { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+      { label: 'Editorial Policy', href: '/editorial-policy' },
+      { label: 'Advertise', href: '/advertise' },
     ],
   },
 ]
@@ -92,8 +95,14 @@ export default function Footer() {
             © {new Date().getFullYear()} AdminSignal. All rights reserved.
           </p>
           <div className="flex gap-6">
-            <Link href="/about" className="text-sm text-muted/60 hover:text-foreground-soft">
-              About
+            <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">
+              Privacy
+            </Link>
+            <Link href="/terms" className="text-sm text-muted/60 hover:text-foreground-soft">
+              Terms
+            </Link>
+            <Link href="/editorial-policy" className="text-sm text-muted/60 hover:text-foreground-soft">
+              Editorial Policy
             </Link>
           </div>
         </div>
