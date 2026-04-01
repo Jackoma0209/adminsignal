@@ -1,0 +1,34 @@
+---
+title: "Windows App Updates: Remote Desktop Client for Windows (MSI) and Web Client Deprecated in Commercial Clouds"
+category: "Windows 365 / Remote Access"
+date: "Mar 30, 2026"
+lastReviewed: "Mar 30, 2026"
+tags: ["Windows App", "Remote Desktop", "Windows 365", "Commercial Cloud"]
+---
+
+## Remote Desktop Clients Are No Longer Supported
+
+Effective **March 27, 2026**, the following clients are no longer supported in Microsoft commercial cloud environments:
+
+- **Remote Desktop client for Windows (MSI)** — the traditional MSTSC-based installer package
+- **Remote Desktop web client** — the browser-based RD Web Access client
+
+Microsoft's direction is to migrate to the **Windows App** as the single client for accessing Azure Virtual Desktop, Windows 365, and Remote Desktop Services in commercial cloud scenarios.
+
+## Windows App Improvements in This Update
+
+The March 2026 Windows App update also introduces several reliability and security improvements highlighted in the Microsoft post, including:
+
+- **Keyboard input protection** — an updated security control for remote sessions
+- Productivity and reliability fixes across the Windows App client
+
+## What Endpoint and EUC Teams Should Do
+
+1. **Inventory current RD client usage.** Identify users and managed devices still using the MSI-based Remote Desktop client or accessing resources via the RD web client.
+2. **Deploy Windows App to affected devices via Intune or SCCM.** The Windows App is available from the Microsoft Store and as a deployable package.
+3. **Update user-facing guidance and helpdesk documentation** to reference the Windows App rather than legacy client paths.
+4. **Test session host compatibility** with the Windows App before cutting over user populations, particularly for RemoteApp and full desktop scenarios.
+
+## Source
+
+This guidance is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-app-updates-reliability-productivity-and-security-improvements/4494681) published by Microsoft on March 30, 2026.

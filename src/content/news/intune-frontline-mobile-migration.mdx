@@ -1,0 +1,56 @@
+---
+title: "Migrating Frontline Mobile Devices: A Frontline-First Approach to Moving to Microsoft Intune"
+category: "Microsoft Intune"
+date: "Mar 30, 2026"
+lastReviewed: "Mar 30, 2026"
+tags: ["Intune", "Frontline Workers", "Mobile", "Migration"]
+---
+
+## Overview
+
+Migrating a frontline mobile fleet is a different challenge from migrating corporate laptops. Frontline devices — shared Android or iOS handhelds used in warehouses, retail, healthcare, or field operations — have distinct reliability requirements, app dependencies, and operational constraints. Microsoft's Intune Customer Success team has published practical migration guidance taking a frontline-first perspective.
+
+## Key Focus Areas
+
+### Reliability
+
+Frontline workers depend on their devices staying functional during shifts. The guidance emphasises planning migrations to minimise downtime, including:
+
+- Staging migrations outside peak operational hours
+- Validating that enrolled devices reach a fully functional state before handing back to workers
+- Having a rollback or re-enrolment path ready if a migration step fails mid-shift
+
+### App Continuity
+
+Apps used by frontline workers — task management, communication, inventory, and line-of-business applications — must be present and functional after migration. The guidance recommends:
+
+- Mapping all apps currently deployed on the source MDM platform before migration begins
+- Confirming Intune app deployment and configuration is validated on a pilot group before wide rollout
+- Handling apps that require device-specific licensing or per-device activation separately
+
+### Connectivity
+
+Frontline devices often connect to dedicated Wi-Fi infrastructure with certificate-based authentication. Migration planning must account for:
+
+- Deploying Wi-Fi profiles via Intune before or during migration so devices do not lose network access
+- Validating that SCEP or PKCS certificate profiles are provisioned and trusted before cutting over
+
+### Certificate Dependencies
+
+Many frontline environments use certificates for Wi-Fi, VPN, or app authentication. The guidance calls out the importance of:
+
+- Identifying all certificate requirements ahead of migration
+- Ensuring the Intune Certificate Connector or NDES infrastructure is in place and tested
+- Sequencing certificate profile deployment ahead of dependent Wi-Fi or VPN profile deployment
+
+### Infrastructure Dependencies
+
+Beyond devices, the migration may require changes to or validation of:
+
+- Network infrastructure (RADIUS, NDES, proxy settings)
+- Conditional Access policies that would apply to newly enrolled devices
+- Integration with any MDM-connected business systems
+
+## Source
+
+This guidance is based on the official [Intune Customer Success blog post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/migrating-frontline-mobile-devices-a-frontline-first-approach-to-moving-to-micro/4501347) published by Microsoft on March 30, 2026.

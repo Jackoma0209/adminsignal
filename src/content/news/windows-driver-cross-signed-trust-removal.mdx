@@ -1,0 +1,35 @@
+---
+title: "Advancing Windows Driver Security: Removing Trust for the Cross-Signed Driver Program"
+category: "Windows Security"
+date: "Mar 26, 2026"
+lastReviewed: "Mar 26, 2026"
+tags: ["Windows Security", "Drivers", "Windows 11", "Windows Server 2025"]
+---
+
+## What Is Changing
+
+Microsoft is removing trust for kernel-mode drivers signed under the deprecated cross-signed root certificate program. This change ships in the **April 2026 Windows cumulative update** and affects:
+
+- Windows 11 24H2, 25H2, and 26H1
+- Windows Server 2025
+
+The rollout begins in **evaluation mode**, which means Windows will log events for drivers that would be blocked but will not yet enforce blocking. This gives organisations a window to identify affected drivers before enforcement is enabled in a later update.
+
+## Why This Matters
+
+The cross-signed driver program predates the Windows Hardware Compatibility Program (WHCP) requirements for Extended Validation (EV) code signing and WHQL certification. Drivers signed only under the older cross-signed root are no longer meeting the bar Microsoft sets for kernel trust.
+
+Removing that trust reduces the attack surface for driver-based exploits — a common persistence and privilege escalation vector in both targeted attacks and commodity malware.
+
+## What to Do Now
+
+While the system is in evaluation mode:
+
+1. **Review Event Viewer** for driver trust evaluation events after applying the April 2026 update. Look for events indicating a driver would be blocked under the new policy.
+2. **Audit third-party drivers** — particularly legacy hardware drivers, security tools, and any in-house signed kernel components — and confirm they hold valid WHQL or EV-signed certificates.
+3. **Contact vendors** for any driver that surfaces in the evaluation logs. Vendors should already have WHCP-compliant replacements; if they do not, factor replacement timelines into your update ring planning.
+4. **Do not defer the April 2026 update** solely to avoid this change. Use the evaluation period productively rather than delaying exposure.
+
+## Source
+
+This guidance is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/advancing-windows-driver-security-removing-trust-for-the-cross-signed-driver-pro/4504818) published by Microsoft on March 26, 2026.

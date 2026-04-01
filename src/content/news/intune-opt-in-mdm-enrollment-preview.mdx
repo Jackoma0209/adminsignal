@@ -1,0 +1,33 @@
+---
+title: "Rethinking \"Allow My Organisation to Manage My Device\" — Why Opt-In Enrollment Works Better for Intune"
+category: "Microsoft Intune"
+date: "Mar 5, 2026"
+lastReviewed: "Mar 5, 2026"
+tags: ["Intune", "MDM", "BYOD", "Enrollment"]
+---
+
+## The Problem: Unintended Automatic MDM Enrollment
+
+When a user signs into a Windows device with a work or school account using the modern app sign-in flow, Windows can automatically trigger MDM enrollment into the organisation's Intune tenant. In mixed-ownership environments — BYOD, shared devices, or multi-tenant organisations — this automatic enrollment can enrol devices that were never intended to be managed, causing support overhead and unexpected policy application.
+
+## The New Preview Toggle
+
+Microsoft has introduced a **public preview toggle** in the Intune admin centre that allows administrators to **block automatic MDM enrollment** during the Windows modern app sign-in flow.
+
+With this control enabled, MDM enrollment becomes opt-in: it happens only through explicit enrollment actions rather than being silently triggered at sign-in. Users or administrators must take a deliberate step to enrol a device.
+
+## Scenarios Where This Matters
+
+- **BYOD programmes** — employees signing into corporate apps on personal devices should not have those devices automatically managed
+- **Mixed device ownership** — environments where both corporate-owned and personally-owned devices are in use need a way to ensure only intended devices enter management
+- **Multi-tenant organisations** — users who have accounts in multiple tenants may inadvertently trigger enrollment into a secondary tenant when signing in
+
+## What to Review
+
+1. Evaluate whether automatic enrollment via modern app sign-in is appropriate for your environment
+2. If BYOD or mixed ownership is in scope, consider enabling the preview toggle to shift enrollment to an explicit opt-in flow
+3. Update your enrollment documentation and user communications if you change this setting, so users understand how to enrol intentionally when needed
+
+## Source
+
+This guidance is based on the official [Intune Customer Success blog post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766) published by Microsoft on March 5, 2026.

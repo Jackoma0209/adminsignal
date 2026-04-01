@@ -1,0 +1,40 @@
+---
+title: "Best Practices for Securing Microsoft Intune"
+category: "Microsoft Intune"
+date: "Mar 14, 2026"
+lastReviewed: "Mar 14, 2026"
+tags: ["Intune", "Security", "Zero Trust", "Admin Roles"]
+---
+
+## Overview
+
+Microsoft's Intune Customer Success team has published a security hardening guide for Intune tenants. The guidance focuses on three core areas: administrative privilege hygiene, authentication security, and change control for sensitive operations.
+
+## Least Privilege for Admin Roles
+
+Over-privileged admin accounts are a significant risk in Intune tenants. The guidance recommends:
+
+- Assign built-in Intune roles with the minimum permissions required for each function rather than defaulting to the Global Administrator or Intune Administrator roles
+- Use **custom roles** to scope permissions precisely when built-in roles are broader than needed
+- Regularly review role assignments and remove stale or unnecessary delegations
+- Separate day-to-day operational roles from emergency access accounts
+
+## Phishing-Resistant Authentication and Privileged Access Hygiene
+
+All Intune administrators should be protected by phishing-resistant MFA. The guidance specifically calls out:
+
+- **FIDO2 security keys** or **Windows Hello for Business** as preferred authentication methods for admin accounts
+- Avoiding SMS and voice call MFA for privileged identities
+- Applying Conditional Access policies that enforce compliant devices and phishing-resistant authentication for Intune portal access
+- Using **Privileged Identity Management (PIM)** in Microsoft Entra ID to require just-in-time activation for sensitive Intune roles rather than permanent role assignments
+
+## Multi Admin Approval for Sensitive Changes
+
+The guide highlights **Multi Admin Approval (MAA)** as a control for high-impact Intune operations. When configured:
+
+- Sensitive changes — such as modifying compliance policies, wipe commands, or assignment group membership — require approval from a second administrator before taking effect
+- This creates an audit trail and a check against both insider risk and compromised admin accounts
+
+## Source
+
+This guidance is based on the official [Intune Customer Success blog post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/best-practices-for-securing-microsoft-intune/4502117) published by Microsoft on March 14, 2026.
