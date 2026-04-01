@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: guide.excerpt,
     url: `https://adminsignal.com/tutorials/${slug}`,
     category: guide.category,
-    publishedTime: guide.date,
+    publishedTime: guide.publishedAt,
     tags: guide.tags,
     authorName: author?.name,
   })
@@ -75,7 +75,7 @@ export default async function TutorialPage({ params }: Props) {
   const jsonLd = articleSchema({
     title: guide.title,
     description: guide.excerpt,
-    publishedTime: guide.date,
+    publishedTime: guide.publishedAt,
     authorName: author?.name,
     url: `https://adminsignal.com/tutorials/${slug}`,
   })
@@ -126,7 +126,7 @@ export default async function TutorialPage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
                   {author && <span>{author.name}</span>}
                   {author && <span aria-hidden="true">·</span>}
-                  <time dateTime={guide.date}>{guide.date}</time>
+                  <time dateTime={guide.publishedAt}>{guide.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{guide.readTime}</span>
                 </div>

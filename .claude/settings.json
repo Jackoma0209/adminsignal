@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(grep -n \"isDemo\\\\|demo\\\\|Demo\" c:/Apps/adminsignal/src/components/cards/SignalCard.tsx c:/Apps/adminsignal/src/app/news/[slug]/page.tsx)"
+      "Bash(grep -n \"isDemo\\\\|demo\\\\|Demo\" c:/Apps/adminsignal/src/components/cards/SignalCard.tsx c:/Apps/adminsignal/src/app/news/[slug]/page.tsx)",
+      "Bash(grep -n \"publishedTime\\\\|publishedAt\\\\|\\\\.date\" c:/Apps/adminsignal/src/app/news/[slug]/page.tsx c:/Apps/adminsignal/src/app/tutorials/[slug]/page.tsx c:/Apps/adminsignal/src/app/comparisons/[slug]/page.tsx c:/Apps/adminsignal/src/app/reviews/[slug]/page.tsx c:/Apps/adminsignal/src/app/troubleshooting/[slug]/page.tsx)"
     ]
   }
 }

@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: review.excerpt,
     url: `https://adminsignal.com/reviews/${slug}`,
     category: review.category,
-    publishedTime: review.date,
+    publishedTime: review.publishedAt,
     authorName: author?.name,
   })
 }
@@ -96,7 +96,7 @@ export default async function ReviewArticlePage({ params }: Props) {
   const jsonLdArticle = articleSchema({
     title: review.title,
     description: review.excerpt,
-    publishedTime: review.date,
+    publishedTime: review.publishedAt,
     authorName: author?.name,
     url: `https://adminsignal.com/reviews/${slug}`,
   })
@@ -107,7 +107,7 @@ export default async function ReviewArticlePage({ params }: Props) {
     ratingValue: review.rating,
     reviewBody: review.verdict,
     authorName: author?.name ?? 'AdminSignal',
-    datePublished: review.date,
+    datePublished: review.publishedAt,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
@@ -159,7 +159,7 @@ export default async function ReviewArticlePage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
                   {author && <span>{author.name}</span>}
                   {author && <span aria-hidden="true">·</span>}
-                  <time dateTime={review.date}>{review.date}</time>
+                  <time dateTime={review.publishedAt}>{review.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{review.readTime}</span>
                 </div>

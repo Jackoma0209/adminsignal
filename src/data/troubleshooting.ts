@@ -7,6 +7,7 @@ export interface TroubleshootingArticle {
   affectedProducts: string[]
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
   date: string
+  publishedAt: string
   readTime: string
   authorId: string
   isFeatured?: boolean
@@ -23,6 +24,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     affectedProducts: ['Windows Autopilot', 'Microsoft Intune', 'Windows 11'],
     difficulty: 'Intermediate',
     date: 'Mar 15, 2025',
+    publishedAt: '2025-03-15',
     readTime: '10 min read',
     authorId: 'sarah-chen',
     isFeatured: true,
@@ -37,6 +39,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     affectedProducts: ['Windows Server', 'Active Directory', 'Group Policy'],
     difficulty: 'Beginner',
     date: 'Mar 5, 2025',
+    publishedAt: '2025-03-05',
     readTime: '8 min read',
     authorId: 'james-holbrook',
     isFeatured: true,
@@ -51,6 +54,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     affectedProducts: ['Microsoft Intune', 'Entra ID', 'Windows 11'],
     difficulty: 'Intermediate',
     date: 'Feb 24, 2025',
+    publishedAt: '2025-02-24',
     readTime: '9 min read',
     authorId: 'sarah-chen',
     isFeatured: true,
@@ -65,6 +69,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     affectedProducts: ['BitLocker', 'Microsoft Intune', 'Entra ID'],
     difficulty: 'Intermediate',
     date: 'Feb 12, 2025',
+    publishedAt: '2025-02-12',
     readTime: '7 min read',
     authorId: 'marcus-webb',
   },
@@ -78,6 +83,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     affectedProducts: ['Windows Update for Business', 'Group Policy', 'Intune'],
     difficulty: 'Beginner',
     date: 'Jan 30, 2025',
+    publishedAt: '2025-01-30',
     readTime: '6 min read',
     authorId: 'james-holbrook',
   },

@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: comparison.excerpt,
     url: `https://adminsignal.com/comparisons/${slug}`,
     category: comparison.category,
-    publishedTime: comparison.date,
+    publishedTime: comparison.publishedAt,
     authorName: author?.name,
   })
 }
@@ -74,7 +74,7 @@ export default async function ComparisonArticlePage({ params }: Props) {
   const jsonLd = articleSchema({
     title: comparison.title,
     description: comparison.excerpt,
-    publishedTime: comparison.date,
+    publishedTime: comparison.publishedAt,
     authorName: author?.name,
     url: `https://adminsignal.com/comparisons/${slug}`,
   })
@@ -118,7 +118,7 @@ export default async function ComparisonArticlePage({ params }: Props) {
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
                   {author && <span>{author.name}</span>}
                   {author && <span aria-hidden="true">·</span>}
-                  <time dateTime={comparison.date}>{comparison.date}</time>
+                  <time dateTime={comparison.publishedAt}>{comparison.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{comparison.readTime}</span>
                 </div>

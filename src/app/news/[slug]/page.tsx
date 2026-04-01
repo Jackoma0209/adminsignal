@@ -5,6 +5,7 @@ import { signals } from '@/data/signals'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
+import { isRecentItem } from '@/lib/utils'
 import { articleSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -32,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: signal.excerpt,
     url: `https://adminsignal.com/news/${slug}`,
     category: signal.category,
-    publishedTime: signal.date,
+    publishedTime: signal.publishedAt,
     tags: signal.tags,
     authorName: author?.name,
   })
@@ -74,7 +75,7 @@ export default async function NewsArticlePage({ params }: Props) {
   const jsonLdArticle = articleSchema({
     title: signal.title,
     description: signal.excerpt,
-    publishedTime: signal.date,
+    publishedTime: signal.publishedAt,
     authorName: author?.name,
     url: `https://adminsignal.com/news/${slug}`,
   })
@@ -120,7 +121,7 @@ export default async function NewsArticlePage({ params }: Props) {
               <header className="mb-8">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <Badge variant="category">{signal.category}</Badge>
-                  {signal.isNew && !signal.isDemo && <Badge variant="new">New</Badge>}
+                  {!signal.isDemo && isRecentItem(signal.publishedAt) && <Badge variant="new">New</Badge>}
                   {signal.isDemo && (
                     <span className="rounded border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-400">
                       Sample / Demo content

@@ -9,6 +9,7 @@ export interface Comparison {
   winner?: string
   verdict: string
   date: string
+  publishedAt: string
   readTime: string
   authorId: string
   isFeatured?: boolean
@@ -28,6 +29,7 @@ export const comparisons: Comparison[] = [
     verdict:
       'For new deployments and cloud-first organisations, Intune is the clear path. SCCM still has a role in environments with complex OSD requirements, large software distribution needs, or significant on-premises infrastructure — but plan your exit strategy.',
     date: 'Mar 24, 2025',
+    publishedAt: '2025-03-24',
     readTime: '12 min read',
     authorId: 'sarah-chen',
     isFeatured: true,
@@ -44,6 +46,7 @@ export const comparisons: Comparison[] = [
     verdict:
       'For Microsoft-only environments already on E5 licensing, Defender for Endpoint is compelling and economical. CrowdStrike wins on threat intelligence, cross-platform coverage, and speed of response in hybrid environments.',
     date: 'Mar 10, 2025',
+    publishedAt: '2025-03-10',
     readTime: '11 min read',
     authorId: 'marcus-webb',
     isFeatured: true,
@@ -61,6 +64,7 @@ export const comparisons: Comparison[] = [
     verdict:
       'If you have privileged accounts, external access, or compliance requirements around access certification, P2 pays back in risk reduction and audit defensibility. For smaller tenants without those drivers, P1 covers the Conditional Access and SSPR fundamentals well.',
     date: 'Feb 20, 2025',
+    publishedAt: '2025-02-20',
     readTime: '8 min read',
     authorId: 'priya-nair',
     isFeatured: true,

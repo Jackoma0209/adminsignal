@@ -2,12 +2,15 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { type Signal } from '@/data/signals'
+import { isRecentItem } from '@/lib/utils'
 
 interface SignalCardProps {
   signal: Signal
 }
 
 export default function SignalCard({ signal }: SignalCardProps) {
+  const isNew = !signal.isDemo && isRecentItem(signal.publishedAt)
+
   return (
     <article className="group flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-card transition-colors hover:border-border-strong hover:bg-surface-elevated/40">
       <div className="flex items-start justify-between gap-3">
@@ -18,7 +21,7 @@ export default function SignalCard({ signal }: SignalCardProps) {
               Demo
             </span>
           )}
-          {signal.isNew && !signal.isDemo && <Badge variant="new">New</Badge>}
+          {isNew && <Badge variant="new">New</Badge>}
         </div>
       </div>
 

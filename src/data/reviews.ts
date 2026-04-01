@@ -10,6 +10,7 @@ export interface Review {
   cons: string[]
   verdict: string
   date: string
+  publishedAt: string
   readTime: string
   authorId: string
   badge?: 'Editors Choice' | 'Best Value' | 'Recommended'
@@ -40,6 +41,7 @@ export const reviews: Review[] = [
     verdict:
       'Falcon Go is a credible choice for SMBs that have outgrown basic AV but cannot justify full Enterprise pricing. The sensor quality and detection engine are the same — what you lose is depth of investigation and customisation.',
     date: 'Mar 18, 2025',
+    publishedAt: '2025-03-18',
     readTime: '8 min read',
     authorId: 'marcus-webb',
     badge: 'Recommended',
@@ -67,6 +69,7 @@ export const reviews: Review[] = [
     verdict:
       "If you're managing more than 50 AVD sessions, Nerdio pays for itself in reduced operational overhead within the first month. The Intune integration is tighter than most competitors.",
     date: 'Feb 28, 2025',
+    publishedAt: '2025-02-28',
     readTime: '10 min read',
     authorId: 'sarah-chen',
     badge: 'Editors Choice',
@@ -94,6 +97,7 @@ export const reviews: Review[] = [
     verdict:
       'Veeam remains the benchmark for M365 backup. The granular recovery options and storage flexibility make it the default recommendation for any organisation that has done an honest audit of what Microsoft actually retains.',
     date: 'Feb 10, 2025',
+    publishedAt: '2025-02-10',
     readTime: '9 min read',
     authorId: 'priya-nair',
     badge: 'Editors Choice',
