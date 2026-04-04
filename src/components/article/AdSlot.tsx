@@ -1,3 +1,5 @@
+import { adsEnabled } from '@/lib/consent'
+
 interface AdSlotProps {
   variant?: 'banner' | 'sidebar'
   className?: string
@@ -18,8 +20,9 @@ export default function AdSlot({ variant = 'banner', className, adClient, adSlot
   const isBanner = variant === 'banner'
   const sizeClass = isBanner ? 'h-24 w-full' : 'h-64 w-full'
 
-  // Live AdSense unit — swap in adClient + adSlot to activate
-  if (adClient && adSlot) {
+  // Live AdSense unit — requires adsEnabled flag + valid adClient + adSlot.
+  // Set NEXT_PUBLIC_ADS_ENABLED=true and wire a CMP before activating.
+  if (adsEnabled && adClient && adSlot) {
     return (
       <div className={[sizeClass, className].filter(Boolean).join(' ')} aria-label="Advertisement">
         <ins

@@ -1,9 +1,11 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { analyticsEnabled, CONSENT_DEFAULTS } from '@/lib/consent'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -50,6 +52,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
       <body className="flex min-h-full flex-col antialiased">
+        {analyticsEnabled && (
+          <Script id="consent-defaults" strategy="beforeInteractive">{`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('consent', 'default', ${JSON.stringify(CONSENT_DEFAULTS)});
+          `}</Script>
+        )}
         <GoogleAnalytics />
         <Header />
         <main className="flex-1">{children}</main>
