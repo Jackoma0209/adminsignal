@@ -27,6 +27,7 @@ export default async function ReviewsPage({
       title="Tool & Product Reviews"
       description="Practitioner reviews of endpoint security, management, and Microsoft 365 tools. Real deployments, honest verdicts."
       itemCount={reviews.length}
+      itemLabel="reviews"
       categories={categories}
       activeCategory={category}
       basePath="/reviews"

@@ -6,6 +6,7 @@ interface CategoryPageTemplateProps {
   title: string
   description: string
   itemCount: number
+  itemLabel?: string
   categories?: string[]
   activeCategory?: string
   basePath: string
@@ -17,6 +18,7 @@ export default function CategoryPageTemplate({
   title,
   description,
   itemCount,
+  itemLabel = 'articles',
   categories,
   activeCategory,
   basePath,
@@ -34,7 +36,7 @@ export default function CategoryPageTemplate({
             {title}
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
-          <p className="mt-4 text-xs text-muted/60">{itemCount} articles</p>
+          <p className="mt-4 text-xs text-muted/60">{itemCount} {itemLabel}</p>
         </Container>
       </div>
 

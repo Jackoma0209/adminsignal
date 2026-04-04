@@ -15,7 +15,7 @@ export default function RecommendedToolsSection() {
           description="Practitioner-reviewed. No affiliate fluff — just the tools that show up in real sysadmin toolkits."
           action={
             <Link
-              href="/tools"
+              href="/best-tools"
               className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
             >
               View all tools

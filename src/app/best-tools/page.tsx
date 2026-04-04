@@ -27,6 +27,7 @@ export default async function BestToolsPage({
       title="Best Tools for Sysadmins"
       description="Practitioner-curated recommendations from the AdminSignal team. No affiliate fluff — just the tools that show up in real sysadmin toolkits on hard days."
       itemCount={tools.length}
+      itemLabel="tools"
       categories={categories}
       activeCategory={category}
       basePath="/best-tools"
