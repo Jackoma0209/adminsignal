@@ -57,23 +57,10 @@ export default function HeroSection() {
             </Link>
           </div>
 
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm">
-            <div className="flex items-center gap-2 text-muted">
-              <span className="font-semibold text-primary">2,400+</span>
-              technical articles
-            </div>
-            <div className="hidden h-4 w-px bg-border-strong sm:block" aria-hidden="true" />
-            <div className="flex items-center gap-2 text-muted">
-              <span className="font-semibold text-primary">180+</span>
-              ready-to-use scripts
-            </div>
-            <div className="hidden h-4 w-px bg-border-strong sm:block" aria-hidden="true" />
-            <div className="flex items-center gap-2 text-muted">
-              <span className="font-semibold text-primary">28,000+</span>
-              IT professionals
-            </div>
-          </div>
+          {/* Trust line */}
+          <p className="text-sm text-muted/70">
+            Growing library of real sysadmin guides, scripts &amp; analysis — written for working engineers.
+          </p>
         </div>
       </div>
     </section>

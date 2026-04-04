@@ -26,7 +26,7 @@ export default function NewsletterSection() {
           </h2>
           <p className="mb-8 text-base leading-relaxed text-muted">
             A curated weekly digest of the most important signals, new guides, and fresh scripts —
-            delivered every Tuesday. Read by 28,000+ IT engineers.
+            delivered every Tuesday. No noise, no spam.
           </p>
 
           {submitted ? (
