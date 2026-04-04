@@ -53,6 +53,22 @@ export default function TermsPage() {
             </section>
 
             <section>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">Privacy &amp; Cookies</h2>
+              <p>
+                Use of this site is also subject to our{' '}
+                <a href="/privacy" className="text-primary underline underline-offset-2">
+                  Privacy Policy
+                </a>{' '}
+                and{' '}
+                <a href="/cookies" className="text-primary underline underline-offset-2">
+                  Cookie Policy
+                </a>
+                , which explain how we collect and process data and how you can manage your
+                consent preferences.
+              </p>
+            </section>
+
+            <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Changes</h2>
               <p>
                 We may update these terms at any time. Continued use of the site constitutes

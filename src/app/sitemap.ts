@@ -36,6 +36,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/editorial-policy`, priority: 0.4, changeFrequency: 'yearly' },
     { url: `${BASE}/affiliate-disclosure`, priority: 0.3, changeFrequency: 'yearly' },
     { url: `${BASE}/privacy`, priority: 0.3, changeFrequency: 'yearly' },
+    { url: `${BASE}/cookies`, priority: 0.3, changeFrequency: 'yearly' },
     { url: `${BASE}/terms`, priority: 0.3, changeFrequency: 'yearly' },
   ]
 
