@@ -30,16 +30,38 @@ export default function PrivacyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Analytics</h2>
               <p>
-                We use privacy-respecting analytics to understand aggregate traffic patterns. No
-                personally identifiable information is shared with third-party analytics providers.
+                We use <strong className="text-foreground-soft">Google Analytics 4</strong> to
+                understand aggregate traffic patterns such as pages visited and referral sources.
+                GA4 operates under Google Consent Mode v2: when consent has not been granted,
+                it runs in cookieless mode and does not store identifying information on your
+                device.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">Advertising</h2>
+              <p>
+                This site uses or intends to use{' '}
+                <strong className="text-foreground-soft">Google AdSense</strong> to display
+                advertisements. AdSense may set cookies for ad personalisation and measurement.
+                These are only activated after you grant consent. See our{' '}
+                <a href="/cookies" className="text-primary underline underline-offset-2">
+                  Cookie Policy
+                </a>{' '}
+                for full details.
               </p>
             </section>
 
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Cookies</h2>
               <p>
-                This site may use cookies for functional purposes such as remembering preferences.
-                We do not use third-party tracking or advertising cookies.
+                We use cookies set by Google Analytics and (when consent is granted) Google
+                AdSense. No first-party session or preference cookies are set by this site.
+                Full details, including how to manage or withdraw consent, are in our{' '}
+                <a href="/cookies" className="text-primary underline underline-offset-2">
+                  Cookie Policy
+                </a>
+                .
               </p>
             </section>
 

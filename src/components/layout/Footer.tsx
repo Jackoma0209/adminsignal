@@ -41,6 +41,7 @@ const footerLinks = [
       { label: 'Editorial Policy', href: '/editorial-policy' },
       { label: 'Affiliate Disclosure', href: '/affiliate-disclosure' },
       { label: 'Advertise', href: '/advertise' },
+      { label: 'Cookie Policy', href: '/cookies' },
     ],
   },
 ]
@@ -98,6 +99,9 @@ export default function Footer() {
           <div className="flex gap-6">
             <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">
               Privacy
+            </Link>
+            <Link href="/cookies" className="text-sm text-muted/60 hover:text-foreground-soft">
+              Cookies
             </Link>
             <Link href="/terms" className="text-sm text-muted/60 hover:text-foreground-soft">
               Terms
