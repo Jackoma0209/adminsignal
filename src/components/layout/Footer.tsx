@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Zap } from 'lucide-react'
+import PrivacySettingsButton from '@/components/PrivacySettingsButton'
 
 const footerLinks = [
   {
@@ -112,6 +113,7 @@ export default function Footer() {
             <Link href="/affiliate-disclosure" className="text-sm text-muted/60 hover:text-foreground-soft">
               Affiliate Disclosure
             </Link>
+            <PrivacySettingsButton />
           </div>
         </div>
       </div>

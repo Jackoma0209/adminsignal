@@ -1,3 +1,4 @@
+import AdSenseScript from '@/components/AdSenseScript'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -59,6 +60,7 @@ export default function RootLayout({
             gtag('consent', 'default', ${JSON.stringify(CONSENT_DEFAULTS)});
           `}</Script>
         )}
+        <AdSenseScript />
         <GoogleAnalytics />
         <Header />
         <main className="flex-1">{children}</main>

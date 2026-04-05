@@ -15,6 +15,10 @@
 
 export const analyticsEnabled = process.env.NEXT_PUBLIC_GA_ENABLED === 'true'
 export const adsEnabled = process.env.NEXT_PUBLIC_ADS_ENABLED === 'true'
+/** Loads adsbygoogle.js and surfaces the AdSense Privacy & Messaging CMP. Separate from live ad unit rendering. */
+export const adsenseScriptEnabled = process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true'
+export const ADSENSE_PUBLISHER_ID =
+  process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID ?? 'ca-pub-5563142788194204'
 
 /**
  * Google Consent Mode v2 defaults.
