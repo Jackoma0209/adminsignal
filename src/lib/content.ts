@@ -28,11 +28,17 @@ function slugifyHeading(text: string): string {
     .trim()
 }
 
+function stripCodeBlocks(markdown: string): string {
+  // Remove fenced code blocks (``` or ~~~, with optional language tag)
+  return markdown.replace(/^(`{3,}|~{3,})[^\n]*\n[\s\S]*?\n\1[ \t]*$/gm, '')
+}
+
 function extractHeadings(markdown: string): Heading[] {
+  const stripped = stripCodeBlocks(markdown)
   const regex = /^(#{1,3})\s+(.+)$/gm
   const headings: Heading[] = []
   let match: RegExpExecArray | null
-  while ((match = regex.exec(markdown)) !== null) {
+  while ((match = regex.exec(stripped)) !== null) {
     const level = match[1].length
     const text = match[2].trim()
     const id = slugifyHeading(text)
