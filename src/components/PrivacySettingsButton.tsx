@@ -3,6 +3,7 @@
 declare global {
   interface Window {
     googlefc?: {
+      callbackQueue: { push: (fn: () => void) => void }
       showRevocationMessage: () => void
     }
   }
@@ -11,8 +12,10 @@ declare global {
 /** Opens the Google AdSense Privacy & Messaging consent revocation dialog. */
 export default function PrivacySettingsButton() {
   function handleClick() {
-    if (typeof window !== 'undefined' && window.googlefc?.showRevocationMessage) {
-      window.googlefc.showRevocationMessage()
+    if (typeof window === 'undefined') return
+    const fc = window.googlefc
+    if (fc?.callbackQueue && typeof fc.showRevocationMessage === 'function') {
+      fc.callbackQueue.push(fc.showRevocationMessage)
     }
   }
 

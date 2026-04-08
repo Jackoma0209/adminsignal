@@ -42,7 +42,7 @@ export default function HeroSection() {
           {/* CTAs */}
           <div className="mb-16 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              href="/signals"
+              href="/news"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85"
             >
               Browse Latest Signals
