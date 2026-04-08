@@ -55,7 +55,7 @@ export default async function ScriptDetailPage({ params }: Props) {
       href: `/scripts/${s.slug}`,
       type: 'script' as const,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const jsonLd = softwareApplicationSchema({
@@ -117,7 +117,7 @@ export default async function ScriptDetailPage({ params }: Props) {
                       {tag}
                     </span>
                   ))}
-                  <span className="ml-auto text-xs text-muted/60">{script.stars} stars</span>
+                  <span className="ml-auto text-xs text-muted/60">Real-world script</span>
                 </div>
               </header>
 

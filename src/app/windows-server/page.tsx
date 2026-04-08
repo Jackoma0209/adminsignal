@@ -40,7 +40,7 @@ export default function WindowsServerPage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -55,7 +55,6 @@ export default function WindowsServerPage() {
     <TopicHubPageTemplate
       topicName="Windows Server"
       description="Active Directory, DNS, DHCP, file services, and server hardening. Practical guidance for administrators managing Windows Server environments."
-      articleCount={214}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

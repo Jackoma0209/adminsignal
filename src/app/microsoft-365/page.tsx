@@ -40,7 +40,7 @@ export default function Microsoft365Page() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -55,7 +55,6 @@ export default function Microsoft365Page() {
     <TopicHubPageTemplate
       topicName="Microsoft 365"
       description="Exchange Online, Teams, SharePoint, Entra ID, and tenant governance. Practical guidance for IT teams managing cloud-first Microsoft environments."
-      articleCount={174}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

@@ -40,7 +40,7 @@ export default function GroupPolicyPage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -55,7 +55,6 @@ export default function GroupPolicyPage() {
     <TopicHubPageTemplate
       topicName="Group Policy"
       description="GPO design, ADMX templates, WMI filters, and loopback processing. Deep-dive guidance for administrators managing Windows through Group Policy."
-      articleCount={97}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

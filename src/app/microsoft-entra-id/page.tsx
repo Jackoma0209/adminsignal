@@ -40,7 +40,7 @@ export default function EntraIdPage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -55,7 +55,6 @@ export default function EntraIdPage() {
     <TopicHubPageTemplate
       topicName="Microsoft Entra ID"
       description="Identity management, Conditional Access, PIM, SSPR, and hybrid join. Authoritative guidance for securing and governing your Entra ID tenant."
-      articleCount={126}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

@@ -40,7 +40,7 @@ export default function PowerShellPage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -55,7 +55,6 @@ export default function PowerShellPage() {
     <TopicHubPageTemplate
       topicName="PowerShell"
       description="Automation scripts, modules, DSC, and Graph API integration. Everything you need to automate your Windows and Microsoft 365 environment with PowerShell."
-      articleCount={311}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

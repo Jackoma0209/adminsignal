@@ -40,7 +40,7 @@ export default function SccmMecmPage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -54,7 +54,6 @@ export default function SccmMecmPage() {
     <TopicHubPageTemplate
       topicName="SCCM / MECM"
       description="Configuration Manager for OSD, software distribution, patch management, and co-management with Intune. Guidance for teams running hybrid or on-premises endpoint management."
-      articleCount={112}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

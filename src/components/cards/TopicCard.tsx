@@ -50,7 +50,7 @@ export default function TopicCard({ topic }: TopicCardProps) {
       </div>
 
       <div className="mt-auto flex items-center justify-between">
-        <span className="text-xs text-muted/60">{topic.count.toLocaleString()} articles</span>
+        <span className="text-xs text-muted/60">Curated topic hub</span>
         <ArrowUpRight className="h-3.5 w-3.5 text-muted/40 transition-colors group-hover:text-primary" />
       </div>
     </Link>

@@ -45,7 +45,7 @@ export default function PatchManagementPage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -60,7 +60,6 @@ export default function PatchManagementPage() {
     <TopicHubPageTemplate
       topicName="Patch Management"
       description="WSUS, Windows Update for Business, patch rings, and compliance reporting. Operational guidance for keeping enterprise endpoints current and secure."
-      articleCount={83}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

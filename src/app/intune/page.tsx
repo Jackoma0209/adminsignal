@@ -40,7 +40,7 @@ export default function IntunePage() {
       title: s.title,
       href: `/scripts/${s.slug}`,
       excerpt: s.description,
-      meta: `${s.language} · ${s.stars} stars`,
+      meta: `${s.language}`,
     }))
 
   const relatedTopics = [
@@ -55,7 +55,6 @@ export default function IntunePage() {
     <TopicHubPageTemplate
       topicName="Microsoft Intune"
       description="MDM policy, Autopilot, compliance baselines, app deployment, and co-management. Everything you need to run Intune at enterprise scale — from onboarding to remediation."
-      articleCount={148}
       news={news}
       tutorials={tutorials}
       scripts={scriptItems}

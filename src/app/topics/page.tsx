@@ -10,8 +10,6 @@ export const metadata: Metadata = {
 }
 
 export default function TopicsPage() {
-  const totalArticles = topics.reduce((sum, t) => sum + t.count, 0)
-
   return (
     <div className="py-14">
       <Container>
@@ -25,7 +23,7 @@ export default function TopicsPage() {
           Focused hubs for every discipline in your stack — signals, guides, and scripts in one
           place.
         </p>
-        <p className="mt-4 text-xs text-muted/60">{totalArticles.toLocaleString()}+ articles across {topics.length} topic hubs</p>
+        <p className="mt-4 text-xs text-muted/60">Practitioner-focused coverage across {topics.length} topic hubs</p>
 
         <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {topics.map((topic) => (

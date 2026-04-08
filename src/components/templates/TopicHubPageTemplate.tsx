@@ -14,7 +14,6 @@ interface ContentItem {
 interface TopicHubPageTemplateProps {
   topicName: string
   description: string
-  articleCount: number
   eyebrow?: string
   news: ContentItem[]
   tutorials: ContentItem[]
@@ -70,7 +69,6 @@ function HubContentRow({ items, sectionTitle, viewAllHref }: {
 export default function TopicHubPageTemplate({
   topicName,
   description,
-  articleCount,
   eyebrow = 'Topic Hub',
   news,
   tutorials,
@@ -89,7 +87,7 @@ export default function TopicHubPageTemplate({
             {topicName}
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
-          <p className="mt-4 text-xs text-muted/60">{articleCount}+ articles, guides, and scripts</p>
+          <p className="mt-4 text-xs text-muted/60">Guides, scripts and analysis</p>
         </Container>
       </div>
 

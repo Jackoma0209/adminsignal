@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Star, ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { type Script } from '@/data/scripts'
 
@@ -37,10 +37,7 @@ export default function ScriptCard({ script }: ScriptCardProps) {
       </div>
 
       <div className="mt-auto flex items-center justify-between">
-        <div className="flex items-center gap-1 text-xs text-muted/60">
-          <Star className="h-3 w-3 fill-current" />
-          <span>{script.stars.toLocaleString()}</span>
-        </div>
+        <span className="text-xs text-muted/60">Real-world script</span>
         <Link
           href={`/scripts/${script.slug}`}
           className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
