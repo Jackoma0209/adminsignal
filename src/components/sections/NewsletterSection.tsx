@@ -3,12 +3,18 @@
 import { useState, type FormEvent } from 'react'
 import { Mail, ArrowRight } from 'lucide-react'
 import Container from '@/components/layout/Container'
+import { trackEvent } from '@/lib/analytics'
 
 type Status = 'idle' | 'loading' | 'success' | 'duplicate' | 'not_configured' | 'error'
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<Status>('idle')
+
+  function reset() {
+    setEmail('')
+    setStatus('idle')
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -24,14 +30,23 @@ export default function NewsletterSection() {
       const data = await res.json().catch(() => ({}))
 
       if (res.ok && data.ok) {
-        setStatus(data.alreadySubscribed ? 'duplicate' : 'success')
+        if (data.alreadySubscribed) {
+          setStatus('duplicate')
+          trackEvent('newsletter_signup_duplicate')
+        } else {
+          setEmail('')
+          setStatus('success')
+          trackEvent('newsletter_signup_success')
+        }
       } else if (data.error === 'not_configured') {
         setStatus('not_configured')
       } else {
         setStatus('error')
+        trackEvent('newsletter_signup_error', { reason: data.error ?? 'unknown' })
       }
     } catch {
       setStatus('error')
+      trackEvent('newsletter_signup_error', { reason: 'network' })
     }
   }
 
@@ -64,6 +79,13 @@ export default function NewsletterSection() {
             <div className="rounded-xl border border-border bg-surface px-8 py-6">
               <p className="font-semibold text-foreground-soft">Already subscribed.</p>
               <p className="mt-1 text-sm text-muted">That email is already on the list.</p>
+              <button
+                type="button"
+                onClick={reset}
+                className="mt-3 text-xs text-muted/70 underline hover:text-foreground-soft"
+              >
+                Try a different email
+              </button>
             </div>
           )}
 
@@ -84,7 +106,7 @@ export default function NewsletterSection() {
               </p>
               <button
                 type="button"
-                onClick={() => setStatus('idle')}
+                onClick={reset}
                 className="mt-3 text-xs text-muted/70 underline hover:text-foreground-soft"
               >
                 Try again
