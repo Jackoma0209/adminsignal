@@ -3,34 +3,55 @@ import { NextRequest, NextResponse } from 'next/server'
 /**
  * Newsletter subscription endpoint.
  *
- * Provider: Buttondown (https://buttondown.com)
- * Required env var: NEWSLETTER_API_KEY — Buttondown API key.
- *
- * To swap providers, replace only the `subscribe` function below.
- * The route contract (request shape, response shape) stays the same.
+ * Provider: MailerLite (https://www.mailerlite.com)
+ * Required env vars:
+ *   MAILERLITE_API_TOKEN  — MailerLite API token
+ *   MAILERLITE_GROUP_ID   — ID of the group/segment to add subscribers to
  */
 
 async function subscribe(email: string): Promise<{ ok: boolean; alreadySubscribed?: boolean }> {
-  const res = await fetch('https://api.buttondown.email/v1/subscribers', {
+  const token = process.env.MAILERLITE_API_TOKEN!
+  const groupId = process.env.MAILERLITE_GROUP_ID!
+
+  // Upsert subscriber
+  const upsertRes = await fetch('https://connect.mailerlite.com/api/subscribers', {
     method: 'POST',
     headers: {
-      Authorization: `Token ${process.env.NEWSLETTER_API_KEY}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
+      Accept: 'application/json',
     },
-    body: JSON.stringify({ email_address: email, type: 'regular' }),
+    body: JSON.stringify({ email }),
   })
 
-  if (res.ok) return { ok: true }
-
-  // Buttondown returns 400 + "already_subscribed" code for duplicates
-  if (res.status === 400) {
-    const body = await res.json().catch(() => ({}))
-    if (JSON.stringify(body).includes('already_subscribed')) {
-      return { ok: true, alreadySubscribed: true }
-    }
+  if (!upsertRes.ok && upsertRes.status !== 409) {
+    return { ok: false }
   }
 
-  return { ok: false }
+  const upsertData = await upsertRes.json().catch(() => ({}))
+  const subscriberId: string | undefined = upsertData?.data?.id
+
+  if (!subscriberId) return { ok: false }
+
+  const alreadySubscribed = upsertRes.status === 409
+
+  // Add to group
+  const groupRes = await fetch(
+    `https://connect.mailerlite.com/api/subscribers/${subscriberId}/groups/${groupId}`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/json',
+      },
+    }
+  )
+
+  if (!groupRes.ok && groupRes.status !== 409) {
+    return { ok: false }
+  }
+
+  return { ok: true, alreadySubscribed }
 }
 
 export async function POST(req: NextRequest) {
@@ -40,7 +61,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_email' }, { status: 400 })
   }
 
-  if (!process.env.NEWSLETTER_API_KEY) {
+  if (!process.env.MAILERLITE_API_TOKEN || !process.env.MAILERLITE_GROUP_ID) {
     return NextResponse.json({ error: 'not_configured' }, { status: 503 })
   }
 
