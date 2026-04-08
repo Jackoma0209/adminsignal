@@ -21,7 +21,7 @@ export default function HeroSection() {
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary-soft px-4 py-1.5">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
             <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-              The Signal Source for IT Professionals
+              Practitioner-focused IT content
             </span>
           </div>
 
@@ -35,7 +35,7 @@ export default function HeroSection() {
 
           {/* Subtext */}
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
-            Trusted guides, scripts, and analysis for endpoint specialists, Windows admins,
+            In-depth guides, scripts, and analysis for endpoint specialists, Windows admins,
             and IT engineers who need signal — not noise.
           </p>
 

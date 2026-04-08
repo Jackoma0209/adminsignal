@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
+import { mdxComponents } from '@/components/ui/MdxComponents'
 import type { Metadata } from 'next'
 import { scripts } from '@/data/scripts'
 import { getContentItem, getContentSlugs } from '@/lib/content'
@@ -124,7 +126,11 @@ export default async function ScriptDetailPage({ params }: Props) {
               <AdSlot variant="banner" className="mb-8" />
 
               <Prose>
-                <MDXRemote source={content} />
+                <MDXRemote
+                  source={content}
+                  options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                  components={mdxComponents}
+                />
               </Prose>
             </article>
 

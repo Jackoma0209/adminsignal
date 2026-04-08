@@ -25,7 +25,7 @@ export default async function BestToolsPage({
     <CategoryPageTemplate
       eyebrow="Recommended Tools"
       title="Best Tools for Sysadmins"
-      description="Practitioner-curated recommendations from the AdminSignal team. No affiliate fluff — just the tools that show up in real sysadmin toolkits on hard days."
+      description="Practitioner-reviewed recommendations. No affiliate fluff — just the tools that show up in real sysadmin toolkits."
       itemCount={tools.length}
       itemLabel="tools"
       categories={categories}

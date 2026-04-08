@@ -11,7 +11,7 @@ export default function RecommendedToolsSection() {
       <Container>
         <SectionHeader
           eyebrow="Recommended Tools"
-          title="Tools the AdminSignal team actually uses"
+          title="Practitioner-reviewed tools for sysadmins"
           description="Practitioner-reviewed. No affiliate fluff — just the tools that show up in real sysadmin toolkits."
           action={
             <Link

@@ -20,11 +20,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.adminsignal.com'),
   title: {
-    default: 'AdminSignal — Intelligence for the Modern Sysadmin',
+    default: 'AdminSignal — Practitioner-Focused Content for Sysadmins',
     template: '%s | AdminSignal',
   },
   description:
-    'Trusted guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. The signal source for IT professionals.',
+    'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers.',
   keywords: [
     'sysadmin',
     'Microsoft Intune',

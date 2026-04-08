@@ -64,7 +64,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              The signal source for sysadmins, endpoint specialists, and Microsoft admins.
+              Practitioner-focused guides, scripts, and analysis for sysadmins and endpoint engineers.
             </p>
           </div>
 
