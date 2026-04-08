@@ -1,4 +1,3 @@
-import AdSenseScript from '@/components/AdSenseScript'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -6,7 +5,7 @@ import Script from 'next/script'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { analyticsEnabled, CONSENT_DEFAULTS } from '@/lib/consent'
+import { analyticsEnabled, adsenseScriptEnabled, ADSENSE_PUBLISHER_ID, CONSENT_DEFAULTS } from '@/lib/consent'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -52,6 +51,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+      <head>
+        {adsenseScriptEnabled && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
+            crossOrigin="anonymous"
+          />
+        )}
+      </head>
       <body className="flex min-h-full flex-col antialiased">
         {analyticsEnabled && (
           <Script id="consent-defaults" strategy="beforeInteractive">{`
@@ -60,7 +68,6 @@ export default function RootLayout({
             gtag('consent', 'default', ${JSON.stringify(CONSENT_DEFAULTS)});
           `}</Script>
         )}
-        <AdSenseScript />
         <GoogleAnalytics />
         <Header />
         <main className="flex-1">{children}</main>
