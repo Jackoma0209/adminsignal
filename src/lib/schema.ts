@@ -235,6 +235,27 @@ export function softwareSourceCodeSchema({
   })
 }
 
+export function aboutPageSchema({ description }: { description: string }) {
+  const url = `${SITE_URL}/about`
+  return cleanSchema({
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    '@id': `${url}#webpage`,
+    name: `About ${SITE_NAME}`,
+    description,
+    url,
+    inLanguage: DEFAULT_LANGUAGE,
+    isPartOf: {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}#website`,
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    about: organizationRef(),
+    publisher: organizationRef(),
+  })
+}
+
 export function breadcrumbSchema(crumbs: ListItem[]) {
   return {
     '@context': 'https://schema.org',

@@ -11,6 +11,7 @@ import { softwareSourceCodeSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
+import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import Prose from '@/components/ui/Prose'
@@ -148,6 +149,12 @@ export default async function ScriptDetailPage({ params }: Props) {
                   components={mdxComponents}
                 />
               </Prose>
+
+              {author && (
+                <div className="mt-12">
+                  <AuthorBox author={author} />
+                </div>
+              )}
             </article>
 
             <aside>

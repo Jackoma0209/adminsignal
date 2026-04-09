@@ -19,6 +19,14 @@ export default function EditorialPolicyPage() {
             Editorial Policy
           </h1>
           <p className="mb-8 text-sm text-muted">Last updated: April 2026</p>
+          <p className="mb-8 text-base leading-relaxed text-muted">
+            This policy explains how AdminSignal produces and maintains content. For background on
+            the site and who writes for it, see the{' '}
+            <a href="/about" className="text-primary underline underline-offset-2">
+              About page
+            </a>
+            .
+          </p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Independence</h2>

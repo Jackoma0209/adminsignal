@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { Author } from '@/data/authors'
 
 interface AuthorBoxProps {
@@ -17,6 +18,12 @@ export default function AuthorBox({ author }: AuthorBoxProps) {
         <p className="text-sm font-semibold text-foreground">{author.name}</p>
         <p className="mb-2 text-xs text-muted">{author.role}</p>
         <p className="text-sm leading-relaxed text-muted">{author.bio}</p>
+        <p className="mt-3 text-xs text-muted/60">
+          AdminSignal content is produced independently.{' '}
+          <Link href="/editorial-policy" className="underline underline-offset-2 hover:text-muted">
+            Editorial policy
+          </Link>
+        </p>
       </div>
     </div>
   )
