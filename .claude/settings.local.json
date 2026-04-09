@@ -13,7 +13,8 @@
       "Read(//c/Apps/adminsignal/src/app/$f/[slug]/**)",
       "Bash(done)",
       "Bash(identify c:/Apps/adminsignal/src/app/favicon.ico)",
-      "Bash(grep -r \"affiliate\\\\|disclosure\" c:/Apps/adminsignal/src/ --include=*.tsx -l)"
+      "Bash(grep -r \"affiliate\\\\|disclosure\" c:/Apps/adminsignal/src/ --include=*.tsx -l)",
+      "Bash(npx next:*)"
     ]
   }
 }

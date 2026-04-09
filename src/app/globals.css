@@ -28,6 +28,27 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ─── Light mode overrides ───────────────────────────────────────────────────── */
+
+html.light-mode {
+  --color-background: #f8fafc;
+  --color-background-soft: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f0f4f8;
+  --color-border: rgba(15, 23, 42, 0.1);
+  --color-border-strong: rgba(15, 23, 42, 0.22);
+  --color-foreground: #0f172a;
+  --color-foreground-soft: #1e293b;
+  --color-muted: #475569;
+  --color-primary-soft: rgba(59, 130, 246, 0.1);
+}
+
+html.light-mode body {
+  background:
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.06), transparent 30%),
+    linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+}
+
 body {
   min-height: 100vh;
   background:

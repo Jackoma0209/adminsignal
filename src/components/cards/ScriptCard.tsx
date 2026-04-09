@@ -36,6 +36,13 @@ export default function ScriptCard({ script }: ScriptCardProps) {
         ))}
       </div>
 
+      {/* Code preview */}
+      {script.codePreview && (
+        <pre className="overflow-x-auto rounded-lg border border-border bg-background px-4 py-3 font-mono text-[11px] leading-relaxed text-muted/80" aria-hidden="true">
+          <code>{script.codePreview}</code>
+        </pre>
+      )}
+
       <div className="mt-auto flex items-center justify-between">
         <span className="text-xs text-muted/60">Real-world script</span>
         <Link

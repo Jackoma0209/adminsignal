@@ -1,17 +1,34 @@
 import Link from 'next/link'
-import { ArrowRight, Terminal } from 'lucide-react'
+import { ArrowRight, Terminal, Mail } from 'lucide-react'
 
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden py-24 sm:py-32 lg:py-40">
-      {/* Subtle dot grid — lets the body gradient show through */}
+      {/* Dot grid */}
       <div
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.018]"
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.022]"
+        aria-hidden="true"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+      {/* Horizontal scanlines — faint terminal feel */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.012]"
         aria-hidden="true"
         style={{
           backgroundImage:
-            'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
+            'repeating-linear-gradient(0deg, transparent, transparent 3px, #94a3b8 3px, #94a3b8 4px)',
+        }}
+      />
+      {/* Diagonal stripe — subtle depth */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.008]"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(45deg, #3b82f6 0px, #3b82f6 1px, transparent 1px, transparent 60px)',
         }}
       />
 
@@ -40,7 +57,7 @@ export default function HeroSection() {
           </p>
 
           {/* CTAs */}
-          <div className="mb-16 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mb-16 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/news"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85"
@@ -53,7 +70,14 @@ export default function HeroSection() {
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface px-6 py-3 text-sm font-semibold text-foreground-soft transition-colors hover:border-border-strong hover:text-foreground"
             >
               <Terminal className="h-4 w-4" />
-              Explore Scripts
+              Browse All Scripts
+            </Link>
+            <Link
+              href="/#newsletter"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary-soft px-6 py-3 text-sm font-semibold text-primary transition-colors hover:border-primary/50"
+            >
+              <Mail className="h-4 w-4" />
+              Get Weekly Digest
             </Link>
           </div>
 

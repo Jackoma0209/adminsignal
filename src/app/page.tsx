@@ -5,9 +5,10 @@ import TrustStripSection from '@/components/sections/TrustStripSection'
 import FeaturedSignalsSection from '@/components/sections/FeaturedSignalsSection'
 import FeaturedGuidesSection from '@/components/sections/FeaturedGuidesSection'
 import FeaturedScriptsSection from '@/components/sections/FeaturedScriptsSection'
-import TopicHubsSection from '@/components/sections/TopicHubsSection'
 import NewsletterSection from '@/components/sections/NewsletterSection'
+import TopicHubsSection from '@/components/sections/TopicHubsSection'
 import RecommendedToolsSection from '@/components/sections/RecommendedToolsSection'
+import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import StructuredData from '@/components/StructuredData'
 import { organizationSchema, webPageSchema, websiteSchema } from '@/lib/schema'
 
@@ -51,9 +52,10 @@ export default function HomePage() {
       <FeaturedSignalsSection />
       <FeaturedGuidesSection />
       <FeaturedScriptsSection />
-      <TopicHubsSection />
       <NewsletterSection />
+      <TopicHubsSection />
       <RecommendedToolsSection />
+      <TestimonialsSection />
     </>
   )
 }

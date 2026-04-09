@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
-import { Mail, ArrowRight } from 'lucide-react'
+import { Mail, ArrowRight, Shield } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import { trackEvent } from '@/lib/analytics'
 
@@ -51,19 +51,41 @@ export default function NewsletterSection() {
   }
 
   return (
-    <section id="newsletter" className="border-y border-border bg-surface/10 py-20">
+    <section id="newsletter" className="relative overflow-hidden border-y border-border py-24 sm:py-32">
+      {/* Background gradient accent */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-30"
+        aria-hidden="true"
+        style={{
+          background:
+            'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(59,130,246,0.12), transparent)',
+        }}
+      />
+      {/* Dot grid */}
+      <div
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.018]"
+        aria-hidden="true"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
+        }}
+      />
+
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft ring-1 ring-primary/20">
-            <Mail className="h-5 w-5 text-primary" />
+          <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-soft ring-1 ring-primary/25">
+            <Mail className="h-6 w-6 text-primary" />
           </div>
 
-          <h2 className="mb-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Get the AdminSignal Weekly
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
+            AdminSignal Weekly
+          </p>
+          <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            The signal, every Tuesday.
           </h2>
-          <p className="mb-8 text-base leading-relaxed text-muted">
-            A curated weekly digest of the most important signals, new guides, and fresh scripts —
-            delivered every Tuesday. No noise, no spam.
+          <p className="mb-10 text-base leading-relaxed text-muted">
+            A curated digest of the most important security alerts, new guides, and fresh
+            PowerShell scripts — sent once a week. No filler, no vendor hype.
           </p>
 
           {status === 'success' && (
@@ -127,22 +149,23 @@ export default function NewsletterSection() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@company.com"
                 disabled={status === 'loading'}
-                className="flex-1 rounded-lg border border-border-strong bg-surface px-4 py-3 text-sm text-foreground placeholder-muted/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
+                className="flex-1 rounded-lg border border-border-strong bg-surface px-4 py-3.5 text-base text-foreground placeholder-muted/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={status === 'loading'}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-60"
               >
-                {status === 'loading' ? 'Subscribing…' : 'Subscribe'}
+                {status === 'loading' ? 'Subscribing…' : 'Subscribe Free'}
                 {status !== 'loading' && <ArrowRight className="h-4 w-4" />}
               </button>
             </form>
           )}
 
-          <p className="mt-4 text-xs text-muted/60">
-            No spam. Unsubscribe any time. We never share your email.
-          </p>
+          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-muted/60">
+            <Shield className="h-3.5 w-3.5" />
+            <span>No spam&nbsp;•&nbsp;Unsubscribe any time&nbsp;•&nbsp;We never share your email.</span>
+          </div>
         </div>
       </Container>
     </section>
