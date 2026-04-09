@@ -1,55 +1,428 @@
-'use client'
-
-import { useState, type FormEvent } from 'react'
-import { Mail, ArrowRight, Shield } from 'lucide-react'
+import { Mail, Shield } from 'lucide-react'
+import Script from 'next/script'
 import Container from '@/components/layout/Container'
-import { trackEvent } from '@/lib/analytics'
 
-type Status = 'idle' | 'loading' | 'success' | 'duplicate' | 'not_configured' | 'error'
+// ---------------------------------------------------------------------------
+// MailerLite embed assets
+// ---------------------------------------------------------------------------
+
+const ML_FONT_CSS = `@import url("https://assets.mlcdn.com/fonts.css?version=1775464");`
+
+const ML_BASE_CSS = `
+/* LOADER */
+.ml-form-embedSubmitLoad {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+}
+.g-recaptcha {
+  transform: scale(1);
+  -webkit-transform: scale(1);
+  transform-origin: 0 0;
+  -webkit-transform-origin: 0 0;
+  height: ;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+.ml-form-embedSubmitLoad:after {
+  content: " ";
+  display: block;
+  width: 11px;
+  height: 11px;
+  margin: 1px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  border-color: #ffffff #ffffff #ffffff transparent;
+  animation: ml-form-embedSubmitLoad 1.2s linear infinite;
+}
+@keyframes ml-form-embedSubmitLoad {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+#mlb2-39669348.ml-form-embedContainer {
+  box-sizing: border-box;
+  display: table;
+  margin: 0 auto;
+  position: static;
+  width: 100% !important;
+}
+#mlb2-39669348.ml-form-embedContainer h4,
+#mlb2-39669348.ml-form-embedContainer p,
+#mlb2-39669348.ml-form-embedContainer span,
+#mlb2-39669348.ml-form-embedContainer button {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper {
+  background-color: #f6f6f6;
+  border-width: 0px;
+  border-color: transparent;
+  border-radius: 4px;
+  border-style: solid;
+  box-sizing: border-box;
+  display: inline-block !important;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper.embedPopup,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper.embedDefault { width: 400px; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper.embedForm { max-width: 400px; width: 100%; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-align-left   { text-align: left; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-align-center { text-align: center; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-align-default {
+  display: table-cell !important;
+  vertical-align: middle !important;
+  text-align: center !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-align-right { text-align: right; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedHeader img {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  height: auto;
+  margin: 0 auto !important;
+  max-width: 100%;
+  width: undefinedpx;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody {
+  padding: 20px 20px 0 20px;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody.ml-form-embedBodyHorizontal {
+  padding-bottom: 0;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent {
+  text-align: left;
+  margin: 0 0 20px 0;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent h4,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent h4 {
+  color: #000000;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 30px;
+  font-weight: 400;
+  margin: 0 0 10px 0;
+  text-align: left;
+  word-break: break-word;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p {
+  color: #000000;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  margin: 0 0 10px 0;
+  text-align: left;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedContent p:last-child,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-successBody .ml-form-successContent p:last-child {
+  margin: 0;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody form {
+  margin: 0;
+  width: 100%;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow {
+  margin: 0 0 20px 0;
+  width: 100%;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow {
+  float: left;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-formContent.horozintalForm {
+  margin: 0;
+  padding: 0 0 20px 0;
+  width: 100%;
+  height: auto;
+  float: left;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow {
+  margin: 0 0 10px 0;
+  width: 100%;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow.ml-last-item {
+  margin: 0;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow.ml-formfieldHorizintal {
+  margin: 0;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border-color: #cccccc;
+  border-radius: 4px !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px !important;
+  height: auto;
+  line-height: 21px !important;
+  margin-bottom: 0;
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 10px 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input::-webkit-input-placeholder { color: #333333; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input::-moz-placeholder { color: #333333; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:-ms-input-placeholder { color: #333333; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow input:-moz-placeholder { color: #333333; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow input {
+  background-color: #ffffff;
+  color: #333333;
+  border-color: #cccccc;
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 1px;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  margin-bottom: 0;
+  margin-top: 0;
+  padding: 10px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: initial;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow button {
+  background-color: #000000 !important;
+  border-color: #000000;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 4px;
+  box-shadow: none;
+  color: #ffffff !important;
+  cursor: pointer;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px !important;
+  font-weight: 700;
+  line-height: 20px;
+  margin: 0 !important;
+  padding: 10px !important;
+  width: 100%;
+  height: auto;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow button:hover {
+  background-color: #333333 !important;
+  border-color: #333333 !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit {
+  margin: 0 0 20px 0;
+  float: left;
+  width: 100%;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button {
+  background-color: #000000 !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 21px !important;
+  height: auto;
+  padding: 10px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button.loading {
+  display: none;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-embedSubmit button:hover {
+  background-color: #333333 !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-fieldRow .custom-select,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-horizontalRow .custom-select {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border-color: #cccccc;
+  border-radius: 4px !important;
+  border-style: solid !important;
+  border-width: 1px !important;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px !important;
+  line-height: 20px !important;
+  margin-bottom: 0;
+  margin-top: 0;
+  padding: 10px 28px 10px 12px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+  background: url('https://assets.mlcdn.com/ml/images/default/dropdown.svg') no-repeat right .75rem center/8px 10px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow input[type="checkbox"] {
+  box-sizing: border-box;
+  padding: 0;
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+  margin-top: 5px;
+  margin-left: -1.5rem;
+  overflow: visible;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow .label-description {
+  color: #000000;
+  display: block;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  text-align: left;
+  margin-bottom: 0;
+  position: relative;
+  vertical-align: top;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label {
+  font-weight: normal;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: block;
+  min-height: 24px;
+  padding-left: 24px;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label a {
+  color: #000000;
+  text-decoration: underline;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label p {
+  color: #000000 !important;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: normal !important;
+  line-height: 18px !important;
+  padding: 0 !important;
+  margin: 0 5px 0 0 !important;
+}
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow label p:last-child {
+  margin: 0;
+}
+.ml-error input, .ml-error textarea, .ml-error select { border-color: red !important; }
+.ml-error .custom-checkbox-radio-list { border: 1px solid red !important; border-radius: 4px; padding: 10px; }
+.ml-error .label-description,
+.ml-error .label-description p,
+.ml-error .label-description p a,
+.ml-error label:first-child { color: #ff0000 !important; }
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow.ml-error .label-description p,
+#mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper .ml-form-embedBody .ml-form-checkboxRow.ml-error .label-description p:first-letter {
+  color: #ff0000 !important;
+}
+@media only screen and (max-width: 400px) {
+  .ml-form-embedWrapper.embedDefault, .ml-form-embedWrapper.embedPopup { width: 100% !important; }
+  .ml-form-formContent.horozintalForm { float: left !important; }
+  .ml-form-formContent.horozintalForm .ml-form-horizontalRow { height: auto !important; width: 100% !important; float: left !important; }
+  .ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-input-horizontal { width: 100% !important; }
+  .ml-form-formContent.horozintalForm .ml-form-horizontalRow .ml-input-horizontal > div { padding-right: 0px !important; padding-bottom: 10px; }
+  .ml-form-formContent.horozintalForm .ml-button-horizontal { width: 100% !important; }
+  .ml-form-formContent.horozintalForm .ml-button-horizontal.labelsOn { padding-top: 0px !important; }
+}
+`
+
+// Dark overrides — applied after MailerLite base CSS so !important wins
+const ML_DARK_CSS = `
+  .dark-form-wrapper {
+    width: 100%;
+  }
+  #mlb2-39669348.ml-form-embedContainer .ml-form-embedWrapper {
+    background-color: #1a1a1a !important;
+    border: 1px solid #333 !important;
+    border-radius: 12px;
+  }
+  #mlb2-39669348.ml-form-embedContainer .ml-form-embedContent {
+    display: none !important;
+  }
+  #mlb2-39669348.ml-form-embedContainer input,
+  #mlb2-39669348.ml-form-embedContainer textarea,
+  #mlb2-39669348.ml-form-embedContainer .custom-select {
+    background-color: #111 !important;
+    border-color: #444 !important;
+    color: #fff !important;
+  }
+  #mlb2-39669348.ml-form-embedContainer input::placeholder {
+    color: #6b7280 !important;
+  }
+  #mlb2-39669348.ml-form-embedContainer button.primary {
+    background-color: #0ea5e9 !important;
+    border-color: #0ea5e9 !important;
+    border-radius: 6px !important;
+    color: #fff !important;
+  }
+  #mlb2-39669348.ml-form-embedContainer button.primary:hover {
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+  }
+  #mlb2-39669348.ml-form-embedContainer h4,
+  #mlb2-39669348.ml-form-embedContainer p {
+    color: #fff !important;
+  }
+  #mlb2-39669348.ml-form-embedContainer .ml-form-successBody {
+    padding-bottom: 20px;
+  }
+`
+
+// MailerLite form HTML (exact embed, with empty comment noise stripped)
+const ML_FORM_HTML = `<div id="mlb2-39669348" class="ml-form-embedContainer ml-subscribe-form ml-subscribe-form-39669348">
+  <div class="ml-form-align-center">
+    <div class="ml-form-embedWrapper embedForm">
+      <div class="ml-form-embedBody ml-form-embedBodyDefault row-form">
+        <div class="ml-form-embedContent" style="">
+          <h4>Newsletter</h4>
+          <p>Signup for news and special offers!</p>
+        </div>
+        <form class="ml-block-form" action="https://assets.mailerlite.com/jsonp/2253596/forms/184275345577347008/subscribe" data-code="" method="post" target="_blank">
+          <div class="ml-form-formContent">
+            <div class="ml-form-fieldRow ml-last-item">
+              <div class="ml-field-group ml-field-email ml-validate-email ml-validate-required">
+                <input aria-label="email" aria-required="true" type="email" class="form-control" data-inputmask="" name="fields[email]" placeholder="Email" autocomplete="email">
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="ml-submit" value="1">
+          <div class="ml-form-embedSubmit">
+            <button type="submit" class="primary">Subscribe</button>
+            <button disabled="disabled" style="display: none;" type="button" class="loading">
+              <div class="ml-form-embedSubmitLoad"></div>
+              <span class="sr-only">Loading...</span>
+            </button>
+          </div>
+          <input type="hidden" name="anticsrf" value="true">
+        </form>
+      </div>
+      <div class="ml-form-successBody row-success" style="display: none">
+        <div class="ml-form-successContent">
+          <h4>Thank you!</h4>
+          <p>You have successfully joined our subscriber list.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>`
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function NewsletterSection() {
-  const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<Status>('idle')
-
-  function reset() {
-    setEmail('')
-    setStatus('idle')
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    if (!email || status === 'loading') return
-    setStatus('loading')
-
-    try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      })
-      const data = await res.json().catch(() => ({}))
-
-      if (res.ok && data.ok) {
-        if (data.alreadySubscribed) {
-          setStatus('duplicate')
-          trackEvent('newsletter_signup_duplicate')
-        } else {
-          setEmail('')
-          setStatus('success')
-          trackEvent('newsletter_signup_success')
-        }
-      } else if (data.error === 'not_configured') {
-        setStatus('not_configured')
-      } else {
-        setStatus('error')
-        trackEvent('newsletter_signup_error', { reason: data.error ?? 'unknown' })
-      }
-    } catch {
-      setStatus('error')
-      trackEvent('newsletter_signup_error', { reason: 'network' })
-    }
-  }
-
   return (
     <section id="newsletter" className="relative overflow-hidden border-y border-border py-24 sm:py-32">
       {/* Background gradient accent */}
@@ -88,79 +461,19 @@ export default function NewsletterSection() {
             PowerShell scripts — sent once a week. No filler, no vendor hype.
           </p>
 
-          {status === 'success' && (
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-8 py-6">
-              <p className="font-semibold text-emerald-400">You&apos;re subscribed.</p>
-              <p className="mt-1 text-sm text-muted">
-                Check your inbox for a confirmation email before the first issue arrives.
-              </p>
-            </div>
-          )}
+          {/* MailerLite embed ─────────────────────────────────────────────── */}
+          {/* Font import */}
+          <style dangerouslySetInnerHTML={{ __html: ML_FONT_CSS }} />
+          {/* MailerLite base CSS */}
+          <style dangerouslySetInnerHTML={{ __html: ML_BASE_CSS }} />
+          {/* Dark theme overrides */}
+          <style dangerouslySetInnerHTML={{ __html: ML_DARK_CSS }} />
 
-          {status === 'duplicate' && (
-            <div className="rounded-xl border border-border bg-surface px-8 py-6">
-              <p className="font-semibold text-foreground-soft">Already subscribed.</p>
-              <p className="mt-1 text-sm text-muted">That email is already on the list.</p>
-              <button
-                type="button"
-                onClick={reset}
-                className="mt-3 text-xs text-muted/70 underline hover:text-foreground-soft"
-              >
-                Try a different email
-              </button>
-            </div>
-          )}
-
-          {status === 'not_configured' && (
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-8 py-6">
-              <p className="font-semibold text-amber-400">Sign-up coming soon.</p>
-              <p className="mt-1 text-sm text-muted">
-                The newsletter isn&apos;t accepting subscribers yet — check back shortly.
-              </p>
-            </div>
-          )}
-
-          {status === 'error' && (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-8 py-6">
-              <p className="font-semibold text-red-400">Something went wrong.</p>
-              <p className="mt-1 text-sm text-muted">
-                Please try again in a moment. If the problem persists, email us directly.
-              </p>
-              <button
-                type="button"
-                onClick={reset}
-                className="mt-3 text-xs text-muted/70 underline hover:text-foreground-soft"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-
-          {(status === 'idle' || status === 'loading') && (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
-              <label htmlFor="newsletter-email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="newsletter-email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                disabled={status === 'loading'}
-                className="flex-1 rounded-lg border border-border-strong bg-surface px-4 py-3.5 text-base text-foreground placeholder-muted/50 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
-              />
-              <button
-                type="submit"
-                disabled={status === 'loading'}
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-8 py-3.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-60"
-              >
-                {status === 'loading' ? 'Subscribing…' : 'Subscribe Free'}
-                {status !== 'loading' && <ArrowRight className="h-4 w-4" />}
-              </button>
-            </form>
-          )}
+          <div
+            className="dark-form-wrapper"
+            dangerouslySetInnerHTML={{ __html: ML_FORM_HTML }}
+          />
+          {/* ──────────────────────────────────────────────────────────────── */}
 
           <div className="mt-5 flex items-center justify-center gap-2 text-xs text-muted/60">
             <Shield className="h-3.5 w-3.5" />
@@ -168,6 +481,22 @@ export default function NewsletterSection() {
           </div>
         </div>
       </Container>
+
+      {/* MailerLite scripts — loaded after page interactive */}
+      <Script id="ml-success-39669348" strategy="afterInteractive">{`
+        function ml_webform_success_39669348() {
+          var $ = ml_jQuery || jQuery;
+          $('.ml-subscribe-form-39669348 .row-success').show();
+          $('.ml-subscribe-form-39669348 .row-form').hide();
+        }
+      `}</Script>
+      <Script
+        src="https://groot.mailerlite.com/js/w/webforms.min.js?v95037e5bac78f29ed026832ca21a7c7b"
+        strategy="afterInteractive"
+      />
+      <Script id="ml-fetch-39669348" strategy="afterInteractive">{`
+        fetch("https://assets.mailerlite.com/jsonp/2253596/forms/184275345577347008/takel")
+      `}</Script>
     </section>
   )
 }
