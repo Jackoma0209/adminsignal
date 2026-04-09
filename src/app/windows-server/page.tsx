@@ -2,13 +2,18 @@ import type { Metadata } from 'next'
 import { signals } from '@/data/signals'
 import { guides } from '@/data/guides'
 import { scripts } from '@/data/scripts'
+import StructuredData from '@/components/StructuredData'
 import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+
+const topicName = 'Windows Server'
+const topicDescription =
+  'Active Directory, DNS, DHCP, file services, and server hardening for Windows Server administrators.'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'Windows Server',
-  description:
-    'Active Directory, DNS, DHCP, file services, and server hardening for Windows Server administrators.',
+  topicName,
+  description: topicDescription,
   slug: 'windows-server',
 })
 
@@ -51,14 +56,35 @@ export default function WindowsServerPage() {
     { name: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
   ]
 
+  const jsonLdCollection = collectionPageSchema({
+    title: topicName,
+    description: topicDescription,
+    url: 'https://www.adminsignal.com/windows-server',
+    items: [...news, ...tutorials, ...scriptItems].map((item) => ({
+      name: item.title,
+      url: `https://www.adminsignal.com${item.href}`,
+    })),
+  })
+
+  const jsonLdBreadcrumb = breadcrumbSchema([
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Topic Hubs', url: 'https://www.adminsignal.com/topics' },
+    { name: topicName, url: 'https://www.adminsignal.com/windows-server' },
+  ])
+
   return (
-    <TopicHubPageTemplate
-      topicName="Windows Server"
-      description="Active Directory, DNS, DHCP, file services, and server hardening. Practical guidance for administrators managing Windows Server environments."
-      news={news}
-      tutorials={tutorials}
-      scripts={scriptItems}
-      relatedTopics={relatedTopics}
-    />
+    <>
+      <StructuredData data={jsonLdCollection} />
+      <StructuredData data={jsonLdBreadcrumb} />
+
+      <TopicHubPageTemplate
+        topicName={topicName}
+        description="Active Directory, DNS, DHCP, file services, and server hardening. Practical guidance for administrators managing Windows Server environments."
+        news={news}
+        tutorials={tutorials}
+        scripts={scriptItems}
+        relatedTopics={relatedTopics}
+      />
+    </>
   )
 }

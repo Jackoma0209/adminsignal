@@ -37,7 +37,7 @@ export default function ValuePropSection() {
             Why AdminSignal
           </p>
           <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Built for engineers who've been burned by bad docs
+            Built for engineers who&rsquo;ve been burned by bad docs
           </h2>
         </div>
 

@@ -1,14 +1,5 @@
 import type { Metadata } from 'next'
 import HeroSection from '@/components/sections/HeroSection'
-
-export const metadata: Metadata = {
-  alternates: { canonical: 'https://www.adminsignal.com' },
-  openGraph: {
-    url: 'https://www.adminsignal.com',
-    type: 'website',
-  },
-}
-
 import ValuePropSection from '@/components/sections/ValuePropSection'
 import TrustStripSection from '@/components/sections/TrustStripSection'
 import FeaturedSignalsSection from '@/components/sections/FeaturedSignalsSection'
@@ -17,10 +8,43 @@ import FeaturedScriptsSection from '@/components/sections/FeaturedScriptsSection
 import TopicHubsSection from '@/components/sections/TopicHubsSection'
 import NewsletterSection from '@/components/sections/NewsletterSection'
 import RecommendedToolsSection from '@/components/sections/RecommendedToolsSection'
+import StructuredData from '@/components/StructuredData'
+import { organizationSchema, webPageSchema, websiteSchema } from '@/lib/schema'
+
+const homeTitle = 'AdminSignal — Practitioner-Focused Content for Sysadmins'
+const homeDescription =
+  'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers.'
+const homeUrl = 'https://www.adminsignal.com'
+
+export const metadata: Metadata = {
+  alternates: { canonical: homeUrl },
+  openGraph: {
+    url: homeUrl,
+    type: 'website',
+  },
+}
 
 export default function HomePage() {
   return (
     <>
+      <StructuredData
+        data={organizationSchema({
+          description: homeDescription,
+        })}
+      />
+      <StructuredData
+        data={websiteSchema({
+          description: homeDescription,
+        })}
+      />
+      <StructuredData
+        data={webPageSchema({
+          title: homeTitle,
+          description: homeDescription,
+          url: homeUrl,
+        })}
+      />
+
       <HeroSection />
       <TrustStripSection />
       <ValuePropSection />

@@ -5,8 +5,7 @@ import { signals } from '@/data/signals'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { isRecentItem } from '@/lib/utils'
-import { articleSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
+import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
@@ -16,6 +15,8 @@ import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
+import StructuredData from '@/components/StructuredData'
+import { isRecentItem } from '@/lib/utils'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -72,30 +73,29 @@ export default async function NewsArticlePage({ params }: Props) {
       meta: s.date,
     }))
 
+  const pageUrl = `https://www.adminsignal.com/news/${slug}`
+
   const jsonLdArticle = articleSchema({
+    type: 'NewsArticle',
     title: signal.title,
     description: signal.excerpt,
     publishedTime: signal.publishedAt,
+    modifiedTime: lastReviewed,
     authorName: author?.name,
-    url: `https://www.adminsignal.com/news/${slug}`,
+    url: pageUrl,
+    tags: signal.tags,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
     { name: 'News', url: 'https://www.adminsignal.com/news' },
-    { name: signal.title, url: `https://www.adminsignal.com/news/${slug}` },
+    { name: signal.title, url: pageUrl },
   ])
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdArticle) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }}
-      />
+      <StructuredData data={jsonLdArticle} />
+      <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
@@ -116,7 +116,6 @@ export default async function NewsArticlePage({ params }: Props) {
           )}
 
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px]">
-            {/* Main content */}
             <article>
               <header className="mb-8">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -169,7 +168,6 @@ export default async function NewsArticlePage({ params }: Props) {
               )}
             </article>
 
-            {/* Sidebar */}
             <aside>
               <div className="sticky top-20">
                 {headings.length >= 2 && (

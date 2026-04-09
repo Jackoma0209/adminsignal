@@ -2,13 +2,18 @@ import type { Metadata } from 'next'
 import { signals } from '@/data/signals'
 import { guides } from '@/data/guides'
 import { scripts } from '@/data/scripts'
+import StructuredData from '@/components/StructuredData'
 import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+
+const topicName = 'PowerShell'
+const topicDescription =
+  'Automation, scripting, modules, DSC, and Graph API integration for Windows and Microsoft 365 administrators.'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'PowerShell',
-  description:
-    'Automation, scripting, modules, DSC, and Graph API integration for Windows and Microsoft 365 administrators.',
+  topicName,
+  description: topicDescription,
   slug: 'powershell',
 })
 
@@ -51,14 +56,35 @@ export default function PowerShellPage() {
     { name: 'SCCM / MECM', href: '/sccm-mecm' },
   ]
 
+  const jsonLdCollection = collectionPageSchema({
+    title: topicName,
+    description: topicDescription,
+    url: 'https://www.adminsignal.com/powershell',
+    items: [...news, ...tutorials, ...scriptItems].map((item) => ({
+      name: item.title,
+      url: `https://www.adminsignal.com${item.href}`,
+    })),
+  })
+
+  const jsonLdBreadcrumb = breadcrumbSchema([
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Topic Hubs', url: 'https://www.adminsignal.com/topics' },
+    { name: topicName, url: 'https://www.adminsignal.com/powershell' },
+  ])
+
   return (
-    <TopicHubPageTemplate
-      topicName="PowerShell"
-      description="Automation scripts, modules, DSC, and Graph API integration. Everything you need to automate your Windows and Microsoft 365 environment with PowerShell."
-      news={news}
-      tutorials={tutorials}
-      scripts={scriptItems}
-      relatedTopics={relatedTopics}
-    />
+    <>
+      <StructuredData data={jsonLdCollection} />
+      <StructuredData data={jsonLdBreadcrumb} />
+
+      <TopicHubPageTemplate
+        topicName={topicName}
+        description="Automation scripts, modules, DSC, and Graph API integration. Everything you need to automate your Windows and Microsoft 365 environment with PowerShell."
+        news={news}
+        tutorials={tutorials}
+        scripts={scriptItems}
+        relatedTopics={relatedTopics}
+      />
+    </>
   )
 }

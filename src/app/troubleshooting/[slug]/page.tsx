@@ -5,7 +5,7 @@ import { troubleshootingArticles } from '@/data/troubleshooting'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { articleSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
+import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
@@ -15,6 +15,7 @@ import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
+import StructuredData from '@/components/StructuredData'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -33,6 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     url: `https://www.adminsignal.com/troubleshooting/${slug}`,
     category: article.category,
     publishedTime: article.publishedAt,
+    tags: article.affectedProducts,
     authorName: author?.name,
   })
 }
@@ -70,18 +72,22 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
       meta: `${a.readTime} · ${a.difficulty}`,
     }))
 
+  const pageUrl = `https://www.adminsignal.com/troubleshooting/${slug}`
+
   const jsonLd = articleSchema({
     title: article.title,
     description: article.excerpt,
     publishedTime: article.publishedAt,
+    modifiedTime: lastReviewed,
     authorName: author?.name,
-    url: `https://www.adminsignal.com/troubleshooting/${slug}`,
+    url: pageUrl,
+    tags: article.affectedProducts,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
     { name: 'Troubleshooting', url: 'https://www.adminsignal.com/troubleshooting' },
-    { name: article.title, url: `https://www.adminsignal.com/troubleshooting/${slug}` },
+    { name: article.title, url: pageUrl },
   ])
 
   const difficultyVariant: Record<typeof article.difficulty, 'category' | 'difficulty' | 'language'> = {
@@ -92,8 +98,8 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }} />
+      <StructuredData data={jsonLd} />
+      <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>

@@ -5,7 +5,7 @@ import { comparisons } from '@/data/comparisons'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { articleSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
+import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
@@ -15,6 +15,7 @@ import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
+import StructuredData from '@/components/StructuredData'
 import { ArrowLeftRight, Trophy } from 'lucide-react'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -34,6 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     url: `https://www.adminsignal.com/comparisons/${slug}`,
     category: comparison.category,
     publishedTime: comparison.publishedAt,
+    tags: [comparison.productA, comparison.productB, comparison.category],
     authorName: author?.name,
   })
 }
@@ -71,24 +73,28 @@ export default async function ComparisonArticlePage({ params }: Props) {
       meta: c.readTime,
     }))
 
+  const pageUrl = `https://www.adminsignal.com/comparisons/${slug}`
+
   const jsonLd = articleSchema({
     title: comparison.title,
     description: comparison.excerpt,
     publishedTime: comparison.publishedAt,
+    modifiedTime: lastReviewed,
     authorName: author?.name,
-    url: `https://www.adminsignal.com/comparisons/${slug}`,
+    url: pageUrl,
+    tags: [comparison.productA, comparison.productB, comparison.category],
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
     { name: 'Comparisons', url: 'https://www.adminsignal.com/comparisons' },
-    { name: comparison.title, url: `https://www.adminsignal.com/comparisons/${slug}` },
+    { name: comparison.title, url: pageUrl },
   ])
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }} />
+      <StructuredData data={jsonLd} />
+      <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
@@ -124,7 +130,6 @@ export default async function ComparisonArticlePage({ params }: Props) {
                 </div>
               </header>
 
-              {/* At-a-glance comparison card */}
               <div className="mb-8 rounded-xl border border-border bg-surface p-6">
                 <div className="mb-4 flex items-center justify-center gap-4">
                   <span className="rounded-lg border border-border bg-surface-elevated px-4 py-2 text-sm font-semibold text-foreground">

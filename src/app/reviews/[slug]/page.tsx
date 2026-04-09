@@ -5,7 +5,7 @@ import { reviews } from '@/data/reviews'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { articleSchema, reviewSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
+import { articleSchema, reviewSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
@@ -15,6 +15,7 @@ import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
+import StructuredData from '@/components/StructuredData'
 import { Star, CheckCircle2, XCircle } from 'lucide-react'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -34,12 +35,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     url: `https://www.adminsignal.com/reviews/${slug}`,
     category: review.category,
     publishedTime: review.publishedAt,
+    tags: [review.productName, review.category],
     authorName: author?.name,
   })
 }
 
 function RatingBar({ value, max = 5 }: { value: number; max?: number }) {
-  const pct = (value / max) * 100
   return (
     <div className="flex items-center gap-3">
       <div className="flex gap-0.5">
@@ -93,12 +94,16 @@ export default async function ReviewArticlePage({ params }: Props) {
       meta: `${r.rating}/5 · ${r.readTime}`,
     }))
 
+  const pageUrl = `https://www.adminsignal.com/reviews/${slug}`
+
   const jsonLdArticle = articleSchema({
     title: review.title,
     description: review.excerpt,
     publishedTime: review.publishedAt,
+    modifiedTime: lastReviewed,
     authorName: author?.name,
-    url: `https://www.adminsignal.com/reviews/${slug}`,
+    url: pageUrl,
+    tags: [review.productName, review.category],
   })
 
   const jsonLdReview = reviewSchema({
@@ -113,7 +118,7 @@ export default async function ReviewArticlePage({ params }: Props) {
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
     { name: 'Reviews', url: 'https://www.adminsignal.com/reviews' },
-    { name: review.title, url: `https://www.adminsignal.com/reviews/${slug}` },
+    { name: review.title, url: pageUrl },
   ])
 
   const badgeVariant: Record<string, 'new' | 'difficulty' | 'category'> = {
@@ -124,9 +129,9 @@ export default async function ReviewArticlePage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdArticle) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdReview) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }} />
+      <StructuredData data={jsonLdArticle} />
+      <StructuredData data={jsonLdReview} />
+      <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
@@ -165,7 +170,6 @@ export default async function ReviewArticlePage({ params }: Props) {
                 </div>
               </header>
 
-              {/* Rating summary card */}
               <div className="mb-8 rounded-xl border border-border bg-surface p-6">
                 <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted/60">
                   Our Rating

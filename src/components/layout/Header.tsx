@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { Zap, Menu, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
 const nav = [
   { label: 'News', href: '/news' },
   { label: 'Tutorials', href: '/tutorials' },

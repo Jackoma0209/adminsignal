@@ -2,13 +2,18 @@ import type { Metadata } from 'next'
 import { signals } from '@/data/signals'
 import { guides } from '@/data/guides'
 import { scripts } from '@/data/scripts'
+import StructuredData from '@/components/StructuredData'
 import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+
+const topicName = 'Patch Management'
+const topicDescription =
+  'WSUS, Windows Update for Business, patch rings, and compliance reporting for enterprise environments.'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'Patch Management',
-  description:
-    'WSUS, Windows Update for Business, patch rings, and compliance reporting for enterprise environments.',
+  topicName,
+  description: topicDescription,
   slug: 'patch-management',
 })
 
@@ -56,14 +61,35 @@ export default function PatchManagementPage() {
     { name: 'Group Policy', href: '/group-policy' },
   ]
 
+  const jsonLdCollection = collectionPageSchema({
+    title: topicName,
+    description: topicDescription,
+    url: 'https://www.adminsignal.com/patch-management',
+    items: [...news, ...tutorials, ...scriptItems].map((item) => ({
+      name: item.title,
+      url: `https://www.adminsignal.com${item.href}`,
+    })),
+  })
+
+  const jsonLdBreadcrumb = breadcrumbSchema([
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Topic Hubs', url: 'https://www.adminsignal.com/topics' },
+    { name: topicName, url: 'https://www.adminsignal.com/patch-management' },
+  ])
+
   return (
-    <TopicHubPageTemplate
-      topicName="Patch Management"
-      description="WSUS, Windows Update for Business, patch rings, and compliance reporting. Operational guidance for keeping enterprise endpoints current and secure."
-      news={news}
-      tutorials={tutorials}
-      scripts={scriptItems}
-      relatedTopics={relatedTopics}
-    />
+    <>
+      <StructuredData data={jsonLdCollection} />
+      <StructuredData data={jsonLdBreadcrumb} />
+
+      <TopicHubPageTemplate
+        topicName={topicName}
+        description="WSUS, Windows Update for Business, patch rings, and compliance reporting. Operational guidance for keeping enterprise endpoints current and secure."
+        news={news}
+        tutorials={tutorials}
+        scripts={scriptItems}
+        relatedTopics={relatedTopics}
+      />
+    </>
   )
 }

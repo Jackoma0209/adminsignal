@@ -4,9 +4,10 @@ import remarkGfm from 'remark-gfm'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import type { Metadata } from 'next'
 import { scripts } from '@/data/scripts'
+import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { softwareApplicationSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
+import { softwareSourceCodeSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
@@ -14,6 +15,7 @@ import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
+import StructuredData from '@/components/StructuredData'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -30,6 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: script.description,
     url: `https://www.adminsignal.com/scripts/${slug}`,
     category: script.language,
+    tags: script.tags,
   })
 }
 
@@ -40,14 +43,23 @@ export default async function ScriptDetailPage({ params }: Props) {
 
   let content = ''
   let headings: { id: string; text: string; level: number }[] = []
+  let frontmatter: Record<string, unknown> = {}
 
   try {
     const item = getContentItem('scripts', slug)
     content = item.content
     headings = item.headings
+    frontmatter = item.frontmatter
   } catch {
     notFound()
   }
+
+  const authorId =
+    typeof frontmatter.authorId === 'string' ? frontmatter.authorId : undefined
+  const author = authorId ? getAuthor(authorId) : undefined
+  const frontmatterTags = Array.isArray(frontmatter.tags)
+    ? frontmatter.tags.filter((tag): tag is string => typeof tag === 'string')
+    : undefined
 
   const relatedScripts = scripts
     .filter((s) => s.id !== script.id && s.language === script.language)
@@ -60,17 +72,21 @@ export default async function ScriptDetailPage({ params }: Props) {
       meta: `${s.language}`,
     }))
 
-  const jsonLd = softwareApplicationSchema({
+  const pageUrl = `https://www.adminsignal.com/scripts/${slug}`
+
+  const jsonLd = softwareSourceCodeSchema({
     name: script.title,
     description: script.description,
-    url: `https://www.adminsignal.com/scripts/${slug}`,
-    applicationCategory: 'UtilitiesApplication',
+    url: pageUrl,
+    programmingLanguage: script.language,
+    tags: frontmatterTags ?? script.tags,
+    authorName: author?.name,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
     { name: 'Scripts', url: 'https://www.adminsignal.com/scripts' },
-    { name: script.title, url: `https://www.adminsignal.com/scripts/${slug}` },
+    { name: script.title, url: pageUrl },
   ])
 
   const languageVariant: Record<typeof script.language, 'category' | 'difficulty' | 'language' | 'new'> = {
@@ -82,8 +98,8 @@ export default async function ScriptDetailPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }} />
+      <StructuredData data={jsonLd} />
+      <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>

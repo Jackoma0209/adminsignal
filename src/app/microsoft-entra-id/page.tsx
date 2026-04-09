@@ -2,13 +2,18 @@ import type { Metadata } from 'next'
 import { signals } from '@/data/signals'
 import { guides } from '@/data/guides'
 import { scripts } from '@/data/scripts'
+import StructuredData from '@/components/StructuredData'
 import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
+import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+
+const topicName = 'Microsoft Entra ID'
+const topicDescription =
+  'Identity, Conditional Access, PIM, SSPR, and hybrid join for Microsoft Entra ID administrators.'
 
 export const metadata: Metadata = buildTopicMetadata({
-  topicName: 'Microsoft Entra ID',
-  description:
-    'Identity, Conditional Access, PIM, SSPR, and hybrid join for Microsoft Entra ID administrators.',
+  topicName,
+  description: topicDescription,
   slug: 'microsoft-entra-id',
 })
 
@@ -51,14 +56,35 @@ export default function EntraIdPage() {
     { name: 'PowerShell', href: '/powershell' },
   ]
 
+  const jsonLdCollection = collectionPageSchema({
+    title: topicName,
+    description: topicDescription,
+    url: 'https://www.adminsignal.com/microsoft-entra-id',
+    items: [...news, ...tutorials, ...scriptItems].map((item) => ({
+      name: item.title,
+      url: `https://www.adminsignal.com${item.href}`,
+    })),
+  })
+
+  const jsonLdBreadcrumb = breadcrumbSchema([
+    { name: 'Home', url: 'https://www.adminsignal.com' },
+    { name: 'Topic Hubs', url: 'https://www.adminsignal.com/topics' },
+    { name: topicName, url: 'https://www.adminsignal.com/microsoft-entra-id' },
+  ])
+
   return (
-    <TopicHubPageTemplate
-      topicName="Microsoft Entra ID"
-      description="Identity management, Conditional Access, PIM, SSPR, and hybrid join. Authoritative guidance for securing and governing your Entra ID tenant."
-      news={news}
-      tutorials={tutorials}
-      scripts={scriptItems}
-      relatedTopics={relatedTopics}
-    />
+    <>
+      <StructuredData data={jsonLdCollection} />
+      <StructuredData data={jsonLdBreadcrumb} />
+
+      <TopicHubPageTemplate
+        topicName={topicName}
+        description="Identity management, Conditional Access, PIM, SSPR, and hybrid join. Authoritative guidance for securing and governing your Entra ID tenant."
+        news={news}
+        tutorials={tutorials}
+        scripts={scriptItems}
+        relatedTopics={relatedTopics}
+      />
+    </>
   )
 }

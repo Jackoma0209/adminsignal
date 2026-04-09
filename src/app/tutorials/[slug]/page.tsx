@@ -5,7 +5,7 @@ import { guides } from '@/data/guides'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { articleSchema, breadcrumbSchema, safeJsonLd } from '@/lib/schema'
+import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
@@ -16,6 +16,7 @@ import TrustBanner from '@/components/article/TrustBanner'
 import AffiliateBlock from '@/components/article/AffiliateBlock'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
+import StructuredData from '@/components/StructuredData'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -72,18 +73,22 @@ export default async function TutorialPage({ params }: Props) {
       meta: `${g.readTime} · ${g.difficulty}`,
     }))
 
+  const pageUrl = `https://www.adminsignal.com/tutorials/${slug}`
+
   const jsonLd = articleSchema({
     title: guide.title,
     description: guide.excerpt,
     publishedTime: guide.publishedAt,
+    modifiedTime: lastReviewed,
     authorName: author?.name,
-    url: `https://www.adminsignal.com/tutorials/${slug}`,
+    url: pageUrl,
+    tags: guide.tags,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
     { name: 'Tutorials', url: 'https://www.adminsignal.com/tutorials' },
-    { name: guide.title, url: `https://www.adminsignal.com/tutorials/${slug}` },
+    { name: guide.title, url: pageUrl },
   ])
 
   const difficultyVariant: Record<typeof guide.difficulty, 'category' | 'difficulty' | 'language'> = {
@@ -94,8 +99,8 @@ export default async function TutorialPage({ params }: Props) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLdBreadcrumb) }} />
+      <StructuredData data={jsonLd} />
+      <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
