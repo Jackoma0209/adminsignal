@@ -1,0 +1,455 @@
+---
+title: "Deploy Windows 11 25H2 with Intune + Autopilot v2 (Zero-Touch, Production-Ready)"
+category: "Microsoft Intune"
+date: "Apr 10, 2026"
+authorId: "jack"
+lastReviewed: "Apr 10, 2026"
+reviewNote: "Incorporates the April 2026 Security Update (KB5055523) and updated Autopilot v2 Device Preparation scope behavior released March 2026."
+tags: ["Windows 11", "Autopilot", "Intune", "25H2", "Zero-Touch", "Deployment", "Endpoint Management"]
+---
+
+## Why 25H2 Is the Right Upgrade Target for Most Existing Fleets
+
+Before you touch a deployment profile, get this decision right.
+
+**Windows 11 25H2 is the correct mainstream target for existing x86/x64 hardware fleets in 2026.** Microsoft positioned 26H1 — due in mid-2026 — primarily around Arm64 optimisations for new Snapdragon X2 hardware. If you are managing a fleet of existing Intel/AMD endpoints, you have no operational reason to wait for 26H1, and several reasons not to.
+
+Here is what matters for enterprise planning:
+
+- **Servicing window**: Windows 11 25H2 Enterprise/Education receives 36 months of support, taking you through to approximately April 2028 — enough runway for a controlled fleet migration without emergency re-imaging pressure.
+- **April 2026 Security Update (KB5055523)**: This cumulative update includes fixes to OOBE-phase Autopilot enrollment timeouts that affected specific Dell and HP models during the Device Preparation policy provisioning sequence. If you are deploying to mixed OEM hardware, apply KB5055523 (or slip-stream it into your deployment media) before beginning broad rollout.
+- **26H1 and Arm64**: 26H1 brings performance improvements for Qualcomm Snapdragon X2 devices and refinements to the Neural Processing Unit scheduling stack. Unless you are procuring new Copilot+ PCs as part of this deployment cycle, 26H1 adds complexity with no corresponding benefit to your current hardware.
+- **Feature update policy targeting**: In Intune, your Windows Update for Business feature update policy should explicitly target **25H2** rather than "Latest". Leaving feature update policies open-ended will pull clients to 26H1 the moment it reaches GA servicing — before you have tested it in your environment.
+
+If you are running mixed fleets where some new Arm hardware is being introduced alongside existing x64 endpoints, deploy 25H2 to existing hardware now. You can layer 26H1 policies onto the Arm segment separately when that hardware arrives.
+
+## Where Autopilot v2 Fits — and Where It Does Not
+
+Windows Autopilot v2 (formally called **Device Preparation**) was promoted from preview to general availability in late 2025. It is not a drop-in replacement for every existing Autopilot workflow. Here is an honest assessment of where it belongs in 2026.
+
+### What v2 changes architecturally
+
+The legacy Autopilot flow (v1) was built around the deployment profile assigned to a device object, hardware hash CSV registration, and the Enrollment Status Page tracking app installs sequentially. v2 replaces the deployment profile with a **Device Preparation policy** and changes how the provisioning sequence is orchestrated:
+
+- **No hardware hash CSV** as the primary registration path. Devices register through Entra ID direct registration or OEM/Partner Center integration.
+- **Fewer MDM API calls during OOBE** — Microsoft reduced the round-trip count during initial provisioning, which shortens the ESP phase by 8–15 minutes in most environments.
+- **Scope-based policy assignment**: The Device Preparation policy is scoped to device groups using Entra ID attributes, not assigned to individual device objects. This changes how your group structure needs to work.
+- **Parallel app tracking**: v2's Device Preparation policy tracks a subset of required apps in a simplified status screen during OOBE, rather than the full ESP app inventory mechanism. The full ESP is still present and still configurable — but the primary blocking logic during provisioning moves to the Device Preparation sequence.
+
+### When to keep v1 workflows
+
+Do not migrate everything to v2 on day one:
+
+- **Hybrid Entra join deployments**: If devices must join an on-premises Active Directory domain during provisioning (Hybrid Entra Join), v1 profiles with the Hybrid Join connector remain the supported path. The v2 Device Preparation policy does not support Hybrid Join as of April 2026.
+- **White glove / technician pre-provisioning on existing hardware**: v2 supports pre-provisioning, but the workflow differs enough that retraining your deployment team is required. Validate in a lab before rolling this to field engineers.
+- **Existing registered devices being re-enrolled**: If a device is already registered under a v1 Autopilot profile and you are re-enrolling it (reset + redeploy), the v1 profile remains active unless you explicitly delete it and re-register the device under a v2 Device Preparation policy assignment.
+
+## Tenant Readiness Checklist
+
+Run through this before touching a single deployment profile. Gaps here become outages at 3 AM during a rollout.
+
+| Check | Requirement | Verification |
+|---|---|---|
+| Intune service release | April 2026 or later | Intune admin centre → **Tenant administration > Tenant status** |
+| Entra ID licensing | P1 minimum; P2 for PIM-gated LAPS and risk-based CA | Entra admin centre → **Billing > Licenses** |
+| Windows Enterprise licensing | Windows 11 Enterprise E3/E5 or Microsoft 365 E3/E5 | Intune → **Tenant administration > Licenses** |
+| Autopilot v2 Device Preparation enabled | Tenant flag is on (GA since late 2025, no manual enablement needed) | Intune → **Devices > Windows > Enrollment > Device Preparation policies** visible |
+| Entra ID device registration | Enabled and scoped correctly | Entra → **Identity > Devices > Device Settings** |
+| MDM authority | Intune (not co-managed in MDM authority conflict) | Intune → **Tenant administration > Cloud attach** |
+| Conditional Access | OOBE-phase exclusion in place for Autopilot service accounts | See CA policy audit section below |
+| Intune Connector for Active Directory | Only required for Hybrid Join — verify version ≥ 6.2303 | Intune → **Tenant administration > Connectors** |
+| Diagnostic log endpoint reachability | `*.manage.microsoft.com`, `*.dm.microsoft.com` reachable from deployment subnet | Run connectivity test from a clean device |
+
+### Conditional Access audit for Autopilot
+
+This is the number one tenant-side cause of Autopilot enrollment failures. During OOBE provisioning, the device signs in with the user's credentials before the device is compliant. If you have a CA policy requiring compliant devices for All Cloud Apps, it will block the Autopilot enrollment.
+
+The safe pattern:
+
+1. Create a named location or device group representing Autopilot-provisioning devices.
+2. Exclude that group from any CA policy with "Require compliant device" or "Require Entra hybrid joined device" conditions.
+3. After provisioning completes and the device achieves compliance, the exclusion no longer applies.
+
+Alternatively, and more precisely: use the **Autopilot bootstrap exclusion** — Microsoft's documented approach of excluding the **All Users** scoped Windows Enrollment application from device compliance requirements during the provisioning window. Document whichever approach you choose and review it after every CA policy change.
+
+## Device Readiness Checklist
+
+| Check | Requirement |
+|---|---|
+| TPM 2.0 | Present and enabled in UEFI. Run `Get-Tpm` in PowerShell — `TpmPresent: True`, `TpmReady: True` |
+| Secure Boot | Enabled. Verify in UEFI or run `Confirm-SecureBootUEFI` |
+| UEFI firmware | Latest version from OEM — especially on Dell Latitude 54xx series and HP EliteBook 840 G10+ (both had Autopilot-related UEFI bugs in 2025) |
+| RAM / Storage | 8 GB RAM minimum; 64 GB storage minimum for Windows 11. 128 GB or more recommended for enterprise apps |
+| Network at OOBE | Device must reach Intune, Autopilot, and Windows Update endpoints before user credential entry |
+| Previous enrollment cleaned up | If device was previously Intune/Autopilot enrolled, run a full wipe and confirm device is removed from Intune device list before re-registering |
+| Hardware registered | Device hash registered via OEM, Partner Center, or `Get-WindowsAutoPilotInfo` script |
+
+### Registering devices via PowerShell
+
+For devices not delivered with OEM registration, use the Get-WindowsAutoPilotInfo script. Run this from a technician workstation with network access to the target device, or run it locally on the device before OOBE:
+
+```powershell
+# Install the module if not already present
+Install-Module -Name Get-WindowsAutoPilotInfo -Force -Scope CurrentUser
+
+# Export hardware hash for a single device (run locally)
+Get-WindowsAutoPilotInfo -OutputFile C:\Temp\autopilot-hash.csv
+
+# Upload to Intune and register directly (requires Graph API permissions)
+Get-WindowsAutoPilotInfo -Online -Assign -GroupTag "EnterpriseLaptop-25H2"
+```
+
+The `-GroupTag` value maps to Entra ID dynamic device group rules, which in turn control which Device Preparation policy applies. Choose group tag names that reflect your deployment rings (e.g., `Pilot-25H2`, `Broad-25H2`) rather than hardware model — hardware changes, your ring structure should not.
+
+## Configuring the Autopilot v2 Device Preparation Policy
+
+Navigate to **Intune admin centre → Devices → Windows → Enrollment → Device Preparation policies → Create**.
+
+### Core policy settings
+
+**Deployment mode**: For most enterprise deployments, select **User-driven**. Pre-provisioned (Technician Flow) requires an additional OOBE step where a technician authenticates before the device is shipped to the user — useful if you are pre-loading heavy LOB apps to save user provisioning time, but it adds operational overhead.
+
+**Join type**: 
+- **Microsoft Entra joined** for cloud-native endpoints (the correct choice for new 25H2 deployments where on-premises AD dependency has been removed)
+- **Microsoft Entra hybrid joined** requires v1 profile — do not select this in a v2 Device Preparation policy, it is not currently supported
+
+**User account type**: Set to **Standard** unless you have a specific operational reason to provision with local admin rights. Combine with Windows LAPS for the built-in administrator account — see the [LAPS deployment guide](/tutorials/deploy-windows-laps-intune).
+
+**Allowed device group**: This is the Entra ID device group the Device Preparation policy applies to. Use a dynamic device group based on the group tag you set during hardware registration:
+
+```
+(device.devicePhysicalIds -any (_ -eq "[OrderID]:EnterpriseLaptop-25H2"))
+```
+
+Or if using group tags directly:
+
+```
+(device.devicePhysicalIds -any (_ -startsWith "[ZTDID]")) and (device.devicePhysicalIds -any (_ -eq "[OrderID]:Pilot-25H2"))
+```
+
+### Apps tracked during Device Preparation
+
+This is not the same as the ESP blocking list. The Device Preparation policy lets you specify a small set of applications (maximum 10) that are tracked and must reach a defined install state before the provisioning sequence completes.
+
+**Keep this list as short as possible.** Every app in this list is a deployment failure waiting to happen. A realistic minimum blocking set for a 25H2 enterprise deployment:
+
+1. **Microsoft 365 Apps for Enterprise** — users cannot work without it
+2. **Your endpoint security agent** (Microsoft Defender for Endpoint onboarding, CrowdStrike Falcon, etc.)
+3. **VPN client**, if users cannot reach internal resources over the internet
+
+Everything else — productivity apps, browser extensions, monitoring agents — should be deployed as **available** or **required without blocking**, and allowed to install in the background after the user reaches the desktop.
+
+![Autopilot v2 Device Preparation policy configuration screenshot](/images/placeholders/autopilot-v2-profile.webp)
+
+## Enrollment Status Page Configuration
+
+Even with v2, the Enrollment Status Page (ESP) remains the mechanism for tracking the full set of required applications and preventing the desktop from appearing until a baseline state is reached.
+
+Navigate to **Devices → Windows → Enrollment → Enrollment Status Page → Create profile**.
+
+### Recommended ESP settings for 25H2 deployments
+
+| Setting | Recommended Value | Reason |
+|---|---|---|
+| Show app and profile configuration progress | Yes | Required for monitoring |
+| Show error when installation takes longer than... | 60 minutes (increase to 90 for M365 Apps) | Prevents premature failure on slow links |
+| Show custom message on timeout | Yes — include your helpdesk contact | Users need to know what to do |
+| Allow users to reset device if installation error occurs | No (for managed environments) | Prevents self-service re-enrollment that bypasses your process |
+| Block device use until all apps and profiles are installed | Yes | Core purpose of ESP |
+| Block device use until required apps are installed | Select specific apps | Do not block on all assigned apps |
+| Allow users to use device if installation error occurs | No | Devices with failed baselines should not reach production |
+
+Assign the ESP profile to the same device group as your Device Preparation policy. If the ESP profile is not assigned to a device, the provisioning sequence will complete without waiting for application installs — which usually means the user gets a desktop before compliance policies are applied.
+
+## App Deployment Strategy During Autopilot
+
+The most common cause of prolonged or failed Autopilot enrollments is app deployment configuration, not policy or profile issues. Here is a working strategy for 25H2.
+
+### Tier your apps
+
+**Tier 1 — ESP blocking (must install before desktop)**:
+- Microsoft 365 Apps for Enterprise (deploy as Required, assigned to device group)
+- Endpoint security agent
+- VPN client (if users cannot work without split-tunnel access)
+
+**Tier 2 — Required, non-blocking (deploy during OOBE, complete in background)**:
+- Intune Management Extension
+- Windows LAPS configuration (handled via policy, not app deployment)
+- Browser enterprise policies
+- Certificate profiles
+
+**Tier 3 — Available (user-initiated or background install)**:
+- Department-specific tooling
+- Optional productivity apps
+- Developer tools
+
+### Microsoft 365 Apps — use the Office Deployment Tool profile, not the store variant
+
+Deploy M365 Apps for Enterprise using the **Microsoft 365 Apps (from Microsoft)** app type in Intune with a custom XML configuration. The store variant has slower delivery and less control over update channel. Set the update channel to **Monthly Enterprise Channel** for stability in production environments. **Current Channel** is appropriate only for dev/test rings.
+
+```xml
+<Configuration ID="enterprise-25h2-baseline">
+  <Add OfficeClientEdition="64" Channel="MonthlyEnterprise">
+    <Product ID="O365ProPlusRetail">
+      <Language ID="MatchOS" />
+      <ExcludeApp ID="Groove" />
+      <ExcludeApp ID="Lync" />
+      <ExcludeApp ID="Publisher" />
+    </Product>
+  </Add>
+  <Property Name="SharedComputerLicensing" Value="0" />
+  <Property Name="PinIconsToTaskbar" Value="FALSE" />
+  <Display Level="None" AcceptEULA="TRUE" />
+  <Updates Enabled="TRUE" Channel="MonthlyEnterprise" />
+  <Logging Level="Standard" Path="%temp%" />
+</Configuration>
+```
+
+### Win32 app packaging for LOB applications
+
+LOB applications should be packaged as Win32 apps (`.intunewin` format) for Intune delivery. Do not use MSI or script deployment for anything that needs to be tracked during ESP — the MDM agent tracks Win32 app install state reliably; script-based installs are less reliable for ESP tracking purposes.
+
+For each Win32 app added to the ESP blocking list, confirm:
+- A working detection rule (registry key, file version, or MSI product code — not just "script returned 0")
+- Dependency chain configured if the app requires a runtime (e.g., .NET 8, VC++ redistributable)
+- Install command tested on a clean Windows 11 25H2 VM before adding to the ESP blocking list
+
+## Compliance and Update Ring Recommendations
+
+### Compliance policy
+
+Create a dedicated compliance policy for your 25H2 Autopilot-enrolled devices and assign it to your Autopilot device group. Do not reuse a pre-existing general compliance policy without auditing its settings first.
+
+Key settings for a 25H2 baseline:
+
+| Setting | Value |
+|---|---|
+| Minimum OS version | 10.0.26100.xxxx (Windows 11 25H2 baseline build) |
+| Require BitLocker | Yes |
+| Require Secure Boot | Yes |
+| Require code integrity | Yes |
+| Microsoft Defender Antimalware | Required |
+| Microsoft Defender Antimalware security intelligence up-to-date | Yes |
+| Real-time protection | Required |
+| Firewall | Required |
+| Require device compliance from Microsoft Defender for Endpoint | Yes (if you have MDE P2 licensing) |
+
+Set the compliance grace period to **72 hours** for the initial rollout. This gives devices time to receive and apply all policies before being marked non-compliant in reports. After stabilisation, reduce to 24 hours or zero.
+
+### Windows Update for Business — feature update policy
+
+```
+Target version: Windows 11, version 25H2
+Deadline for feature update: 14 days after availability to ring
+Restart deadline: 3 days after download complete
+Active hours: 08:00 – 18:00 (user-defined or enforced)
+```
+
+Do **not** set the feature update policy to target "Latest feature update" — this will pull devices to 26H1 when it reaches your update ring. Explicitly pin to 25H2 and plan a separate migration exercise for 26H1 when it reaches your validation threshold.
+
+### Update rings
+
+Run at minimum three rings. More rings add governance overhead with diminishing returns for most fleets:
+
+**Ring 1 — Pilot (5–10% of fleet, IT and power users)**:
+- Quality updates: 0-day deferral (receives updates day of release)
+- Feature updates: 0-day deferral on pinned version
+
+**Ring 2 — Early Adopters (20–30% of fleet)**:
+- Quality updates: 7-day deferral
+- Feature updates: pinned to 25H2
+
+**Ring 3 — Broad (remaining fleet)**:
+- Quality updates: 14-day deferral
+- Feature updates: pinned to 25H2
+
+Review Ring 1 for 7 days after each Patch Tuesday before allowing Ring 2 to proceed. If the April 2026 Security Update (KB5055523) has not been deployed to your Ring 1 devices yet, prioritise it — it addresses the Autopilot OOBE timeout regression that affects specific OEM models.
+
+## Production Rollout Sequence
+
+This is the sequence that does not generate midnight incident calls. Shortcuts here are borrowed time.
+
+### Phase 0 — Lab validation (1–2 weeks)
+
+Before touching production devices:
+
+1. Build a clean Windows 11 25H2 Autopilot v2 environment in a dedicated test tenant or isolated Intune instance.
+2. Enroll 3–5 devices representing your OEM mix through the full provisioning flow.
+3. Validate: ESP completes, all Tier 1 apps install, compliance policy evaluates to compliant, device joins Entra ID, user can authenticate.
+4. Document the provisioning time from OOBE start to desktop ready. This is your baseline SLA.
+5. Validate your disaster recovery process: wipe a test device, re-enroll, confirm it reprovisioned correctly.
+
+### Phase 1 — Pilot (weeks 1–2)
+
+- Target: IT staff, helpdesk, and volunteered power users — people who understand "this is a test" and will give useful failure reports.
+- Device count: 10–50 depending on fleet size.
+- Monitoring: Check Intune → **Devices → Monitor → Enrollment failures** daily. Check compliance status. Check update ring assignment.
+- Success criteria: Zero unresolved ESP failures, compliance rate ≥ 95%, provisioning time within 20% of your lab baseline.
+
+If Phase 1 reveals failures, stop. Do not expand until root cause is confirmed and reproduced. The most common Phase 1 failures are:
+
+- CA policy blocking enrollment (missed an exclusion)
+- An ESP-blocking app failing to install (detection rule mismatch or dependency missing)
+- Network path issues (proxy not bypassing Autopilot/Intune endpoints)
+
+### Phase 2 — Early Adopters (weeks 3–5)
+
+- Target: Department leads, project volunteers, less-critical business units.
+- Device count: 20–30% of total fleet.
+- Expand device deployment rings in Intune to include this group.
+- Maintain daily monitoring. Set an Intune alert for enrollment failure rates above 5%.
+
+### Phase 3 — Broad Deployment (weeks 6–10)
+
+- Remaining fleet.
+- At this stage, your provisioning process should be mechanical — zero-touch in practice, not just in name.
+- Plan a remediation buffer of 5% of your device count per week for any devices that require manual intervention (typically hardware that was not pre-registered, devices with incompatible firmware, or devices that were previously enrolled with conflicting v1 profiles).
+
+### Remediation loop
+
+For each failed device, the remediation sequence is:
+
+1. Pull the MDM diagnostic report from the device (or remotely via Intune if the device reached the desktop before failure).
+2. Check the Intune enrollment failure report for the specific error code.
+3. If the device never reached the desktop: boot to WinPE or PXE, wipe, and re-enroll.
+4. If the device reached the desktop but compliance failed: check policy assignment, manually trigger a sync, wait one policy cycle.
+
+Keep a running failure log with device serial, error code, OEM/model, and resolution. Patterns in this data tell you whether you have a configuration problem, a network problem, or an OEM firmware problem — three very different remediation paths.
+
+## Troubleshooting Common Failure Points
+
+### Diagnostic log collection
+
+Collect logs before wiping any failed device. You will not regret the 10 minutes it takes.
+
+```powershell
+# Run at the ESP screen (Ctrl+Shift+J for the in-OOBE diagnostic view)
+# Or from an admin PowerShell prompt after partial enrollment:
+
+# Full MDM diagnostic report
+mdmdiagnosticstool.exe -area Autopilot;DeviceEnrollment;DeviceProvisioning -cab C:\Temp\autopilot-diag-$env:COMPUTERNAME.cab
+
+# Check Autopilot profile assignment
+$profileInfo = (Invoke-RestMethod -Uri 'https://enterpriseregistration.windows.net/enrollmentserver/contract?api-version=1.0' -UseDefaultCredentials) 
+# Note: this endpoint requires the device to be in OOBE/enrollment context
+
+# Event logs that matter
+Get-WinEvent -LogName "Microsoft-Windows-ModernDeployment-Diagnostics-Provider/Autopilot" -MaxEvents 50 |
+    Select-Object TimeCreated, Id, LevelDisplayName, Message |
+    Format-Table -AutoSize -Wrap
+```
+
+### Failure table
+
+| Symptom | Likely Cause | Resolution |
+|---|---|---|
+| ESP stuck at 0% — "Identifying your device" | Device not registered in Autopilot, or registration not synced | Verify in Intune → **Devices → Windows → Enrollment → Windows Autopilot devices**. Allow 15 min sync after import. |
+| ESP stuck at 0% — "Preparing your device" | Cannot reach Intune/Autopilot endpoints | Check proxy bypass rules for `*.manage.microsoft.com`, `login.microsoftonline.com`, `*.dm.microsoft.com` |
+| "Something went wrong" after user signs in | Conditional Access blocking OOBE auth | Audit CA policies — look for "Require compliant device" on All Cloud Apps without Autopilot exclusion |
+| M365 Apps install hanging (>45 min) | Content delivery network routing issue or bandwidth saturation | Check Delivery Optimization configuration; verify no proxy is intercepting HTTPS to CDN endpoints |
+| App detection rule failing | Detection rule does not match install state on this OS version | Test detection rule on a clean 25H2 VM. Check for 32-bit vs 64-bit path mismatch. |
+| Domain join fails | Hybrid Join only — ODJ Connector unreachable or no DC line-of-sight | Check Intune Connector service on connector server; verify ODJC can resolve and reach a DC from the provisioning subnet |
+| Device marked non-compliant immediately post-enrollment | Compliance policy grace period too short, or BitLocker encryption not completed | Set grace period to 72h during rollout; check BitLocker encryption status in Intune |
+| "This device is already managed" error | Previous enrollment record not cleaned up | Remove from Intune device list, delete Autopilot device object, factory reset device |
+| Autopilot profile not applied (wrong profile or no profile) | Device group membership not evaluated yet | Dynamic groups take up to 24h to evaluate. Trigger manual sync or use static group for pilot phase. |
+
+### PowerShell pre-flight check for a device before deployment
+
+Run this on a device before registering it for Autopilot to surface the most common hardware blockers:
+
+```powershell
+function Test-AutopilotReadiness {
+    [CmdletBinding()]
+    param()
+
+    $results = [ordered]@{}
+
+    # TPM check
+    $tpm = Get-Tpm -ErrorAction SilentlyContinue
+    $results['TPM Present']  = if ($tpm.TpmPresent) { 'PASS' } else { 'FAIL - TPM not present' }
+    $results['TPM Ready']    = if ($tpm.TpmReady)   { 'PASS' } else { 'FAIL - TPM not ready (check UEFI)' }
+    $results['TPM Activated']= if ($tpm.TpmActivated) { 'PASS' } else { 'WARN - TPM not activated' }
+
+    # Secure Boot
+    try {
+        $sb = Confirm-SecureBootUEFI
+        $results['Secure Boot'] = if ($sb) { 'PASS' } else { 'FAIL - Secure Boot disabled' }
+    } catch {
+        $results['Secure Boot'] = 'FAIL - Not a UEFI system or Secure Boot check failed'
+    }
+
+    # Windows version
+    $os = Get-CimInstance Win32_OperatingSystem
+    $build = [int]($os.BuildNumber)
+    $results['OS Build'] = if ($build -ge 26100) { "PASS - Build $build (Windows 11 25H2+)" }
+                           elseif ($build -ge 22000) { "WARN - Build $build (Windows 11 but pre-25H2)" }
+                           else { "FAIL - Build $build (not Windows 11)" }
+
+    # RAM
+    $ram = [math]::Round(($os.TotalVisibleMemorySize / 1MB), 0)
+    $results['RAM (GB)'] = if ($ram -ge 8) { "PASS - ${ram}GB" } else { "FAIL - ${ram}GB (minimum 8GB for Win11)" }
+
+    # Disk
+    $disk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"
+    $freeGB = [math]::Round(($disk.FreeSpace / 1GB), 1)
+    $results['C: Free Space'] = if ($freeGB -ge 20) { "PASS - ${freeGB}GB free" } else { "WARN - ${freeGB}GB free (recommend 20GB+ for safe deployment)" }
+
+    # Network connectivity to Intune
+    $endpoints = @(
+        'enrollment.manage.microsoft.com',
+        'portal.manage.microsoft.com',
+        'login.microsoftonline.com'
+    )
+    foreach ($ep in $endpoints) {
+        $reachable = Test-NetConnection -ComputerName $ep -Port 443 -InformationLevel Quiet -WarningAction SilentlyContinue
+        $results["Network: $ep"] = if ($reachable) { 'PASS' } else { 'FAIL - Not reachable on 443' }
+    }
+
+    # Output results
+    Write-Host "`n=== Autopilot Readiness Check: $env:COMPUTERNAME ===" -ForegroundColor Cyan
+    foreach ($key in $results.Keys) {
+        $value = $results[$key]
+        $colour = switch -Wildcard ($value) {
+            'PASS*' { 'Green' }
+            'WARN*' { 'Yellow' }
+            default { 'Red' }
+        }
+        Write-Host ("  {0,-35} {1}" -f $key, $value) -ForegroundColor $colour
+    }
+    Write-Host ""
+}
+
+Test-AutopilotReadiness
+```
+
+### Checking enrollment status across the fleet
+
+Use this to get a quick compliance and enrollment status snapshot from Graph API before expanding deployment rings:
+
+```powershell
+# Requires Microsoft.Graph.Intune module or Graph PowerShell SDK
+# Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
+
+$devices = Get-MgDeviceManagementManagedDevice -Filter "operatingSystem eq 'Windows'" -All |
+    Where-Object { $_.OsVersion -like "*26100*" } |
+    Select-Object DeviceName, ComplianceState, LastSyncDateTime, EnrolledDateTime, OsVersion |
+    Sort-Object EnrolledDateTime -Descending
+
+$devices | Format-Table -AutoSize
+
+# Summary
+$compliant   = ($devices | Where-Object { $_.ComplianceState -eq 'compliant' }).Count
+$nonCompliant= ($devices | Where-Object { $_.ComplianceState -eq 'noncompliant' }).Count
+$unknown     = ($devices | Where-Object { $_.ComplianceState -notin @('compliant','noncompliant') }).Count
+
+Write-Host "Compliant: $compliant | Non-compliant: $nonCompliant | Unknown/grace: $unknown" -ForegroundColor Cyan
+```
+
+## Related Resources
+
+- [Understanding Autopilot v2: Enrollment Profiles, ESP, and Common Failure Modes](/tutorials/autopilot-v2-enrollment-esp-troubleshooting) — deep-dive on the v2 architecture and ESP diagnosis
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune) — pair LAPS with your 25H2 deployment for local admin control
+- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark) — apply after deployment to bring endpoints to your security baseline
+- [PowerShell scripts for Intune automation](/scripts) — additional deployment and reporting scripts
+- [Autopilot troubleshooting](/troubleshooting) — individual error code breakdowns and resolution paths
+- [Microsoft Intune topic hub](/intune) — all Intune guides and news in one place
