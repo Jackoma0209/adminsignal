@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     template: '%s | AdminSignal',
   },
   description:
-    'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers.',
+    'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. Written by a practitioner with 12+ years of enterprise Windows and Intune experience.',
   keywords: [
     'sysadmin',
     'Microsoft Intune',
@@ -34,11 +34,38 @@ export const metadata: Metadata = {
     'IT engineering',
     'Active Directory',
     'Microsoft 365',
+    'Intune tutorials',
+    'Windows admin guides',
+    'enterprise IT',
   ],
+  authors: [{ name: 'Jack', url: 'https://www.adminsignal.com/about' }],
+  creator: 'Jack',
+  publisher: 'AdminSignal',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
+  },
   openGraph: {
     siteName: 'AdminSignal',
     type: 'website',
+    locale: 'en_US',
   },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@adminsignal',
+    creator: '@adminsignal',
+    title: 'AdminSignal — Practitioner-Focused Content for Sysadmins',
+    description:
+      'In-depth guides, scripts, and analysis for Windows admins and endpoint engineers. Production-tested, not lab theory.',
+  },
+  category: 'technology',
   other: {
     'google-adsense-account': 'ca-pub-5563142788194204',
   },

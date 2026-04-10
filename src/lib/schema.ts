@@ -63,6 +63,37 @@ export function safeJsonLd(data: SchemaThing): string {
   return JSON.stringify(data).replace(/</g, '\\u003c')
 }
 
+export function personSchema({
+  name,
+  url,
+  jobTitle,
+  description,
+  sameAs,
+}: {
+  name: string
+  url?: string
+  jobTitle?: string
+  description?: string
+  sameAs?: string[]
+}) {
+  return cleanSchema({
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${SITE_URL}#author`,
+    name,
+    url: url ?? SITE_URL,
+    jobTitle,
+    description,
+    worksFor: {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}#organization`,
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    sameAs,
+  })
+}
+
 export function organizationSchema({
   description,
 }: {
@@ -75,6 +106,11 @@ export function organizationSchema({
     name: SITE_NAME,
     url: SITE_URL,
     description,
+    founder: {
+      '@type': 'Person',
+      '@id': `${SITE_URL}#author`,
+      name: 'Jack',
+    },
   })
 }
 

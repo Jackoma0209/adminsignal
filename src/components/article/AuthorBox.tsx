@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { ExternalLink } from 'lucide-react'
 import type { Author } from '@/data/authors'
 
 interface AuthorBoxProps {
@@ -14,8 +15,22 @@ export default function AuthorBox({ author }: AuthorBoxProps) {
       >
         {author.initials}
       </div>
-      <div>
-        <p className="text-sm font-semibold text-foreground">{author.name}</p>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-semibold text-foreground">{author.name}</p>
+          {author.linkedIn && (
+            <a
+              href={author.linkedIn}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${author.name} on LinkedIn`}
+              className="flex items-center gap-1 text-xs text-muted transition-colors hover:text-primary"
+            >
+              <ExternalLink className="h-3 w-3" />
+              LinkedIn
+            </a>
+          )}
+        </div>
         <p className="mb-2 text-xs text-muted">{author.role}</p>
         <p className="text-sm leading-relaxed text-muted">{author.bio}</p>
         <p className="mt-3 text-xs text-muted/60">

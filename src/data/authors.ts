@@ -4,9 +4,22 @@ export interface Author {
   role: string
   bio: string
   initials: string
+  linkedIn?: string
+  twitter?: string
+}
+
+/** Primary site author / founder */
+export const primaryAuthor: Author = {
+  id: 'jack',
+  name: 'Jack',
+  role: 'Senior Enterprise Sysadmin · 12+ Years Windows & Intune',
+  bio: "I've spent 12+ years managing Windows fleets, Intune tenants, and Active Directory environments for enterprise clients across finance, logistics, and professional services. AdminSignal exists because I got tired of docs that stop at \"click Apply.\" Everything here is tested in production before it goes on the page.",
+  initials: 'J',
+  linkedIn: 'https://www.linkedin.com/in/jackoma0209',
 }
 
 export const authors: Author[] = [
+  primaryAuthor,
   {
     id: 'marcus-webb',
     name: 'Marcus Webb',
