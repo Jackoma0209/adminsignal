@@ -17,14 +17,20 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const SITE_NAME = 'AdminSignal'
+const SITE_URL = 'https://www.adminsignal.com'
+const SITE_DESCRIPTION =
+  'Production-tested guides, PowerShell scripts, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets, Microsoft Intune tenants, and Active Directory environments across finance, logistics, and professional services.'
+const OG_IMAGE = `${SITE_URL}/og-default.png`
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.adminsignal.com'),
+  metadataBase: new URL(SITE_URL),
+  applicationName: SITE_NAME,
   title: {
-    default: 'AdminSignal — Practitioner-Focused Content for Sysadmins',
-    template: '%s | AdminSignal',
+    default: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. Written by a practitioner with 12+ years of enterprise Windows and Intune experience.',
+  description: SITE_DESCRIPTION,
   keywords: [
     'sysadmin',
     'Microsoft Intune',
@@ -37,10 +43,25 @@ export const metadata: Metadata = {
     'Intune tutorials',
     'Windows admin guides',
     'enterprise IT',
+    'Windows 11',
+    'Autopilot',
+    'Entra ID',
+    'Group Policy',
+    'Patch Tuesday',
+    'endpoint security',
+    'CIS benchmark',
+    'LAPS',
+    'MDM',
+    'zero-touch deployment',
   ],
-  authors: [{ name: 'Jack', url: 'https://www.adminsignal.com/about' }],
+  authors: [
+    {
+      name: 'Jack',
+      url: `${SITE_URL}/about`,
+    },
+  ],
   creator: 'Jack',
-  publisher: 'AdminSignal',
+  publisher: SITE_NAME,
   robots: {
     index: true,
     follow: true,
@@ -53,17 +74,29 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    siteName: 'AdminSignal',
+    siteName: SITE_NAME,
     type: 'website',
     locale: 'en_US',
+    url: SITE_URL,
+    title: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'AdminSignal — Practitioner-Focused Guides for Enterprise Sysadmins',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     site: '@adminsignal',
     creator: '@adminsignal',
-    title: 'AdminSignal — Practitioner-Focused Content for Sysadmins',
+    title: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
     description:
-      'In-depth guides, scripts, and analysis for Windows admins and endpoint engineers. Production-tested, not lab theory.',
+      'Production-tested guides, PowerShell scripts, and analysis for Windows admins and endpoint engineers. 12+ years enterprise experience, no lab theory.',
+    images: [OG_IMAGE],
   },
   category: 'technology',
   other: {

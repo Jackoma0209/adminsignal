@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Zap } from 'lucide-react'
+import { Zap, ShieldCheck } from 'lucide-react'
 import PrivacySettingsButton from '@/components/PrivacySettingsButton'
 
 const footerLinks = [
@@ -64,8 +64,22 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              Practitioner-focused guides, scripts, and analysis for sysadmins and endpoint engineers.
+              Practitioner-focused guides, scripts, and analysis for enterprise sysadmins and endpoint engineers.
             </p>
+            <div className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-surface/60 p-3">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary/70" aria-hidden="true" />
+              <p className="text-xs leading-relaxed text-muted/80">
+                Written by a senior enterprise sysadmin with 12+ years managing Windows fleets, Intune tenants, and AD environments. Everything is tested in production before it goes on the page.
+              </p>
+            </div>
+            <div className="mt-4 flex flex-col gap-1.5">
+              <Link href="/about" className="text-xs text-muted/60 hover:text-foreground-soft transition-colors">
+                About the author →
+              </Link>
+              <Link href="/editorial-policy" className="text-xs text-muted/60 hover:text-foreground-soft transition-colors">
+                Editorial policy →
+              </Link>
+            </div>
           </div>
 
           {/* Link columns */}

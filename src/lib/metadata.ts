@@ -26,6 +26,7 @@ export function buildArticleMetadata({
     title,
     description,
     keywords: tags,
+    ...(authorName && { authors: [{ name: authorName, url: `${siteUrl}/about` }] }),
     ...(url && { alternates: { canonical: url } }),
     openGraph: {
       title,
@@ -34,7 +35,8 @@ export function buildArticleMetadata({
       siteName,
       url,
       publishedTime,
-      modifiedTime,
+      // Always carry a modifiedTime so Google sees freshness signals
+      modifiedTime: modifiedTime ?? publishedTime,
       section: category,
       tags,
       authors: authorName ? [authorName] : undefined,
@@ -43,6 +45,7 @@ export function buildArticleMetadata({
       card: 'summary_large_image',
       title,
       description,
+      ...(authorName && { creator: authorName }),
     },
   }
 }
