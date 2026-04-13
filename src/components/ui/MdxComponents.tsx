@@ -1,6 +1,17 @@
-import type { MDXComponents } from 'mdx/types'
-import CopyButton from '@/components/ui/CopyButton'
+/**
+ * MdxComponents — custom element overrides supplied to every MDXRemote call.
+ *
+ * pre  → CodeBlock (Shiki syntax highlighting + CopyButton)
+ * table → overflow-scroll wrapper (unchanged)
+ */
 
+import type { MDXComponents } from 'mdx/types'
+import type React from 'react'
+import CodeBlock from '@/components/ui/CodeBlock'
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+/** Recursively flatten React children to a plain string (for extracting code). */
 function extractText(node: React.ReactNode): string {
   if (typeof node === 'string') return node
   if (typeof node === 'number') return String(node)
@@ -12,19 +23,44 @@ function extractText(node: React.ReactNode): string {
   return ''
 }
 
-function Pre({ children, ...props }: React.HTMLAttributes<HTMLPreElement>) {
-  const text = extractText(children)
-  return (
-    <div className="group relative my-5">
-      {/* Button is opacity-0 at rest, fades in on hover/focus-within for clean look
-          It's always focusable for keyboard users regardless of opacity */}
-      <div className="absolute right-2.5 top-2.5 z-10 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
-        <CopyButton text={text} />
-      </div>
-      <pre {...props}>{children}</pre>
-    </div>
-  )
+// ── Pre ────────────────────────────────────────────────────────────────────
+
+/**
+ * MDX renders fenced code blocks as:
+ *   <pre><code className="language-powershell">…raw code…</code></pre>
+ *
+ * We unwrap the inner <code> element, pull out the language identifier and the
+ * raw text, then hand them to CodeBlock which runs Shiki server-side.
+ */
+function Pre({ children }: React.HTMLAttributes<HTMLPreElement>) {
+  // MDX always wraps code in a single <code> child; handle both scalar and array
+  const child = Array.isArray(children) ? children[0] : children
+
+  let lang: string | undefined
+  let code = ''
+
+  if (child && typeof child === 'object' && 'props' in (child as object)) {
+    const el = child as React.ReactElement<{
+      className?: string
+      children?: React.ReactNode
+    }>
+    // className is "language-powershell", "language-tsx", etc.
+    const match = (el.props.className ?? '').match(/language-([\w.+-]+)/)
+    if (match) lang = match[1]
+    code = extractText(el.props.children)
+  } else {
+    // Bare <pre> without a <code> wrapper — rare but handle gracefully
+    code = extractText(children)
+  }
+
+  // Trim the trailing newline MDX appends so Shiki doesn't render a blank line
+  code = code.replace(/\n$/, '')
+
+  // CodeBlock is an async Server Component; React resolves it during SSR/SSG
+  return <CodeBlock code={code} lang={lang} />
 }
+
+// ── Table ──────────────────────────────────────────────────────────────────
 
 function Table({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) {
   return (
@@ -33,6 +69,8 @@ function Table({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) {
     </div>
   )
 }
+
+// ── Exports ────────────────────────────────────────────────────────────────
 
 export const mdxComponents: MDXComponents = {
   pre: Pre,

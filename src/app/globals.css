@@ -217,6 +217,26 @@ samp {
   font-size: inherit;
 }
 
+/*
+ * Shiki code blocks — strip .prose pre chrome so CodeBlock's own wrapper
+ * (shiki-wrapper) provides the border, radius, and background instead.
+ * Shiki already sets background-color via inline style, which beats the
+ * class rule, but the other properties need explicit reset.
+ */
+.prose .shiki-wrapper {
+  margin-top: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.prose .shiki-wrapper pre.shiki {
+  border: none;
+  border-radius: 0;
+  /* Restore symmetric vertical padding — top bar takes the place of the
+     large top padding that was reserving space for the old floating button */
+  padding: 1.125rem 1.5rem;
+  overflow-x: visible; /* parent div handles scroll */
+  margin: 0;
+}
+
 .prose blockquote {
   border-left: 3px solid var(--color-primary);
   padding-left: 1.25rem;
