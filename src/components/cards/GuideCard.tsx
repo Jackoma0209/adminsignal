@@ -61,7 +61,7 @@ export default function GuideCard({ guide }: GuideCardProps) {
         </div>
 
         <div className="flex flex-1 flex-col gap-2">
-          <Link href={`/tutorials/${guide.slug}`}>
+          <Link href={guide.href ?? `/tutorials/${guide.slug}`}>
             <h3 className="line-clamp-3 text-[15px] font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
               {guide.title}
             </h3>
@@ -75,7 +75,7 @@ export default function GuideCard({ guide }: GuideCardProps) {
             <span>{guide.readTime}</span>
           </div>
           <Link
-            href={`/tutorials/${guide.slug}`}
+            href={guide.href ?? `/tutorials/${guide.slug}`}
             className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
             aria-label={`Read ${guide.title}`}
           >

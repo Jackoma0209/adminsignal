@@ -2,6 +2,8 @@ export interface Guide {
   id: string
   title: string
   slug: string
+  /** Override the default /tutorials/{slug} link — used for flagship guides with a dedicated page */
+  href?: string
   category: string
   excerpt: string
   date: string
@@ -18,6 +20,7 @@ export const guides: Guide[] = [
     id: '7',
     title: 'Deploy Windows 11 25H2 with Intune + Autopilot v2 (Zero-Touch, Production-Ready)',
     slug: 'windows-11-25h2-autopilot-v2',
+    href: '/guides/windows-11-25h2-autopilot-v2',
     category: 'Microsoft Intune',
     excerpt:
       'A production-grade walkthrough for deploying Windows 11 25H2 across existing x86/x64 fleets using Autopilot v2 Device Preparation policies. Covers tenant readiness, ESP configuration, app tiering, update rings, a phased rollout sequence, and a PowerShell pre-flight toolkit.',
