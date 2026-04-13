@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import { signals } from '@/data/signals'
@@ -50,11 +51,13 @@ export default async function NewsArticlePage({ params }: Props) {
   let headings: { id: string; text: string; level: number }[] = []
   let lastReviewed: string | undefined
   let reviewNote: string | undefined
+  let frontmatter: Record<string, unknown> = {}
 
   try {
     const item = getContentItem('news', slug)
     content = item.content
     headings = item.headings
+    frontmatter = item.frontmatter
     lastReviewed = item.frontmatter.lastReviewed as string | undefined
     reviewNote = item.frontmatter.reviewNote as string | undefined
   } catch {
@@ -62,6 +65,17 @@ export default async function NewsArticlePage({ params }: Props) {
   }
 
   const author = signal.authorId ? getAuthor(signal.authorId) : undefined
+
+  // Prefer image from signals.ts; fall back to MDX frontmatter for legacy content
+  const featuredImage =
+    signal.image ??
+    (typeof frontmatter.image === 'string' ? frontmatter.image : undefined) ??
+    null
+
+  const featuredImageAlt =
+    typeof frontmatter.imageAlt === 'string'
+      ? frontmatter.imageAlt
+      : signal.title
 
   const relatedSignals = signals
     .filter((s) => s.id !== signal.id && s.category === signal.category)
@@ -155,6 +169,25 @@ export default async function NewsArticlePage({ params }: Props) {
                   )}
                 </div>
               </header>
+
+              {/* ── Featured image ──────────────────────────────────────── */}
+              {featuredImage && (
+                <div className="relative mb-8 aspect-video w-full overflow-hidden rounded-xl bg-surface">
+                  <Image
+                    src={featuredImage}
+                    alt={featuredImageAlt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 700px"
+                    priority
+                  />
+                  {/* Subtle gradient keeps bottom legible against any image */}
+                  <div
+                    className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 to-transparent"
+                    aria-hidden="true"
+                  />
+                </div>
+              )}
 
               <AdSlot variant="banner" className="mb-8" />
 

@@ -24,6 +24,8 @@ export interface Signal {
   tags?: string[]
   isNew?: boolean
   isFeatured?: boolean
+  /** Absolute URL of the featured image used in article header and card thumbnail */
+  image?: string
 }
 
 /**
@@ -48,6 +50,7 @@ export const liveSignals: Signal[] = [
     tags: ['Patch Tuesday', 'Windows 11', 'Intune', 'Autopilot', 'Security', 'CVE'],
     isNew: true,
     isFeatured: true,
+    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'live-1',
@@ -65,6 +68,7 @@ export const liveSignals: Signal[] = [
     tags: ['Windows Security', 'Drivers', 'Windows 11', 'Windows Server 2025'],
     isNew: true,
     isFeatured: true,
+    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'live-2',
@@ -82,6 +86,7 @@ export const liveSignals: Signal[] = [
     tags: ['Windows App', 'Remote Desktop', 'Windows 365', 'Commercial Cloud'],
     isNew: true,
     isFeatured: true,
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'live-3',
@@ -98,6 +103,7 @@ export const liveSignals: Signal[] = [
     isOfficial: true,
     tags: ['Intune', 'Security', 'Zero Trust', 'Admin Roles'],
     isFeatured: true,
+    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'live-4',
@@ -113,6 +119,7 @@ export const liveSignals: Signal[] = [
     sourceUrl: 'https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766',
     isOfficial: true,
     tags: ['Intune', 'MDM', 'BYOD', 'Enrollment'],
+    image: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'live-5',
@@ -128,6 +135,7 @@ export const liveSignals: Signal[] = [
     sourceUrl: 'https://techcommunity.microsoft.com/blog/intunecustomersuccess/migrating-frontline-mobile-devices-a-frontline-first-approach-to-moving-to-micro/4501347',
     isOfficial: true,
     tags: ['Intune', 'Frontline Workers', 'Mobile', 'Migration'],
+    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80',
   },
 ]
 

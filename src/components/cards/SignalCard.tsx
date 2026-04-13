@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowUpRight } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { type Signal } from '@/data/signals'
@@ -35,19 +36,33 @@ export default function SignalCard({ signal }: SignalCardProps) {
     <article className="group flex flex-col gap-0 rounded-xl border border-border bg-surface shadow-card transition-colors hover:border-border-strong hover:bg-surface-elevated/40 overflow-hidden">
       {/* Thumbnail */}
       <div
-        className={`relative h-36 w-full bg-linear-to-br ${gradient} flex items-end px-5 pb-3 shrink-0`}
+        className={`relative h-36 w-full shrink-0 overflow-hidden bg-linear-to-br ${gradient}`}
         aria-hidden="true"
       >
-        {/* Faint grid overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-          }}
-        />
-        {/* Category watermark */}
-        <span className={`relative font-mono text-[11px] font-semibold uppercase tracking-widest ${accent}`}>
+        {signal.image ? (
+          <>
+            <Image
+              src={signal.image}
+              alt=""
+              fill
+              className="object-cover opacity-60"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+            />
+            {/* Gradient overlay so category watermark stays readable */}
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+          </>
+        ) : (
+          /* Faint grid overlay for gradient-only cards */
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+            }}
+          />
+        )}
+        {/* Category watermark — always visible above image or gradient */}
+        <span className={`absolute bottom-3 left-5 font-mono text-[11px] font-semibold uppercase tracking-widest ${signal.image ? 'text-white/50' : accent}`}>
           {signal.category}
         </span>
       </div>
