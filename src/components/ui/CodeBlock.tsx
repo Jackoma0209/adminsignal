@@ -17,6 +17,12 @@ import CopyButton from '@/components/ui/CopyButton'
 const THEME = 'dark-plus' as const
 
 /**
+ * Replace the dark-plus background (#1E1E1E) with true black.
+ * Token colours (keywords, strings, comments) are kept exactly as-is.
+ */
+const COLOR_REPLACEMENTS = { '#1E1E1E': '#000000' } as const
+
+/**
  * Langs to pre-load at startup. Every language used in site content should
  * appear here so there is no per-render cold-load delay at build time.
  */
@@ -105,17 +111,17 @@ export default async function CodeBlock({ code, lang }: CodeBlockProps) {
     if (isBundled) {
       await h.loadLanguage(effectiveLang as BundledLanguage)
     }
-    html = h.codeToHtml(code, { lang: effectiveLang, theme: THEME })
+    html = h.codeToHtml(code, { lang: effectiveLang, theme: THEME, colorReplacements: COLOR_REPLACEMENTS })
   } catch {
     // Hard fallback — render as plain text, never crash the page
-    html = h.codeToHtml(code, { lang: 'text' as SpecialLanguage, theme: THEME })
+    html = h.codeToHtml(code, { lang: 'text' as SpecialLanguage, theme: THEME, colorReplacements: COLOR_REPLACEMENTS })
   }
 
   // Label shown in the top-left bar — hide for generic / unspecified blocks
   const displayLang = !isSpecialLang(resolvedLang) && resolvedLang !== '' ? resolvedLang : ''
 
   return (
-    <div className="shiki-wrapper group relative my-5 overflow-hidden rounded-xl border border-white/[0.08] bg-[#1e1e1e]">
+    <div className="shiki-wrapper group relative my-5 overflow-hidden rounded-xl border border-white/[0.08] bg-black">
       {/* ── Top bar ────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-2">
         <span

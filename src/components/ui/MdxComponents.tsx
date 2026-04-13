@@ -8,6 +8,7 @@
 import type { MDXComponents } from 'mdx/types'
 import type React from 'react'
 import CodeBlock from '@/components/ui/CodeBlock'
+import Checklist from '@/components/ui/Checklist'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -75,4 +76,5 @@ function Table({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) {
 export const mdxComponents: MDXComponents = {
   pre: Pre,
   table: Table,
+  Checklist,
 }
