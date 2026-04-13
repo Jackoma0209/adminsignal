@@ -1,0 +1,134 @@
+---
+title: "April 2026 Patch Tuesday Breakdown – What Sysadmins Must Do This Month"
+category: "Patch Tuesday"
+date: "Apr 8, 2026"
+authorId: "marcus-webb"
+lastReviewed: "Apr 8, 2026"
+reviewNote: "Reviewed against KB5055523 release notes and the April 2026 Microsoft Security Update Guide."
+tags: ["Patch Tuesday", "Windows 11", "Intune", "Autopilot", "Security", "CVE"]
+---
+
+## Overview
+
+Microsoft's April 8, 2026 Patch Tuesday delivers over 120 CVEs across Windows, Office, Azure, and Intune-adjacent components. This is a heavier month than average — three zero-days are confirmed, and the headline fix for **KB5055523** directly addresses an Autopilot OOBE timeout regression that has been blocking zero-touch deployments on Dell and HP hardware for the past six weeks.
+
+If you run Autopilot at scale, this month's update is not optional. Deploy it to pilot within 48 hours of reading this.
+
+## The Autopilot OOBE Timeout Fix (KB5055523)
+
+The most operationally significant fix this month has nothing to do with CVEs. **KB5055523**, the April 2026 cumulative update for Windows 11 25H2, resolves a race condition introduced in the February 2026 update that caused Autopilot Device Preparation (v2) deployments to time out during the OOBE phase on specific Dell OptiPlex 7020 and HP EliteBook 845 G11 configurations.
+
+Symptoms included:
+
+- OOBE stalling at "Setting up your device for work" with no visible progress after 10–15 minutes
+- Event ID 4688 / MDM enrollment failures in the Windows Event Log
+- Autopilot status in Intune showing `enrollmentStarted` indefinitely, never transitioning to `enrollmentSucceeded`
+- No error surfaced at the Autopilot profile assignment level — failures only visible in device-side logs
+
+The root cause was an interaction between the February kernel update and the Trusted Platform Module (TPM) attestation handshake timing during Device Preparation Policy evaluation. On Dell and HP models using firmware TPM (fTPM) with BIOS versions from late 2025, the handshake occasionally exceeded the internal timeout threshold before the Intune enrollment token was delivered.
+
+**Action required**: Deploy KB5055523 immediately to any staging or pilot image used for Autopilot provisioning. There is no workaround — affected hardware will fail enrollment at a non-trivial rate until the update is applied.
+
+To check whether a device has the patch applied before imaging:
+
+```powershell
+# Confirm KB5055523 is installed before Autopilot provisioning
+$patch = Get-HotFix -Id 'KB5055523' -ErrorAction SilentlyContinue
+if ($patch) {
+    Write-Host "KB5055523 installed on $(Get-Date $patch.InstalledOn -Format 'yyyy-MM-dd')" -ForegroundColor Green
+} else {
+    Write-Warning "KB5055523 NOT found — Autopilot provisioning may fail on affected hardware."
+}
+```
+
+For bulk compliance reporting across your managed fleet, see the [patch compliance PowerShell scripts in the script library](/scripts).
+
+## Cross-Signed Driver Trust Removal Goes Live
+
+The April 2026 update is also the first to ship the **cross-signed driver trust evaluation mode** — the change Microsoft announced in March. Windows will now log events for kernel-mode drivers that would be blocked once enforcement mode is enabled in a future update.
+
+This is separate from the security CVEs, but it matters for anyone running legacy third-party hardware drivers, older EDR sensor versions, or in-house signed kernel components. Check your Event Viewer for driver trust evaluation events immediately after deploying this update.
+
+We covered the full scope of this change in a [dedicated article](/news/windows-driver-cross-signed-trust-removal). Read it before deploying broadly if you have not already.
+
+## Zero-Days and Critical Security Fixes
+
+Three CVEs patched this month carry a **Exploitation Detected** rating from Microsoft — meaning active exploitation was confirmed in the wild before the patch shipped.
+
+**Windows Common Log File System (CLFS) — Elevation of Privilege**
+
+The CLFS driver has been a persistent target. This month's variant allows a locally authenticated user to escalate to SYSTEM without requiring admin rights. CLFS EoP bugs have been weaponised by ransomware operators as a post-phishing privilege escalation step for the past 18 months. Patch all workstations within 7 days. Servers within 14.
+
+**Windows Ancillary Function Driver for WinSock — Elevation of Privilege**
+
+A second EoP via the AFD driver, similarly exploitable by a standard domain user with local logon. CVSS v3.1 score places this in the high-severity band. The combination of this and the CLFS bug means attackers with a low-privileged foothold have two independent paths to SYSTEM this month. Do not let these sit.
+
+**Microsoft Management Console (MMC) — Remote Code Execution**
+
+The zero-day with the widest blast radius: a maliciously crafted `.msc` file delivered via phishing or shared network path triggers code execution when a user opens it in MMC. Social engineering delivery is the most likely vector. Prioritise patching internet-facing workstations and ensure your EDR telemetry is tuned to flag `.msc` file execution from unusual paths.
+
+Beyond the zero-days, additional Critical-rated CVEs this month cover:
+
+- **Windows LDAP** — Remote Code Execution affecting domain controllers. Patch DCs within 14 days; sooner if they are internet-accessible.
+- **Windows Remote Desktop Services** — Pre-auth vulnerability. If you expose RDS externally, treat this as P1.
+- **Hyper-V** — Guest escape affecting Windows Server 2022 and 2025 hosts. Critical for virtualised workloads.
+
+For the full CVE list with CVSS scores, see the [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide) filtered to April 2026.
+
+## Windows 11 25H2 and 26H1 Notes
+
+**25H2 (the mainstream enterprise version)** receives the full KB5055523 update. No functional regressions have been reported beyond the Dell/HP Autopilot issue above, which is now fixed. If you are on a deferred Windows Update for Business ring, April is a good month to advance the ring schedule given the Autopilot and zero-day fixes.
+
+**26H1 (Arm / Snapdragon X2 hardware)** receives a parallel cumulative update. No Autopilot-specific issues reported for 26H1 this month, but the same zero-days apply. If you are deploying Copilot+ PCs on Snapdragon X2 hardware, apply this update to your Autopilot images before provisioning new devices.
+
+**Windows 11 24H2** continues to receive security updates, but Microsoft has entered the final months of mainstream support for this release. If you have not started your 25H2 migration planning, April is the time to start. See the [Autopilot v2 deployment guide](/guides/windows-11-25h2-autopilot-v2) for the full zero-touch upgrade path.
+
+## Windows Server 2025
+
+Domain controllers should be prioritised for the LDAP RCE fix. If you run an on-premises Exchange hybrid or AD FS infrastructure, also validate that the MMC RCE patch does not interfere with snap-in functionality in your management tooling — test in a non-production ring first.
+
+Hyper-V hosts running Server 2025 should treat the guest-escape CVE as urgent. Patch within 7 days if virtualising sensitive workloads.
+
+## What You Should Do This Month
+
+Ranked by priority:
+
+1. **Deploy KB5055523 to Autopilot staging images immediately** — any new zero-touch provisioning runs on affected Dell/HP hardware will fail without it.
+2. **Patch workstations within 7 days** — the CLFS and AFD zero-days are both actively exploited. Standard 30-day windows are not appropriate here.
+3. **Patch domain controllers within 14 days** — LDAP RCE is a direct attack on your identity infrastructure.
+4. **Check Event Viewer for cross-signed driver events** — evaluate any flagged drivers and engage vendors before enforcement mode ships later in 2026.
+5. **Audit MMC usage policies** — if your users have no business need to open `.msc` files, block execution via AppLocker or WDAC policy as a defence-in-depth measure.
+6. **Patch Hyper-V hosts within 7 days** if virtualising sensitive workloads.
+7. **Review your Windows Update for Business ring cadence** — consider advancing the broad ring deadline this month given the volume and severity of zero-days.
+
+```powershell
+# Identify unpatched Windows 11 devices in Intune via MS Graph
+# Requires: Microsoft.Graph.DeviceManagement module
+Connect-MgGraph -Scopes 'DeviceManagementManagedDevices.Read.All'
+
+$devices = Get-MgDeviceManagementManagedDevice -Filter "operatingSystem eq 'Windows'" -All
+$unpatched = $devices | Where-Object {
+    $_.OsVersion -notmatch '26100\.(35[0-9]{2}|3[6-9]\d{2}|[4-9]\d{3})' -and
+    $_.ComplianceState -ne 'compliant'
+}
+
+Write-Host "Devices potentially missing April 2026 update: $($unpatched.Count)"
+$unpatched | Select-Object DeviceName, OsVersion, ComplianceState, LastSyncDateTime |
+    Sort-Object LastSyncDateTime |
+    Format-Table -AutoSize
+```
+
+For a full patch compliance report across your fleet — including last sync times and ring assignments — see the [patch management reporting scripts](/scripts).
+
+## Internal Resources
+
+- [Windows 11 25H2 Autopilot v2 Zero-Touch Deployment Guide](/guides/windows-11-25h2-autopilot-v2)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Patch management and update ring strategy](/patch-management)
+- [Intune compliance policy and reporting](/intune)
+- [PowerShell script library](/scripts)
+- [Troubleshooting Autopilot failure codes](/troubleshooting)
+
+## Source
+
+Microsoft Security Update Guide — April 2026: [msrc.microsoft.com/update-guide](https://msrc.microsoft.com/update-guide)

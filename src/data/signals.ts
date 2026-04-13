@@ -33,6 +33,23 @@ export interface Signal {
  */
 export const liveSignals: Signal[] = [
   {
+    id: 'live-0',
+    title: 'April 2026 Patch Tuesday Breakdown – What Sysadmins Must Do This Month',
+    slug: 'april-2026-patch-tuesday-breakdown',
+    category: 'Patch Tuesday',
+    excerpt:
+      'Three zero-days confirmed exploited in the wild, plus KB5055523 fixes the Autopilot OOBE timeout regression on Dell and HP hardware that has been blocking zero-touch deployments for six weeks. Prioritise this month.',
+    date: 'Apr 8, 2026',
+    publishedAt: '2026-04-08',
+    readTime: '7 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'marcus-webb',
+    tags: ['Patch Tuesday', 'Windows 11', 'Intune', 'Autopilot', 'Security', 'CVE'],
+    isNew: true,
+    isFeatured: true,
+  },
+  {
     id: 'live-1',
     title: 'Advancing Windows Driver Security: Removing Trust for the Cross-Signed Driver Program',
     slug: 'windows-driver-cross-signed-trust-removal',
