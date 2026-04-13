@@ -1,4 +1,5 @@
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import { mdxComponents } from '@/components/ui/MdxComponents'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Clock, CalendarDays, ShieldCheck, ChevronRight } from 'lucide-react'
@@ -120,7 +121,7 @@ export default async function Windows1125H2AutopilotV2Page() {
         />
         {/* Cyan radial glow */}
         <div
-          className="pointer-events-none absolute -top-40 left-1/2 h-[500px] w-[900px] -translate-x-1/2 opacity-[0.07]"
+          className="pointer-events-none absolute -top-40 left-1/2 h-125 w-225 -translate-x-1/2 opacity-[0.07]"
           aria-hidden="true"
           style={{
             background: 'radial-gradient(ellipse, rgba(34,211,238,1) 0%, transparent 70%)',
@@ -209,7 +210,7 @@ export default async function Windows1125H2AutopilotV2Page() {
               <AdSlot variant="banner" className="mb-8" />
 
               <Prose>
-                <MDXRemote source={content} />
+                <MDXRemote source={content} components={mdxComponents} />
               </Prose>
 
               {/* ── Affiliate block ─────────────────────────────────────── */}

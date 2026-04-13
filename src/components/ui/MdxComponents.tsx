@@ -15,8 +15,10 @@ function extractText(node: React.ReactNode): string {
 function Pre({ children, ...props }: React.HTMLAttributes<HTMLPreElement>) {
   const text = extractText(children)
   return (
-    <div className="relative my-5">
-      <div className="absolute right-2 top-2 z-10">
+    <div className="group relative my-5">
+      {/* Button is opacity-0 at rest, fades in on hover/focus-within for clean look
+          It's always focusable for keyboard users regardless of opacity */}
+      <div className="absolute right-2.5 top-2.5 z-10 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
         <CopyButton text={text} />
       </div>
       <pre {...props}>{children}</pre>

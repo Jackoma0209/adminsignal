@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import type { Metadata } from 'next'
+import { mdxComponents } from '@/components/ui/MdxComponents'
 import { comparisons } from '@/data/comparisons'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
@@ -152,7 +153,7 @@ export default async function ComparisonArticlePage({ params }: Props) {
               <AdSlot variant="banner" className="mb-8" />
 
               <Prose>
-                <MDXRemote source={content} />
+                <MDXRemote source={content} components={mdxComponents} />
               </Prose>
 
               {author && (
