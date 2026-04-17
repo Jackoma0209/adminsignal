@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { getContentSlugs } from '@/lib/content'
 import { liveSignals } from '@/data/signals'
+import { guides } from '@/data/guides'
 
 const BASE = 'https://www.adminsignal.com'
 
@@ -65,5 +66,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: signal.publishedAt,
   }))
 
-  return [...staticRoutes, ...nonNewsRoutes, ...newsRoutes]
+  // Flagship guides that have a dedicated /guides/{slug} page (href override set).
+  // These are NOT under /tutorials so they are not caught by getContentSlugs('tutorials').
+  const flagshipGuideRoutes: MetadataRoute.Sitemap = guides
+    .filter((g) => g.href && g.href.startsWith('/guides/'))
+    .map((g) => ({
+      url: `${BASE}${g.href}`,
+      priority: 0.9,
+      changeFrequency: 'monthly' as const,
+      lastModified: g.publishedAt,
+    }))
+
+  return [...staticRoutes, ...nonNewsRoutes, ...newsRoutes, ...flagshipGuideRoutes]
 }

@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { Zap, Menu, X, Search, Sun, Moon } from 'lucide-react'
+import Image from 'next/image'
+import { Menu, X, Search, Sun, Moon, Rss } from 'lucide-react'
 
 const nav = [
   { label: 'Signals', href: '/news' },
@@ -50,9 +51,14 @@ export default function Header() {
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="group flex shrink-0 items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary transition-opacity group-hover:opacity-85">
-              <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="AdminSignal logo"
+              width={32}
+              height={32}
+              className="transition-opacity group-hover:opacity-85"
+              priority
+            />
             <span className="text-[17px] font-bold tracking-tight text-foreground">
               Admin<span className="text-primary">Signal</span>
             </span>
@@ -98,6 +104,15 @@ export default function Header() {
                 </button>
               )}
             </div>
+
+            {/* RSS feed */}
+            <a
+              href="/rss.xml"
+              className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-primary"
+              aria-label="RSS Feed"
+            >
+              <Rss className="h-4 w-4" aria-hidden="true" />
+            </a>
 
             {/* Theme toggle */}
             <button

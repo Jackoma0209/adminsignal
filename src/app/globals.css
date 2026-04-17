@@ -291,3 +291,19 @@ samp {
   border: 1px solid var(--color-border);
   max-width: 100%;
 }
+
+/*
+ * AdSense graceful collapse.
+ * When the ad script is blocked (uBlock, Pi-hole, etc.) AdSense never runs
+ * and the <ins> element stays completely empty — no children, no inline styles.
+ * Hiding empty <ins> collapses the wrapper to 0px so no blank space is left.
+ * When AdSense runs successfully it injects an iframe child, so :empty no
+ * longer matches and the slot renders normally.
+ */
+ins.adsbygoogle:empty {
+  display: none !important;
+  min-height: 0 !important;
+}
+.ad-slot-wrapper:has(ins.adsbygoogle:empty) {
+  display: none !important;
+}

@@ -102,6 +102,17 @@ export const metadata: Metadata = {
   other: {
     'google-adsense-account': 'ca-pub-5563142788194204',
   },
+  alternates: {
+    types: {
+      'application/rss+xml': [{ url: '/rss.xml', title: 'AdminSignal RSS Feed' }],
+    },
+  },
+  icons: {
+    icon: [
+      { url: '/logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/logo.svg',
+  },
 }
 
 export default function RootLayout({

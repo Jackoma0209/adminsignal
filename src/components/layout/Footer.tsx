@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Zap, ShieldCheck } from 'lucide-react'
+import { Zap, ShieldCheck, Rss } from 'lucide-react'
 import PrivacySettingsButton from '@/components/PrivacySettingsButton'
 
 const footerLinks = [
@@ -108,9 +108,19 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-          <p className="text-sm text-muted/60">
-            © {new Date().getFullYear()} AdminSignal. All rights reserved.
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted/60">
+              © {new Date().getFullYear()} AdminSignal. All rights reserved.
+            </p>
+            <a
+              href="/rss.xml"
+              className="flex items-center gap-1.5 text-xs text-muted/50 transition-colors hover:text-primary"
+              aria-label="RSS Feed"
+            >
+              <Rss className="h-3.5 w-3.5" aria-hidden="true" />
+              RSS
+            </a>
+          </div>
           <div className="flex gap-6">
             <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">
               Privacy

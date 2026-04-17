@@ -18,16 +18,21 @@ interface AdSlotProps {
 
 export default function AdSlot({ variant = 'banner', className, adClient, adSlot }: AdSlotProps) {
   const isBanner = variant === 'banner'
-  const sizeClass = isBanner ? 'h-24 w-full' : 'h-64 w-full'
+  // min-height communicates the reserved space to AdSense — the CSS class
+  // `ad-slot-wrapper` collapses the container when the <ins> is empty (blocked).
+  const minHeight = isBanner ? '90px' : '250px'
 
   // Live AdSense unit — requires adsEnabled flag + valid adClient + adSlot.
   // Set NEXT_PUBLIC_ADS_ENABLED=true and wire a CMP before activating.
   if (adsEnabled && adClient && adSlot) {
     return (
-      <div className={[sizeClass, className].filter(Boolean).join(' ')} aria-label="Advertisement">
+      <div
+        className={['ad-slot-wrapper w-full overflow-hidden', className].filter(Boolean).join(' ')}
+        aria-label="Advertisement"
+      >
         <ins
           className="adsbygoogle"
-          style={{ display: 'block' }}
+          style={{ display: 'block', minHeight }}
           data-ad-client={adClient}
           data-ad-slot={adSlot}
           data-ad-format={isBanner ? 'horizontal' : 'rectangle'}
@@ -37,21 +42,23 @@ export default function AdSlot({ variant = 'banner', className, adClient, adSlot
     )
   }
 
-  // Placeholder shown until AdSense credentials are configured
+  // Placeholder shown until AdSense credentials are configured.
+  // Hidden in production-preview so layout matches ad-free experience.
+  if (process.env.NODE_ENV === 'production') return null
+
   return (
     <div
       className={[
-        'flex items-center justify-center rounded-lg border border-border/60 bg-surface/50',
-        sizeClass,
+        'flex items-center justify-center rounded-lg border border-dashed border-border/40 bg-surface/30',
+        isBanner ? 'h-22.5 w-full' : 'h-62.5 w-full',
         className,
       ]
         .filter(Boolean)
         .join(' ')}
-      aria-label="Advertisement"
-      role="complementary"
+      aria-hidden="true"
     >
-      <span className="text-xs font-medium uppercase tracking-widest text-muted/30">
-        Advertisement
+      <span className="text-xs font-medium uppercase tracking-widest text-muted/20">
+        Ad slot · {variant}
       </span>
     </div>
   )
