@@ -18,7 +18,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
     <a
       href={tool.affiliateUrl}
       target="_blank"
-      rel="noopener noreferrer sponsored"
+      rel="nofollow noopener noreferrer sponsored"
       aria-label={`Get ${tool.name} — affiliate link`}
       className="group flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-card transition-all hover:border-primary/40 hover:bg-surface-elevated/40 hover:shadow-lg"
     >

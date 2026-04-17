@@ -1,5 +1,6 @@
+import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, BadgeCheck, Briefcase, CalendarCheck, ExternalLink } from 'lucide-react'
+import { ArrowRight, BadgeCheck, Briefcase, CalendarCheck, ExternalLink, Github, Award } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import { primaryAuthor } from '@/data/authors'
 
@@ -31,12 +32,24 @@ export default function AuthorBioSection() {
           <div className="flex flex-col gap-6">
             {/* Avatar */}
             <div className="flex items-center gap-5">
-              <div
-                className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-3xl font-bold text-primary ring-1 ring-primary/20"
-                aria-hidden="true"
-              >
-                {primaryAuthor.initials}
-              </div>
+              {primaryAuthor.avatarUrl ? (
+                <Image
+                  src={primaryAuthor.avatarUrl}
+                  alt={`${primaryAuthor.name} — ${primaryAuthor.role}`}
+                  width={80}
+                  height={80}
+                  className="h-20 w-20 shrink-0 rounded-2xl object-cover ring-1 ring-primary/20"
+                  priority
+                />
+              ) : (
+                <div
+                  className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary-soft text-3xl font-bold text-primary ring-1 ring-primary/20"
+                  role="img"
+                  aria-label={`${primaryAuthor.name} — author avatar placeholder`}
+                >
+                  {primaryAuthor.initials}
+                </div>
+              )}
               <div>
                 <p className="text-xl font-bold tracking-tight text-foreground">
                   {primaryAuthor.name}
@@ -57,17 +70,49 @@ export default function AuthorBioSection() {
               ))}
             </ul>
 
-            {/* LinkedIn */}
-            {primaryAuthor.linkedIn && (
-              <a
-                href={primaryAuthor.linkedIn}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 self-start rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                LinkedIn profile
-              </a>
+            {/* Social links */}
+            <div className="flex flex-wrap gap-2">
+              {primaryAuthor.linkedIn && (
+                <a
+                  href={primaryAuthor.linkedIn}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
+                  aria-label="LinkedIn profile (opens in new tab)"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  LinkedIn
+                </a>
+              )}
+              {primaryAuthor.github && (
+                <a
+                  href={primaryAuthor.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
+                  aria-label="GitHub profile (opens in new tab)"
+                >
+                  <Github className="h-3.5 w-3.5" aria-hidden="true" />
+                  GitHub
+                </a>
+              )}
+            </div>
+
+            {/* Microsoft certifications */}
+            {primaryAuthor.certifications && primaryAuthor.certifications.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted/50">
+                  Certifications
+                </p>
+                <ul className="flex flex-col gap-1.5" aria-label="Microsoft certifications">
+                  {primaryAuthor.certifications.map((cert) => (
+                    <li key={cert} className="flex items-center gap-2">
+                      <Award className="h-3.5 w-3.5 shrink-0 text-primary/60" aria-hidden="true" />
+                      <span className="text-xs leading-snug text-muted">{cert}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             {/* Last updated trust signal */}
@@ -77,7 +122,10 @@ export default function AuthorBioSection() {
                 are reviewed and updated as Microsoft ships changes — not published once and left to
                 rot.
               </p>
-              <p className="mt-1 text-xs text-muted/50">Last site-wide review: April 2026</p>
+              <p className="mt-1 text-xs text-muted/50">
+                Last site-wide review:{' '}
+                {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+              </p>
             </div>
           </div>
 

@@ -400,15 +400,15 @@ const ML_FORM_HTML = `<div id="mlb2-39669348" class="ml-form-embedContainer ml-s
           <input type="hidden" name="ml-submit" value="1">
           <div class="ml-form-embedSubmit">
             <button type="submit" class="primary">Subscribe</button>
-            <button disabled="disabled" style="display: none;" type="button" class="loading">
-              <div class="ml-form-embedSubmitLoad"></div>
+            <button disabled="disabled" style="display: none;" type="button" class="loading" aria-hidden="true">
+              <div class="ml-form-embedSubmitLoad" aria-hidden="true"></div>
               <span class="sr-only">Loading...</span>
             </button>
           </div>
           <input type="hidden" name="anticsrf" value="true">
         </form>
       </div>
-      <div class="ml-form-successBody row-success" style="display: none">
+      <div class="ml-form-successBody row-success" style="display: none" aria-hidden="true" role="status" aria-live="polite" aria-atomic="true">
         <div class="ml-form-successContent">
           <h4>Thank you!</h4>
           <p>You have successfully joined our subscriber list.</p>
@@ -486,8 +486,12 @@ export default function NewsletterSection() {
       <Script id="ml-success-39669348" strategy="afterInteractive">{`
         function ml_webform_success_39669348() {
           var $ = ml_jQuery || jQuery;
-          $('.ml-subscribe-form-39669348 .row-success').show();
-          $('.ml-subscribe-form-39669348 .row-form').hide();
+          var $success = $('.ml-subscribe-form-39669348 .row-success');
+          var $form = $('.ml-subscribe-form-39669348 .row-form');
+          $form.hide();
+          $form.attr('aria-hidden', 'true');
+          $success.show();
+          $success.removeAttr('aria-hidden');
         }
       `}</Script>
       <Script

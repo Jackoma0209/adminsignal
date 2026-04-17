@@ -234,7 +234,17 @@ samp {
      large top padding that was reserving space for the old floating button */
   padding: 1.125rem 1.5rem;
   overflow-x: visible; /* parent div handles scroll */
+  white-space: pre; /* prevent line wrap on narrow viewports */
+  word-break: normal;
+  word-wrap: normal;
   margin: 0;
+}
+
+/* Ensure the scroll container never exceeds viewport width on mobile */
+.shiki-wrapper > div[class="overflow-x-auto"],
+.shiki-wrapper .overflow-x-auto {
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .prose blockquote {

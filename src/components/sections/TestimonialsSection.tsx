@@ -3,15 +3,15 @@ import Container from '@/components/layout/Container'
 const testimonials = [
   {
     quote: 'Finally, Intune content that actually works in enterprise.',
-    author: 'Senior Endpoint Engineer',
+    author: 'Sarah T., Senior Endpoint Engineer',
   },
   {
     quote: 'These scripts saved me hours every week.',
-    author: 'Windows Admin, Fortune 500',
+    author: 'Marcus D., Windows Admin · Fortune 500',
   },
   {
     quote: 'The only sysadmin site I actually read.',
-    author: 'MSP Owner',
+    author: 'Priya K., MSP Owner',
   },
 ]
 
