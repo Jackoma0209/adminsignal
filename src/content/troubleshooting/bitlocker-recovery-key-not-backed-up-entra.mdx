@@ -1,0 +1,430 @@
+---
+title: "BitLocker Recovery Key Not Backed Up to Entra ID: Why and How to Fix It"
+category: "Endpoint Security"
+date: "Feb 12, 2025"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
+reviewNote: "Verified escrow commands and Graph API approach against Windows 11 24H2, Intune April 2026 service release, and Entra ID current portal. Added hybrid-joined section and silent failure diagnostic flow."
+tags: ["BitLocker", "Entra ID", "Microsoft Intune", "Endpoint Security", "PowerShell"]
+---
+
+## When to Use This Guide
+
+Use this guide when:
+
+- BitLocker is active on a device but **no recovery key appears in Entra ID** under the device's properties
+- The Intune BitLocker report shows devices in a **"Not backed up"** state
+- A device hit the BitLocker recovery screen and the key was not in Entra ID when you went to retrieve it
+- You have deployed a BitLocker policy in Intune but are unsure whether escrow is actually occurring
+
+Do not use this guide if keys are present in Entra ID but escrow was through MBAM or SCCM — that is a separate workflow.
+
+**Tested environment:** Windows 10 22H2, Windows 11 22H2 and 24H2, Microsoft Intune April 2026 service release, Entra ID (formerly Azure AD). Entra-joined and hybrid-joined devices. Autopilot v1 and v2 provisioned endpoints.
+
+## Why This Is a Silent Failure
+
+BitLocker escrow failures produce no visible error on the device. BitLocker encryption completes successfully, the user gets no notification, and the compliance report in Intune may still show the device as compliant if the compliance policy only checks **encryption status**, not **key backup status**. The first sign of a problem is often a fleet-wide incident when patches or firmware updates trigger mass recovery prompts and the keys are not there.
+
+The escrow mechanism works like this:
+
+1. Intune delivers a BitLocker configuration profile that includes the `RequireDeviceEncryption` CSP setting and, crucially, `EncryptionMethodByDriveType` combined with the `ConfigureRecoveryPasswordRotation` and `RotateRecoveryPasswords` settings — or, in the older OMA-URI approach, `./Device/Vendor/MSFT/BitLocker/RequireDeviceEncryption` and a backup policy pointing to Entra ID.
+2. When BitLocker is enabled (either by policy or was pre-existing), Windows calls the **BackupToAAD-BitLockerKeyProtector** function to push the current RecoveryPassword protector to Entra ID via the MDM service.
+3. The MDM service forwards the key material to Entra ID, which stores it against the device object.
+
+If step 2 never runs — or runs but fails silently — there is no key in Entra ID.
+
+## Understanding Entra Join Types
+
+Before diagnosing, confirm what join state the device is actually in. The escrow mechanism differs between join types.
+
+```powershell
+dsregcmd /status
+```
+
+Look at these fields:
+
+| Field | Value | What it means |
+|---|---|---|
+| `AzureAdJoined` | YES | Device is Entra-joined — keys can escrow via MDM |
+| `DomainJoined` | YES | Device is domain-joined (on-premises AD) |
+| `AzureAdJoined` + `DomainJoined` | YES + YES | Hybrid-joined — escrow path depends on Intune enrolment state |
+| `WorkplaceJoined` | YES (only) | BYOD / registered, NOT joined — MDM escrow may not work |
+
+**Workplace-registered devices** (Entra-registered but not Entra-joined) cannot escrow BitLocker keys via the MDM CSP in the same way. If your device only shows `WorkplaceJoined: YES`, the Intune BitLocker policy may not be the right tool — consider whether these devices should be fully enrolled.
+
+## Likely Causes
+
+These are listed in order of frequency. Work through them systematically rather than jumping to forced escrow.
+
+### 1. BitLocker was enabled before the Intune policy arrived
+
+On devices provisioned through older imaging processes or upgraded from Windows 10 to 11 in-place, BitLocker may have been enabled by a GPO, script, or manual process before Intune ever delivered its escrow policy. The key protector that exists predates any Intune involvement and was never pushed to Entra ID.
+
+The Intune BitLocker CSP only triggers an escrow call when it first applies. It does not automatically retroactively escrow pre-existing protectors unless a rotation or re-encryption is triggered.
+
+### 2. Intune BitLocker policy is missing the backup requirement
+
+The policy may be encrypting drives but not configuring the recovery key to back up to Entra ID. The setting is separate from the encryption requirement itself.
+
+In the Intune Endpoint Security > Disk Encryption profile (or the Settings Catalog equivalent), the critical setting is:
+
+- **"Configure recovery password rotation"** (CSP: `RotateRecoveryPasswords`) — but this controls rotation, not initial backup
+- **"Save BitLocker recovery information to Azure Active Directory"** — this must be set to **Yes**
+- **"Store recovery information in Azure Active Directory before enabling BitLocker"** — set this to **Block** (meaning: do not allow BitLocker to enable until the key has been backed up)
+
+If the last setting is not configured, BitLocker may enable and encrypt successfully while the escrow call either hasn't run or silently failed.
+
+### 3. Policy applied after BitLocker was already active with a different protector
+
+The recovery password protector that Intune reads is a specific key protector ID. If BitLocker was previously enabled with one protector, then BitLocker was suspended, resumed, or a new protector was added/removed, the protector ID changes. Intune's escrow call targets the original protector ID it registered — if that no longer matches what is on the drive, the escrow call will either fail or back up the wrong (or absent) protector.
+
+### 4. The escrow call succeeded but the key was rotated or replaced without a subsequent backup
+
+If BitLocker recovery password rotation is enabled (good practice), a new key is generated after each use. If the device was offline or the MDM service was unreachable when the rotation occurred, the new key may never have been escrowed.
+
+### 5. Hybrid-joined device with a conflicting Group Policy or MBAM configuration
+
+In hybrid environments, a Group Policy-delivered BitLocker policy that points to **Active Directory** (not Entra ID) for key backup will conflict with the Intune MDM path. MBAM (Microsoft BitLocker Administration and Monitoring) deployments that are still in place will intercept the escrow call before it reaches Entra ID.
+
+### 6. The Entra device object was deleted and recreated
+
+If a device was re-enrolled (common after a factory reset, OS upgrade, or re-imaging), a new Entra device object is created with a new device ID. Keys backed up against the old device object are orphaned — they are still in Entra ID but not findable via the new device object. The new device's object will have no keys if it has not yet completed an escrow call post-re-enrollment.
+
+## Step-by-Step Diagnosis
+
+### Step 1: Check the Entra Device Object Directly
+
+The fastest first check is whether the key is already in Entra ID but you are looking at the wrong device object.
+
+1. Open **Entra admin centre** → **Devices** → **All devices**
+2. Search for the device by name
+3. Look for **multiple device objects** with the same name — a common sign of re-enrollment
+4. Open the correct (most recently registered) device object
+5. Select **Recovery keys** from the left panel
+
+If a key is present with a recent **Created date**, the issue is either resolved or was a reporting lag in Intune. If the key was created long ago and there has been a recent OS upgrade or factory reset, you are likely looking at a stale protector against the old object.
+
+You can also retrieve keys programmatically:
+
+```powershell
+# Requires Microsoft.Graph PowerShell module
+# Install-Module Microsoft.Graph -Scope CurrentUser
+Connect-MgGraph -Scopes "BitlockerKey.ReadBasic.All", "Device.Read.All"
+
+$DeviceName = "DEVICE-HOSTNAME"
+$Device = Get-MgDevice -Filter "displayName eq '$DeviceName'" | Select-Object -First 1
+
+if (-not $Device) {
+    Write-Error "Device '$DeviceName' not found in Entra ID."
+} else {
+    Write-Output "Device ID: $($Device.DeviceId)"
+    $Keys = Get-MgInformationProtectionBitlockerRecoveryKey -Filter "deviceId eq '$($Device.DeviceId)'"
+    if ($Keys.Count -eq 0) {
+        Write-Output "No BitLocker recovery keys found for this device."
+    } else {
+        foreach ($Key in $Keys) {
+            Write-Output "Key ID: $($Key.Id) | Created: $($Key.CreatedDateTime)"
+        }
+    }
+}
+```
+
+### Step 2: Verify BitLocker Status on the Device
+
+Confirm BitLocker is active, identify the recovery protector ID, and check its backup state.
+
+```powershell
+# Run on the device — requires admin rights
+$Volume = Get-BitLockerVolume -MountPoint $env:SystemDrive
+Write-Output "Volume Status  : $($Volume.VolumeStatus)"
+Write-Output "Protection     : $($Volume.ProtectionStatus)"
+Write-Output "Encryption %   : $($Volume.EncryptionPercentage)"
+Write-Output ""
+Write-Output "Key Protectors:"
+foreach ($KP in $Volume.KeyProtector) {
+    Write-Output "  ID   : $($KP.KeyProtectorId)"
+    Write-Output "  Type : $($KP.KeyProtectorType)"
+}
+```
+
+You should see at least two protectors: a **TPM** protector (or TPM+PIN/TPM+Startup Key) and a **RecoveryPassword** protector. If there is no RecoveryPassword protector, BitLocker is active but has no recovery key at all — adding one is a prerequisite to escrow.
+
+If there is no RecoveryPassword protector:
+
+```powershell
+# Add a new RecoveryPassword protector
+Add-BitLockerKeyProtector -MountPoint $env:SystemDrive -RecoveryPasswordProtector
+```
+
+### Step 3: Check Intune Policy Delivery
+
+Confirm the Intune BitLocker policy has been received and applied on the device.
+
+```powershell
+# Check MDM-delivered BitLocker policy via registry
+$BitLockerCSP = "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\BitLocker"
+if (Test-Path $BitLockerCSP) {
+    Get-ItemProperty -Path $BitLockerCSP | Format-List
+} else {
+    Write-Output "No BitLocker CSP policy found. Intune policy may not have been delivered."
+}
+```
+
+If the path is empty, trigger a device sync from Intune and wait 10–15 minutes before re-checking.
+
+Also check the MDM diagnostic event log on the device:
+
+1. Open **Event Viewer**
+2. Navigate to: `Applications and Services Logs > Microsoft > Windows > DeviceManagement-Enterprise-Diagnostics-Provider > Admin`
+3. Filter for Event IDs **400, 404, 405** — these cover MDM policy application results for BitLocker
+
+### Step 4: Check Intune Policy Configuration in the Portal
+
+In the Intune admin centre:
+
+1. Navigate to **Endpoint security** → **Disk encryption** → open your BitLocker policy
+2. Confirm the following settings are present and correctly configured:
+
+| Setting | Required value |
+|---|---|
+| BitLocker – Base Settings: **Encrypt devices** | Require |
+| OS drive: **BitLocker recovery information to Azure AD** | Enable |
+| OS drive: **Recovery options in the BitLocker setup wizard** | Block (prevents users from choosing where to save the key) |
+| OS drive: **Store recovery information in Azure AD before enabling BitLocker** | Require (do not allow BitLocker unless escrow succeeds) |
+| OS drive: **Recovery password** | Allow recovery password |
+
+If you are using the older **Device Configuration > Endpoint Protection** profile rather than the Endpoint Security > Disk Encryption profile, the settings path is different but the logic is the same.
+
+3. Check the **Device status** tab of the policy — find the specific device and confirm the policy shows as **Succeeded**, not **Error** or **Not applicable**.
+
+### Step 5: Attempt a Forced Manual Escrow
+
+If the policy is in place and the device has a RecoveryPassword protector but the key is still not in Entra ID, force escrow manually:
+
+```powershell
+# Run on the device in an elevated (admin) PowerShell session
+$Drive = $env:SystemDrive
+$KeyProtectors = (Get-BitLockerVolume -MountPoint $Drive).KeyProtector
+$RecoveryProtector = $KeyProtectors | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }
+
+if (-not $RecoveryProtector) {
+    Write-Error "No RecoveryPassword protector found on $Drive. Add one first."
+    exit 1
+}
+
+Write-Output "Attempting escrow for Key Protector ID: $($RecoveryProtector.KeyProtectorId)"
+BackupToAAD-BitLockerKeyProtector -MountPoint $Drive -KeyProtectorId $RecoveryProtector.KeyProtectorId
+
+Write-Output "Escrow command completed. Verify in Entra ID admin centre."
+```
+
+Wait 5–10 minutes after running this, then check the device's **Recovery keys** in the Entra admin centre. The cmdlet does not return a success/failure code — it fires the escrow call and returns immediately.
+
+> **Note:** `BackupToAAD-BitLockerKeyProtector` requires the device to be Entra-joined or Hybrid-joined with Intune MDM enrollment active. It will fail silently on workplace-registered (BYOD) devices.
+
+### Step 6: Deploy Forced Escrow via Intune Remediation at Scale
+
+For fleet-wide remediation, deploy the escrow script as an Intune Proactive Remediation (Remediations).
+
+**Detection script** — identifies devices where the key is not in Entra ID:
+
+```powershell
+# Detection: returns exit 1 (non-compliant) if recovery key needs escrowing
+try {
+    $Drive = $env:SystemDrive
+    $Volume = Get-BitLockerVolume -MountPoint $Drive -ErrorAction Stop
+
+    if ($Volume.VolumeStatus -eq 'FullyDecrypted') {
+        Write-Output "BitLocker not active. No action needed."
+        exit 0
+    }
+
+    $RecoveryProtector = $Volume.KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }
+    if (-not $RecoveryProtector) {
+        Write-Output "No RecoveryPassword protector found — remediation required."
+        exit 1
+    }
+
+    # Check for recent escrow event (Event ID 845 = successful backup to AAD)
+    $EscrowEvent = Get-WinEvent -LogName "Microsoft-Windows-BitLocker/BitLocker Operational" `
+        -FilterHashtable @{ Id = 845 } -MaxEvents 1 -ErrorAction SilentlyContinue
+
+    if (-not $EscrowEvent) {
+        Write-Output "No escrow event found — remediation required."
+        exit 1
+    }
+
+    Write-Output "Escrow event found at $($EscrowEvent.TimeCreated)."
+    exit 0
+} catch {
+    Write-Output "Detection error: $($_.Exception.Message)"
+    exit 1
+}
+```
+
+**Remediation script** — forces escrow:
+
+```powershell
+# Remediation: force escrow of RecoveryPassword protector to Entra ID
+try {
+    $Drive = $env:SystemDrive
+    $Volume = Get-BitLockerVolume -MountPoint $Drive -ErrorAction Stop
+
+    if ($Volume.VolumeStatus -eq 'FullyDecrypted') {
+        Write-Output "BitLocker not active. Nothing to escrow."
+        exit 0
+    }
+
+    $RecoveryProtectors = $Volume.KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }
+
+    if (-not $RecoveryProtectors) {
+        Write-Output "No RecoveryPassword protector found. Adding one."
+        Add-BitLockerKeyProtector -MountPoint $Drive -RecoveryPasswordProtector | Out-Null
+        $Volume = Get-BitLockerVolume -MountPoint $Drive
+        $RecoveryProtectors = $Volume.KeyProtector | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }
+    }
+
+    foreach ($Protector in $RecoveryProtectors) {
+        Write-Output "Escrowing protector ID: $($Protector.KeyProtectorId)"
+        BackupToAAD-BitLockerKeyProtector -MountPoint $Drive -KeyProtectorId $Protector.KeyProtectorId
+    }
+
+    Write-Output "Escrow complete. Verify in Entra ID."
+    exit 0
+} catch {
+    Write-Output "Remediation error: $($_.Exception.Message)"
+    exit 1
+}
+```
+
+**Remediation settings:**
+- Run as: **System** context
+- Run as 64-bit: **Yes**
+- Schedule: **Daily** until compliance is confirmed, then **Weekly**
+- Scope: target the group containing devices with missing escrow, or all managed endpoints
+
+## Common Errors
+
+### "BackupToAAD-BitLockerKeyProtector: The term is not recognised"
+
+This cmdlet is a Windows built-in function, not a PowerShell module import. It is only available on Windows 10 1709 and later. If you see this error on an older device, you will need to use the WMI method instead:
+
+```powershell
+$DriveLetter = $env:SystemDrive.TrimEnd(':')
+$BitLocker = Get-WmiObject -Namespace "Root\cimv2\Security\MicrosoftVolumeEncryption" `
+    -Class "Win32_EncryptableVolume" | Where-Object { $_.DriveLetter -eq "${DriveLetter}:" }
+
+$KeyProtectorId = ($BitLocker.GetKeyProtectors(3)).VolumeKeyProtectorID[0]
+$BitLocker.BackupRecoveryInformationToActiveDirectory($KeyProtectorId) | Out-Null
+Write-Output "WMI escrow attempted for protector $KeyProtectorId"
+```
+
+### Escrow command runs but key does not appear in Entra ID
+
+This is usually one of three things:
+
+1. **Device is not genuinely Entra-joined** — confirm with `dsregcmd /status`. A `WorkplaceJoined: YES` device without `AzureAdJoined: YES` cannot escrow via this path.
+2. **The MDM service principal lacks the BitLocker key write permission** — rare in standard tenants but possible in heavily locked-down environments. In the Entra admin centre, check **Enterprise Applications → Microsoft Intune → Permissions** and confirm `BitlockerKey.ReadBasic.All` is listed.
+3. **The escrow call was made but network connectivity to the Entra endpoint failed** — check that `enterpriseregistration.windows.net` and `login.microsoftonline.com` are reachable from the device.
+
+### Intune reports the policy as applied but key backup state is "Not backed up"
+
+The Intune compliance/configuration report reflects the MDM CSP state, which may lag the actual Entra ID state. Trigger a **Sync** on the device from the Intune portal and wait 10 minutes before re-checking. If the state has not updated after a sync, run the manual escrow steps above.
+
+### Event ID 851 — "Failed to enable Silent Encryption"
+
+This appears in `Microsoft-Windows-BitLocker/BitLocker Operational` when BitLocker cannot enable silently. Common causes:
+
+- Device does not have a TPM, or TPM is not ready
+- Secure Boot is disabled (required for silent encryption in Intune policies by default)
+- The device has multiple internal drives and silent encryption requires all drives to meet requirements
+
+```powershell
+# Check BitLocker operational log for relevant events
+Get-WinEvent -LogName "Microsoft-Windows-BitLocker/BitLocker Operational" |
+    Where-Object { $_.Id -in @(845, 846, 847, 848, 851, 853) } |
+    Select-Object TimeCreated, Id, Message |
+    Format-List
+```
+
+Key Event IDs:
+
+| Event ID | Meaning |
+|---|---|
+| 845 | Recovery password backed up to Azure AD successfully |
+| 846 | Recovery password backup to Azure AD failed |
+| 847 | Recovery key backed up to Azure AD |
+| 848 | Recovery key backup to Azure AD failed |
+| 851 | Failed to enable BitLocker (silent encryption prerequisite missing) |
+| 853 | BitLocker cannot use Secure Boot for integrity because it is not enabled |
+
+## Hybrid-Joined Device Considerations
+
+Hybrid-joined devices have both an on-premises AD object and an Entra ID device object. BitLocker escrow destination is determined by policy — the key will go to Active Directory, Entra ID, or both, depending on what policy wins.
+
+**Check for a conflicting Group Policy:**
+
+```powershell
+# Review applied GP settings for BitLocker
+gpresult /H C:\Temp\gpresult.html /F
+Start-Process C:\Temp\gpresult.html
+```
+
+Look for any policy under **Computer Configuration → Administrative Templates → Windows Components → BitLocker Drive Encryption** that specifies an Active Directory backup. If this policy is coming from a GPO and the Intune policy is also applying, the GPO may win — Group Policy typically takes precedence for BitLocker CSP settings on hybrid-joined devices.
+
+**Resolution path for hybrid-joined devices:**
+
+1. Determine whether BitLocker management should live in Intune or Group Policy — mixing both is the source of most hybrid BitLocker problems.
+2. If Intune is the target management plane, block the conflicting GPO from applying to the target OU or use a WMI filter to exclude Intune-enrolled devices.
+3. If GPO is the target, configure the GPO to back up to **both** Active Directory and Azure AD by enabling the Azure AD backup option in the GPO itself (available in Windows 10 1809 ADMX templates and later).
+
+If MBAM is still deployed in your environment, MBAM will intercept the escrow path. The MBAM agent calls its own backup routine before the Intune MDM path has a chance to run. Either decommission MBAM on Intune-managed devices or configure MBAM to also forward keys to Entra ID if your MBAM version supports it.
+
+## Verification After Remediation
+
+After running forced escrow via script or Intune Remediation, verify with:
+
+```powershell
+# Re-run on the device to confirm escrow event
+$EscrowEvents = Get-WinEvent -LogName "Microsoft-Windows-BitLocker/BitLocker Operational" `
+    -FilterHashtable @{ Id = @(845, 847) } -ErrorAction SilentlyContinue |
+    Select-Object TimeCreated, Id, Message
+
+if ($EscrowEvents) {
+    Write-Output "Escrow events found:"
+    $EscrowEvents | Format-List
+} else {
+    Write-Output "No successful escrow events found in log."
+}
+```
+
+Then confirm in the Entra admin centre that the device object now shows a **Recovery key** with a **Created** date matching your remediation window.
+
+## Security Notes
+
+- **Do not share recovery keys over email or unencrypted chat.** Always retrieve from the Entra admin centre directly and provide to the user in a secure channel.
+- **Recovery key rotation after use is best practice.** After a key is used for recovery, rotate it: trigger a Intune policy sync on the device after the user is back in Windows, or manually add a new protector and escrow it.
+- **Audit escrow state regularly, not just at enrollment.** Intune's **BitLocker encryption report** (Devices → Monitor → Encryption report) shows the backup state per device. Review this report monthly or include it in a scheduled compliance report.
+- **The `BitlockerKey.ReadBasic.All` scope** returns key IDs but not the key material. Retrieving the actual 48-digit key requires `BitlockerKey.Read.All` — a privileged scope. Limit who can retrieve full keys in your tenant via PIM or custom Entra roles.
+
+## Prevention Checklist
+
+Before deploying BitLocker via Intune to a new device group, confirm:
+
+- [ ] Intune BitLocker policy includes **"Store recovery information in Azure AD before enabling BitLocker: Required"**
+- [ ] Compliance policy checks **encryption state** (not just as a policy assignment — verify it actually evaluates)
+- [ ] Intune Encryption report is reviewed within 48 hours of deployment to confirm all devices show **"Backed up"**
+- [ ] No conflicting Group Policy exists that directs BitLocker escrow to AD only
+- [ ] MBAM is not installed on Intune-managed devices in scope
+- [ ] Device is confirmed **Entra-joined** (not merely Workplace-registered) before applying the policy
+- [ ] Recovery password rotation is enabled so keys rotate after use and are re-escrowed automatically
+
+## Related Resources
+
+- [Fixing the April 2026 BitLocker Recovery Loop (KB5082063 Secure Boot Issue)](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Entra ID P1 vs P2: Is the Upgrade Worth It?](/comparisons/entra-id-p1-vs-p2)
+- [Microsoft documentation: Encrypt Windows devices with BitLocker in Intune](https://learn.microsoft.com/en-us/intune/protect/encrypt-devices)
+- [Microsoft documentation: BitLocker recovery keys in Entra ID](https://learn.microsoft.com/en-us/entra/identity/devices/manage-device-overview)

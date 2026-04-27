@@ -70,8 +70,8 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     difficulty: 'Intermediate',
     date: 'Feb 12, 2025',
     publishedAt: '2025-02-12',
-    readTime: '7 min read',
-    authorId: 'marcus-webb',
+    readTime: '15 min read',
+    authorId: 'jack',
   },
   {
     id: '5',
