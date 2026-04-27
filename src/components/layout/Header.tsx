@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Menu, X, Search, Sun, Moon, Rss } from 'lucide-react'
@@ -15,7 +16,6 @@ const nav = [
 ]
 
 function useTheme() {
-  // Initialise from localStorage on mount — avoid setState in effect by reading directly
   const [dark, setDark] = useState<boolean>(() => {
     if (typeof window === 'undefined') return true
     return localStorage.getItem('theme') !== 'light'
@@ -39,11 +39,47 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const searchRef = useRef<HTMLInputElement>(null)
+  const mobileSearchRef = useRef<HTMLInputElement>(null)
   const { dark, toggle: toggleTheme } = useTheme()
+  const router = useRouter()
 
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus()
   }, [searchOpen])
+
+  function submitSearch(q: string) {
+    const trimmed = q.trim()
+    if (!trimmed) return
+    router.push(`/search?q=${encodeURIComponent(trimmed)}`)
+    setSearchOpen(false)
+    setQuery('')
+  }
+
+  function handleDesktopKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      submitSearch(query)
+    }
+    if (e.key === 'Escape') {
+      setSearchOpen(false)
+      setQuery('')
+    }
+  }
+
+  function handleDesktopBlur() {
+    // Small delay so a keyboard Enter fires submitSearch before blur clears state
+    setTimeout(() => {
+      setSearchOpen(false)
+      setQuery('')
+    }, 150)
+  }
+
+  function handleMobileSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const val = mobileSearchRef.current?.value ?? ''
+    submitSearch(val)
+    setMobileOpen(false)
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
@@ -87,11 +123,10 @@ export default function Header() {
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  onBlur={() => {
-                    setSearchOpen(false)
-                    setQuery('')
-                  }}
+                  onKeyDown={handleDesktopKeyDown}
+                  onBlur={handleDesktopBlur}
                   placeholder="Search AdminSignal…"
+                  aria-label="Search AdminSignal"
                   className="w-52 rounded-md border border-border-strong bg-surface px-3 py-1.5 text-sm text-foreground placeholder-muted/50 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 />
               ) : (
@@ -148,14 +183,18 @@ export default function Header() {
         <div className="border-t border-border bg-background md:hidden">
           <nav className="flex flex-col gap-1 px-4 py-4">
             {/* Mobile search */}
-            <div className="mb-3 flex items-center gap-2 rounded-md border border-border-strong bg-surface px-3 py-2.5">
-              <Search className="h-4 w-4 shrink-0 text-muted/60" />
-              <input
-                type="search"
-                placeholder="Search AdminSignal…"
-                className="flex-1 bg-transparent text-sm text-foreground placeholder-muted/50 outline-none"
-              />
-            </div>
+            <form onSubmit={handleMobileSubmit} className="mb-3">
+              <div className="flex items-center gap-2 rounded-md border border-border-strong bg-surface px-3 py-2.5">
+                <Search className="h-4 w-4 shrink-0 text-muted/60" aria-hidden="true" />
+                <input
+                  ref={mobileSearchRef}
+                  type="search"
+                  placeholder="Search AdminSignal…"
+                  aria-label="Search AdminSignal"
+                  className="flex-1 bg-transparent text-sm text-foreground placeholder-muted/50 outline-none"
+                />
+              </div>
+            </form>
 
             {nav.map((item) => (
               <Link
