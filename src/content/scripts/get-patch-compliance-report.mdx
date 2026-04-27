@@ -3,48 +3,156 @@ title: "Get-PatchComplianceReport"
 category: "PowerShell"
 language: "PowerShell"
 date: "Jan 2025"
-authorId: "james-holbrook"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
 tags: ["Patch Management", "WSUS", "WUfB", "Reporting"]
-stars: 241
 ---
 
 ## Overview
 
-`Get-PatchComplianceReport` queries WSUS or Windows Update for Business device status via WMI and the Graph API. It produces a per-device patch lag report with severity breakdown and an exportable HTML dashboard.
+`Get-PatchComplianceReport` queries WSUS or Windows Update for Business device status via WMI and the Microsoft Graph API. It produces a per-device patch lag report with severity breakdown and an exportable HTML dashboard.
 
-Patch compliance reporting is a core deliverable for most IT governance frameworks. This script automates what is otherwise a painful manual export from WSUS or a partial view from Intune update compliance.
+Patch compliance reporting is a core deliverable for most IT governance frameworks. This script produces what is otherwise a painful manual export — WSUS provides aggregate views without easy per-device breakdowns, and Intune's Update Compliance view does not expose patch age distribution. This script bridges both.
+
+**This script is read-only.** It queries existing data sources and generates reports. It does not approve, decline, or install any patches.
+
+**Tested environment**: Windows Server 2022 WSUS, Windows 11 24H2 clients, Microsoft Graph PowerShell SDK 2.x, April 2026 service release.
+
+## Prerequisites
+
+**For WSUS mode** (`-Source WSUS` or `-Source Both`):
+
+1. The management workstation must have the **WSUS Administration Console** installed — this provides the `Microsoft.UpdateServices.Administration` .NET assembly the script uses:
+
+```powershell
+# Install WSUS Administration Console tools (Windows Server)
+Install-WindowsFeature -Name UpdateServices-UI
+
+# On Windows 10/11 management workstation via RSAT
+Add-WindowsCapability -Online -Name Rsat.WSUS.Tools~~~~0.0.1.0
+```
+
+2. The account running the script needs **WSUS Reporters** role membership or higher on the WSUS server.
+3. TCP port **8530** (HTTP) or **8531** (HTTPS) must be accessible from the management workstation to the WSUS server.
+
+**For WUfB mode** (`-Source WUfB` or `-Source Both`):
+
+1. **Microsoft Graph PowerShell SDK**:
+
+```powershell
+Install-Module Microsoft.Graph -Scope CurrentUser -Repository PSGallery -Force
+```
+
+2. An **Entra ID app registration** with the following Application permissions:
+   - `DeviceManagementManagedDevices.Read.All`
+   - `WindowsUpdates.ReadWrite.All` (for Windows Update for Business Graph reporting)
+
+   Grant admin consent for both permissions.
 
 ## Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
 | `-Source` | `[WSUS\|WUfB\|Both]` | Data source for compliance data |
-| `-WsusServer` | `[string]` | WSUS server hostname (required when Source includes WSUS) |
-| `-CriticalOnly` | `[switch]` | Filter report to Critical and Important severity only |
+| `-WsusServer` | `[string]` | WSUS server hostname or FQDN. Required when `-Source` includes `WSUS` |
+| `-WsusPort` | `[int]` | WSUS port. Default: `8530` for HTTP, `8531` for HTTPS |
+| `-UseSSL` | `[switch]` | Connect to WSUS over HTTPS |
+| `-CriticalOnly` | `[switch]` | Filter report to Critical and Important severity updates only |
 | `-OutputPath` | `[string]` | Output directory for HTML dashboard and CSV |
-| `-DaysBack` | `[int]` | Include patches released in the last N days. Default: 90 |
+| `-DaysBack` | `[int]` | Include updates released in the last N days. Default: `90` |
 
-## Usage Example
+## Usage Examples
+
+**WSUS-based compliance report — Critical and Important patches, last 60 days:**
 
 ```powershell
-# WSUS-based compliance report for critical patches
 Get-PatchComplianceReport -Source WSUS -WsusServer wsus01.corp.local `
     -CriticalOnly -DaysBack 60 -OutputPath C:\Reports\Patches
+```
 
-# Windows Update for Business via Graph API
+**WSUS over HTTPS on a non-default port:**
+
+```powershell
+Get-PatchComplianceReport -Source WSUS -WsusServer wsus01.corp.local `
+    -UseSSL -WsusPort 8531 -OutputPath C:\Reports\Patches
+```
+
+**Windows Update for Business via Graph API:**
+
+```powershell
 Get-PatchComplianceReport -Source WUfB -OutputPath C:\Reports\Patches
+```
+
+**Combined WSUS and WUfB — full fleet view for hybrid environments:**
+
+```powershell
+Get-PatchComplianceReport -Source Both -WsusServer wsus01.corp.local `
+    -CriticalOnly -OutputPath C:\Reports\Patches
 ```
 
 ## Report Contents
 
 The HTML dashboard includes:
 
-- **Overall compliance percentage**: Percentage of devices with all Critical/Important patches applied
-- **Per-device breakdown**: Last check-in, missing patch count by severity, days since oldest missing patch
-- **Top missing patches**: Most common unpatched CVEs across the fleet with CVSS scores
-- **Patch age distribution**: Chart showing how many devices are 0–30, 31–60, 61–90, and 90+ days behind
+- **Overall compliance percentage**: Devices with all Critical/Important patches applied vs total fleet
+- **Per-device breakdown**: Last check-in timestamp, missing patch count by severity, days since oldest missing patch
+- **Top missing patches**: Most common unpatched CVEs across the fleet with CVSS scores and KB article links
+- **Patch age distribution**: Count of devices at 0–30, 31–60, 61–90, and 90+ days behind
+- **Devices with errors**: Devices reporting Windows Update errors, with error codes
+
+The CSV export contains one row per device with the same fields, suitable for import into Power BI or for ticket creation workflows.
+
+## Validation
+
+After running, verify the report is complete and accurate:
+
+```powershell
+# Check that output files were created
+Get-ChildItem -Path C:\Reports\Patches | Sort-Object LastWriteTime -Descending | Select-Object -First 4
+
+# Spot-check a known device against WSUS console
+# Find a device in the HTML report and compare its missing patch count
+# against what WSUS shows for that device in Computers > [device name]
+```
+
+For WSUS-sourced reports: compare the total device count in the CSV against the count shown in the WSUS Administration Console under **Computers > All Computers**. A mismatch may indicate that some computer groups were excluded or that the WSUS query timed out for a large environment.
+
+## Common Errors
+
+**`Cannot connect to WSUS server 'wsus01.corp.local' on port 8530`**
+- Confirm the WSUS service (`W3SVC` and `WsusService`) is running on the server
+- Check firewall: TCP 8530 (or 8531 for SSL) must be open from the management workstation to the WSUS server
+- Try connecting with the WSUS Administration Console first to confirm basic connectivity
+
+**`The attempt to connect to the database failed. WsusPool`**
+The WSUS IIS application pool (`WsusPool`) is stopped. On the WSUS server, open IIS Manager → Application Pools → right-click `WsusPool` → Start. This is a common state after WSUS server reboots.
+
+**`Insufficient privileges to access Windows Update for Business reporting`**
+The app registration is missing `WindowsUpdates.ReadWrite.All` or admin consent has not been granted. Navigate to Entra admin centre → App registrations → API permissions and verify.
+
+**`Invoke-MgGraphRequest : 429 Too Many Requests`**
+Graph API throttling. For tenants with many devices, the script will automatically retry with backoff. For very large fleets (100,000+ devices), consider running separate reports per device platform using `-FilterOS`.
+
+**Report shows 0 devices**
+For WSUS: confirm at least one device has reported to WSUS in the timeframe specified by `-DaysBack`. Devices that haven't checked in to WSUS won't appear in the report. For WUfB: confirm the app registration has Graph permissions with admin consent granted — not just delegated permissions.
+
+## Security Notes
+
+- The script is **read-only** across both data sources.
+- **WSUS credentials**: If the WSUS server requires authenticated access beyond the current user context, avoid passing credentials as plaintext script arguments. Use `Get-Credential` or Windows Credential Manager.
+- **Graph API credentials**: For automated/scheduled use, prefer certificate-based app authentication over client secrets. Client secrets expire and must be rotated; a lapsed secret will silently stop the scheduled report. See [Export-IntuneDeviceReport](/scripts/export-intune-device-report) for the certificate-based auth pattern.
+- **Report output**: The HTML and CSV files contain a list of every device in the fleet with patch state and CVE exposure. Store reports in IT-restricted locations — not on shared drives or public-facing file servers.
+
+## Known Limitations
+
+- **WSUS coverage only**: The WSUS source reflects only devices that are managed by your WSUS server. Devices using Windows Update directly, devices in other WSUS groups, or devices that have never checked in to WSUS will not appear.
+- **WUfB Graph reporting latency**: Windows Update for Business device status via Graph can lag by up to 24 hours. Very recent patch deployments may not yet be reflected.
+- **No real-time data**: The report is a point-in-time snapshot. Devices that patch themselves between script invocation and report review will still show as non-compliant in the generated report.
 
 ## Related Resources
 
+- [Export-IntuneDeviceReport script](/scripts/export-intune-device-report)
+- [Get-StaleDevices script](/scripts/get-stale-devices)
 - [April 2025 Patch Tuesday — CVE-2025-21204](/news/april-2025-patch-tuesday-kernel-eop)
 - [Windows Update for Business Deferral Not Being Respected](/troubleshooting/wufb-deferral-not-respected)
+- [Microsoft WSUS documentation](https://learn.microsoft.com/en-us/windows-server/administration/windows-server-update-services/get-started/windows-server-update-services-wsus)

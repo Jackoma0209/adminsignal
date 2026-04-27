@@ -3,39 +3,88 @@ title: "New-AdminLabVM"
 category: "PowerShell"
 language: "PowerShell"
 date: "Jan 2025"
-authorId: "james-holbrook"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
 tags: ["Hyper-V", "Lab", "Automation", "Windows 11"]
-stars: 178
 ---
 
 ## Overview
 
 `New-AdminLabVM` provisions a clean Windows 11 test VM on Hyper-V using an unattend.xml answer file. It configures networking, WinRM, and optional domain join for a repeatable lab baseline.
 
-Stop building lab VMs manually. This script gives you a consistent, reproducible starting point for testing GPOs, Intune policies, or hardening scripts before deploying to production.
+Stop building lab VMs manually. This script gives you a consistent, reproducible starting point for testing Group Policy settings, Intune policies, or hardening scripts before deploying to production.
+
+**Tested environment**: Windows 11 24H2 Hyper-V host (Hyper-V Version 10.0.26100), Windows 11 24H2 Enterprise ISO. PowerShell 5.1 and 7.4.
+
+## Prerequisites
+
+Before running, confirm:
+
+1. **Hyper-V is enabled** on the host:
+
+```powershell
+# Windows 11 host — check Hyper-V feature state
+(Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V).State
+# Expected: Enabled
+
+# Enable if not already on (requires reboot)
+Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
+```
+
+2. **A virtual switch exists** on the Hyper-V host. The script attaches the VM to a switch named `Default Switch` by default. Verify yours:
+
+```powershell
+Get-VMSwitch | Select-Object Name, SwitchType, NetAdapterInterfaceName
+```
+
+If your external switch has a different name, supply it via `-SwitchName`. The Default Switch (type Internal, NAT) works for internet-connected lab VMs. Use an External switch if you need the VM on the same LAN as the host.
+
+3. **A Windows 11 ISO** — Enterprise or Pro edition, 64-bit. The script mounts the ISO directly; no prior extraction is needed.
+
+4. **Sufficient disk space** — the script creates a dynamically expanding VHDX (default 127 GB allocated; actual initial size is ~5 GB). Ensure the target `-VhdPath` directory has enough free space.
+
+5. **Run as Administrator** — Hyper-V cmdlets require local administrator privileges.
 
 ## Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
-| `-VMName` | `[string]` | Name for the new VM |
-| `-IsoPath` | `[string]` | Path to Windows 11 ISO |
-| `-VhdPath` | `[string]` | Directory where VHD will be created |
-| `-MemoryGB` | `[int]` | RAM in GB. Default: 4 |
-| `-CPUCount` | `[int]` | vCPU count. Default: 2 |
-| `-DomainJoin` | `[switch]` | Join the VM to the domain after provisioning |
-| `-DomainName` | `[string]` | AD domain to join (requires -DomainJoin) |
+| `-VMName` | `[string]` | Name for the new VM. Used for the VM display name and the VHDX filename |
+| `-IsoPath` | `[string]` | Full path to the Windows 11 ISO file |
+| `-VhdPath` | `[string]` | Directory where the VHDX will be created |
+| `-MemoryGB` | `[int]` | Startup RAM in GB. Default: `4` |
+| `-CPUCount` | `[int]` | Virtual CPU count. Default: `2` |
+| `-SwitchName` | `[string]` | Hyper-V virtual switch name. Default: `Default Switch` |
+| `-VhdSizeGB` | `[int]` | Maximum VHDX size in GB (dynamically expanding). Default: `127` |
+| `-DomainJoin` | `[switch]` | Join the VM to an AD domain after first boot |
+| `-DomainName` | `[string]` | AD domain FQDN to join. Required when `-DomainJoin` is specified |
+| `-AdminPassword` | `[securestring]` | Local Administrator password for the unattend.xml. Prompted interactively if not supplied |
 
-## Usage Example
+## Usage Examples
+
+**Standalone lab VM with interactive password prompt:**
 
 ```powershell
-# Create a standalone lab VM
 New-AdminLabVM -VMName "WIN11-LAB-01" `
                -IsoPath "D:\ISOs\Win11_24H2_Enterprise.iso" `
                -VhdPath "D:\VMs" `
                -MemoryGB 8 -CPUCount 4
+```
 
-# Create a domain-joined lab VM
+**Specify password non-interactively (for pipeline use):**
+
+```powershell
+$pw = ConvertTo-SecureString 'Lab@Password1!' -AsPlainText -Force
+
+New-AdminLabVM -VMName "WIN11-POLICY-TEST" `
+               -IsoPath "D:\ISOs\Win11_24H2_Enterprise.iso" `
+               -VhdPath "D:\VMs" `
+               -AdminPassword $pw
+```
+
+**Domain-joined lab VM:**
+
+```powershell
 New-AdminLabVM -VMName "WIN11-DOMAIN-TEST" `
                -IsoPath "D:\ISOs\Win11_24H2_Enterprise.iso" `
                -VhdPath "D:\VMs" `
@@ -44,17 +93,106 @@ New-AdminLabVM -VMName "WIN11-DOMAIN-TEST" `
 
 ## What Gets Configured
 
-The script automates:
+The script runs the following steps in sequence:
 
-1. Creates a Gen 2 Hyper-V VM with specified resources
-2. Attaches the Windows 11 ISO and a dynamically expanding VHDX (default 127 GB)
-3. Injects an unattend.xml for unattended installation (sets locale, admin password, WinRM)
-4. Enables WinRM after first boot for remote management
-5. Optionally joins the specified AD domain
+1. **Creates a Generation 2 Hyper-V VM** with specified CPU and memory. Generation 2 enables Secure Boot (required for Windows 11) and UEFI firmware.
+2. **Attaches the ISO** as a DVD drive and sets it as the boot device.
+3. **Creates a dynamically expanding VHDX** in `-VhdPath` named `<VMName>.vhdx`.
+4. **Injects an unattend.xml** into the VHDX before first boot. The answer file sets:
+   - Regional and keyboard locale (`en-US`)
+   - Built-in Administrator account enabled with the supplied password
+   - Auto-logon on first boot to complete setup
+   - WinRM enabled and set to allow remote management
+5. **Starts the VM** — Windows installs unattended. This typically takes 5–12 minutes depending on host disk speed.
+6. **Waits for WinRM** to become available and runs a connectivity test.
+7. **Optionally joins the AD domain** using the supplied `-DomainName`, then reboots.
 
-## Requirements
+## Validation
 
-- Windows Server or Windows 11 host with Hyper-V role/feature enabled
-- PowerShell 5.1+ running as Administrator
-- Windows 11 ISO (Enterprise or Pro)
-- For domain join: Line of sight to a domain controller and credentials with domain join rights
+After the script completes, verify the VM is ready:
+
+```powershell
+# Check VM is running and has an IP address
+Get-VM -Name "WIN11-LAB-01" | Select-Object Name, State, Uptime
+Get-VMNetworkAdapter -VMName "WIN11-LAB-01" | Select-Object IPAddresses
+
+# Test WinRM connectivity
+Test-WSMan -ComputerName (Get-VMNetworkAdapter -VMName "WIN11-LAB-01").IPAddresses[0]
+
+# Run a remote command to confirm access
+Invoke-Command -ComputerName (Get-VMNetworkAdapter -VMName "WIN11-LAB-01").IPAddresses[0] `
+    -ScriptBlock { $env:COMPUTERNAME } -Credential (Get-Credential)
+```
+
+For domain-joined VMs, also confirm the computer account appears in ADUC and the VM can authenticate against the domain:
+
+```powershell
+Invoke-Command -ComputerName "WIN11-DOMAIN-TEST.corp.local" `
+    -ScriptBlock { [System.Security.Principal.WindowsIdentity]::GetCurrent().Name }
+```
+
+## Common Errors
+
+**`New-VHD : The system cannot find the path specified`**
+The `-VhdPath` directory does not exist. Create it first: `New-Item -ItemType Directory -Path D:\VMs`.
+
+**`Set-VMFirmware : No switches are found`** or **`Add-VMNetworkAdapter : Cannot find virtual switch`**
+The virtual switch name specified (or the default `Default Switch`) does not exist on the host. Run `Get-VMSwitch` to list available switches and pass the correct name via `-SwitchName`.
+
+**VM boots to UEFI firmware screen instead of Windows setup**
+The ISO is not being detected as a bootable device. Confirm the ISO path is correct and the file is not corrupted:
+
+```powershell
+# Verify ISO file exists and is non-zero
+Get-Item "D:\ISOs\Win11_24H2_Enterprise.iso" | Select-Object FullName, Length
+```
+
+Also confirm the DVD drive is set as the first boot device in the VM firmware: `Set-VMFirmware -VMName "WIN11-LAB-01" -FirstBootDevice (Get-VMDvdDrive -VMName "WIN11-LAB-01")`.
+
+**WinRM connection refused after Windows installs**
+WinRM may not have been configured by the unattend.xml if the ISO edition doesn't support the `FirstLogonCommands` section used. Connect to the VM console (`vmconnect.exe`) and manually run:
+
+```cmd
+winrm quickconfig -q
+netsh advfirewall firewall add rule name="WinRM-HTTP" dir=in action=allow protocol=TCP localport=5985
+```
+
+**`Add-Computer : The specified domain either does not exist or could not be contacted`**
+For `-DomainJoin`, the VM must have network access to a domain controller. Confirm the virtual switch the VM is connected to has a route to the AD domain's DNS server and domain controller.
+
+## Cleanup and Teardown
+
+To cleanly remove a lab VM when finished:
+
+```powershell
+$VMName = "WIN11-LAB-01"
+
+# Stop and remove the VM (retains the VHDX by default)
+Stop-VM -Name $VMName -Force -TurnOff
+Remove-VM -Name $VMName -Force
+
+# Remove the VHDX file manually if no longer needed
+$VhdxPath = "D:\VMs\$VMName.vhdx"
+if (Test-Path $VhdxPath) { Remove-Item $VhdxPath -Force }
+```
+
+For domain-joined VMs, also remove the computer account from AD before deleting the VM:
+
+```powershell
+# Remove AD computer account (requires AD PowerShell module)
+Remove-ADComputer -Identity $VMName -Confirm:$false
+```
+
+## Security Notes
+
+- **Local administrator password**: The unattend.xml sets the built-in Administrator account password. **Change this password immediately after first login** — treat the provisioned password as a setup credential, not a permanent one. Do not reuse lab VM passwords across environments.
+- **Do not pass admin passwords as plaintext in scripts** that may be logged or stored in source control. Use `ConvertTo-SecureString` with `Read-Host -AsSecureString` for interactive use, or retrieve from a secrets vault for pipeline use.
+- **WinRM is enabled in HTTP mode** (TCP 5985) by the unattend configuration. This is appropriate for isolated lab networks. Do not place lab VMs on production LAN segments with WinRM-HTTP enabled — use HTTPS (TCP 5986) or restrict by firewall rule.
+- **Secure Boot is enabled** by default (Generation 2 VMs). Do not disable Secure Boot on lab VMs unless specifically testing Secure Boot behaviour — keeping it enabled makes the lab environment closer to production and avoids habits of disabling it.
+
+## Related Resources
+
+- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Invoke-WindowsHardening script](/scripts/invoke-windows-hardening)
+- [Understanding Autopilot v2: Enrollment Profiles and ESP](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Microsoft Hyper-V documentation](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/hyper-v-overview)

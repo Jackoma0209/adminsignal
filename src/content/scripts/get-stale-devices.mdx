@@ -3,9 +3,9 @@ title: "Get-StaleDevices"
 category: "PowerShell"
 language: "PowerShell"
 date: "Feb 2025"
-authorId: "sarah-chen"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
 tags: ["Intune", "Entra ID", "Active Directory", "Reporting"]
-stars: 318
 ---
 
 ## Overview
@@ -14,68 +14,131 @@ stars: 318
 
 Stale device cleanup is an underappreciated security hygiene task. Inactive device records create noise in compliance reports, consume Intune licences, and can be used by attackers who recover old hardware with a valid certificate or token cache.
 
+**This script is read-only.** It queries data sources and produces reports. It does not delete, disable, or modify any device records. Remediation actions shown in the report require separate deliberate steps.
+
+**Tested environment**: Windows 11 24H2 management workstation, Microsoft Graph PowerShell SDK 2.x, Intune and Entra ID tenants on April 2026 service release.
+
+## Prerequisites
+
+The script requires the following before running:
+
+1. **Microsoft Graph PowerShell SDK** — install if not present:
+
+```powershell
+Install-Module Microsoft.Graph -Scope CurrentUser -Repository PSGallery -Force
+```
+
+2. **Entra ID app registration** with the following Application (not Delegated) permissions:
+   - `Device.Read.All`
+   - `DeviceManagementManagedDevices.Read.All`
+
+   Grant admin consent for both permissions after creating the registration.
+
+3. **RSAT Active Directory module** — for on-premises AD queries:
+
+```powershell
+# Windows 11 / Windows 10 2004+
+Add-WindowsCapability -Online -Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
+```
+
+4. The account running the script needs **read access** to Active Directory. Domain User is sufficient for AD queries.
+
 ## Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
-| `-StaleThresholdDays` | `[int]` | Number of days since last check-in to classify as stale. Default: 90 |
-| `-Sources` | `[string[]]` | Data sources to query: Intune, EntraID, ActiveDirectory. Default: all three |
-| `-OutputPath` | `[string]` | Directory for CSV and HTML report output |
-| `-GraphCredential` | `[PSCredential]` | Service principal credentials for Graph API access |
-| `-IncludeRemediation` | `[switch]` | Include per-device recommended action in the report |
+| `-StaleThresholdDays` | `[int]` | Days since last check-in to classify as stale. Default: `90` |
+| `-Sources` | `[string[]]` | Sources to query: `Intune`, `EntraID`, `ActiveDirectory`. Default: all three |
+| `-OutputPath` | `[string]` | Directory for CSV and HTML report output. Created if it does not exist |
+| `-GraphCredential` | `[PSCredential]` | Service principal credentials for unattended Graph API access |
+| `-IncludeRemediation` | `[switch]` | Add recommended action column to the report |
 
 ## Usage Examples
 
-**Basic run with 90-day threshold:**
+**Basic interactive run — 90-day threshold, prompt for Graph credentials:**
 
 ```powershell
 Get-StaleDevices -StaleThresholdDays 90 -OutputPath C:\Reports\StaleDevices
 ```
 
-**Query Intune and Entra ID only (no on-premises AD):**
+**Query Intune and Entra ID only (no on-premises AD required):**
 
 ```powershell
 Get-StaleDevices -Sources @('Intune', 'EntraID') -StaleThresholdDays 60 -OutputPath C:\Reports
 ```
 
-**Run with Graph API service principal:**
+**Unattended run with service principal — for scheduled task or pipeline use:**
 
 ```powershell
-$cred = Get-Credential
+$appId     = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+$appSecret = ConvertTo-SecureString 'YOUR_SECRET' -AsPlainText -Force
+$cred      = New-Object PSCredential($appId, $appSecret)
+
 Get-StaleDevices -GraphCredential $cred -StaleThresholdDays 90 -IncludeRemediation -OutputPath C:\Reports
 ```
 
-## Prerequisites
-
-The script requires the following:
-
-1. **Microsoft Graph PowerShell SDK** (`Install-Module Microsoft.Graph -Scope CurrentUser`)
-2. An **Entra ID app registration** with the following Graph API permissions:
-   - `Device.Read.All` (Application permission)
-   - `DeviceManagementManagedDevices.Read.All` (Application permission)
-3. For Active Directory queries: **RSAT Active Directory PowerShell module**
-4. Run as a user with read access to AD and the Graph permissions above
-
 ## Output
 
-The script produces two output files per run:
+The script writes two files per run to the specified `-OutputPath`:
 
-**CSV**: `StaleDevices-YYYYMMDD.csv` — machine-readable, suitable for importing into PowerBI or further pipeline processing.
+| File | Format | Use |
+|---|---|---|
+| `StaleDevices-YYYYMMDD.csv` | CSV | Power BI import, pipeline processing, ticket creation |
+| `StaleDevices-YYYYMMDD.html` | HTML | Human review, management reporting |
 
-**HTML**: `StaleDevices-YYYYMMDD.html` — formatted report with per-device status across data sources, last check-in dates, and recommended action.
+### Remediation recommendations
 
-### Remediation recommendations in the report
-
-When `-IncludeRemediation` is specified:
+When `-IncludeRemediation` is specified, each device row includes a `RecommendedAction` column:
 
 | Condition | Recommended Action |
 |---|---|
-| Stale in all sources (>180 days) | Delete from all directories, revoke certificates |
-| Stale in Intune only, active in AD | Investigate; device may have been re-imaged without re-enrolling |
-| Active in Intune, stale in Entra ID | Sync Entra ID device record; check hybrid join connector |
-| Active in Intune, missing from AD | May be cloud-only device; verify Autopilot registration |
+| Stale in all sources (>180 days) | Delete from all directories; revoke certificates and tokens |
+| Stale in Intune only, active in AD | Investigate — device may have been re-imaged without re-enrolling in Intune |
+| Active in Intune, stale in Entra ID | Sync Entra ID device record; check hybrid join connector health |
+| Active in Intune, missing from AD | Likely cloud-only device; verify Autopilot registration is current |
+| Stale in AD only | Check if device was decommissioned but AD record not cleaned up |
+
+**Do not bulk-delete devices based solely on this report without a manual review pass.** Active devices with clock drift, offline periods, or VPN-only connectivity can appear stale with a 60–90 day threshold.
+
+## Validation
+
+After running, verify the report looks complete:
+
+```powershell
+# Count devices in the CSV
+(Import-Csv C:\Reports\StaleDevices\StaleDevices-$(Get-Date -Format yyyyMMdd).csv).Count
+
+# Spot-check a known stale device name — confirm it appears in the report
+Import-Csv C:\Reports\StaleDevices\StaleDevices-$(Get-Date -Format yyyyMMdd).csv |
+    Where-Object { $_.DeviceName -eq 'LAPTOP-OLD-01' }
+```
+
+Cross-reference the total device count in the CSV against the device count visible in the Intune portal (Devices > All devices) to confirm the Graph query returned a full result set and was not truncated.
+
+## Common Errors
+
+**`Connect-MgGraph : Insufficient privileges`**
+The app registration is missing the required Graph permissions, or admin consent has not been granted. Navigate to Entra admin centre → App registrations → [your app] → API permissions and confirm both permissions show "Granted for [tenant]".
+
+**`Get-ADComputer : The server is not operational`**
+The script cannot reach a domain controller. Ensure the management workstation is domain-joined, or run from a machine with line of sight to an AD DC. Use `-Sources @('Intune', 'EntraID')` to skip the AD query if on-premises AD is not accessible.
+
+**`Invoke-MgGraphRequest : Response status code does not indicate success: 429 (Too Many Requests)`**
+The Graph API is throttling the request. The script should retry automatically, but for large tenants (50,000+ devices) add a `-ThrottleDelay` value or break the run into source-specific queries to reduce concurrent request volume.
+
+**Report contains 0 devices**
+Verify the `-StaleThresholdDays` value. A threshold of 7 days in an active fleet may return 0 stale devices legitimately. Confirm the app registration has Device.Read.All with admin consent, not just Delegated permissions.
+
+## Security Notes
+
+- The script is **read-only** across all data sources.
+- When using a service principal (`-GraphCredential`), store the client secret in a secrets vault (Azure Key Vault, Windows Credential Manager) rather than hardcoding it in scripts or scheduled task arguments.
+- The output CSV and HTML files contain device names, last check-in dates, and compliance states. Treat them as internal data — do not share publicly or store in unprotected locations.
+- **Do not automate device deletion** based on this report without a human review step. Automated deletion of devices that are merely inactive can remove valid hardware from management.
 
 ## Related Resources
 
 - [Export-IntuneDeviceReport script](/scripts/export-intune-device-report)
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Microsoft Graph Device.Read.All permission reference](https://learn.microsoft.com/en-us/graph/permissions-reference#devicereadall)

@@ -3,32 +3,101 @@ title: "Export-IntuneDeviceReport"
 category: "PowerShell"
 language: "PowerShell"
 date: "Feb 2025"
-authorId: "sarah-chen"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
 tags: ["Intune", "Graph API", "Reporting", "Inventory"]
-stars: 389
 ---
 
 ## Overview
 
 `Export-IntuneDeviceReport` uses the Microsoft Graph API to export a full Intune device inventory including compliance state, OS version, last check-in, and primary user to CSV or JSON. Useful for audits, licence reconciliation, and executive reporting.
 
+**This script is read-only.** It queries the Graph API and exports data. It does not modify any Intune configuration, device settings, or user data.
+
+**Tested environment**: Intune tenant on April 2026 service release. Microsoft Graph PowerShell SDK 2.x. Windows 11 24H2 management workstation. Tenants ranging from 500 to 18,000 managed devices.
+
+## Prerequisites
+
+1. **Microsoft Graph PowerShell SDK** — install if not already present:
+
+```powershell
+Install-Module Microsoft.Graph -Scope CurrentUser -Repository PSGallery -Force
+
+# Verify installed version
+Get-InstalledModule Microsoft.Graph | Select-Object Name, Version
+```
+
+2. **Entra ID app registration** with the following **Application** permissions (not Delegated):
+   - `DeviceManagementManagedDevices.Read.All`
+   - `DeviceManagementConfiguration.Read.All` — required for `-IncludeCompliance`
+   - `Directory.Read.All` — required to resolve primary user UPN
+
+   Grant admin consent for all permissions after creating the registration.
+
+3. A **client secret** or **client certificate** for the app registration. Certificate-based auth is strongly preferred for automation — see the Security Notes section.
+
+## Authentication Methods
+
+### Option 1: Service Principal with Client Secret (simplest, less secure)
+
+```powershell
+Export-IntuneDeviceReport -TenantId  "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
+                          -ClientId  "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
+                          -ClientSecret $secret `
+                          -OutputFormat CSV -OutputPath C:\Reports\Intune
+```
+
+**Avoid storing the secret in scripts.** Retrieve it at runtime:
+
+```powershell
+# Read from Windows Credential Manager or environment variable
+$secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
+    [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR(
+        (Get-Credential -Message "App secret" -UserName "client_secret").Password
+    )
+)
+```
+
+### Option 2: Service Principal with Certificate (recommended for automation)
+
+```powershell
+Export-IntuneDeviceReport -TenantId    "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
+                          -ClientId    "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
+                          -CertThumbprint "ABCDEF1234567890ABCDEF1234567890ABCDEF12" `
+                          -OutputFormat Both -OutputPath C:\Reports\Intune
+```
+
+The certificate must be present in the current user's `Cert:\CurrentUser\My` store and uploaded to the app registration.
+
+### Option 3: Interactive / Delegated Authentication (for one-time ad-hoc use)
+
+```powershell
+Export-IntuneDeviceReport -Interactive -OutputFormat CSV -OutputPath C:\Reports\Intune
+```
+
+Interactive mode uses `Connect-MgGraph` with Delegated permissions. The signed-in user must have at least the **Intune Service Administrator** or **Global Reader** role.
+
 ## Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
-| `-TenantId` | `[string]` | Azure AD tenant ID |
-| `-ClientId` | `[string]` | App registration client ID |
-| `-ClientSecret` | `[string]` | App registration client secret |
-| `-OutputFormat` | `[CSV\|JSON\|Both]` | Export format. Default: CSV |
-| `-OutputPath` | `[string]` | Output directory |
-| `-FilterOS` | `[string]` | Filter by OS: Windows, iOS, Android, macOS |
-| `-IncludeCompliance` | `[switch]` | Include compliance policy evaluation results |
+| `-TenantId` | `[string]` | Entra ID tenant ID (GUID) |
+| `-ClientId` | `[string]` | App registration client ID (GUID) |
+| `-ClientSecret` | `[string]` | App registration client secret (avoid for production — use certificate) |
+| `-CertThumbprint` | `[string]` | Certificate thumbprint for certificate-based service principal auth |
+| `-Interactive` | `[switch]` | Use interactive delegated authentication instead of service principal |
+| `-OutputFormat` | `[CSV\|JSON\|Both]` | Export format. Default: `CSV` |
+| `-OutputPath` | `[string]` | Output directory. Created if it does not exist |
+| `-FilterOS` | `[string]` | Filter by OS: `Windows`, `iOS`, `Android`, `macOS` |
+| `-IncludeCompliance` | `[switch]` | Include per-device compliance policy evaluation results |
 
-## Usage Example
+## Usage Examples
+
+**Full Windows inventory with compliance data, CSV and JSON output:**
 
 ```powershell
-Export-IntuneDeviceReport -TenantId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
-                          -ClientId "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
+Export-IntuneDeviceReport -TenantId  "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
+                          -ClientId  "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
                           -ClientSecret $secret `
                           -OutputFormat Both `
                           -OutputPath C:\Reports\Intune `
@@ -36,32 +105,109 @@ Export-IntuneDeviceReport -TenantId "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
                           -IncludeCompliance
 ```
 
+**Mobile device inventory — iOS and Android only:**
+
+```powershell
+Export-IntuneDeviceReport -TenantId $tenantId -ClientId $clientId `
+                          -CertThumbprint $thumbprint `
+                          -FilterOS iOS -OutputFormat CSV -OutputPath C:\Reports\Mobile
+
+Export-IntuneDeviceReport -TenantId $tenantId -ClientId $clientId `
+                          -CertThumbprint $thumbprint `
+                          -FilterOS Android -OutputFormat CSV -OutputPath C:\Reports\Mobile
+```
+
+**Interactive run for ad-hoc audit:**
+
+```powershell
+Export-IntuneDeviceReport -Interactive -OutputFormat CSV -OutputPath C:\Reports\Intune
+```
+
 ## Graph API Permissions Required
 
-The app registration needs these Application permissions:
-
-- `DeviceManagementManagedDevices.Read.All`
-- `DeviceManagementConfiguration.Read.All` (for compliance data)
-- `Directory.Read.All` (for primary user resolution)
+| Permission | Scope | Required for |
+|---|---|---|
+| `DeviceManagementManagedDevices.Read.All` | Application | All device inventory data |
+| `DeviceManagementConfiguration.Read.All` | Application | Compliance policy results (`-IncludeCompliance`) |
+| `Directory.Read.All` | Application | Primary user UPN resolution |
 
 ## Output Fields
 
-The CSV/JSON output includes:
+The CSV/JSON output includes one record per managed device:
 
 | Field | Source |
 |---|---|
-| DeviceName | Intune display name |
-| DeviceId | Entra/Intune device ID |
-| OS | Operating system |
-| OSVersion | Build number |
-| LastCheckIn | Last Intune sync timestamp |
-| ComplianceState | Compliant / NonCompliant / Unknown |
-| PrimaryUserUPN | Enrolled user |
-| EnrollmentDate | Initial Intune enrollment |
-| ManagementAgent | MDM, ConfigurationManager, or EAS |
-| EncryptionState | Encrypted / Not encrypted (Windows only) |
+| `DeviceName` | Intune display name |
+| `DeviceId` | Entra/Intune device GUID |
+| `OS` | Operating system (Windows, iOS, Android, macOS) |
+| `OSVersion` | OS build number (e.g. `10.0.26100.3476`) |
+| `LastCheckIn` | Last Intune sync timestamp (UTC) |
+| `ComplianceState` | `Compliant`, `NonCompliant`, `Unknown`, `InGracePeriod` |
+| `PrimaryUserUPN` | UPN of the enrolled user |
+| `EnrollmentDate` | Initial Intune enrollment timestamp |
+| `ManagementAgent` | `MDM`, `ConfigurationManager`, `EAS` |
+| `EncryptionState` | `Encrypted` / `NotEncrypted` (Windows only) |
+| `SerialNumber` | Device serial number (where reported by the platform) |
+
+When `-IncludeCompliance` is specified, one additional column per assigned compliance policy is appended with per-policy compliance state.
+
+## Validation
+
+After running, verify the export is complete:
+
+```powershell
+# Count records in the CSV
+$report = Import-Csv (Get-ChildItem C:\Reports\Intune\IntuneDevices-*.csv |
+    Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+$report.Count
+
+# Spot-check a known device
+$report | Where-Object { $_.DeviceName -eq 'LAPTOP-KNOWN-01' } |
+    Select-Object DeviceName, OS, OSVersion, LastCheckIn, ComplianceState
+```
+
+Cross-reference the device count against the total shown in the Intune portal at **Devices > All devices** (filter by OS if using `-FilterOS`). A large discrepancy may indicate the Graph query was paginated incorrectly or that the app registration is missing Directory permissions needed to resolve primary users.
+
+## Common Errors
+
+**`Authorization_RequestDenied : Insufficient privileges to complete the operation`**
+The app registration is missing one of the required permissions, or admin consent has not been granted. Navigate to Entra admin centre → App registrations → [your app] → API permissions and confirm all three permissions show "Granted for [tenant name]".
+
+**`Request_ResourceNotFound` or empty results with `-FilterOS Windows`**
+The Graph API `managedDevices` endpoint is case-sensitive for OS filter values. Use exactly: `Windows`, `iOS`, `Android`, `macOS`. Using `windows` (lowercase) will return zero results.
+
+**`429 Too Many Requests` / throttling**
+The script will retry with exponential backoff automatically. For tenants with 50,000+ devices, the full export can take 10–20 minutes due to Graph API pagination at 1,000 records per page. Do not interrupt — a partial export is worse than a complete one.
+
+**`AADSTS700016: Application not found in directory`**
+The `-TenantId` and `-ClientId` combination is incorrect. Verify both GUIDs in the Entra admin centre. This error can also appear if using the App ID URI instead of the Client ID GUID.
+
+**Certificate errors when using `-CertThumbprint`**
+The certificate must be in `Cert:\CurrentUser\My` (or `Cert:\LocalMachine\My` for SYSTEM context). Confirm:
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq 'YOUR_THUMBPRINT' }
+```
+
+## Security Notes
+
+- **Client secrets are credentials** — treat them like passwords. Do not log them, paste them into chat tools, or store them in scripts committed to source control. Use Azure Key Vault, Windows Credential Manager, or environment variables set by your pipeline.
+- **Certificate-based auth is strongly preferred** for any scheduled or automated export. Certificates have a longer expiry lifecycle and are not transmitted over the wire in the same way as secrets.
+- **The export contains PII**: device names, primary user UPNs, serial numbers, and compliance states. Store reports in IT-restricted directories. Delete old reports when no longer needed — they are a snapshot in time and become stale.
+- **Principle of least privilege**: The three permissions listed are the minimum required. Do not add broader permissions such as `User.ReadWrite.All` or `DeviceManagementManagedDevices.ReadWrite.All` to the app registration — this script only needs read access.
+- **Client secret rotation**: If using a client secret, set a calendar reminder to rotate it before expiry. An expired secret causes the scheduled export to silently stop. Certificate-based auth with a longer-lived certificate avoids this.
+
+## Known Limitations
+
+- **Graph API pagination**: Results are returned in pages of 1,000 devices. The script handles pagination automatically, but very large tenants will take proportionally longer to export.
+- **Compliance data lag**: The `ComplianceState` field reflects the last evaluation cached in Intune. Devices that have not synced in 8+ hours may show a stale compliance state. Trigger a device sync before running the export if freshness is critical.
+- **Personal/BYOD devices**: Devices enrolled via MAM-without-enrollment or under a personal enrollment type may have limited fields populated (particularly `SerialNumber` and `EncryptionState`) due to privacy partitioning in Graph.
+- **iOS/macOS EncryptionState**: The `EncryptionState` field is only populated for Windows devices. iOS and macOS report encryption status through a different Graph property that this script does not currently surface.
 
 ## Related Resources
 
 - [Get-StaleDevices script](/scripts/get-stale-devices)
-- [Intune Native LAPS Integration News](/news/intune-native-laps-entra-joined)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Microsoft Graph Intune device management API reference](https://learn.microsoft.com/en-us/graph/api/resources/intune-devices-manageddevice)
+- [Microsoft Graph authentication documentation](https://learn.microsoft.com/en-us/graph/sdks/choose-authentication-providers)

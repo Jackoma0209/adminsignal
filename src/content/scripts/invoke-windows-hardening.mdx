@@ -3,88 +3,208 @@ title: "Invoke-WindowsHardening"
 category: "PowerShell"
 language: "PowerShell"
 date: "Mar 2025"
-authorId: "marcus-webb"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
 tags: ["CIS", "Hardening", "Security", "Compliance"]
-stars: 502
 ---
 
 ## Overview
 
-`Invoke-WindowsHardening` applies a configurable subset of CIS Level 1 and Level 2 controls to Windows 10/11 endpoints. It runs locally or via Intune remediation script and generates a pre/post compliance delta report showing exactly what changed.
+`Invoke-WindowsHardening` applies a configurable subset of CIS Level 1 and Level 2 controls to Windows 10/11 endpoints. It runs locally or via Intune remediation script and generates a pre/post compliance delta report showing exactly what changed and what was already compliant.
 
 The script is designed for environments that need to apply hardening without a full GPO infrastructure, or as a validation and gap-fill tool alongside existing Group Policy baselines.
+
+**Tested environment**: Windows 11 22H2 and 24H2, Windows 10 22H2. PowerShell 5.1 and PowerShell 7.4. Local and SYSTEM execution contexts. Tested against CIS Windows 11 Benchmark v3.0.0.
+
+## Safety First: Always Audit Before Applying
+
+> **Important**: This script modifies registry values, security policy settings, and Windows Defender configuration. Run `-Mode Audit` on a pilot machine first and review the delta report before running `-Mode Apply` in any production environment. Some controls — particularly NTLM restrictions and BitLocker settings — can break legacy applications and require a reboot to take effect.
+
+The recommended sequence is:
+
+1. Run `Invoke-WindowsHardening -Mode Audit` on a representative pilot machine
+2. Review the HTML report and identify any controls likely to conflict with your environment
+3. Use `-ExcludeCategories` to exclude those controls
+4. Run `Invoke-WindowsHardening -Mode Apply` on the pilot machine
+5. Test all critical applications on the pilot machine
+6. Only then deploy via Intune remediation to a broader scope
+
+## Prerequisites
+
+- **OS**: Windows 10 22H2 / Windows 11 22H2 or later
+- **PowerShell**: 5.1 minimum; PowerShell 7 recommended for parallel execution and better error handling
+- **Execution context**: Local Administrator or SYSTEM. Many controls require elevated access to write HKLM registry paths and configure security policy.
+- **Execution policy**: The script must be unblocked or your execution policy must permit local scripts:
+
+```powershell
+# Confirm execution policy before running
+Get-ExecutionPolicy -List
+
+# If RemoteSigned or AllSigned, unblock the script file:
+Unblock-File -Path .\Invoke-WindowsHardening.ps1
+```
 
 ## Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
-| `-Mode` | `[Audit\|Apply]` | Audit reports gaps without making changes. Apply enforces settings. Default: Audit |
-| `-Level` | `[CIS1\|CIS2\|Custom]` | CIS Level 1, Level 2, or custom profile. Default: CIS1 |
-| `-ReportPath` | `[string]` | Path for the HTML report output. Default: current directory |
-| `-ExcludeCategories` | `[string[]]` | Skip specific control categories. Use for scoped deployments. |
-| `-WhatIf` | `[switch]` | Preview changes without applying (Audit mode only) |
+| `-Mode` | `[Audit\|Apply]` | `Audit` reports gaps without making changes. `Apply` enforces settings. Default: `Audit` |
+| `-Level` | `[CIS1\|CIS2\|Custom]` | CIS Level 1, Level 2, or custom control profile. Default: `CIS1` |
+| `-ReportPath` | `[string]` | Full path for the HTML report file. Default: current directory |
+| `-ExcludeCategories` | `[string[]]` | Skip specific control categories by name (see category list below) |
+| `-WhatIf` | `[switch]` | Show what `-Mode Apply` would change, without writing anything |
 
 ## Usage Examples
 
-**Audit mode — generate compliance report without changes:**
+**Audit mode — generate compliance gap report without any changes:**
 
 ```powershell
 Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\Temp\HardeningAudit.html
 ```
 
-**Apply CIS Level 1 hardening:**
+**Preview what Apply mode would change (safe — no writes):**
+
+```powershell
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -WhatIf
+```
+
+**Apply CIS Level 1 controls:**
 
 ```powershell
 Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath C:\Temp\HardeningApplied.html
 ```
 
-**Apply hardening excluding BitLocker controls (useful if managed separately):**
+**Apply hardening excluding BitLocker and Firewall categories (useful if managed separately):**
 
 ```powershell
-Invoke-WindowsHardening -Mode Apply -Level CIS1 -ExcludeCategories @('BitLocker', 'WindowsFirewall')
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -ExcludeCategories @('BitLocker', 'WindowsFirewall') `
+    -ReportPath C:\Temp\HardeningApplied.html
 ```
 
-**Run as Intune remediation script:**
-
-Set the detection script to check for the compliance report file. Set the remediation script to:
+**Run as Intune remediation script (SYSTEM context):**
 
 ```powershell
-$reportPath = "C:\ProgramData\AdminSignal\HardeningReport-$(Get-Date -Format yyyyMMdd).html"
-Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath $reportPath
+# Detection script — check for a recent report file
+$ReportDir  = 'C:\ProgramData\AdminSignal'
+$Threshold  = (Get-Date).AddDays(-30)
+$Report     = Get-ChildItem -Path $ReportDir -Filter 'HardeningReport-*.html' -ErrorAction SilentlyContinue |
+              Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+if ($Report -and $Report.LastWriteTime -gt $Threshold) {
+    Write-Output 'Compliant: recent hardening report found.'
+    exit 0
+} else {
+    Write-Output 'Non-compliant: no recent hardening report.'
+    exit 1
+}
+```
+
+```powershell
+# Remediation script — apply and record
+$ReportPath = "C:\ProgramData\AdminSignal\HardeningReport-$(Get-Date -Format yyyyMMdd).html"
+New-Item -ItemType Directory -Path (Split-Path $ReportPath) -Force | Out-Null
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath $ReportPath
 ```
 
 ## What it Applies
 
-The script covers the following CIS Level 1 control categories. Each category can be individually excluded.
+Each category can be individually excluded via `-ExcludeCategories`:
 
 | Category | Controls Applied |
 |---|---|
-| AccountPolicies | Password length, lockout threshold, lockout duration |
-| AuditPolicy | Logon, account management, policy change, process creation |
-| WindowsFirewall | Enable all profiles, default inbound block |
-| NetworkSecurity | LM authentication level, NTLM session security, SMBv1 disable |
-| UserRightsAssignment | Deny network logon to built-in accounts, restrict debug programs |
-| SecurityOptions | UAC settings, NTLMv2 enforcement, interactive logon configuration |
-| WindowsDefender | Real-time protection, PUA blocking, cloud protection |
-| BitLocker | Require TPM, enable for OS drive |
-| PowerShellLogging | Script block logging, module logging, transcription |
+| `AccountPolicies` | Password length (14+), lockout threshold (5), lockout duration |
+| `AuditPolicy` | Logon, account management, policy change, process creation events |
+| `WindowsFirewall` | Enable all three profiles (Domain/Private/Public), default inbound block |
+| `NetworkSecurity` | LM authentication level (NTLMv2 only), NTLM session security, SMBv1 disable |
+| `UserRightsAssignment` | Deny network logon to built-in accounts, restrict debug privilege |
+| `SecurityOptions` | UAC prompt settings, NTLMv2 enforcement, interactive logon messages |
+| `WindowsDefender` | Real-time protection on, PUA blocking, cloud protection level |
+| `BitLocker` | Require TPM, enable OS drive encryption |
+| `PowerShellLogging` | Script block logging, module logging, transcription |
 
 ## Report Output
 
 The HTML report includes:
-- **Pre-hardening state**: Current value of each setting before any changes
-- **Post-hardening state**: Value after script runs (in Apply mode)
-- **Compliance status**: Pass/Fail per control
-- **Summary**: Overall compliance percentage and list of failed controls
 
-## Requirements
+- **Pre-hardening state**: The actual value of each setting before any changes
+- **Post-hardening state**: The value after the script ran (Apply mode only; Audit shows current state in both columns)
+- **Compliance status**: Pass / Fail / Skipped per control
+- **Summary table**: Overall compliance percentage, count of passed and failed controls
+- **Skipped controls**: Controls excluded via `-ExcludeCategories` or marked as Intune-required
 
-- Windows 10 22H2 / Windows 11 22H2 or later
-- Run as Local Administrator or SYSTEM (required for registry and security policy changes)
-- PowerShell 5.1 minimum (PowerShell 7 recommended for parallel execution and better error handling)
+## Validation
+
+After running in Apply mode, verify key controls took effect:
+
+```powershell
+# Verify NTLMv2-only enforcement (should return 5)
+(Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa').LmCompatibilityLevel
+
+# Verify Script Block Logging is enabled (should return 1)
+(Get-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging' `
+    -ErrorAction SilentlyContinue).EnableScriptBlockLogging
+
+# Verify SMBv1 is disabled (should return False)
+(Get-SmbServerConfiguration).EnableSMB1Protocol
+
+# Verify Windows Firewall Domain profile is enabled (should return True)
+(Get-NetFirewallProfile -Profile Domain).Enabled
+```
+
+If any of these return unexpected values, re-check whether a competing Group Policy or Intune profile is overriding the settings.
+
+## Common Errors
+
+**`Access to the path is denied` / `Set-ItemProperty: Cannot write to HKLM`**
+The script is not running as Administrator or SYSTEM. Right-click PowerShell and select "Run as administrator", or confirm the Intune remediation script is set to run in SYSTEM context.
+
+**`The term 'secedit' is not recognized`**
+Security policy settings (Account Policies, User Rights Assignment) use `secedit.exe`. This is a Windows built-in — if it is missing, the Windows installation may be corrupted. Verify via `where.exe secedit`.
+
+**Report shows controls as Fail after Apply**
+Some controls require a reboot to take full effect, particularly BitLocker initialisation and some `SecurityOptions` values. Reboot the machine and re-run in Audit mode to confirm.
+
+**LOB application breaks after Apply**
+The most common culprits are `NetworkSecurity` (NTLMv2 enforcement) and `WindowsFirewall` (inbound block rules). Re-run with `-ExcludeCategories @('NetworkSecurity')` or `-ExcludeCategories @('WindowsFirewall')` to identify which category is causing the conflict.
+
+## Rollback Procedure
+
+The script does not currently create an automatic system restore point. Before running Apply on a new machine class, create a manual checkpoint:
+
+```powershell
+# Create a system restore point before hardening (requires System Protection enabled)
+Checkpoint-Computer -Description "Pre-CIS-Hardening $(Get-Date -Format yyyy-MM-dd)" `
+    -RestorePointType MODIFY_SETTINGS
+```
+
+**Per-category rollback**: The HTML report records the pre-hardening value of every modified setting. Use those values to manually revert specific controls. For registry-based controls:
+
+```powershell
+# Example: revert LM Compatibility Level to its previous value (e.g. 3)
+Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa' `
+    -Name LmCompatibilityLevel -Value 3
+```
+
+**BitLocker**: Once BitLocker encryption begins, it cannot be reversed by removing the control — decryption requires `Disable-BitLocker` and takes time proportional to drive size. Do not include `BitLocker` in an Apply run on machines where full-disk decryption is not acceptable.
+
+## Security Notes
+
+- **Audit mode is completely safe** — it reads values and writes a report. No system state is changed.
+- **Apply mode makes persistent changes** to registry, security policy, and Windows Defender configuration. Test on a pilot machine before broad deployment.
+- **The report file contains security configuration details** of the endpoint. Store it in a path accessible only to IT administrators, not in a user-accessible location.
+- **Running as SYSTEM via Intune remediation** is the intended production path. The script does not require network access or cloud connectivity unless querying external telemetry (which it does not by default).
 
 ## Known Limitations
 
-- **Does not apply Intune-specific controls**: Tamper Protection and some Defender settings require an Intune-enrolled device and cannot be set via registry/PowerShell. These are flagged in the report as `Intune-required`.
-- **Reboot required**: Some settings (including several BitLocker controls) do not take effect until the next reboot.
-- **Application conflicts**: The NTLM and legacy authentication restrictions can break older LOB applications. Test in a pilot environment before broad deployment.
+- **Intune-required controls**: Tamper Protection and some Defender settings require an Intune-enrolled device and an active Intune security configuration policy. These cannot be set via registry or PowerShell on a co-managed or standalone device. They are flagged as `Intune-required` in the report.
+- **Reboot required for some controls**: BitLocker encryption start, several SecurityOptions values, and PowerShell logging transcription paths do not take effect until the next reboot.
+- **Application conflicts**: NTLM restrictions can break older LOB applications that use Basic authentication or NTLM-only connections to file shares. Test with your critical application set before broad deployment. See the [CIS Benchmark hardening guide](/tutorials/hardening-windows-11-cis-benchmark) for a detailed conflict table.
+- **Level 2 controls**: CIS Level 2 includes additional restrictions (e.g., disabling the Remote Registry service, restricting PowerShell execution more aggressively) that are more disruptive in general enterprise environments. Use Level 2 only after thorough testing.
+
+## Related Resources
+
+- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Windows 11 24H2 GPO and ADMX Changes](/news/windows-11-24h2-enterprise-gpo-changes)
+- [CIS Windows 11 Benchmark](https://www.cisecurity.org/benchmark/microsoft_windows_desktop)
+- [Microsoft Security Compliance Toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=55319)
