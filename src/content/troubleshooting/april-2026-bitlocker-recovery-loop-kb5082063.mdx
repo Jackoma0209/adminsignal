@@ -1,0 +1,197 @@
+---
+title: "Fixing the April 2026 BitLocker Recovery Loop (KB5082063 Secure Boot Issue)"
+category: "Endpoint Security"
+date: "Apr 17, 2026"
+authorId: "jack"
+lastReviewed: "Apr 17, 2026"
+tags: ["BitLocker", "Patch Tuesday", "Secure Boot", "KB5082063", "Intune", "PowerShell"]
+---
+
+## When to Use This Guide
+
+Use this guide when:
+- Devices in your fleet began prompting for a BitLocker recovery key after installing the April 2026 cumulative update (KB5082063)
+- `msinfo32` on affected devices shows **PCR7 Configuration: Binding Not Possible**
+- The spike in recovery key requests correlates directly with your April 2026 patch ring deployment
+
+Do not use this guide for BitLocker recovery prompts caused by BIOS/UEFI firmware updates, hardware swaps, or TPM resets unrelated to this patch cycle.
+
+## Understanding the Root Cause
+
+KB5082063 includes a rotation of the Windows UEFI CA certificates as part of Microsoft's ongoing Secure Boot database hardening. On specific OEM hardware — primarily **Dell Latitude/Precision** and **Lenovo ThinkPad** models — this certificate rotation modifies the Secure Boot Forbidden Signature Database (dbx) in a way that the existing BitLocker PCR7 measurement does not anticipate.
+
+BitLocker's PCR7 binding works by sealing the Volume Master Key (VMK) against a known-good measurement of the Secure Boot state. When the UEFI CA certificate changes, the PCR7 value at boot no longer matches the sealed value, and the TPM refuses to unseal the key — placing the device into recovery mode.
+
+The fix is not to decrypt or disable BitLocker. The fix is to let BitLocker re-seal against the new certificate state, which happens automatically after one clean suspend-resume cycle.
+
+## The Symptoms
+
+- Devices install KB5082063 and prompt for a restart
+- Upon reboot, the user is presented with the blue BitLocker recovery screen
+- Checking `msinfo32` on affected devices shows **PCR7 Configuration** as "Binding Not Possible"
+- The Entra ID / Intune BitLocker report shows a surge in devices in "Recovery required" state
+
+## Part 1: The Immediate Fix — Suspend BitLocker Before Patching
+
+If you have devices in patch rings that have not yet received KB5082063, this is the safest path. Suspending BitLocker for a single reboot allows the UEFI certificate rotation to complete and lets BitLocker re-seal its VMK against the new PCR7 baseline without triggering recovery mode.
+
+### Pre-Flight PowerShell Script
+
+Deploy this via an Intune Remediation (detection + remediation pair) or your RMM tool **before** KB5082063 installs. The script checks if BitLocker is active on the OS drive and suspends it for a single reboot only — protection resumes automatically after restart.
+
+```powershell
+# Suspend-BitLockerForPatching.ps1
+# Deploy as Intune Remediation BEFORE KB5082063 installs.
+$OSDrive = $env:SystemDrive
+$BitLockerStatus = Get-BitLockerVolume -MountPoint $OSDrive
+
+if ($BitLockerStatus.VolumeStatus -eq 'FullyDecrypted') {
+    Write-Output "BitLocker is not active on $OSDrive. No action required."
+    exit 0
+}
+
+if ($BitLockerStatus.ProtectionStatus -eq 'On') {
+    Write-Output "Suspending BitLocker on $OSDrive for 1 reboot..."
+    Suspend-BitLocker -MountPoint $OSDrive -RebootCount 1
+
+    $Verify = Get-BitLockerVolume -MountPoint $OSDrive
+    if ($Verify.ProtectionStatus -eq 'Off') {
+        Write-Output "Success: Protectors suspended. BitLocker will resume after next reboot."
+        exit 0
+    } else {
+        Write-Error "Failed to suspend BitLocker protectors."
+        exit 1
+    }
+} else {
+    Write-Output "BitLocker is already suspended. No action required."
+    exit 0
+}
+```
+
+**Intune Remediation setup:**
+- Run in **System** context
+- Run as **64-bit** PowerShell
+- Schedule to run before your patch ring deadline — ideally 24–48 hours prior
+
+## Part 2: Recovering Already-Affected Devices
+
+If devices in your fleet have already been caught by the recovery loop, the user cannot proceed past the recovery screen without their 48-digit recovery key. Here is how to get them back on their feet.
+
+### Step 1: Retrieve the Recovery Key
+
+Recovery keys should be escrowed to Entra ID. Retrieve them via the Entra admin centre:
+
+1. Navigate to **Entra admin centre → Devices → All devices**
+2. Find the affected device and open its properties
+3. Select **Recovery keys** from the left pane
+4. Copy the 48-digit key and provide it to the user
+
+Or retrieve programmatically for bulk lookup:
+
+```powershell
+# Get-BitLockerRecoveryKey.ps1
+# Requires Microsoft.Graph PowerShell module
+Connect-MgGraph -Scopes "BitlockerKey.ReadBasic.All", "Device.Read.All"
+
+$DeviceName = "LAPTOP-HOSTNAME"
+$Device = Get-MgDevice -Filter "displayName eq '$DeviceName'"
+
+if (-not $Device) {
+    Write-Error "Device '$DeviceName' not found in Entra ID."
+    exit 1
+}
+
+$Keys = Get-MgInformationProtectionBitlockerRecoveryKey -Filter "deviceId eq '$($Device.DeviceId)'"
+
+foreach ($Key in $Keys) {
+    $Full = Get-MgInformationProtectionBitlockerRecoveryKey -BitlockerRecoveryKeyId $Key.Id -Property "key"
+    Write-Output "Key ID : $($Key.Id)"
+    Write-Output "Created: $($Key.CreatedDateTime)"
+    Write-Output "Key    : $($Full.Key)"
+    Write-Output "---"
+}
+```
+
+### Step 2: Re-Seal BitLocker After Recovery
+
+Once the user is back in Windows, BitLocker will have resumed protection but the PCR7 binding remains broken — the device will loop into recovery again on the next reboot. Run this script (via Intune Remediation or remote PowerShell) immediately after the user logs in to re-seal against the updated Secure Boot state:
+
+```powershell
+# Reseal-BitLockerAfterRecovery.ps1
+# Run in System context after the user has recovered the device.
+$OSDrive = $env:SystemDrive
+
+# Suspend for one reboot to clear the stale PCR7 measurement
+Suspend-BitLocker -MountPoint $OSDrive -RebootCount 1
+
+# Force a backup of the current recovery key to Entra ID
+$KeyProtectors = (Get-BitLockerVolume -MountPoint $OSDrive).KeyProtector
+$RecoveryProtector = $KeyProtectors | Where-Object { $_.KeyProtectorType -eq 'RecoveryPassword' }
+
+if ($RecoveryProtector) {
+    BackupToAAD-BitLockerKeyProtector -MountPoint $OSDrive -KeyProtectorId $RecoveryProtector.KeyProtectorId
+    Write-Output "Recovery key backed up to Entra ID. Reboot to re-seal PCR7."
+} else {
+    Write-Error "No RecoveryPassword protector found. Manual intervention required."
+    exit 1
+}
+```
+
+After running this script, reboot the device. BitLocker will re-seal against the post-KB5082063 PCR7 value and the recovery loop will not recur.
+
+## Part 3: Verifying PCR7 Binding is Restored
+
+After the device has completed its reboot post-patch, confirm the fix held:
+
+```powershell
+# Verify-PCR7Binding.ps1
+$Info = Get-BitLockerVolume -MountPoint $env:SystemDrive
+$PCR7 = (Get-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\BitLocker" -ErrorAction SilentlyContinue).PCR7Configuration
+
+Write-Output "Volume Status  : $($Info.VolumeStatus)"
+Write-Output "Protection     : $($Info.ProtectionStatus)"
+Write-Output "PCR7 Config    : $(if ($PCR7) { $PCR7 } else { 'Check msinfo32 > System Summary' })"
+```
+
+Alternatively, open `msinfo32.exe` → **System Summary** and confirm **PCR7 Configuration** reads **Binding Possible** (not "Binding Not Possible").
+
+## Identifying Affected Hardware in Your Fleet
+
+The issue primarily affects specific Dell and Lenovo models. Use this query in Intune / MEM to identify at-risk devices before your next patch ring fires:
+
+```powershell
+# Run via Intune Device Query or export from MEM reporting
+# Filter: Manufacturer contains "Dell" OR "Lenovo"
+# AND OS version < KB5082063 installed
+# AND BitLocker ProtectionStatus = On
+
+# Local check — run via Intune Remediation (detection script)
+$Manufacturer = (Get-WmiObject Win32_ComputerSystem).Manufacturer
+$AtRisk = $Manufacturer -match "Dell|Lenovo"
+
+if ($AtRisk) {
+    Write-Output "At-risk OEM hardware detected: $Manufacturer"
+    exit 1  # Triggers remediation
+} else {
+    Write-Output "Not an affected OEM. No action required."
+    exit 0
+}
+```
+
+Use this as the **detection script** in an Intune Remediation paired with the `Suspend-BitLockerForPatching.ps1` remediation script above.
+
+## Escalation Path
+
+If devices are still looping into recovery after re-sealing, collect a full BitLocker diagnostic before calling Microsoft Support:
+
+```cmd
+mdmdiagnosticstool.exe -area DeviceEnrollment;DeviceAuth;BitLocker -cab C:\Temp\bitlocker-diag.cab
+```
+
+Include the cab file and the output of `manage-bde -status` in your support case. Reference **KB5082063** and the **PCR7/Secure Boot CA rotation** in your case description to route it to the correct engineering team.
+
+## Related Resources
+
+- [BitLocker Recovery Key Not Backed Up to Entra ID: Why and How to Fix It](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
+- [Windows Update for Business Deferral Not Being Respected](/troubleshooting/wufb-deferral-not-respected)
+- [April 2026 Patch Tuesday Breakdown](/news/april-2026-patch-tuesday-breakdown)

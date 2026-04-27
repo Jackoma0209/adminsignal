@@ -16,10 +16,10 @@ const badgeVariant: Record<Tool['badge'], 'new' | 'category' | 'language' | 'def
 export default function ToolCard({ tool }: ToolCardProps) {
   return (
     <a
-      href={tool.affiliateUrl}
+      href={tool.affiliateUrl || tool.url}
       target="_blank"
-      rel="nofollow noopener noreferrer sponsored"
-      aria-label={`Get ${tool.name} — affiliate link`}
+      rel={tool.affiliateUrl ? 'nofollow noopener noreferrer sponsored' : 'noopener noreferrer'}
+      aria-label={`Visit ${tool.name} — official site`}
       className="group flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-card transition-all hover:border-primary/40 hover:bg-surface-elevated/40 hover:shadow-lg"
     >
       <div className="flex items-start justify-between gap-3">
@@ -44,7 +44,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
           </div>
         )}
         <span className="ml-auto flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:gap-2">
-          Get it
+          Visit site
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>

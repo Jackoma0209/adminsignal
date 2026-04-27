@@ -386,8 +386,8 @@ const ML_FORM_HTML = `<div id="mlb2-39669348" class="ml-form-embedContainer ml-s
     <div class="ml-form-embedWrapper embedForm">
       <div class="ml-form-embedBody ml-form-embedBodyDefault row-form">
         <div class="ml-form-embedContent" style="">
-          <h4>Newsletter</h4>
-          <p>Signup for news and special offers!</p>
+          <h4>AdminSignal Weekly</h4>
+          <p>The weekly digest for enterprise sysadmins.</p>
         </div>
         <form class="ml-block-form" action="https://assets.mailerlite.com/jsonp/2253596/forms/184275345577347008/subscribe" data-code="" method="post" target="_blank">
           <div class="ml-form-formContent">

@@ -30,36 +30,19 @@ export const primaryAuthor: Author = {
   ],
 }
 
+const editorialAuthor: Omit<Author, 'id'> = {
+  name: 'AdminSignal Editorial',
+  role: 'Editorial Staff',
+  bio: 'Written and reviewed by the AdminSignal editorial team. All content is independently verified for technical accuracy against official Microsoft documentation.',
+  initials: 'AS',
+}
+
 export const authors: Author[] = [
   primaryAuthor,
-  {
-    id: 'marcus-webb',
-    name: 'Marcus Webb',
-    role: 'Senior Security Engineer',
-    bio: 'Marcus has spent 14 years hardening Windows environments for financial services and critical infrastructure. Specialises in endpoint detection, CIS benchmarks, and Intune security baselines.',
-    initials: 'MW',
-  },
-  {
-    id: 'sarah-chen',
-    name: 'Sarah Chen',
-    role: 'Endpoint Management Specialist',
-    bio: 'Sarah manages Intune and SCCM deployments for enterprise clients across retail and logistics. She focuses on Autopilot, compliance policy design, and the Microsoft co-management transition.',
-    initials: 'SC',
-  },
-  {
-    id: 'james-holbrook',
-    name: 'James Holbrook',
-    role: 'Windows Infrastructure Lead',
-    bio: 'James architects Active Directory and Group Policy environments for mid-market and enterprise organisations. He has led migrations from Windows Server 2008 to hybrid AD for over 40 clients.',
-    initials: 'JH',
-  },
-  {
-    id: 'priya-nair',
-    name: 'Priya Nair',
-    role: 'Microsoft 365 & Entra ID Specialist',
-    bio: 'Priya designs identity and access management solutions across Microsoft 365 tenants. Her focus areas are Conditional Access architecture, Privileged Identity Management, and hybrid identity.',
-    initials: 'PN',
-  },
+  { id: 'marcus-webb', ...editorialAuthor },
+  { id: 'sarah-chen', ...editorialAuthor },
+  { id: 'james-holbrook', ...editorialAuthor },
+  { id: 'priya-nair', ...editorialAuthor },
 ]
 
 export function getAuthor(id: string): Author | undefined {

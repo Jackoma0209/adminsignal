@@ -68,8 +68,8 @@ export default function AboutPage() {
               <section>
                 <h2 className="mb-2 text-lg font-semibold text-foreground">Commercial relationships</h2>
                 <p>
-                  Some content on AdminSignal contains affiliate links or is produced in partnership
-                  with vendors. Commercial relationships are always disclosed clearly and do not
+                  Some content on AdminSignal may contain affiliate links or be produced in
+                  partnership with vendors. Commercial relationships are always disclosed clearly and do not
                   influence editorial conclusions. See our{' '}
                   <Link
                     href="/affiliate-disclosure"

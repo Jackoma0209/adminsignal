@@ -10,7 +10,6 @@ import FeaturedScriptsSection from '@/components/sections/FeaturedScriptsSection
 import NewsletterSection from '@/components/sections/NewsletterSection'
 import TopicHubsSection from '@/components/sections/TopicHubsSection'
 import RecommendedToolsSection from '@/components/sections/RecommendedToolsSection'
-import TestimonialsSection from '@/components/sections/TestimonialsSection'
 import AuthorBioSection from '@/components/sections/AuthorBioSection'
 import StructuredData from '@/components/StructuredData'
 import { organizationSchema, personSchema, webPageSchema, websiteSchema } from '@/lib/schema'
@@ -70,7 +69,6 @@ export default function HomePage() {
       <NewsletterSection />
       <TopicHubsSection />
       <RecommendedToolsSection />
-      <TestimonialsSection />
       <AuthorBioSection />
 
       {/* ── Site-wide trust strip ─────────────────────────────────────── */}

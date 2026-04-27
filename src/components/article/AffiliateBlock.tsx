@@ -17,7 +17,7 @@ export default function AffiliateBlock({
   external = false,
 }: AffiliateBlockProps) {
   const linkProps = external
-    ? { target: '_blank', rel: 'nofollow noopener noreferrer sponsored' }
+    ? { target: '_blank', rel: 'noopener noreferrer' }
     : {}
 
   return (

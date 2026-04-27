@@ -87,4 +87,19 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     readTime: '6 min read',
     authorId: 'james-holbrook',
   },
+  {
+    id: '6',
+    title: 'Fixing the April 2026 BitLocker Recovery Loop (KB5082063 Secure Boot Issue)',
+    slug: 'april-2026-bitlocker-recovery-loop-kb5082063',
+    category: 'Endpoint Security',
+    excerpt:
+      'KB5082063 rotates the Windows UEFI CA certificates, breaking PCR7 binding on Dell and Lenovo hardware and triggering BitLocker recovery loops fleet-wide. Here is how to stop it before it hits your next patch ring — and recover devices that are already stuck.',
+    affectedProducts: ['BitLocker', 'Microsoft Intune', 'Windows 11', 'Secure Boot'],
+    difficulty: 'Intermediate',
+    date: 'Apr 17, 2026',
+    publishedAt: '2026-04-17',
+    readTime: '10 min read',
+    authorId: 'jack',
+    isFeatured: true,
+  },
 ]
