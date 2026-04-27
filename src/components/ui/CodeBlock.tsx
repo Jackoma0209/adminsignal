@@ -157,7 +157,7 @@ export default async function CodeBlock({ code, lang }: CodeBlockProps) {
       */}
       <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.025] px-3.5 py-1">
         <span
-          className="font-mono text-[10px] tracking-wide text-white/40"
+          className="font-mono text-[10px] font-medium tracking-wide text-white/60"
           aria-hidden={!displayLang}
         >
           {displayLang}
