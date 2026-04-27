@@ -2,8 +2,9 @@
 title: "Group Policy Troubleshooting with RSoP, gpresult, and Policy Scope Analysis"
 category: "Group Policy"
 date: "Feb 14, 2025"
-authorId: "james-holbrook"
-lastReviewed: "Feb 14, 2025"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
+reviewNote: "Added slow-link section, replication diagnostics, GPO backup and restore procedure, known RSoP limitations, and expanded common root cause table."
 tags: ["Group Policy", "Active Directory", "Windows Server", "Troubleshooting"]
 ---
 
@@ -14,10 +15,14 @@ Group Policy troubleshooting has a reliable order of operations. Following it pr
 1. Confirm the policy is linked and enabled
 2. Confirm the object is in scope (correct OU, correct group)
 3. Confirm the policy is not being blocked or filtered
-4. Check the client event logs
-5. Use RSoP or gpresult to read the applied policy set
+4. Check slow-link detection
+5. Check the client event logs
+6. Use RSoP or gpresult to read the applied policy set
+7. Check replication health if the GPO is new or recently modified
 
 Do not skip steps. "Did you try gpupdate /force?" is not a diagnostic methodology.
+
+**Tested environment**: Windows Server 2022 domain controllers, Windows 11 24H2 clients, domain functional level 2016.
 
 ## Step 1: Verify the GPO Link and Status
 
@@ -27,6 +32,8 @@ In the Group Policy Management Console:
 2. Confirm the GPO shows as **Enabled** (not disabled) in the link.
 3. Confirm the GPO itself is not disabled: Right-click the GPO > click **GPO Status** — it should be **All settings enabled** unless you intentionally disabled Computer or User settings.
 
+**When only Computer settings apply**: Set the GPO Status to "User configuration settings disabled" to speed up processing — the Computer CSEs will still apply in full.
+
 ## Step 2: Verify Scope Filtering
 
 ### Security filtering
@@ -35,18 +42,25 @@ By default, the **Authenticated Users** group is in the security filter, which m
 
 1. Open the GPO > **Scope** tab > **Security Filtering**.
 2. Confirm the user or computer object is a member of any group listed.
-3. Also check **Delegation** tab: The group in the security filter needs both **Read** and **Apply Group Policy** permissions.
+3. Check **Delegation** tab: The group in the security filter needs both **Read** and **Apply Group Policy** permissions. The GPMC "Security Filtering" UI adds Apply Group Policy — but if you set permissions manually on the Delegation tab, you may have missed Read. Verify both.
+
+**Common pitfall**: Removing Authenticated Users from security filtering and replacing it with a specific group is correct practice — but the group must have both Read and Apply Group Policy. Many engineers check one and miss the other.
 
 ### WMI filtering
 
-If a WMI filter is attached, the policy will not apply if the WMI query returns false. To test a WMI filter:
+If a WMI filter is attached, the policy will not apply if the WMI query returns false. To test a WMI filter on the target device:
 
 ```powershell
 # Test a WMI filter query manually
-Get-WmiObject -Query "SELECT * FROM Win32_OperatingSystem WHERE Version LIKE '10.%'"
+Get-CimInstance -Query "SELECT * FROM Win32_OperatingSystem WHERE Version LIKE '10.%'"
 ```
 
-If this returns no results on the target machine, the WMI filter is preventing the policy from applying.
+If this returns no results on the target machine, the WMI filter is preventing the policy from applying. Confirm the WMI query is syntactically correct by running it in `Get-CimInstance` before deploying.
+
+**WMI filter best practices**:
+- Always test filters on a representative sample of machines before deployment
+- Prefer querying stable properties (OSVersion, architecture) over dynamic ones (battery status, network type) to avoid intermittent filter failures
+- WMI filter evaluation failure is logged at Event ID 1098 in the `GroupPolicy\Operational` event log
 
 ## Step 3: Check for Policy Inheritance Blocking
 
@@ -54,9 +68,29 @@ Loopback processing, Enforced GPOs, and Block Inheritance can all affect what a 
 
 - **Block Inheritance** on an OU prevents higher-level GPOs from applying (unless they are Enforced)
 - **Enforced** GPOs override Block Inheritance and cannot be filtered by security groups at child OUs
-- **Loopback processing** in Replace mode makes the user configuration from the computer's OU apply to all logged-on users, replacing user-OU policies
+- **Loopback processing** in Replace mode makes the user configuration from the computer's OU apply to all logged-on users, replacing user-OU policies. Merge mode combines both.
 
 To check: In GPMC, select the OU and look for the blue shield icon (Enforced) or the grey shield (Block Inheritance).
+
+**Loopback trap**: If loopback processing is enabled in Replace mode and users log on to machines in an OU with no user-targeted GPOs, users receive no user policy at all. Verify what the computer's OU contains before enabling Replace mode.
+
+## Step 4: Check Slow-Link Detection
+
+Windows evaluates network speed before applying certain policy CSEs. If the link to a domain controller is measured below the threshold (default 500 Kbps), CSEs such as Software Installation, Folder Redirection, and Scripts will not apply.
+
+```cmd
+gpresult /R
+```
+
+Look for slow link status in the output header:
+```
+The computer is using a slow link connection.
+```
+
+**If slow link is detected on a fast network**: This usually means the client is connecting to a distant DC (wrong site assignment) or there is network congestion during the evaluation window. Check **AD Sites and Services** to confirm the client's subnet is in the correct site with a local DC.
+
+To force all CSEs to process regardless of link speed, configure:
+- `Computer Configuration > Administrative Templates > System > Group Policy > Configure Group Policy slow link detection` → set threshold to 0 to disable slow-link detection entirely.
 
 ## Using gpresult
 
@@ -85,6 +119,18 @@ gpresult /R /USER domain\username
 gpresult /S COMPUTERNAME /H C:\Temp\remote-gpresult.html /F
 ```
 
+### Check which GPO is setting a specific registry value
+
+If a setting is applying but you cannot identify which GPO is responsible:
+
+```cmd
+# The HTML report includes per-setting winning GPO information
+# Alternatively, use the RSoP wizard in GPMC for an interactive view
+gpresult /H C:\Temp\gpresult.html /F
+```
+
+Open the report and search for the setting name in the "Computer Details" or "User Details" section.
+
 ## Reading the Event Log
 
 On the client, the GP event log is under:
@@ -97,19 +143,88 @@ Filter for:
 - **Event ID 7017**: Policy processing started
 - **Event ID 7016**: Completed security settings processing  
 - **Event ID 7016 with error code**: Failed to apply a specific CSE (Client Side Extension)
-- **Event ID 1129**: Policy processing failed because of no network connectivity (common with hybrid-joined devices)
+- **Event ID 1098**: WMI filter evaluation failure
+- **Event ID 1129**: Policy processing failed because of no network connectivity (common with hybrid-joined devices at startup before VPN connects)
+
+**Useful PowerShell filter**:
+
+```powershell
+Get-WinEvent -LogName 'Microsoft-Windows-GroupPolicy/Operational' |
+  Where-Object { $_.Id -in @(1006, 1098, 1129, 4016, 7016, 7017) } |
+  Select-Object TimeCreated, Id, Message |
+  Format-List
+```
+
+## Using the RSoP Wizard (GPMC)
+
+As an alternative to `gpresult`, use the RSoP Wizard in GPMC when you want an interactive, navigable view from a management workstation without touching the target machine:
+
+1. Open GPMC on a domain-joined management computer.
+2. Right-click **Resultant Set of Policy** → **Generate RSoP Data**.
+3. Select **Logging Mode** to see what was actually applied.
+4. Enter the target computer name and user.
+5. Click through and let the wizard query via WMI.
+6. The resulting RSoP node in GPMC shows the full applied policy set, including which settings came from which GPO.
+
+**When RSoP differs from gpresult**: RSoP is queried at the time you run the wizard, which may be minutes or hours after the policy was applied. If a policy was applied at logon but the user has since moved OUs, RSoP reflects the current scope, not the historical one. Use the time-stamped gpresult HTML for point-in-time accuracy.
+
+## Checking Replication Health
+
+If a GPO was recently created or modified and is not applying on some machines while applying on others, check whether the GPO has replicated to all DCs:
+
+```cmd
+# On any DC — checks replication summary
+repadmin /replsummary
+
+# Show replication partners and last sync times
+repadmin /showrepl
+
+# Force immediate replication from all partners
+repadmin /syncall /AdeP
+```
+
+Also verify the GPO's SYSVOL content has replicated. The GPO settings live in SYSVOL (`\\domain\SYSVOL\domain\Policies\{GUID}`). If SYSVOL replication is behind (DFS-R or FRS), clients may receive the AD-replicated policy metadata but fail to read the settings files:
+
+```cmd
+dfsrdiag replicationstate
+```
+
+## Backing Up and Restoring GPOs
+
+Before making significant changes to a problematic GPO, back it up:
+
+```powershell
+# Back up a single GPO by name
+Backup-GPO -Name "CIS-Win11-Level1-Computer" -Path C:\GPOBackups
+
+# Restore from backup
+Restore-GPO -Name "CIS-Win11-Level1-Computer" -Path C:\GPOBackups
+```
+
+Store GPO backups before any major policy changes. Restoration is non-destructive — it replaces the settings but preserves the GPO's GUID and links.
 
 ## Common Root Causes
 
 | Symptom | Likely cause |
 |---|---|
-| Policy in Denied GPOs, reason "Access Denied" | Object not in security filter group, or Read/Apply permissions missing |
-| Policy in Denied GPOs, reason "WMI Filter" | WMI filter returning false for this device |
-| Policy shows as Applied but setting not active | Another GPO with higher precedence overrides this setting |
-| gpresult shows no GPOs applied | Client not reaching a DC — check DNS and DC connectivity |
+| Policy in Denied GPOs, reason "Access Denied" | Object not in security filter group, or Read/Apply permissions missing on the Delegation tab |
+| Policy in Denied GPOs, reason "WMI Filter" | WMI filter returning false for this device — test the query manually |
+| Policy shows as Applied but setting not active | Another GPO with higher precedence overrides this setting — check the winning GPO per-setting in the gpresult HTML |
+| gpresult shows no GPOs applied | Client not reaching a DC — check DNS, site assignment, and DC firewall rules |
 | Computer policy not applying to users | Loopback processing not enabled, or policy linked to user OU instead of computer OU |
+| Policy applies on some machines, not others | Replication lag — the GPO has not yet replicated to all DCs. Run `repadmin /syncall` |
+| Setting applies at logon but reverts | Another GPO with higher link order is overriding it at background refresh |
+
+## Known Limitations of RSoP and gpresult
+
+- **RSoP does not show all CSEs**: Software Installation and Folder Redirection are not included in RSoP output — use gpresult for those.
+- **gpresult /R does not show per-setting winning GPO**: Use `gpresult /H` (HTML format) for the full per-setting breakdown.
+- **gpresult reflects the current session**: It shows what applied at last logon/startup, not necessarily what would apply now if policies have changed since.
+- **Non-Group Policy preferences**: PowerShell DSC, Intune, and registry edits outside GP are not visible in gpresult or RSoP. A setting may appear as "not configured" in GP while being set by a different management plane.
 
 ## Related Resources
 
 - [Group Policy Not Applying to Users or Computers: Systematic Diagnosis](/troubleshooting/group-policy-not-applying-diagnosis)
 - [Windows 11 24H2 ADMX Template Changes](/news/windows-11-24h2-enterprise-gpo-changes)
+- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Microsoft Group Policy reference](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-server-2012-r2-and-2012/hh831791(v=ws.11))

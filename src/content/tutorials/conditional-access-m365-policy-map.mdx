@@ -2,8 +2,9 @@
 title: "Configuring Conditional Access for a Microsoft 365 Tenant: The Complete Policy Map"
 category: "Microsoft Entra ID"
 date: "Feb 21, 2025"
-authorId: "priya-nair"
-lastReviewed: "Feb 21, 2025"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
+reviewNote: "Added prerequisite checklist, policy 6 (high-risk users), Named Locations, validation steps, known limitations, and lockout recovery procedure."
 tags: ["Conditional Access", "Entra ID", "Microsoft 365", "Identity"]
 ---
 
@@ -11,7 +12,28 @@ tags: ["Conditional Access", "Entra ID", "Microsoft 365", "Identity"]
 
 Conditional Access is powerful but unforgiving. A misconfigured policy can lock out your entire tenant — including administrators. A policy that is too permissive provides no protection. This guide builds a baseline policy map that is defensible, recoverable, and covers the most common attack vectors against Microsoft 365 tenants.
 
+**Tested environment**: Entra ID P1 and P2 tenants, Microsoft 365 Business Premium and E3/E5 licensing, April 2026.
+
 **Before deploying any CA policy**: Create an emergency access account (break-glass account) that is excluded from all CA policies and stored in a physical safe. This is non-negotiable.
+
+## Prerequisites
+
+Before deploying any of these policies, confirm:
+
+- **Emergency access accounts exist**: At least two cloud-only Global Administrator accounts excluded from all CA policies, with credentials stored offline. If you do not have these, create them first.
+- **Entra ID P1 or P2 licensing**: CA requires at least P1. The risk-based policies (Policy 5, Policy 6) require P2.
+- **MFA registration baseline**: Ensure all users have completed MFA registration before enforcing MFA. Use the [MFA registration campaign](https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-getstarted) to drive adoption before switching any policy from Report-only to On.
+- **Service accounts identified**: Applications using password-based authentication (shared mailboxes, MFP scan-to-email, legacy connectors) must be identified and handled before blocking legacy auth or requiring compliant devices.
+- **Intune compliance policies in place**: Policy 2 (require compliant device) will immediately block users on non-compliant or unchecked-in devices. Run compliance reports first.
+
+## Report-Only Mode: Your Safety Net
+
+Every policy in this guide should be deployed in **Report-only** mode first. Report-only lets CA evaluate and log the policy outcome without enforcing it. Use the sign-in logs to identify what would have been blocked before you switch to enforcement.
+
+1. In **Entra admin centre → Protection → Conditional Access**, create the policy and set the **Enable policy** toggle to **Report-only**.
+2. Wait 7–14 days and review **Sign-in logs → Filter: CA Result = Report-only failure**.
+3. Investigate any failures — these are sign-ins that would be blocked when you switch to enforcement.
+4. Only after resolving all unexpected failures should you switch the policy to **On**.
 
 ## Policy 1: Require MFA for All Users
 
@@ -39,6 +61,8 @@ Conditional Access is powerful but unforgiving. A misconfigured policy can lock 
 
 **Warning**: Before enabling, ensure all users have at least one compliant device. Use Report-only mode and review the affected sign-ins — devices that have not checked in recently will show as non-compliant.
 
+**Known issue**: iOS and Android users accessing Microsoft 365 apps must have Intune Company Portal installed and enrolled. BYOD users accessing only web apps via a browser may be able to satisfy the policy with the browser-based compliant registration if Intune app protection policies are deployed.
+
 ## Policy 3: Block Legacy Authentication
 
 **What it does**: Blocks authentication protocols that do not support MFA (SMTP AUTH, IMAP, POP3, Basic Auth). Legacy auth is used in the majority of password spray attacks.
@@ -50,6 +74,16 @@ Conditional Access is powerful but unforgiving. A misconfigured policy can lock 
 - Grant: Block access
 
 **Test first**: Check your sign-in logs for any legitimate legacy auth usage (shared mailboxes, old MFP devices scanning to email, older applications). Migrate or exclude these before enabling.
+
+**Verification**: After enabling, run this query in the Entra sign-in logs:
+
+```
+Filter: Client app = Exchange ActiveSync / Other clients
+Filter: Status = Failure
+Filter: Failure reason = Conditional Access policy 'Block legacy auth'
+```
+
+If you see unexpected legitimate services blocked, create an exclusion using a Named Location or a specific service account group.
 
 ## Policy 4: Require MFA for Azure Management
 
@@ -70,8 +104,31 @@ This is separate from Policy 1 because it targets Azure administration specifica
 **Configuration**:
 - Users: All users
 - Cloud apps: All cloud apps
-- Conditions: Sign-in risk — High (require MFA), Medium (require MFA)
-- Grant: Require multi-factor authentication + Require password change for high risk
+- Conditions: Sign-in risk — High (block), Medium (require MFA)
+- Grant: Block access (for High) / Require multi-factor authentication (for Medium)
+
+**Note**: Blocking on High risk without an MFA-first fallback can permanently lock out legitimate users if Identity Protection misfires. Start with Require MFA for both Medium and High, then evaluate promotion to Block for High after reviewing false positives for 30 days.
+
+## Policy 6: Block High-Risk Users (Requires Entra ID P2)
+
+**What it does**: Blocks sign-in entirely for users whose account shows high risk in Identity Protection — typically leaked credentials or confirmed account compromise.
+
+**Configuration**:
+- Users: All users
+- Cloud apps: All cloud apps
+- Conditions: User risk — High
+- Grant: Block access
+
+**Remediation path**: When a user is blocked, an admin must navigate to **Entra admin centre → Identity Protection → Risky users**, locate the user, investigate the risk detections, and either **Confirm compromise** (disable the account and investigate) or **Dismiss user risk** if the detection is a false positive.
+
+## Named Locations
+
+Named Locations let you create IP range or country-based conditions for CA policies. Common uses:
+
+- **Trusted office IPs**: Add your corporate egress IPs as a trusted Named Location, then exclude it from aggressive policies to reduce friction for on-network users.
+- **Country block list**: Block sign-ins from countries you have no employees in. Useful as a defence-in-depth control against commodity credential attacks.
+
+Create Named Locations at **Entra admin centre → Protection → Conditional Access → Named locations**.
 
 ## Emergency Access Account Design
 
@@ -79,12 +136,41 @@ Your emergency access (break-glass) accounts must:
 
 1. Be **cloud-only accounts** (not synced from on-premises AD)
 2. Have **Global Administrator** role assigned directly (not via group)
-3. Be **excluded from all Conditional Access policies**
-4. Use a **long, randomly generated password** stored in a physical safe
-5. Have **MFA registered** but with the TOTP codes stored separately from the password
-6. Be **monitored**: Create an alert that fires any time these accounts sign in
+3. Be **excluded from all Conditional Access policies** — check this exclusion every time you create a new policy
+4. Use a **long, randomly generated password** (30+ characters) stored in a physical safe
+5. Have **no MFA device registered** — or a FIDO2 hardware key stored with the credentials
+6. Be **monitored**: Create a Diagnostic Setting alert or Sentinel rule that fires any time these accounts sign in
+
+## Validation: Reading Sign-in Logs
+
+After any policy change, review the sign-in logs:
+
+1. Navigate to **Entra admin centre → Monitoring → Sign-in logs**.
+2. Filter by **Date: Last 24 hours** and **Status: Failure**.
+3. Click any failed sign-in and expand **Conditional Access** to see which policy triggered and why.
+4. For report-only policies, filter **CA result = Report-only failure** to see projected impact without enforcement.
+
+## What to Do If You Get Locked Out
+
+If a CA policy blocks all administrator access:
+
+1. Sign in using your emergency access account (which must be excluded from all CA policies).
+2. Navigate to **Entra admin centre → Conditional Access** and set the offending policy to **Off**.
+3. Investigate the cause before re-enabling with corrections.
+
+If the emergency access accounts are also locked out (misconfiguration), you will need to open a Microsoft support case with proof of domain ownership — there is no self-service recovery path. This is why the break-glass accounts and their CA exclusion are non-negotiable.
+
+## Known Limitations
+
+- **Service principals and workload identities**: Standard CA policies do not apply to managed identities or service principals. Use **Workload Identity policies** (separate CA policy type) to enforce controls on those.
+- **Guest users**: All-user policies apply to guests if not explicitly excluded. Guest users cannot register MFA through their home tenant — they use their home tenant's authentication. Plan guest-specific CA policies if you have significant B2B access.
+- **Legacy Exchange Online connectors**: Some on-premises Exchange hybrid connectors authenticate with legacy protocols. Blocking legacy auth can break mail flow. Verify hybrid connector authentication before enforcing Policy 3.
+- **Report-only mode does not perfectly simulate enforcement**: Some policy conditions (particularly compliance state) reflect real-time values that may differ between testing and enforcement periods.
 
 ## Related Resources
 
 - [Entra ID P1 vs P2: Is the Upgrade Worth It?](/comparisons/entra-id-p1-vs-p2)
-- [Nerdio for Intune Review](/reviews/nerdio-for-intune-review)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Microsoft Conditional Access documentation](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview)
+- [Entra ID Identity Protection documentation](https://learn.microsoft.com/en-us/entra/id-protection/overview-identity-protection)

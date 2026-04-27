@@ -2,8 +2,9 @@
 title: "Windows Autopilot Enrollment Status Page Stuck at 0% — Causes and Fixes"
 category: "Microsoft Intune"
 date: "Mar 15, 2025"
-authorId: "sarah-chen"
-lastReviewed: "Mar 15, 2025"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
+reviewNote: "Added TPM attestation failure cause, time-skew cause, Shift+F10 availability notes, and re-image vs repair decision guidance. Verified against Windows 11 24H2 and Intune April 2026 service release."
 tags: ["Autopilot", "Intune", "Windows 11", "Enrollment"]
 ---
 
@@ -16,6 +17,8 @@ Use this guide when:
 
 Do not use this guide for ESP failures that occur after initial progress is shown — those are more likely app installation timeouts rather than the root causes covered here.
 
+**Tested environment**: Windows 11 24H2, Intune April 2026 service release, Autopilot v1 (deployment profile) and Autopilot v2 (Device Preparation policy).
+
 ## Quick Diagnostic: What Phase Is It Stuck In?
 
 Press **Ctrl+Shift+J** at the ESP screen to open the provisioning status page. This shows:
@@ -24,7 +27,17 @@ Press **Ctrl+Shift+J** at the ESP screen to open the provisioning status page. T
 - Which specific step within that phase is blocked
 - Whether any errors have been logged
 
+**If Ctrl+Shift+J does not open the status page**: The shortcut is available in Windows 11 22H2 and later. On older builds or if the ESP is blocked very early, try pressing **Shift+F10** to open a command prompt instead (see note below on Shift+F10 availability).
+
 Identifying the stuck phase narrows the root cause significantly.
+
+## Shift+F10 Availability
+
+Shift+F10 opens a command prompt during OOBE and is available at most ESP phases. However:
+
+- During **pre-provisioning (Technician Flow)**, Shift+F10 may not be accessible before the OOBE screen is displayed.
+- If your ESP profile has **"Block users from viewing installation progress"** enabled, the Ctrl+Shift+J status overlay is unavailable, but Shift+F10 still works at the command line phase.
+- On some OEM builds, Shift+F10 is intercepted by the OEM OOBE customisation before Windows gains control. Power cycling to the Windows boot screen and then letting Autopilot start again typically resolves this.
 
 ## Cause 1: Device Cannot Reach Intune Endpoints
 
@@ -42,32 +55,32 @@ If either fails, the device has a network connectivity issue.
 **Common network issues**:
 - **Captive portal Wi-Fi**: The device needs network access before any browser is available. Use WPA2-Enterprise or a pre-shared key network during Autopilot provisioning.
 - **Proxy requiring authentication**: Windows OOBE does not send proxy credentials. Configure WPAD or use a transparent proxy.
-- **Firewall blocking required URLs**: Check the [Intune network requirements documentation](https://learn.microsoft.com/en-us/intune/fundamentals/intune-endpoints) and verify all required FQDNs are permitted.
+- **Firewall blocking required URLs**: Verify all required FQDNs are permitted. Check the [Microsoft Intune network endpoints](https://learn.microsoft.com/en-us/intune/fundamentals/intune-endpoints) list — pay particular attention to `*.manage.microsoft.com`, `*.azureedge.net`, and `*.delivery.mp.microsoft.com`.
 
 ## Cause 2: Device Not Registered in Autopilot
 
 **How to confirm**: When the device reaches the "Let's set things up for your work or school" screen, press **Shift+F10** and run:
 
-```powershell
-Get-AutopilotEventLog | Select-Object -Last 20
-```
-
-Or check the Autopilot event log directly:
-
 ```cmd
 eventvwr.msc
-# Navigate to: Applications and Services Logs > Microsoft > Windows > ModernDeployment-Diagnostics-Provider > Autopilot
 ```
 
-Look for Event ID 108 (device not registered) or Event ID 110 (profile not assigned).
+Navigate to: `Applications and Services Logs > Microsoft > Windows > ModernDeployment-Diagnostics-Provider > Autopilot`
 
-**Fix**: Register the device in Autopilot via the Entra admin centre or re-import the hardware hash CSV.
+Look for:
+- **Event ID 108**: Device not registered in Autopilot
+- **Event ID 110**: Profile not assigned to this device
+- **Event ID 100 with error 0x80180014**: Device is already managed by another MDM — requires a factory reset
+
+**Fix**: Register the device in Autopilot via the [Entra admin centre](https://entra.microsoft.com) under **Devices → Windows devices → Windows Autopilot devices**, or re-import the hardware hash CSV. For bulk registration, use `Get-WindowsAutoPilotInfo` from the PowerShell Gallery.
 
 ## Cause 3: Conditional Access Blocking OOBE
 
 CA policies that require a compliant device or MFA can block device enrollment during OOBE, because the device is not yet compliant at that stage.
 
-**Fix**: Exclude the **Microsoft Intune Enrollment** cloud app from any CA policies that require device compliance. Create a named location or user-based exclusion for the device setup period.
+**Fix**: Exclude the **Microsoft Intune Enrollment** cloud app (`d4ebce55-015a-49b5-a083-c84d1797ae8c`) from any CA policies that require device compliance. The simplest safe exclusion is a Named Location for your provisioning network, or a time-limited exclusion group for devices in the Autopilot provisioning phase.
+
+**Verification**: After the fix, check the Entra sign-in logs filtered to the time of the failed enrollment — look for blocked sign-ins against the Intune Enrollment app.
 
 ## Cause 4: ESP Blocking on an App That Never Installs
 
@@ -77,21 +90,78 @@ If the ESP has progressed past 0% but is blocking on a specific app:
 2. Look for the app name and any error codes
 
 Common app install failures:
-- **Error 0x87D1041C**: App not available/applicable for this device
-- **Error 0x80070005**: Access denied during installation (run as SYSTEM check)
-- **Timeout after 60 minutes**: ESP timeout exceeded — increase the timeout in the ESP profile
 
-## Escalation Path
+| Error code | Meaning | Fix |
+|---|---|---|
+| `0x87D1041C` | App not available or not applicable for this device | Check app assignment type and requirement rules |
+| `0x80070005` | Access denied during installation | Confirm app is set to install in System context, not User |
+| `0x80070032` | Incorrect function — dependency not installed | Check app dependency chain in Intune |
+| Timeout (no error) | ESP timeout exceeded — default is 60 minutes | Increase ESP timeout to 90–120 minutes in the ESP profile |
 
-If you have exhausted these steps, collect the MDM diagnostic cab:
+## Cause 5: TPM Attestation Failure
+
+Autopilot uses TPM attestation to verify device identity. If the TPM is not functioning correctly, the Autopilot profile download may succeed but the device fails to advance through provisioning.
+
+**Symptoms**: The provisioning status page (Ctrl+Shift+J) shows "Identifying device" for an extended period, or Event ID 300 with error `0x80070490` (Element not found) appears in the Autopilot event log.
+
+**How to confirm**: From a command prompt (Shift+F10):
+
+```cmd
+tpmtool getdeviceinformation
+```
+
+Look for `TPM Present: True` and `TPM Ready: True`. If either is False:
+
+- **TPM not present**: Confirm UEFI settings — TPM 2.0 must be enabled and not set to "Discrete" only.
+- **TPM not ready**: Run `tpm.msc` and check if the TPM requires initialisation. On some Dell and HP models, a BIOS update is required before the TPM is usable with Windows 11.
+- **TPM manufacturer firmware outdated**: Check OEM support pages for TPM firmware updates. Lenovo and Dell publish known Autopilot-blocking TPM firmware versions.
+
+**Fix**: Update TPM firmware via the OEM update tool (Dell Command Update, Lenovo System Update, HP Image Assistant) before attempting Autopilot re-enrollment.
+
+## Cause 6: Device Clock Skew
+
+Entra ID authentication and TPM attestation both require accurate time. If the device clock is more than 5 minutes out of sync with the time servers, authentication will fail silently with a Kerberos or OAuth error.
+
+**How to confirm**: From a command prompt (Shift+F10):
+
+```cmd
+w32tm /query /status
+net time /querysntp
+```
+
+If NTP is unreachable or the clock offset is large, the device cannot complete authentication.
+
+**Fix**: Ensure your provisioning network allows NTP traffic (UDP 123) to `time.windows.com`. If you use a restrictive proxy, add `time.windows.com` to the allowlist. On devices with a dead CMOS battery, the clock may reset to 2000 on every power cycle — replace the battery before Autopilot provisioning.
+
+## Collecting Full Diagnostics
+
+Before escalating or re-imaging, collect the MDM diagnostic cab:
 
 ```cmd
 mdmdiagnosticstool.exe -area Autopilot -cab C:\Temp\autopilot-diag.cab
 ```
 
-Attach this file when opening a Microsoft Support case.
+This captures:
+- Autopilot event logs
+- MDM enrollment logs
+- Policy application status
+- Network trace snippets
+
+Attach this file when opening a Microsoft Support case. Reference the specific Event IDs and error codes you observed.
+
+## Re-image vs Repair: When to Give Up
+
+Pursue the root cause before re-imaging. Re-imaging does not resolve underlying issues (network blocks, TPM problems, Autopilot registration gaps) — the device will fail again. However, re-image when:
+
+- The device has a corrupted Windows installation that pre-dates OOBE (unusual but possible on devices that shipped with a broken OEM image)
+- You have confirmed a TPM error that requires a full TPM clear — run `tpmtool resetlockout` or clear via BIOS, then re-enroll
+- The device has been previously enrolled in another MDM tenant and the MDM enrollment is stuck (error `0x80180014`) — a factory reset via **Settings > System > Recovery > Reset this PC (Remove everything)** is the fastest path
+
+For TPM clear scenarios, the full process is: clear TPM in BIOS → factory reset Windows → re-register hardware hash in Autopilot → re-attempt enrollment.
 
 ## Related Resources
 
 - [Understanding Autopilot v2: Enrollment Profiles and ESP](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
 - [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Microsoft Autopilot troubleshooting documentation](https://learn.microsoft.com/en-us/autopilot/troubleshooting-faq)

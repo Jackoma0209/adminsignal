@@ -2,8 +2,9 @@
 title: "Hardening Windows 11 Endpoints with CIS Benchmark Level 1"
 category: "Endpoint Security"
 date: "Mar 14, 2025"
-authorId: "marcus-webb"
-lastReviewed: "Mar 14, 2025"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
+reviewNote: "Added tested environment note, pilot deployment methodology, rollback procedure, SMBv1 and Credential Guard verification commands, and known conflict table."
 tags: ["CIS Benchmark", "Windows 11", "Hardening", "Endpoint Security"]
 ---
 
@@ -17,12 +18,30 @@ The CIS Windows 11 Benchmark is a prescriptive set of configuration recommendati
 
 This guide covers **Level 1 only**. Level 2 is appropriate for high-security environments and requires separate validation.
 
+**Tested environment**: Windows 11 22H2 and 24H2, Group Policy with Windows Server 2022 domain controllers, and Microsoft Intune (April 2026 service release) for MDM-managed endpoints. The CIS Windows 11 Benchmark v3.0.0 was used as the reference.
+
 ## Prerequisites
 
-- Windows 11 22H2 or 24H2 (the benchmark versions differ slightly)
-- PolicyAnalyzer from Microsoft's Security Compliance Toolkit (for validation)
-- `Invoke-WindowsHardening` script if you prefer automated application
+- Windows 11 22H2 or 24H2 (the benchmark versions differ slightly — confirm you are applying the correct benchmark revision for your OS version)
+- [PolicyAnalyzer](https://www.microsoft.com/en-us/download/details.aspx?id=55319) from Microsoft's Security Compliance Toolkit (for validation)
+- [`Invoke-WindowsHardening` script](/scripts/invoke-windows-hardening) if you prefer automated application
 - Group Policy Management Console or Intune admin access
+- A **pilot OU or pilot device group** containing 5–10 representative machines before broad deployment — do not skip this step
+
+## Pilot Deployment: Do This Before Broad Rollout
+
+Applying a hardening baseline to production endpoints without testing is the fastest way to create a support incident. Use this pilot process:
+
+1. Create a **dedicated pilot OU** (or Entra ID device group for Intune) containing representative machines across your hardware models and OS build versions.
+2. Apply the CIS baseline to the pilot scope only.
+3. Let the policy process for at least 48 hours and through at least one logon for each test user.
+4. Test the following before broader rollout:
+   - All critical line-of-business applications launch and function correctly
+   - Network access (shared drives, print servers) works under NTLMv2-only restrictions
+   - NTLM-dependent legacy applications are identified (see Known Conflicts section)
+   - PowerShell script execution policy is acceptable for your environment
+   - VPN client connects without friction
+5. Document any exceptions required and create a separate GPO or Intune profile for those exceptions — do not weaken the main baseline.
 
 ## Applying via Group Policy
 
@@ -36,9 +55,10 @@ Download the CIS Windows 11 Benchmark GPO package from the CIS website (free wit
 ### Create and Link the GPO
 
 1. In the GPMC, create a new GPO: `CIS-Win11-Level1-Computer`.
-2. Import the CIS benchmark settings using **Group Policy Management Editor > Action > Import Settings** and point to the CIS-provided `.xml` backup.
-3. Link the GPO to an OU containing pilot workstations.
-4. Do not link to all workstations yet — test first.
+2. **Back up any existing baseline GPOs first**: `Backup-GPO -All -Path C:\GPOBackups\PreCIS`
+3. Import the CIS benchmark settings using **Group Policy Management Editor > Action > Import Settings** and point to the CIS-provided `.xml` backup.
+4. Link the GPO to your **pilot OU** only. Do not link to all workstations yet.
+5. After pilot validation, extend the link progressively: pilot → department 1 → department 2 → all workstations.
 
 ## Applying via Microsoft Intune
 
@@ -57,6 +77,8 @@ For Intune-managed devices, use a combination of **Settings Catalog** and **Endp
 ### Security Baseline
 
 Microsoft provides a **Windows 11 Security Baseline** in Intune that covers many of the same areas as CIS Level 1. It is not identical but is a defensible starting point. Apply it first, then use Settings Catalog to close gaps.
+
+**Conflict warning**: If you apply both the Microsoft Security Baseline and a CIS-aligned Settings Catalog profile, check for conflicting settings. The last-applied policy wins — set the CIS profile to higher priority if you want CIS to take precedence.
 
 ## Key Controls at Level 1
 
@@ -92,8 +114,44 @@ Audit PowerShell Script Block Logging: Success
 
 - **LAN Manager Authentication Level**: Send NTLMv2 response only, refuse LM and NTLM
 - **Minimum session security for NTLM SSP**: Require NTLMv2 and 128-bit encryption
-- **SMB v1**: Disabled (set via PowerShell: `Set-SmbServerConfiguration -EnableSMB1Protocol $false`)
+- **SMB v1**: Disabled (verify and disable via PowerShell)
 - **Windows Firewall**: All three profiles (Domain, Private, Public) set to On with default inbound block
+
+### Disabling SMBv1
+
+SMBv1 should be disabled before applying the broader baseline. Verify it is not in use first:
+
+```powershell
+# Check current SMBv1 state
+Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol
+
+# Check for active SMBv1 sessions (run during business hours)
+Get-SmbSession | Where-Object { $_.Dialect -eq '1.0' }
+```
+
+If no SMBv1 sessions are active, disable it:
+
+```powershell
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+```
+
+Confirm the change:
+
+```powershell
+Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol
+# Expected: EnableSMB1Protocol : False
+```
+
+### Credential Guard
+
+Credential Guard isolates LSASS in a virtualisation-based security environment. Verify it is active after applying the baseline:
+
+```powershell
+# Check Credential Guard status
+(Get-CimInstance -Namespace root/Microsoft/Windows/DeviceGuard -ClassName Win32_DeviceGuard).SecurityServicesRunning
+```
+
+A return value of `2` indicates Credential Guard is running. If it returns `0`, check that Virtualization Based Security is enabled in the UEFI settings and that the GPO setting is applied correctly.
 
 ## Validating Compliance
 
@@ -110,11 +168,33 @@ For Intune-managed devices, use the `Invoke-WindowsHardening` script in audit mo
 Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\Temp\HardeningReport.html
 ```
 
+### Spot-checking critical settings
+
+```powershell
+# Verify NTLMv2 enforcement
+(Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Lsa").LmCompatibilityLevel
+# Expected: 5 (Send NTLMv2 response only, refuse LM and NTLM)
+
+# Verify PowerShell Script Block Logging
+(Get-ItemProperty "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -ErrorAction SilentlyContinue).EnableScriptBlockLogging
+# Expected: 1
+
+# Verify Windows Firewall domain profile is on
+(Get-NetFirewallProfile -Profile Domain).Enabled
+# Expected: True
+```
+
 ## Common Conflicts and Exceptions
 
 ### LOB Application Conflicts
 
-The CIS benchmark restricts NTLM and disables older TLS cipher suites. Older line-of-business applications may break. Test with your critical application set before broad deployment.
+The CIS benchmark restricts NTLM and disables older TLS cipher suites. Older line-of-business applications may break. Common symptoms:
+
+| Symptom | Likely CIS setting | Fix |
+|---|---|---|
+| App fails to authenticate against file share | NTLMv2 enforcement (LM Compatibility Level 5) | Update app to Kerberos or create a specific NTLM exception via Group Policy `Network security: Restrict NTLM: Add remote server exceptions for NTLM authentication` |
+| HTTPS connection fails with cipher error | TLS cipher suite restrictions | Identify the app's required cipher, check if it is on the CIS-allowed list, create an exception if business-critical |
+| Older PowerShell scripts break | Script execution policy | Apply `Set-ExecutionPolicy RemoteSigned -Scope LocalMachine` and sign internal scripts |
 
 ### BYOD and Guest Access Scenarios
 
@@ -122,10 +202,36 @@ CIS Level 1 disables guest network access and restricts many network features. R
 
 ### Developer Workstations
 
-Developer machines may require exceptions for settings like **Prevent access to registry editing tools** or **Script Execution Policy**. Consider a separate CIS-compliant profile with an approved exceptions list for developer endpoints.
+Developer machines may require exceptions for settings like **Prevent access to registry editing tools** or **Script Execution Policy**. Consider a separate CIS-compliant profile with an approved exceptions list for developer endpoints — document each exception with a business justification.
+
+## Rollback Procedure
+
+If the baseline causes production issues, roll back cleanly:
+
+### GPO rollback
+
+1. Remove the link from the affected OU in GPMC (do not delete the GPO — just unlink it).
+2. Run `gpupdate /force` on affected machines or wait for the next background refresh cycle.
+3. Investigate the issue using the [Group Policy troubleshooting guide](/tutorials/group-policy-troubleshooting-rsop-gpresult).
+4. Restore the previous GPO state from backup if needed: `Restore-GPO -Name "CIS-Win11-Level1-Computer" -Path C:\GPOBackups\PreCIS`
+
+### Intune rollback
+
+1. Navigate to the Settings Catalog or Security Baseline profile in Intune.
+2. Remove the assignment from the affected device group.
+3. Devices will receive the "remove settings" signal on the next sync cycle — note that some settings (like BitLocker and Credential Guard) do not reverse on profile removal.
+
+### Settings that do not revert automatically
+
+- **BitLocker**: Once enabled, removing the policy does not decrypt the drive. This is intentional.
+- **Credential Guard**: Disabling via policy requires a registry change and a reboot. Use `bcdedit /set {0cb3b571-2f2e-4343-a879-d86a476d7215} loadoptions DISABLE-LSA-ISO` to disable it if needed.
+- **Audit policy**: Removing the GPO reverts audit policy at next refresh.
 
 ## Related Resources
 
 - [Invoke-WindowsHardening: Automated CIS hardening script](/scripts/invoke-windows-hardening)
 - [Windows 11 24H2 GPO and ADMX Changes](/news/windows-11-24h2-enterprise-gpo-changes)
 - [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [CIS Windows 11 Benchmark](https://www.cisecurity.org/benchmark/microsoft_windows_desktop)
+- [Microsoft Security Compliance Toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=55319)

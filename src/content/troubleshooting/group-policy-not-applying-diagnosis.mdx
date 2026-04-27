@@ -2,8 +2,9 @@
 title: "Group Policy Not Applying to Users or Computers: A Systematic Diagnosis"
 category: "Group Policy"
 date: "Mar 5, 2025"
-authorId: "james-holbrook"
-lastReviewed: "Mar 5, 2025"
+authorId: "jack"
+lastReviewed: "Apr 27, 2026"
+reviewNote: "Added slow-link detection, replication health check, DC connectivity diagnosis, RSoP wizard steps, and known limitations section."
 tags: ["Group Policy", "Active Directory", "Windows Server"]
 ---
 
@@ -11,9 +12,9 @@ tags: ["Group Policy", "Active Directory", "Windows Server"]
 
 Before running any diagnostic tools, confirm:
 
-1. **Has enough time passed?** Group Policy applies at startup (computer policy) and at logon (user policy) by default. Background refresh runs every 90 minutes with a random offset. `gpupdate /force` forces an immediate refresh — run it and wait 2 minutes before concluding a policy is not applying.
+1. **Has enough time passed?** Group Policy applies at startup (computer policy) and at logon (user policy) by default. Background refresh runs every 90 minutes with a random offset of up to 30 minutes. `gpupdate /force` forces an immediate refresh — run it and wait 2 minutes before concluding a policy is not applying.
 
-2. **Is the object in the right OU?** Confirm the user or computer is in the OU where the GPO is linked (or a child OU). Open ADUC and verify.
+2. **Is the object in the right OU?** Confirm the user or computer is in the OU where the GPO is linked (or a child OU). Open ADUC and verify. Note that GPOs linked to the domain root apply to all OUs unless overridden.
 
 3. **Is the GPO enabled?** In the GPMC, open the GPO's scope and confirm the link is enabled and the GPO status is not set to "All Settings Disabled".
 
@@ -35,6 +36,8 @@ Open the HTML report and look at:
 - **Applied GPOs**: The GPO should appear here
 - **Denied GPOs**: If your GPO appears here, the reason tells you why it was filtered
 
+**If gpresult shows no GPOs at all** (neither Applied nor Denied), the client is not receiving any Group Policy. This is a DC connectivity issue — jump to Step 5.
+
 ## Step 2: Check the Denied GPOs Reason
 
 | Reason shown | Meaning | Fix |
@@ -55,6 +58,10 @@ Get-CimInstance -Query "SELECT * FROM Win32_OperatingSystem WHERE Caption LIKE '
 
 If this returns no results, the filter is correctly excluding the device — but that may not be what you intended.
 
+**Common WMI filter pitfalls**:
+- WMI queries that check OS build number may use `Version` (e.g. `10.0.26100`) rather than `Caption`. Confirm your query returns results before relying on the filter.
+- WMI filters are evaluated on the client — if WMI is corrupted on the endpoint, all WMI-filtered policies will fail silently.
+
 ## Step 4: Check the Client Event Log
 
 Navigate to:
@@ -63,19 +70,99 @@ Event Viewer > Applications and Services Logs > Microsoft > Windows > GroupPolic
 ```
 
 Look for:
-- **Event 7017**: GP processing started — if absent, GP is not running at all
-- **Event 5016**: Completed CSE processing — check for errors
-- **Event 1129**: Could not apply policy due to network issues
+- **Event ID 7017**: GP processing started — if absent, GP is not running at all
+- **Event ID 5016**: Completed CSE processing — check for errors
+- **Event ID 7016 with error code**: A specific Client Side Extension (CSE) failed to apply a setting
+- **Event ID 1129**: Could not apply policy due to network issues (DC unreachable during background refresh)
+- **Event ID 1006**: Could not contact domain controller — confirms DC connectivity is the issue
 
-## Step 5: Loopback Processing and Inheritance Blockers
+**Filter the log**: Right-click the log → Filter → Event IDs `1006, 1129, 5016, 7016, 7017` to cut through noise.
+
+## Step 5: Slow-Link Detection
+
+Windows applies only a subset of Group Policy CSEs (Client Side Extensions) over slow links by default. If the client considers its connection to a DC as "slow", some policy settings — including Folder Redirection, Software Installation, and Scripts — may be skipped.
+
+**How to check if slow-link is triggering**:
+
+```cmd
+gpresult /R
+```
+
+Look at the header output for the line:
+```
+Group Policy was applied from: DC01.corp.contoso.com
+Group Policy slow link threshold: 500 kbps
+The computer is not using a slow link connection.
+```
+
+If you see "slow link detected", the client measured bandwidth below the threshold during the GP processing window.
+
+**Fix options**:
+1. Increase the slow-link threshold GPO setting: `Computer Configuration > Administrative Templates > System > Group Policy > Configure Group Policy slow link detection` — the default is 500 Kbps. Most production networks are fast; if this is triggering on LAN, check for DNS issues causing the client to connect to a geographically distant DC.
+2. Enable specific CSEs to always process over slow links: Individual CSE settings (e.g., `Always process the script policy settings`) are available in the same Administrative Templates path.
+
+## Step 6: Check DC Connectivity and Replication
+
+If gpresult shows no GPOs applied at all, the client is not reaching a domain controller or is reaching one that does not have the GPO replicated yet.
+
+**Confirm DC connectivity from the client**:
+
+```cmd
+nltest /dsgetdc:corp.contoso.com /force
+nslookup _ldap._tcp.dc._msdcs.corp.contoso.com
+```
+
+If `nltest` fails, the client cannot locate a DC. Check:
+- DNS resolution is pointing to an AD-integrated DNS server
+- The client is in the correct site in AD Sites and Services
+- No firewall is blocking Kerberos (TCP/UDP 88) or LDAP (TCP 389) to domain controllers
+
+**Check GPO replication health on the DC side**:
+
+```cmd
+# Run on the domain controller
+repadmin /replsummary
+repadmin /showrepl
+```
+
+Look for replication failures or high latency. If the GPO was created or modified on DC01 but the client is processing from DC02, and replication between them has failed, DC02 will serve an older version of the policy.
+
+**Force immediate replication**:
+
+```cmd
+repadmin /syncall /AdeP
+```
+
+Then trigger a `gpupdate /force` on the client. If the policy now applies, a replication delay was the cause.
+
+## Step 7: Loopback Processing and Inheritance Blockers
 
 If the above steps do not reveal the cause:
 
 - Check if **Block Inheritance** is set on the OU: GPMC > OU > right-click > check for the grey shield icon
 - Check if an **Enforced** GPO higher in the hierarchy is overriding your setting: Enforced GPOs win over Block Inheritance
-- Check if **Loopback Processing** is enabled elsewhere and replacing user policies
+- Check if **Loopback Processing** is enabled elsewhere and replacing user policies with computer-OU policies
+
+## Using the RSoP Wizard (GPMC Alternative)
+
+As an alternative to running gpresult on the client, you can run the Resultant Set of Policy wizard from any management workstation:
+
+1. Open the GPMC on a management computer.
+2. Right-click **Resultant Set of Policy** in the left pane and select **Generate RSoP Data**.
+3. Select **Logging Mode** (to see what was applied) and enter the target computer and user.
+4. The wizard queries the target via WMI and displays a full policy simulation in the GPMC.
+
+**Limitation**: RSoP Wizard requires WMI access to the target machine (TCP 135, dynamic RPC). It also requires the machine to be online and domain-joined. If you cannot run RSoP remotely, use `gpresult /H` directly on the machine.
+
+## Known Limitations
+
+- **gpresult shows incorrect data for recently logged-off users**: gpresult /R reflects the currently logged-on user's session. Log on as the affected user before running to get accurate results.
+- **User policy applied at computer startup does not show in gpresult**: Some user-targeted CSEs applied via loopback processing in Replace mode may not appear in the standard gpresult output.
+- **Group Policy does not apply to local accounts**: GP only applies to domain-joined computers processing against a DC. Local accounts and workgroup computers are outside its scope.
+- **Security filtering requires Authenticated Users for Read**: If you remove Authenticated Users from the Security Filter and replace it with a specific group, confirm the group has both **Read** AND **Apply Group Policy** permissions on the GPO's Delegation tab — the GPMC sometimes only adds Read by default.
 
 ## Related Resources
 
 - [Group Policy Troubleshooting with RSoP and gpresult — full guide](/tutorials/group-policy-troubleshooting-rsop-gpresult)
 - [Windows 11 24H2 ADMX Template Changes](/news/windows-11-24h2-enterprise-gpo-changes)
+- [Microsoft Group Policy troubleshooting documentation](https://learn.microsoft.com/en-us/troubleshoot/windows-server/group-policy/applying-group-policy-troubleshooting-guidance)
