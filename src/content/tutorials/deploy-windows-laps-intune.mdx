@@ -16,6 +16,14 @@ This guide covers the **native Windows LAPS deployment for Intune-managed, Entra
 
 **Tested environment**: Windows 11 22H2 and 24H2, Intune April 2026 service release, Entra ID with LAPS enabled at tenant level.
 
+## Production Rollout Advice
+
+Deploy LAPS as a control with an operational handover, not just as another Intune profile. Before assigning it broadly, agree who is allowed to retrieve passwords, where retrievals are audited, and what happens after a password is used for support or recovery.
+
+For the first rollout, use a small device group that includes ordinary user endpoints, a shared device if you support them, and at least one machine with your standard hardening baseline. Confirm the password appears in Entra ID, retrieval auditing is visible, and post-authentication rotation behaves as expected before expanding the assignment.
+
+Do not use LAPS to justify leaving shared local admin passwords in place. During rollout, remove old local admin credentials from build scripts, gold images, and helpdesk notes so the new control is not undermined by the old process.
+
 ## Prerequisites
 
 Before starting, confirm:
@@ -135,6 +143,13 @@ By default, Global Administrators and Privileged Role Administrators can recover
 **Legacy LAPS conflicts**: If the device shows a LAPS policy conflict, check for the presence of the legacy `LAPS.exe` or `AdmPwd.dll`. Remove the legacy agent and run a policy sync. The native LAPS CSP and the legacy LAPS Group Policy extension cannot run simultaneously.
 
 **Password rotation not happening after use**: Confirm the Post Authentication Actions setting is configured in the Intune profile. If the local administrator account used for recovery is not the built-in Administrator (RID 500), you must specify the account name explicitly in the `Administrator Account Name` field.
+
+## Common Admin Mistakes
+
+- Assigning the policy to users instead of devices. LAPS is device configuration, so user targeting creates confusing coverage gaps.
+- Enabling LAPS in Entra ID but forgetting that this only enables escrow capability. Devices still need a Windows LAPS policy.
+- Letting too many roles retrieve passwords. Keep recovery access small, audited, and preferably time-bound through PIM.
+- Managing the same device with legacy LAPS, Group Policy, and Intune at the same time. Pick the management plane for each device population and document the exception path.
 
 ## Known Limitations
 

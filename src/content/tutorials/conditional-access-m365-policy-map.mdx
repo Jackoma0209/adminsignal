@@ -16,6 +16,16 @@ Conditional Access is powerful but unforgiving. A misconfigured policy can lock 
 
 **Before deploying any CA policy**: Create an emergency access account (break-glass account) that is excluded from all CA policies and stored in a physical safe. This is non-negotiable.
 
+## What I Check First
+
+Before building policies, map the sign-in patterns that will be affected:
+
+1. Identify emergency access accounts and confirm they are cloud-only, monitored, and excluded from every existing CA policy.
+2. Export or review the last few weeks of sign-in logs for legacy authentication, service accounts, guest users, and admin sign-ins.
+3. Confirm Intune compliance is already reliable before using compliant device requirements. A broken compliance policy will become a sign-in outage when CA enforces it.
+4. List non-browser flows such as scan-to-email, PowerShell automation, Azure CLI, hybrid Exchange, and third-party backup products.
+5. Decide how rollback will work before enforcement. The person enabling a policy should know which account can still sign in and which policy to disable first.
+
 ## Prerequisites
 
 Before deploying any of these policies, confirm:
@@ -159,6 +169,12 @@ If a CA policy blocks all administrator access:
 3. Investigate the cause before re-enabling with corrections.
 
 If the emergency access accounts are also locked out (misconfiguration), you will need to open a Microsoft support case with proof of domain ownership — there is no self-service recovery path. This is why the break-glass accounts and their CA exclusion are non-negotiable.
+
+## Rollback Notes
+
+Keep the first enforced version of each policy narrow enough that rollback is obvious. If a policy combines MFA, compliant device, location, client app, and risk conditions, troubleshooting becomes slow under pressure. Separate policies are easier to disable one at a time and easier to explain in the sign-in logs.
+
+When moving from Report-only to On, change one policy at a time and watch sign-in logs for the affected group before enabling the next one. If users are blocked unexpectedly, set the policy back to Report-only, fix the assignment or exclusion, and re-test. Avoid fixing a live lockout by adding broad permanent exclusions that nobody revisits.
 
 ## Known Limitations
 

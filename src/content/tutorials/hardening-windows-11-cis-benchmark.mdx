@@ -20,6 +20,14 @@ This guide covers **Level 1 only**. Level 2 is appropriate for high-security env
 
 **Tested environment**: Windows 11 22H2 and 24H2, Group Policy with Windows Server 2022 domain controllers, and Microsoft Intune (April 2026 service release) for MDM-managed endpoints. The CIS Windows 11 Benchmark v3.0.0 was used as the reference.
 
+## When I Would Not Apply This As-Is
+
+Do not apply a full CIS Level 1 baseline unchanged to every endpoint type. Shared kiosks, developer workstations, lab devices, manufacturing PCs, and machines with older VPN or printing dependencies often need a separate profile with documented exceptions.
+
+I would also avoid using this baseline as the first security control in an unmanaged estate. Get patching, Defender, BitLocker key escrow, local admin password management, and basic monitoring working first. A hardening baseline is easier to defend when the core management plumbing is already reliable.
+
+For Level 2 settings, create a separate project. Level 2 can be appropriate, but it changes the exception workload and support model. Treat it as a higher assurance profile rather than a quiet upgrade to Level 1.
+
 ## Prerequisites
 
 - Windows 11 22H2 or 24H2 (the benchmark versions differ slightly — confirm you are applying the correct benchmark revision for your OS version)

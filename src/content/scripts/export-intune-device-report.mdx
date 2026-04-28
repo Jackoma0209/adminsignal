@@ -16,6 +16,14 @@ tags: ["Intune", "Graph API", "Reporting", "Inventory"]
 
 **Tested environment**: Intune tenant on April 2026 service release. Microsoft Graph PowerShell SDK 2.x. Windows 11 24H2 management workstation. Tenants ranging from 500 to 18,000 managed devices.
 
+## Field Notes
+
+Use this export as an operational snapshot, not as the only source of truth. Intune data can lag behind the device, especially for last check-in, compliance state, and encryption state. For a board report or audit pack, include the export time and avoid presenting stale devices as if they were current live failures.
+
+For scheduled reporting, run the script under a dedicated app registration with certificate authentication and store outputs in an IT-restricted location. The report contains device names, serial numbers, user principal names, and compliance states. Treat it as internal operational data, not a general spreadsheet to forward around the business.
+
+When investigating one class of issue, filter first. For example, use `-FilterOS Windows` before reviewing BitLocker or Windows compliance data. Smaller exports are easier to validate and less likely to hide a simple permission or paging issue.
+
 ## Prerequisites
 
 1. **Microsoft Graph PowerShell SDK** — install if not already present:

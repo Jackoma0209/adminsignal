@@ -21,6 +21,16 @@ Do not use this guide if keys are present in Entra ID but escrow was through MBA
 
 **Tested environment:** Windows 10 22H2, Windows 11 22H2 and 24H2, Microsoft Intune April 2026 service release, Entra ID (formerly Azure AD). Entra-joined and hybrid-joined devices. Autopilot v1 and v2 provisioned endpoints.
 
+## What I Check First
+
+Before forcing escrow or changing policy, confirm the basics in this order:
+
+1. Run `dsregcmd /status` and confirm the device is genuinely Entra-joined or hybrid-joined with MDM enrolment. A workplace-registered device can look familiar to the user but will not behave the same way for BitLocker escrow.
+2. Search Entra ID for duplicate device objects with the same hostname. Re-imaging and Autopilot resets commonly leave an old object with the key attached.
+3. Check that the OS drive has a `RecoveryPassword` protector. If there is no recovery password protector, there is nothing for Windows to escrow.
+4. Review the Intune BitLocker policy for the setting that requires recovery information to be stored in Entra ID before encryption is allowed.
+5. Only then run `BackupToAAD-BitLockerKeyProtector` or deploy a remediation. Forced escrow is useful, but it should not hide a broken policy or the wrong join state.
+
 ## Why This Is a Silent Failure
 
 BitLocker escrow failures produce no visible error on the device. BitLocker encryption completes successfully, the user gets no notification, and the compliance report in Intune may still show the device as compliant if the compliance policy only checks **encryption status**, not **key backup status**. The first sign of a problem is often a fleet-wide incident when patches or firmware updates trigger mass recovery prompts and the keys are not there.
@@ -302,6 +312,12 @@ try {
 - Run as 64-bit: **Yes**
 - Schedule: **Daily** until compliance is confirmed, then **Weekly**
 - Scope: target the group containing devices with missing escrow, or all managed endpoints
+
+## Field Notes for Production Remediation
+
+For a large estate, treat missing escrow as a recovery-risk issue rather than a cosmetic Intune reporting problem. Start with a detection-only remediation and export the affected devices before adding the repair script. That gives you a list to compare against Entra ID and helps separate stale Intune data from genuinely missing keys.
+
+Do not rotate protectors across the whole estate until you know where keys are currently stored. If a device has an old key in Active Directory, a new key in Entra ID, and a stale Intune report, rotating too early can make the evidence harder to follow. Fix the management path first, then rotate after successful escrow is visible.
 
 ## Common Errors
 

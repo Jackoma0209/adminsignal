@@ -18,6 +18,14 @@ Patch compliance reporting is a core deliverable for most IT governance framewor
 
 **Tested environment**: Windows Server 2022 WSUS, Windows 11 24H2 clients, Microsoft Graph PowerShell SDK 2.x, April 2026 service release.
 
+## Field Notes
+
+Patch compliance reports are most useful when they match the way you actually patch. Run separate reports for pilot, broad production, and delayed rings if those groups have different maintenance windows. A single fleet-wide percentage can hide whether the current ring is healthy and the delayed ring is simply waiting for its approved window.
+
+Treat offline and stale devices separately from failed patch installs. A laptop that has not checked in for weeks needs a different action from a server with a repeat Windows Update error. Mixing those states in one queue makes the report look worse while making remediation less clear.
+
+Before using the output for governance reporting, spot-check several devices in WSUS, Intune, or Windows Update for Business reports. The script is designed to handle pagination and source differences, but a permission issue or stale upstream data source can still produce a technically valid report that is operationally misleading.
+
 ## Prerequisites
 
 **For WSUS mode** (`-Source WSUS` or `-Source Both`):

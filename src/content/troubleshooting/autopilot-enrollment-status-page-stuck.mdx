@@ -19,6 +19,16 @@ Do not use this guide for ESP failures that occur after initial progress is show
 
 **Tested environment**: Windows 11 24H2, Intune April 2026 service release, Autopilot v1 (deployment profile) and Autopilot v2 (Device Preparation policy).
 
+## What I Check First
+
+When ESP is stuck at 0%, check the parts that block the device before Intune Management Extension app logic becomes relevant:
+
+1. Use a simple provisioning network first. Prefer wired Ethernet or known-good WPA2/WPA3 Wi-Fi with no captive portal and no user-authenticated proxy.
+2. Confirm the device exists in Autopilot and has the expected profile assigned. A missing profile can look like a device-side fault when it is really an inventory or assignment problem.
+3. Review Entra sign-in logs for the **Microsoft Intune Enrollment** app at the time of failure. Conditional Access blocks are often clearer there than on the device screen.
+4. From Shift+F10, check TPM readiness with `tpmtool getdeviceinformation` and clock state with `w32tm /query /status`.
+5. Only move to app install logs once the ESP has progressed beyond 0%. At 0%, the device is usually still dealing with registration, authentication, network, TPM, or time.
+
 ## Quick Diagnostic: What Phase Is It Stuck In?
 
 Press **Ctrl+Shift+J** at the ESP screen to open the provisioning status page. This shows:
@@ -148,6 +158,12 @@ This captures:
 - Network trace snippets
 
 Attach this file when opening a Microsoft Support case. Reference the specific Event IDs and error codes you observed.
+
+## Field Note: Capture Logs Before Resetting
+
+A reset may be the fastest way to get one laptop moving, but it also destroys the local evidence you need if the same failure appears on the next device. When more than one machine is affected, collect the Autopilot diagnostics cab, export the relevant event logs, and record the profile assignment before wiping anything.
+
+For repeated failures on the same model, check firmware and TPM state before changing Intune policy. If only one site or build room is affected, check network paths and time sync before assuming the Autopilot profile is broken.
 
 ## Re-image vs Repair: When to Give Up
 
