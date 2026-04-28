@@ -1,5 +1,5 @@
 ---
-title: "Veeam Backup for Microsoft 365: Complete Review for IT Teams"
+title: "Veeam Backup for Microsoft 365: Admin Buyer Notes"
 productName: "Veeam Backup for Microsoft 365"
 category: "Microsoft 365"
 rating: 4.6
@@ -8,38 +8,48 @@ authorId: "priya-nair"
 lastReviewed: "Feb 10, 2025"
 ---
 
+## What This Page Is
+
+This is an admin buyer guide for Veeam Backup for Microsoft 365. It explains the operational checks to make before adopting it, rather than presenting a lab benchmark or measured performance test.
+
 ## The Context: Why M365 Backup Matters
 
-Microsoft's native M365 data retention is not a backup. The retention policies in the Compliance Centre are designed for legal hold and eDiscovery — they are not designed for point-in-time restore of accidentally deleted mailboxes, SharePoint sites, or Teams conversations.
+Microsoft's native M365 data retention is not a backup. The retention policies in the Compliance Centre are designed for legal hold and eDiscovery. They are not designed for point-in-time restore of accidentally deleted mailboxes, SharePoint sites, or Teams conversations.
 
 If a user permanently deletes their mailbox contents, or if a malicious actor with admin credentials purges data, Microsoft's native capabilities may not provide recovery to the point you need. Veeam fills this gap.
 
 ## What Gets Backed Up
 
-Veeam Backup for Microsoft 365 v8 covers:
+Veeam Backup for Microsoft 365 covers the core Microsoft 365 workloads that most IT teams care about:
 
 - **Exchange Online**: Mailboxes, archive mailboxes, shared mailboxes, public folders
 - **SharePoint Online**: Site collections, document libraries, list items, metadata
 - **OneDrive for Business**: Full content and version history
 - **Microsoft Teams**: Channel messages, chat history, files (via SharePoint integration)
 
-Teams chat history backup is the most complex — it is captured via a Graph API integration and stored separately from the Exchange conversation history. The restore experience for Teams chats is less polished than for Exchange, which is a known limitation.
+Teams chat history backup is the most complex. It is captured via a Graph API integration and stored separately from the Exchange conversation history. The restore experience for Teams chats is less polished than for Exchange, which is a known limitation.
 
 ## Architecture and Storage
 
-Veeam operates as an on-premises or Azure VM installation. You specify one or more backup repositories — local storage, Azure Blob Storage, S3-compatible, or a combination. For immutability, Azure Blob Storage with Object Lock or an S3 bucket with WORM policy is supported.
+Veeam operates as an on-premises or Azure VM installation. You specify one or more backup repositories: local storage, Azure Blob Storage, S3-compatible storage, or a combination. For immutability, Azure Blob Storage with Object Lock or an S3 bucket with WORM policy is supported.
 
-We tested with Azure Blob (cool tier) as the primary repository and a secondary copy to Azure Archive for long-term retention. The storage costs for 200 users over 12 months were within budget for our client's requirements.
+This architecture is flexible, but it means storage design is part of the product decision. Confirm repository location, immutability, retention length, encryption, restore permissions, and who will monitor failed jobs before deployment.
 
-## Backup Performance
+## What to Check Before Buying
 
-Initial backup (seeding) for a 200-mailbox tenant took approximately 18 hours on a modest Azure VM (4 vCPU, 16 GB RAM) with a 1 Gbps connection. Subsequent incremental backups completed in under 2 hours overnight.
+Before buying or renewing, check:
 
-Backup jobs can be throttled to avoid impacting M365 performance — we saw no issues with the default throttling settings during business hours.
+- Which workloads are in scope: Exchange, SharePoint, OneDrive, Teams, shared mailboxes, archives, and departed user data
+- How long each workload must be retained, and whether that retention is legal, operational, or both
+- Where backup data will live, especially if you have data residency requirements
+- Whether immutable storage is required, and how it will be tested
+- How restore access is delegated, audited, and separated from Global Administrator access
+- How Microsoft Graph API throttling and service limits affect backup windows
+- Whether backup reports are suitable for audit evidence
 
 ## Restore Granularity
 
-This is where Veeam genuinely earns its price point. Restore options include:
+Restore options include:
 
 - **Individual item restore**: Single email, calendar item, contact, document, or folder
 - **Point-in-time mailbox restore**: Restore an entire mailbox to a specific date and time
@@ -47,7 +57,7 @@ This is where Veeam genuinely earns its price point. Restore options include:
 - **Export to PST**: For compliance or data transfer scenarios
 - **SharePoint granular restore**: Individual document versions, list items, or full site collections
 
-The restore wizard in the Veeam console is well-designed. First-time users can complete a point-in-time mailbox restore without consulting documentation.
+During evaluation, test the restore flows that matter to your business. A product can look complete on a feature list but still fail your process if the helpdesk cannot find the right item, legal cannot export what it needs, or Teams restore output is not usable for the request.
 
 ## Weaknesses
 
@@ -57,11 +67,27 @@ The restore wizard in the Veeam console is well-designed. First-time users can c
 
 **Server management**: Unlike pure SaaS backup solutions, Veeam requires you to maintain the backup server VM. This is a non-trivial operational consideration for smaller IT teams.
 
+## Deployment Considerations
+
+Treat the first backup as a seeding project. It can take longer than expected, especially with large SharePoint sites, departed users, and Teams data. Schedule the first run away from other tenant-wide changes and make sure someone is watching job failures, repository growth, and API throttling.
+
+Separate backup administration from everyday Microsoft 365 administration where practical. If the same compromised admin account can delete production data and remove backups, the backup platform is not giving you the separation you probably wanted.
+
+## Questions to Ask During Evaluation
+
+- Can we restore a single mailbox item, a full mailbox, a SharePoint library item, and a departed user's OneDrive?
+- How do we prove a restore worked without exposing more data than necessary?
+- Can backup operators restore data without becoming Global Administrators?
+- What alerts fire when jobs fail or repositories approach capacity?
+- How do we recover if the Veeam server itself is unavailable?
+
 ## Verdict
 
-Veeam Backup for Microsoft 365 is the benchmark in this category. If your organisation has done an honest assessment of what Microsoft actually retains — and understands the gaps — Veeam is the most capable and well-supported option available. The granular restore capabilities alone justify the investment for regulated industries.
+Veeam Backup for Microsoft 365 is a serious option for organisations that need point-in-time restore and independent retention for Microsoft 365 data. It is strongest when the team is willing to own the backup server, storage design, monitoring, and restore process. Smaller teams that want a fully managed SaaS backup may prefer a different operating model.
 
 ## Related Reading
 
 - [Entra ID P1 vs P2: Is the Upgrade Worth It?](/comparisons/entra-id-p1-vs-p2)
 - [Conditional Access for Microsoft 365 Tenants](/tutorials/conditional-access-m365-policy-map)
+- [Microsoft service agreement: shared responsibility for cloud data](https://learn.microsoft.com/en-us/compliance/assurance/assurance-data-resiliency)
+- [Veeam Backup for Microsoft 365 documentation](https://helpcenter.veeam.com/docs/vbo365/guide/vbo_user_guide.html)

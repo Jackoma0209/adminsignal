@@ -9,18 +9,18 @@ tags: ["Intune", "SCCM", "MECM", "Endpoint Management"]
 
 ## The Question Has Changed
 
-A few years ago, the question was "should we add Intune?" Today, for most organisations, the question is "how fast do we move away from SCCM?" The strategic direction from Microsoft is unambiguous: Intune is the future, SCCM is in maintenance mode.
+A few years ago, the question was "should we add Intune?" Today, for many organisations, the question is how much endpoint management should move to Intune and what still needs Configuration Manager.
 
-But "maintenance mode" does not mean "dead". There are specific scenarios where SCCM still genuinely earns its place in 2025. This comparison covers both the capability differences and the architectural considerations for migration planning.
+That does not mean SCCM/MECM is obsolete. There are specific scenarios where Configuration Manager still genuinely earns its place in 2025. This comparison covers both the capability differences and the architectural considerations for migration planning.
 
 ## Feature Comparison
 
 | Capability | Microsoft Intune | SCCM / MECM |
 |---|---|---|
 | OS deployment (bare metal) | Limited (Autopilot v2) | Full (PXE, task sequences, WinPE) |
-| Software distribution scale | Good (Win32, LOB, Microsoft Store) | Excellent (large packages, bandwidth throttling, BranchCache) |
-| Patch management | Good (WUfB integration, expedited rings) | Excellent (WSUS integration, detailed reporting, custom deadlines) |
-| Inventory and reporting | Good (Graph API reports, Endpoint Analytics) | Excellent (SQL-backed, fully customisable) |
+| Software distribution scale | Good (Win32, LOB, Microsoft Store) | Strong (large packages, bandwidth throttling, BranchCache) |
+| Patch management | Good (WUfB integration, expedited rings) | Strong (WSUS integration, detailed reporting, custom deadlines) |
+| Inventory and reporting | Good (Graph API reports, Endpoint Analytics) | Strong (SQL-backed, fully customisable) |
 | Complex task sequences | Not supported | Full support |
 | Co-management | Supported | Required for co-management |
 | Cloud-native | Native | Not designed for cloud |
@@ -30,7 +30,7 @@ But "maintenance mode" does not mean "dead". There are specific scenarios where 
 
 ## Where SCCM Still Wins
 
-**Large-scale OS deployment**: If you are regularly imaging hundreds or thousands of devices with complex task sequences (BitLocker pre-provisioning, driver injection, multi-step customisation), SCCM's OSD capability is still significantly more capable than Autopilot. Autopilot v2 has improved but requires pre-provisioned hardware and internet connectivity — neither of which works in all deployment scenarios.
+**Large-scale OS deployment**: If you are regularly imaging hundreds or thousands of devices with complex task sequences (BitLocker pre-provisioning, driver injection, multi-step customisation), SCCM's OSD capability is still significantly more capable than Autopilot. Autopilot v2 has improved but requires pre-provisioned hardware and internet connectivity. Neither condition works in every deployment scenario.
 
 **Large package distribution**: SCCM's distribution point infrastructure (including BranchCache and Peer Cache) is designed for large payloads in bandwidth-constrained environments. Intune's Win32 app distribution works well for most software but does not have an equivalent to SCCM's optimised distribution hierarchy for very large packages (multi-GB application installs, OS upgrade packages).
 
@@ -42,9 +42,9 @@ But "maintenance mode" does not mean "dead". There are specific scenarios where 
 
 **Cloud-native devices and remote workers**: Any device that is not permanently on-premises benefits enormously from Intune's cloud-native management plane. No VPN, no direct connectivity requirements, no infrastructure dependencies.
 
-**Zero-touch provisioning**: Autopilot (especially v2) provides a vastly better end-user provisioning experience than SCCM-based OSD for the scenarios it covers.
+**Zero-touch provisioning**: Autopilot, especially v2, provides a cleaner end-user provisioning experience than SCCM-based OSD for the scenarios it covers.
 
-**Operational overhead**: SCCM's infrastructure (site servers, distribution points, SQL, WSUS synchronisation, boundary groups) requires meaningful ongoing maintenance. Intune's operational overhead is close to zero.
+**Operational overhead**: SCCM's infrastructure (site servers, distribution points, SQL, WSUS synchronisation, boundary groups) requires meaningful ongoing maintenance. Intune reduces that infrastructure work, although it still needs policy ownership, reporting review, app packaging discipline, and change control.
 
 **Modern security controls**: Intune integrates natively with Defender for Endpoint, Conditional Access, Entra ID, and the Microsoft Purview compliance stack. These integrations are first-class in Intune and bolt-on in SCCM.
 
@@ -58,13 +58,38 @@ Microsoft's co-management feature allows SCCM-managed devices to be co-managed b
 2. Slide workloads progressively to Intune: compliance policies first, then configuration profiles, then app management, then OSD (or accept SCCM for OSD long-term)
 3. Decommission SCCM infrastructure as workloads migrate
 
-For new device deployments, skip SCCM entirely — Autopilot + Intune is the right architecture.
+For new device deployments that fit Autopilot assumptions, Intune and Autopilot are usually the right starting architecture.
+
+## Who Should Keep SCCM for Now
+
+Keep SCCM in the design if you still depend on:
+
+- PXE or task sequence-driven bare metal builds
+- Large application payloads delivered over constrained WAN links
+- Complex pre-install, install, repair, and supersedence logic
+- Detailed SQL reporting that existing teams and audit processes rely on
+- Internet-restricted or segmented networks where cloud management is not viable
+
+This does not have to be a permanent decision. It means the migration plan should move the workloads that are ready and leave the hard cases under Configuration Manager until there is a tested replacement.
+
+## What to Check Before Migrating Workloads
+
+- Which devices are already co-managed and healthy in Intune
+- Whether compliance policy results are reliable enough to use with Conditional Access
+- Which apps have complex dependencies or large installers
+- Whether update rings can replace existing maintenance windows and ADRs
+- How helpdesk staff will find device, app, and policy state after the workload moves
+- Which reports must be rebuilt through Graph, Intune exports, or Power BI
+
+Do not move workloads because the slider exists. Move them when the receiving process in Intune is documented, monitored, and supportable.
 
 ## Verdict
 
-For new deployments and cloud-first organisations, Intune is the clear path. SCCM still has a role where complex OSD, large software distribution, or significant on-premises infrastructure requirements exist — but plan your exit strategy. Microsoft's investment is firmly in the Intune direction.
+For new cloud-managed endpoints, Intune is usually the right starting point. SCCM still has a role where complex OSD, large software distribution, detailed on-premises reporting, or restricted networks exist. The practical answer for many estates is a staged co-management model, not a rushed replacement.
 
 ## Related Reading
 
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
 - [Understanding Autopilot v2](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Patch Management hub](/patch-management)
+- [Microsoft co-management documentation](https://learn.microsoft.com/en-us/mem/configmgr/comanage/overview)

@@ -22,6 +22,12 @@ P1 includes the features that most enterprise tenants consider baseline:
 
 For organisations managing a Microsoft 365 tenant with standard identity requirements, P1 covers the fundamentals well.
 
+## Who P1 Is Usually Enough For
+
+P1 is often enough for smaller or moderately mature tenants that need Conditional Access, SSPR, dynamic groups, and hybrid identity but do not yet have a formal privileged access or access certification process.
+
+It is also a sensible starting point when the tenant still needs basic hygiene work: emergency access accounts, MFA coverage, legacy authentication blocks, admin role clean-up, and reliable sign-in monitoring. P2 does not remove the need to do those jobs properly.
+
 ## What P2 Adds
 
 Entra ID Premium P2 is included in Microsoft 365 E5 and the Entra ID P2 standalone licence.
@@ -84,6 +90,25 @@ For small tenants with a single IT administrator and no compliance framework req
 
 If you are on Microsoft 365 E3, adding P2 to your entire tenant can be significant. Consider a **targeted P2 licensing approach**: licence P2 only for users in privileged roles (Global Admins, Privileged Role Admins, Security Admins) and leave standard users on E3 (which includes P1). This is a supported licensing configuration.
 
+## What to Check Before Upgrading
+
+Before buying P2 across the tenant, check:
+
+- How many permanent privileged role assignments exist today
+- Whether Global Administrator accounts can be reduced before introducing PIM
+- Which guest users, groups, apps, and privileged roles actually need access reviews
+- Whether the security team will review Identity Protection alerts and risky user events
+- How P2 licensing will be assigned to admins, reviewers, and users in scope
+- Whether audit evidence needs to come from PIM, access reviews, sign-in logs, or a SIEM
+
+P2 is most valuable when someone owns the process. PIM without regular role review, stale eligible assignments, and no alert handling can become another control that looks good on paper but does little in practice.
+
+## Operational Caveats
+
+Start PIM with a small set of high-impact roles, such as Global Administrator, Privileged Role Administrator, Exchange Administrator, and Security Administrator. Add approval and justification requirements after confirming admins can still perform urgent work.
+
+For access reviews, begin with privileged groups and external guest access. Reviewing every group in the tenant at once usually creates fatigue and poor reviewer decisions.
+
 ## Verdict
 
 P2 is worth it if you have privileged accounts, external access to certify, or compliance requirements. For smaller tenants without those drivers, P1 covers the Conditional Access and SSPR fundamentals adequately.
@@ -92,3 +117,5 @@ P2 is worth it if you have privileged accounts, external access to certify, or c
 
 - [Configuring Conditional Access for Microsoft 365](/tutorials/conditional-access-m365-policy-map)
 - [Veeam Backup for Microsoft 365 Review](/reviews/veeam-backup-m365-review)
+- [Microsoft Entra ID hub](/microsoft-entra-id)
+- [Microsoft PIM documentation](https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-configure)

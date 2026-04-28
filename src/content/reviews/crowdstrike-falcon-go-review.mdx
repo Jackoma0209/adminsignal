@@ -1,5 +1,5 @@
 ---
-title: "CrowdStrike Falcon Go: Is It Right for SMB Endpoint Protection?"
+title: "CrowdStrike Falcon Go: Admin Buyer Notes for SMB Endpoint Protection"
 productName: "CrowdStrike Falcon Go"
 category: "Endpoint Security"
 rating: 4.2
@@ -8,25 +8,33 @@ authorId: "marcus-webb"
 lastReviewed: "Mar 18, 2025"
 ---
 
-## What We Tested
+## What This Page Is
 
-We deployed Falcon Go across 40 endpoints — a mix of Windows 11 22H2 and 24H2 workstations — for 45 days in a production environment. This was not a sandbox evaluation. We wanted to see how Falcon Go performed under real-world conditions: endpoint performance, detection quality, daily operational overhead, and support responsiveness.
+This is an admin evaluation guide for CrowdStrike Falcon Go. It does not claim independent malware testing, benchmark results, or measured support response times. Use it to frame the questions an IT team should ask before adopting Falcon Go as an endpoint protection product.
+
+## Who This Is For
+
+Falcon Go is aimed at smaller organisations that want managed prevention and basic endpoint visibility without buying the higher Falcon tiers. It can make sense where the team wants a dedicated security console and does not need full threat hunting, custom detection engineering, or a mature SOC workflow.
+
+It is not the right fit if you need deep incident response tooling, custom IOA rules, long-term hunt queries, or detailed process-tree investigation across complex incidents. Those requirements usually point to a higher Falcon tier or a different operating model.
 
 ## Deployment and Sensor
 
-Installation is the same experience as higher tiers: the sensor installs silently via an MSI with command-line switches, or via Intune as a Win32 app. The sensor is lightweight. On our test hardware (Intel i5-12th Gen, 16 GB RAM), we observed no measurable impact on CPU or memory during normal operation.
+Installation uses the Falcon sensor, commonly deployed through an MSI with command-line switches or through Intune as a Win32 app. Before rollout, test install, upgrade, and uninstall behaviour on your standard endpoint builds.
 
-Sensor updates at the Go tier follow the same N-2 ring structure as Enterprise. The July 2024 incident is relevant context here — ring-based updates are now configurable at Go tier, which is a positive change.
+Sensor update control is a key evaluation point after the July 2024 CrowdStrike incident. Confirm which update ring options are available in the tier you are buying, who can change them, and how you will stage updates across pilot and production devices.
 
-## Detection Quality
+## Detection and Investigation Trade-Offs
 
-Falcon Go uses the same detection engine and threat intelligence feeds as higher tiers. During our testing, we ran a suite of MITRE ATT&CK technique simulations (using Atomic Red Team) and observed that Falcon Go caught the majority of credential dumping, lateral movement, and execution technique tests.
+Falcon Go should be assessed as prevention plus basic investigation, not as a full SOC platform. The important question is not only whether an alert is generated, but what your team can do with that alert afterwards.
 
-What you lose compared to Enterprise is not detection breadth but **depth of investigation**. The threat graph in Falcon Go is limited to event-level detail — you cannot pivot through the full process tree or run threat hunting queries. For a security team that primarily needs alerts and basic investigation, this is sufficient. For a SOC running hunts, it is not.
+What you lose compared to Enterprise is not detection breadth but **depth of investigation**. The threat graph in Falcon Go is limited to event-level detail. You cannot pivot through the full process tree or run threat hunting queries. For a security team that primarily needs alerts and basic investigation, this is sufficient. For a SOC running hunts, it is not.
 
 ## Console and Management
 
-The Falcon console is clean and well-structured. For an SMB without a dedicated security analyst, the default dashboard and alert views are digestible. The policy management is identical to Enterprise — all the same prevention policy settings, exclusion management, and device group controls are available.
+The Falcon console is structured around dashboards, alerts, policies, and devices. During evaluation, check how much context a generalist admin gets from an alert without escalating to a security specialist.
+
+Also check the exception workflow. Endpoint protection tools often become noisy when line-of-business applications, scripts, or management tools are misclassified. A good rollout plan includes who can approve exclusions, how exclusions expire, and how risky exclusions are reviewed.
 
 ## Where Falcon Go Falls Short
 
@@ -34,15 +42,26 @@ The Falcon console is clean and well-structured. For an SMB without a dedicated 
 
 **Threat graph investigation**: The event search and threat graph are read-only and limited in depth. Post-incident investigations that require pivoting through a full process tree require an upgrade.
 
-**Support SLAs**: Our support experience was adequate but slower than Enterprise contracts. For a critical production issue, expect 4–6 hours for initial response rather than the sub-1-hour SLA on Enterprise.
+**Support and response**: Check the support terms for the exact package you are buying. Do not assume Enterprise response times or services are included in Falcon Go.
+
+## What to Check Before Buying
+
+- Which features are included in Falcon Go versus Falcon Pro, Enterprise, or Complete
+- Whether your team can investigate and close alerts with the data exposed at this tier
+- How sensor updates are staged and paused
+- Whether your deployment tool can install the sensor reliably on all supported platforms
+- How exclusions are approved, documented, and reviewed
+- What happens when a device is offline, isolated, or repeatedly failing sensor updates
+- Whether Defender for Endpoint is already licensed through Microsoft 365 and good enough for your risk profile
 
 ## Verdict
 
-Falcon Go is a credible choice for organisations that have outgrown basic AV but cannot justify the full Enterprise price point. The sensor quality and detection engine are identical to higher tiers — the restrictions are in investigation depth and customisation, not in the ability to detect and prevent threats.
+Falcon Go is a credible option for smaller organisations that want a dedicated endpoint protection product and can live with limited investigation depth. The main trade-off is not daily prevention management, it is what happens when an alert needs deeper analysis.
 
-If your primary need is strong endpoint protection with a manageable console and you do not need SOC-grade investigation capabilities, Falcon Go delivers.
+If your primary need is manageable prevention and alerting, it belongs on the shortlist. If you need threat hunting and detailed incident response workflows, evaluate a higher tier before committing.
 
 ## Related Reading
 
 - [Windows Defender vs. CrowdStrike Falcon: Enterprise Comparison](/comparisons/windows-defender-vs-crowdstrike-falcon)
-- [Windows Defender vs CrowdStrike Falcon](/comparisons/windows-defender-vs-crowdstrike-falcon)
+- [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [CrowdStrike Falcon documentation](https://www.crowdstrike.com/resources/guides/)
