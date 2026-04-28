@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { Zap, ShieldCheck, Rss } from 'lucide-react'
+import Image from 'next/image'
+import { ShieldCheck, Rss } from 'lucide-react'
 import PrivacySettingsButton from '@/components/PrivacySettingsButton'
 
 const footerLinks = [
@@ -56,9 +57,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="group mb-4 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary transition-opacity group-hover:opacity-85">
-                <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="AdminSignal logo"
+                width={32}
+                height={32}
+                className="transition-opacity group-hover:opacity-85"
+              />
               <span className="text-[17px] font-bold tracking-tight text-foreground">
                 Admin<span className="text-primary">Signal</span>
               </span>
