@@ -3,7 +3,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
-import { signals } from '@/data/signals'
+import { liveSignals, signals } from '@/data/signals'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
@@ -23,7 +23,10 @@ import { isRecentItem } from '@/lib/utils'
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
-  return getContentSlugs('news').map((slug) => ({ slug }))
+  const liveContentSlugs = new Set(getContentSlugs('news'))
+  return liveSignals
+    .filter((signal) => liveContentSlugs.has(signal.slug))
+    .map((signal) => ({ slug: signal.slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

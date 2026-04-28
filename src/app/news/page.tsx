@@ -56,7 +56,7 @@ export default async function NewsPage({
         <div className="border-b border-amber-500/20 bg-amber-500/5 py-2.5">
           <Container>
             <p className="text-center text-xs font-medium text-amber-400">
-              Archival content — this feed shows placeholder articles while the live news pipeline is being populated. Source links are real.
+              Archival content — this feed is temporarily showing sourced reference articles while live news coverage is being prepared.
             </p>
           </Container>
         </div>

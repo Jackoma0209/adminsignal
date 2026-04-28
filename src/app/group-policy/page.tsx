@@ -118,8 +118,7 @@ export default function GroupPolicyPage() {
     .filter(
       (a) =>
         a.category === 'Group Policy' ||
-        a.affectedProducts.includes('Group Policy') ||
-        a.slug === 'wufb-deferral-not-respected',
+        a.affectedProducts.includes('Group Policy'),
     )
     .slice(0, 3)
     .map((a) => ({
@@ -577,9 +576,9 @@ export default function GroupPolicyPage() {
               },
               {
                 step: '4',
-                title: 'Windows Update for Business Deferral Not Being Respected',
-                href: '/troubleshooting/wufb-deferral-not-respected',
-                note: 'Diagnose update policy conflicts between WSUS-targeting GPOs, WUfB, and Intune update rings.',
+                title: 'Patch Management Hub',
+                href: '/patch-management',
+                note: 'Use this for WSUS, WUfB, Intune update rings, maintenance windows, and update policy conflict patterns.',
               },
               {
                 step: '5',

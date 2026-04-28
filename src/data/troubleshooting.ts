@@ -74,20 +74,6 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     authorId: 'jack',
   },
   {
-    id: '5',
-    title: 'Windows Update for Business Deferral Not Being Respected',
-    slug: 'wufb-deferral-not-respected',
-    category: 'Patch Management',
-    excerpt:
-      'Devices ignoring WUfB deferral settings is almost always a policy conflict — consumer update policies from the Microsoft account, WSUS redirection, or a stale ring assignment.',
-    affectedProducts: ['Windows Update for Business', 'Group Policy', 'Intune'],
-    difficulty: 'Beginner',
-    date: 'Jan 30, 2025',
-    publishedAt: '2025-01-30',
-    readTime: '6 min read',
-    authorId: 'james-holbrook',
-  },
-  {
     id: '6',
     title: 'Fixing the April 2026 BitLocker Recovery Loop (KB5082063 Secure Boot Issue)',
     slug: 'april-2026-bitlocker-recovery-loop-kb5082063',

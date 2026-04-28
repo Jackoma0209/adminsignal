@@ -762,9 +762,9 @@ export default function SccmMecmPage() {
               },
               {
                 step: '3',
-                title: 'Windows Update for Business Deferral Not Being Respected',
-                href: '/troubleshooting/wufb-deferral-not-respected',
-                note: 'Diagnose policy conflicts between WSUS targeting GPOs and WUfB/Intune update ring policies — the most common co-management transition problem for the Windows Update workload.',
+                title: 'Patch Management hub',
+                href: '/patch-management',
+                note: 'Diagnose policy conflicts between WSUS targeting GPOs, WUfB, Intune update rings, and ConfigMgr software update workloads.',
               },
               {
                 step: '4',
