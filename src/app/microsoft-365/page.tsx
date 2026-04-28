@@ -560,7 +560,7 @@ export default function Microsoft365Page() {
               href="/comparisons/entra-id-p1-vs-p2"
               className="group inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
             >
-              Entra ID P1 vs P2 — what the upgrade actually unlocks
+              Entra ID P1 vs P2: what the upgrade actually adds
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -689,7 +689,7 @@ export default function Microsoft365Page() {
               },
               {
                 step: '6',
-                title: 'Veeam Backup for Microsoft 365: Complete Review',
+                title: 'Veeam Backup for Microsoft 365: Admin Buyer Notes',
                 href: '/reviews/veeam-backup-m365-review',
                 note: 'Understand what Microsoft actually retains vs what a third-party backup provides — before deciding whether to add backup tooling to your M365 stack.',
               },
