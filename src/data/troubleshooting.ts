@@ -15,6 +15,20 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '12',
+    title: 'Windows Autopilot Device Not Importing: Hardware Hash CSV, Duplicate Records, and Profile Assignment',
+    slug: 'autopilot-device-not-importing-hardware-hash',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical troubleshooting guide for Windows Autopilot import failures, covering hardware hash collection, CSV validation, duplicate records, tenant permissions, Intune Connector checks, deployment profile assignment, dynamic groups, Graph, safe retry, and recovery.',
+    affectedProducts: ['Windows Autopilot', 'Microsoft Intune', 'Microsoft Entra ID', 'Microsoft Graph'],
+    difficulty: 'Intermediate',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '22 min read',
+    authorId: 'jack',
+  },
+  {
     id: '11',
     title: 'Intune Device Not Syncing: Last Check-in Stale, Sync Button Not Helping, or Policies Not Arriving',
     slug: 'intune-device-not-syncing',
