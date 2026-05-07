@@ -119,8 +119,8 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
         <div className="py-10 lg:py-14">
           {lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />}
 
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px]">
-            <article>
+          <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <article className="min-w-0">
               <header className="mb-8">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <Badge variant="category">{article.category}</Badge>
@@ -165,7 +165,7 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
               )}
             </article>
 
-            <aside>
+            <aside className="min-w-0">
               <div className="sticky top-20">
                 {headings.length >= 2 && (
                   <div className="mb-6 rounded-xl border border-border bg-surface p-5">

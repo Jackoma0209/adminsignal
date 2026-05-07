@@ -181,6 +181,7 @@ samp {
   text-decoration: underline;
   text-decoration-color: rgba(59, 130, 246, 0.35);
   text-underline-offset: 2px;
+  overflow-wrap: anywhere;
 }
 
 .prose a:hover {
@@ -196,6 +197,8 @@ samp {
   padding: 0.15em 0.4em;
   border-radius: 0.25rem;
   border: 1px solid rgba(148, 163, 184, 0.18);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .prose pre {
@@ -215,6 +218,8 @@ samp {
   padding: 0;
   color: var(--color-foreground-soft);
   font-size: inherit;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 /*
@@ -275,12 +280,14 @@ samp {
   background: var(--color-surface-elevated);
   padding: 0.625rem 0.875rem;
   border: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
 }
 
 .prose td {
   padding: 0.5rem 0.875rem;
   border: 1px solid var(--color-border);
   color: var(--color-foreground-soft);
+  overflow-wrap: anywhere;
 }
 
 .prose tr:nth-child(even) td {

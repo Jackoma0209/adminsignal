@@ -65,7 +65,7 @@ function Pre({ children }: React.HTMLAttributes<HTMLPreElement>) {
 
 function Table({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="my-5 overflow-x-auto rounded-lg border border-border">
+    <div className="my-5 max-w-full overflow-x-auto rounded-lg border border-border">
       <table {...props}>{children}</table>
     </div>
   )

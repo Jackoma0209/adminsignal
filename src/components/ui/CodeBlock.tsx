@@ -148,7 +148,7 @@ export default async function CodeBlock({ code, lang }: CodeBlockProps) {
     : ''
 
   return (
-    <div className="shiki-wrapper group relative my-4 overflow-hidden rounded-lg border border-white/10 bg-[#0d1117]">
+    <div className="shiki-wrapper group relative my-4 max-w-full overflow-hidden rounded-lg border border-white/10 bg-[#0d1117]">
       {/* ── Top bar ────────────────────────────────────────────────────── */}
       {/*
         Compact single-line bar: language label left, copy button right.
@@ -176,7 +176,7 @@ export default async function CodeBlock({ code, lang }: CodeBlockProps) {
         neutralised by the .prose pre.shiki rule in globals.css.
       */}
       <div
-        className="overflow-x-auto"
+        className="max-w-full overflow-x-auto"
         // biome-ignore lint: Shiki output is safe — it comes from our own code strings
         dangerouslySetInnerHTML={{ __html: html }}
       />

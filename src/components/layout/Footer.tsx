@@ -113,7 +113,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <p className="text-sm text-muted/60">
               © {new Date().getFullYear()} AdminSignal. All rights reserved.
             </p>
@@ -126,7 +126,7 @@ export default function Footer() {
               RSS
             </a>
           </div>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:justify-end">
             <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">
               Privacy
             </Link>
