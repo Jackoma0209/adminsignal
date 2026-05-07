@@ -15,6 +15,20 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '11',
+    title: 'Intune Device Not Syncing: Last Check-in Stale, Sync Button Not Helping, or Policies Not Arriving',
+    slug: 'intune-device-not-syncing',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical troubleshooting guide for Windows devices that stop syncing with Intune, covering portal checks, MDM enrolment state, Company Portal, scheduled tasks, event logs, registry evidence, IME health, network issues, Entra device objects, Graph checks, safe retry, and recovery.',
+    affectedProducts: ['Microsoft Intune', 'Windows 11', 'Windows 10', 'Microsoft Entra ID'],
+    difficulty: 'Intermediate',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '21 min read',
+    authorId: 'jack',
+  },
+  {
     id: '10',
     title: 'Microsoft Entra Dynamic Group Not Updating: Users, Devices, and Intune Assignments',
     slug: 'entra-dynamic-group-not-updating',
