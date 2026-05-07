@@ -15,6 +15,20 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '9',
+    title: 'Intune Remediation Script Not Running, Detecting, Remediating, or Reporting',
+    slug: 'intune-remediation-script-not-running',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical troubleshooting guide for Intune Remediations that do not run, detect, remediate, or report correctly, covering licensing, exit codes, schedules, IME logs, PowerShell context, reporting delay, retry, and rollback.',
+    affectedProducts: ['Microsoft Intune', 'Remediations', 'Intune Management Extension', 'PowerShell'],
+    difficulty: 'Intermediate',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '18 min read',
+    authorId: 'jack',
+  },
+  {
     id: '8',
     title: 'Intune Win32 App Install Stuck at Waiting, Pending, Installing, or Failed',
     slug: 'intune-win32-app-install-stuck-waiting',

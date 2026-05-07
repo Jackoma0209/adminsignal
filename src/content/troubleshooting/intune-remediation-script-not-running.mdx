@@ -1,0 +1,796 @@
+---
+title: "Intune Remediation Script Not Running, Detecting, Remediating, or Reporting"
+category: "Microsoft Intune"
+date: "May 7, 2026"
+authorId: "jack"
+lastReviewed: "May 7, 2026"
+reviewNote: "Initial practical guide covering remediation licensing, detection and remediation behaviour, exit codes, schedule and assignment checks, device eligibility, Intune Management Extension logs, PowerShell context, reporting delay, registry evidence, safe retry, and rollback."
+tags: ["Intune", "Remediations", "Intune Management Extension", "PowerShell", "Endpoint Analytics"]
+---
+
+## When to Use This Guide
+
+Use this guide when an Intune remediation script package does not behave the way the portal suggests it should. Typical examples:
+
+- The remediation never appears to run on a targeted device
+- The detection script runs, but the remediation script never runs
+- The remediation script runs locally but fails from Intune
+- The script reports **With issue** even after the remediation fixed the setting
+- The script reports **No issue** even though the issue is still present
+- The device shows **Pending**, **Failed**, **Not applicable**, or stale output in Intune
+- The script only works when a user is signed in, or only works when nobody is signed in
+- The script works in 64-bit PowerShell but fails through Intune
+
+The useful question is not "did Intune run it?" It is "which part ran, in which context, with which exit code, and what did the device report back?"
+
+For nearby Intune troubleshooting paths, see the [Intune hub](/intune), the [PowerShell hub](/powershell), and [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating).
+
+## Tested Environment and Scope
+
+This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2 and 25H2 devices managed by Microsoft Intune Remediations. It covers custom remediation script packages with a detection script only, and packages with both a detection script and a remediation script.
+
+It assumes the device uses the Intune Management Extension. It does not cover Microsoft Defender for Endpoint advanced hunting, Configuration Manager compliance baselines, Group Policy scheduled tasks, macOS scripts, or Intune platform scripts except where they help explain execution context.
+
+Microsoft's current documentation is here: [Remediations in Microsoft Intune](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations).
+
+## Prerequisites and Licensing
+
+Before troubleshooting a script package, confirm the device and user are eligible.
+
+Microsoft documents these core requirements:
+
+- The device must be Microsoft Entra joined or Microsoft Entra hybrid joined.
+- The device must be MDM enrolled in Intune and run Windows Enterprise, Professional, or Education, or it must be a co-managed Windows device.
+- The Intune Management Extension must be installed.
+- Users of the devices require a supported licence, such as Windows Enterprise E3 or E5, Windows Education A3 or A5, or Windows Virtual Desktop Access per user.
+- An Intune Service Administrator must confirm licensing requirements before Remediations is used for the first time.
+- The admin running or editing Remediations needs the relevant Intune role permissions under device configuration and remote tasks.
+
+Check the local join and enrolment state:
+
+```cmd
+dsregcmd /status
+```
+
+Expected output shape:
+
+```text
+AzureAdJoined   : YES
+DomainJoined    : YES or NO
+WorkplaceJoined : NO or YES
+MdmUrl          : https://enrollment.manage.microsoft.com/...
+TenantName      : <tenant display name>
+```
+
+Check Windows edition:
+
+```powershell
+Get-ComputerInfo |
+    Select-Object WindowsProductName, WindowsEditionId, WindowsVersion, OsBuildNumber
+```
+
+Expected output shape:
+
+```text
+WindowsProductName : Windows 11 Enterprise
+WindowsEditionId   : Enterprise
+WindowsVersion     : 24H2
+OsBuildNumber      : <build number>
+```
+
+If the device is not enrolled, not eligible, or the user licensing has not been confirmed, fix that first. A perfect script cannot run on a device that is outside the Remediations service boundary.
+
+## Symptoms
+
+Use the symptom to choose the first check.
+
+| Symptom | First place to check |
+|---|---|
+| Device never appears in remediation status | Assignment, filter, device eligibility, IME install |
+| Device shows Pending for a long time | IME check-in, run schedule, device online state, reporting delay |
+| Detection runs but remediation does not | Detection exit code and output |
+| Remediation runs but status stays With issue | Post-remediation detection, reporting delay, script logic |
+| Script works manually but fails in Intune | System vs user context, 32-bit vs 64-bit PowerShell, execution policy, timeout |
+| Script runs on some devices only | Assignment groups, filters, OS edition, co-management state |
+| Output is missing or truncated | 2,048 character output limit or no STDOUT |
+| On-demand remediation does not start | Device offline, WNS path blocked, another on-demand action already sent |
+
+If the issue looks like a general IME processing problem, compare with [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting), because Win32 apps and Remediations both depend on the Intune Management Extension.
+
+## Likely Causes
+
+These are the most common causes in the order I normally check them.
+
+1. **The detection script exits with the wrong code.** A remediation script only runs when the detection script exits `1`. Exit `0` means no issue found. Any other exit code is not the same as "please remediate".
+
+2. **The assignment does not target the device.** The package is assigned to a group, but the device is not a member, is filtered out, or is in an exclusion.
+
+3. **The schedule has not fired yet.** Remediations can run once, hourly or daily, and policy retrieval has its own timing. A portal sync is not always instant evidence.
+
+4. **The device has not retrieved the latest remediation policy.** Microsoft documents remediation policy retrieval after device restart, IME service restart, user sign-in, and once every eight hours.
+
+5. **Reporting is delayed.** Recurring remediation reporting follows a change-driven and seven-day reporting cycle. The local script may have run before the portal reflects it.
+
+6. **IME is not healthy.** If `IntuneManagementExtension` is stopped, missing, blocked by proxy, or unable to check in, remediation policy will not run.
+
+7. **The script needs 64-bit PowerShell but is running 32-bit.** Registry and file system paths can change under WOW64 redirection.
+
+8. **The script expects a user profile but runs as System.** System context sees `C:\Windows\System32\config\systemprofile`, not the signed-in user's profile.
+
+9. **The script expects admin rights but runs as the logged-on user.** User context can be correct for HKCU fixes, but wrong for device-wide registry and service changes.
+
+10. **Signature or encoding blocks execution.** Scripts must be UTF-8. If signature enforcement is enabled, trust chain and execution policy matter.
+
+11. **The script exceeds timeout or waits for input.** Interactive prompts, long-running commands and hung child processes can cause failure or missing reports.
+
+12. **Output handling is wrong.** Large output, sensitive output, STDERR on normal paths, or no useful STDOUT can make reporting look broken.
+
+## Step 1: Confirm the Package Design
+
+In the Intune admin centre, go to **Devices > Manage devices > Scripts and remediations > Remediations** and open the script package.
+
+Record this before changing anything:
+
+| Question | Example answer shape |
+|---|---|
+| Script package name | `REMEDIATION-NAME` |
+| Detection only or detection plus remediation | `Both scripts present` |
+| Run using logged-on credentials | `Yes` or `No` |
+| Run script in 64-bit PowerShell | `Yes` or `No` |
+| Enforce script signature check | `Yes` or `No` |
+| Schedule | `Once`, `Hourly`, or `Daily` |
+| Assignment group | `GROUP-NAME` |
+| Filters | `Included`, `Excluded`, or none |
+| Affected device | `DEVICE-NAME` |
+| Portal status | `Pending`, `With issue`, `Issue fixed`, `No issue`, or `Failed` |
+
+For fleet work, export the status before editing the package. You can also build your own repeatable export using [Export Intune Device Report](/scripts/export-intune-device-report).
+
+## Step 2: Understand Detection vs Remediation Behaviour
+
+A remediation package can have a detection script only, or a detection script and a remediation script.
+
+The core logic is simple:
+
+| Detection result | Intune behaviour |
+|---|---|
+| `exit 0` | No issue found. Remediation script does not run. |
+| `exit 1` | Issue found. Remediation script runs if one is present. |
+| Other exit code | Detection failed or produced an unexpected result. Remediation does not run. |
+
+After a remediation script runs, the detection logic is the evidence that the issue was fixed. If remediation changes the device but the detection script still exits `1`, the device can continue to report with issue.
+
+Use this minimal pattern when testing:
+
+```powershell
+# Detection script
+$Path = "HKLM:\SOFTWARE\AdminSignal\Test"
+$Name = "Remediated"
+
+try {
+    $Value = (Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop).$Name
+    if ($Value -eq "Yes") {
+        Write-Output "Compliant: $Path\$Name is Yes"
+        exit 0
+    }
+
+    Write-Output "Issue found: value is '$Value'"
+    exit 1
+} catch {
+    Write-Output "Issue found: value is missing"
+    exit 1
+}
+```
+
+```powershell
+# Remediation script
+$Path = "HKLM:\SOFTWARE\AdminSignal\Test"
+New-Item -Path $Path -Force | Out-Null
+New-ItemProperty -Path $Path -Name "Remediated" -Value "Yes" -PropertyType String -Force | Out-Null
+Write-Output "Set remediation marker"
+exit 0
+```
+
+Expected output shape from detection:
+
+```text
+Compliant: HKLM:\SOFTWARE\AdminSignal\Test\Remediated is Yes
+```
+
+or:
+
+```text
+Issue found: value is missing
+```
+
+Do not put the fix in the detection script unless you deliberately created a detection-only remediation. Detection should normally be safe to run repeatedly and should not make changes.
+
+## Step 3: Check Script Exit Codes and Output
+
+Run the detection and remediation scripts locally in the same context you expect Intune to use.
+
+For a quick exit code test:
+
+```powershell
+$Script = "C:\Temp\Detect-Example.ps1"
+& $Script
+$ExitCode = $LASTEXITCODE
+
+[pscustomobject]@{
+    Script = $Script
+    ExitCode = $ExitCode
+}
+```
+
+Expected output shape:
+
+```text
+Script   : C:\Temp\Detect-Example.ps1
+ExitCode : 0
+```
+
+or:
+
+```text
+Script   : C:\Temp\Detect-Example.ps1
+ExitCode : 1
+```
+
+If you see a blank exit code, your script may not be ending with an explicit `exit`. Add explicit exit paths to detection and remediation scripts.
+
+Avoid noisy output. Microsoft documents a maximum output size of 2,048 characters for Remediations, so keep output short:
+
+```powershell
+Write-Output "Issue found: service is stopped"
+exit 1
+```
+
+Instead of:
+
+```powershell
+Get-ChildItem C:\ -Recurse
+exit 1
+```
+
+Also avoid `Write-Error` for normal expected states. STDERR on a normal "issue found" path can make a clean detection look like a script failure.
+
+## Step 4: Check Run Frequency and Assignment
+
+In the remediation package, check **Assignments**.
+
+Confirm:
+
+- The device is in an included group.
+- The device is not in an excluded group.
+- You have not mixed user and device groups across include and exclude assignments.
+- Assignment filters do not exclude the device.
+- The schedule is correct: once, hourly or daily.
+- Hourly interval is less than 24 hours.
+- The schedule uses local device time unless **Use UTC** is selected.
+- If a once-only script already ran, you are not expecting it to run repeatedly.
+
+Check device group membership through Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "Device.Read.All", "Group.Read.All"
+
+$DeviceName = "DEVICE-NAME"
+$Device = Get-MgDevice -Filter "displayName eq '$DeviceName'" -ConsistencyLevel eventual
+
+Get-MgDeviceTransitiveMemberOf -DeviceId $Device.Id -All |
+    Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } |
+    Select-Object Id, @{ Name = "DisplayName"; Expression = { $_.AdditionalProperties.displayName } } |
+    Sort-Object DisplayName
+```
+
+Expected output shape:
+
+```text
+Id                                    DisplayName
+--                                    -----------
+<group id>                            Intune - Remediation Pilot Devices
+<group id>                            All Managed Windows Devices
+```
+
+If you target a user group, check the signed-in user's membership too. Remediations often run best with device groups because you are normally fixing device state, not a user entitlement.
+
+## Step 5: Check Device Eligibility
+
+On the endpoint, capture a small eligibility snapshot:
+
+```powershell
+$Computer = Get-ComputerInfo
+$Dsreg = dsregcmd /status
+$Ime = Get-Service IntuneManagementExtension -ErrorAction SilentlyContinue
+
+[pscustomobject]@{
+    ComputerName = $env:COMPUTERNAME
+    ProductName  = $Computer.WindowsProductName
+    Edition      = $Computer.WindowsEditionId
+    Version      = $Computer.WindowsVersion
+    Build        = $Computer.OsBuildNumber
+    IMEStatus    = if ($Ime) { $Ime.Status } else { "Missing" }
+    AzureAdJoined = if ($Dsreg -match "AzureAdJoined\s*:\s*YES") { "YES" } else { "NO or unknown" }
+    DomainJoined  = if ($Dsreg -match "DomainJoined\s*:\s*YES") { "YES" } else { "NO or unknown" }
+}
+```
+
+Expected output shape:
+
+```text
+ComputerName  : DEVICE-NAME
+ProductName   : Windows 11 Enterprise
+Edition       : Enterprise
+Version       : 24H2
+Build         : <build number>
+IMEStatus     : Running
+AzureAdJoined : YES
+DomainJoined  : YES or NO
+```
+
+If `IMEStatus` is `Missing`, assign a Win32 app, platform script, or remediation to the device and allow time for IME installation, or investigate why the management extension is not installing.
+
+## Step 6: Check Intune Management Extension Health
+
+Remediations run through the Intune Management Extension.
+
+```powershell
+$ImeExe = "C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe"
+$LogRoot = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+
+Get-Service IntuneManagementExtension |
+    Select-Object Name, Status, StartType
+
+if (Test-Path $ImeExe) {
+    Get-Item $ImeExe |
+        Select-Object FullName, LastWriteTime, @{ Name = "Version"; Expression = { $_.VersionInfo.FileVersion } }
+} else {
+    Write-Output "IME executable not found"
+}
+
+Get-ChildItem $LogRoot -ErrorAction SilentlyContinue |
+    Select-Object Name, Length, LastWriteTime |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 20
+```
+
+Expected output shape:
+
+```text
+Name                       Status   StartType
+----                       ------   ---------
+IntuneManagementExtension  Running  Automatic
+
+FullName      : C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe
+LastWriteTime : <date and time>
+Version       : <agent version>
+
+Name                          Length   LastWriteTime
+----                          ------   -------------
+HealthScripts.log             <bytes>  <date and time>
+AgentExecutor.log             <bytes>  <date and time>
+IntuneManagementExtension.log <bytes>  <date and time>
+```
+
+Useful log paths:
+
+```text
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\IntuneManagementExtension.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AgentExecutor.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\HealthScripts.log
+```
+
+If `HealthScripts.log` is absent, check `AgentExecutor.log` and `IntuneManagementExtension.log`. Older agent versions and different workloads can put the useful evidence in different files.
+
+Search the logs for the remediation package name, script name or common failure text:
+
+```powershell
+$LogRoot = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+$Terms = @(
+    "REMEDIATION-NAME",
+    "HealthScripts",
+    "Detection",
+    "Remediation",
+    "Exit code",
+    "timeout",
+    "0x"
+)
+
+Select-String -Path "$LogRoot\*.log" -Pattern $Terms -SimpleMatch |
+    Select-Object Path, LineNumber, Line |
+    Sort-Object Path, LineNumber |
+    Select-Object -First 100
+```
+
+Expected output shape:
+
+```text
+Path       : C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\HealthScripts.log
+LineNumber : <line number>
+Line       : <timestamp> <script execution message>
+```
+
+If the log files have not updated since before the assignment, restart IME and wait several minutes:
+
+```powershell
+Restart-Service IntuneManagementExtension -Force
+Start-Sleep -Seconds 30
+Get-Service IntuneManagementExtension | Select-Object Name, Status
+```
+
+Expected output shape:
+
+```text
+Name                       Status
+----                       ------
+IntuneManagementExtension  Running
+```
+
+Microsoft documents remediation policy retrieval after IME restart, device restart, user sign-in, and once every eight hours.
+
+## Step 7: Check 32-bit vs 64-bit PowerShell Context
+
+A script can pass in your admin console and fail in Intune because it is running in a different PowerShell host.
+
+Add this temporary diagnostic block to a test copy of the detection script:
+
+```powershell
+[pscustomobject]@{
+    PowerShellVersion = $PSVersionTable.PSVersion.ToString()
+    Is64BitProcess    = [Environment]::Is64BitProcess
+    Is64BitOS         = [Environment]::Is64BitOperatingSystem
+    ProcessPath       = (Get-Process -Id $PID).Path
+    ProgramFiles      = $env:ProgramFiles
+    ProgramFilesX86   = ${env:ProgramFiles(x86)}
+} | Format-List
+```
+
+Expected output shape:
+
+```text
+PowerShellVersion : 5.1.x
+Is64BitProcess    : True
+Is64BitOS         : True
+ProcessPath       : C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+ProgramFiles      : C:\Program Files
+ProgramFilesX86   : C:\Program Files (x86)
+```
+
+If `Is64BitProcess` is `False`, registry and file paths can be redirected. For example:
+
+```powershell
+Test-Path "HKLM:\SOFTWARE\Vendor\Product"
+Test-Path "HKLM:\SOFTWARE\WOW6432Node\Vendor\Product"
+```
+
+Expected output shape:
+
+```text
+True
+False
+```
+
+or:
+
+```text
+False
+True
+```
+
+Match the remediation package setting **Run script in 64-bit PowerShell** to the location your script needs to read or write.
+
+## Step 8: Check Logged-on User vs System Context
+
+Remediations can run using logged-on credentials or in system context. The right choice depends on what the script changes.
+
+Use **System** for:
+
+- HKLM registry changes
+- Services
+- Machine-wide scheduled tasks
+- Files under `C:\Program Files` or `C:\ProgramData`
+- Device-wide app repair
+
+Use **logged-on user** for:
+
+- HKCU registry changes for the current user
+- User profile files
+- Per-user app settings
+- User certificate store checks
+
+Add this temporary diagnostic output in a test copy:
+
+```powershell
+[pscustomobject]@{
+    UserName        = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+    UserProfile     = $env:USERPROFILE
+    Temp            = $env:TEMP
+    SessionName     = $env:SESSIONNAME
+    IsElevatedAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator
+    )
+} | Format-List
+```
+
+Expected output shape for system context:
+
+```text
+UserName        : NT AUTHORITY\SYSTEM
+UserProfile     : C:\Windows\system32\config\systemprofile
+Temp            : C:\Windows\TEMP
+SessionName     : Services
+IsElevatedAdmin : True
+```
+
+Expected output shape for logged-on user context:
+
+```text
+UserName        : DOMAIN\username
+UserProfile     : C:\Users\username
+Temp            : C:\Users\username\AppData\Local\Temp
+SessionName     : Console
+IsElevatedAdmin : False
+```
+
+If your script is meant to fix all user profiles, do not assume HKCU is enough. Enumerate profile hives deliberately, test carefully, and avoid collecting personal data.
+
+## Step 9: Check Script Timeout, Encoding and Execution Policy
+
+Remediation scripts should be short, non-interactive and predictable.
+
+Check for common blockers:
+
+- Script waits for user input, such as `Read-Host`, `pause`, GUI prompts, or installer UI.
+- Script starts a process but does not wait or capture the exit code.
+- Script launches a child process that hangs.
+- Script depends on network paths that are not reachable as System.
+- Signature enforcement is enabled but the signing certificate is not trusted.
+- Script is saved as UTF-8 with BOM while signature enforcement expects UTF-8 without BOM.
+- Script returns too much output.
+- Script contains secrets or personal data, which Microsoft explicitly warns against.
+
+Check execution policy from the device:
+
+```powershell
+Get-ExecutionPolicy -List
+```
+
+Expected output shape:
+
+```text
+        Scope ExecutionPolicy
+        ----- ---------------
+MachinePolicy       Undefined
+   UserPolicy       Undefined
+      Process       Undefined
+  CurrentUser       Undefined
+ LocalMachine       Restricted
+```
+
+If signature enforcement is disabled in the remediation package, Microsoft documents that scripts run with Bypass execution policy. If signature enforcement is enabled, device execution policy and trusted publisher state matter.
+
+Test script duration locally:
+
+```powershell
+$Script = "C:\Temp\Detect-Example.ps1"
+$Duration = Measure-Command { & $Script }
+
+[pscustomobject]@{
+    Script = $Script
+    Seconds = [math]::Round($Duration.TotalSeconds, 2)
+    ExitCode = $LASTEXITCODE
+}
+```
+
+Expected output shape:
+
+```text
+Script   : C:\Temp\Detect-Example.ps1
+Seconds  : 1.42
+ExitCode : 0
+```
+
+If a detection script takes minutes, it is too heavy for a frequent schedule. Put expensive discovery into reporting or a less frequent remediation.
+
+## Step 10: Check Output and Reporting Delays
+
+Do not assume the portal is live telemetry. Microsoft documents separate client retrieval and reporting behaviour for Remediations.
+
+Key timing points:
+
+- Policy retrieval occurs after device restart, IME service restart, user sign-in, and once every eight hours.
+- A missed scheduled run should run when the device comes online.
+- A once-only script reports after the script runs.
+- Recurring scripts report when a change occurs during the first six days, and then at least every seven days even without change.
+- Exported output can be easier to analyse than the portal grid.
+- The script output limit is 2,048 characters.
+
+On the device, use local logs to confirm a run happened before declaring the portal wrong:
+
+```powershell
+$LogRoot = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+$Since = (Get-Date).AddDays(-2)
+
+Get-ChildItem $LogRoot -Filter "*.log" |
+    Where-Object { $_.LastWriteTime -ge $Since } |
+    Select-Object Name, LastWriteTime, Length |
+    Sort-Object LastWriteTime -Descending
+```
+
+Expected output shape:
+
+```text
+Name                          LastWriteTime        Length
+----                          -------------        ------
+HealthScripts.log             <date and time>      <bytes>
+AgentExecutor.log             <date and time>      <bytes>
+IntuneManagementExtension.log <date and time>      <bytes>
+```
+
+If local logs show the script ran successfully but the portal has not changed, wait for reporting or export the script output. For reporting and stale device lists, the scripts at [Export Intune Device Report](/scripts/export-intune-device-report) and [Get Stale Devices](/scripts/get-stale-devices) are useful companion patterns.
+
+## Step 11: Check Registry Evidence
+
+IME registry keys can help prove whether the device received a script policy. Treat these keys as diagnostic evidence only.
+
+Search likely IME policy paths:
+
+```powershell
+$Base = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension"
+
+Get-ChildItem $Base -Recurse -ErrorAction SilentlyContinue |
+    Where-Object { $_.PSPath -match "HealthScripts|Scripts|Policies" } |
+    Select-Object PSPath |
+    Select-Object -First 100
+```
+
+Expected output shape:
+
+```text
+PSPath
+------
+Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\Policies\...
+Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\HealthScripts\...
+```
+
+If you know the remediation package ID from the Intune URL, search for it:
+
+```powershell
+$PackageId = "<remediation-package-guid-from-intune-url>"
+
+Get-ChildItem "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension" -Recurse -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -match $PackageId } |
+    Select-Object Name, PSChildName
+```
+
+Expected output shape:
+
+```text
+Name        : HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\...
+PSChildName : <package or policy id>
+```
+
+Do not delete IME registry keys on production devices just to force a retry. That can remove the evidence you need and can create a different fault.
+
+## Step 12: Safe Retry Steps
+
+Use the smallest retry that gives you fresh evidence.
+
+1. Export or copy the current logs.
+
+```powershell
+$Source = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+$Destination = "C:\Temp\IME-Remediation-Logs-$env:COMPUTERNAME.zip"
+
+New-Item -Path "C:\Temp" -ItemType Directory -Force | Out-Null
+Compress-Archive -Path "$Source\*" -DestinationPath $Destination -Force
+Write-Output $Destination
+```
+
+Expected output shape:
+
+```text
+C:\Temp\IME-Remediation-Logs-DEVICE-NAME.zip
+```
+
+2. Restart IME.
+
+```powershell
+Restart-Service IntuneManagementExtension -Force
+```
+
+3. If the package is already configured, use **Run remediation** on-demand for one device where appropriate.
+
+4. Wait several minutes, then re-read `HealthScripts.log`, `AgentExecutor.log`, and `IntuneManagementExtension.log`.
+
+5. If the same exit code appears, fix the script logic rather than retrying again.
+
+6. If no run appears, check eligibility, assignment, filters, IME connectivity, and schedule.
+
+On-demand remediation has its own limits. Microsoft documents that the device must be online and able to communicate with Intune and Windows Push Notification Service, and that only one on-demand remediation action can be issued at a time for the same device.
+
+## Step 13: Safe Rollback Steps
+
+A remediation can make changes at scale, so rollback should be boring and deliberate.
+
+### If the Detection Logic Is Wrong
+
+1. Remove broad assignments or add a temporary exclusion group.
+2. Export the current device status and output.
+3. Fix the detection script in a test copy of the package.
+4. Assign only a small pilot group.
+5. Confirm detection returns `0` for healthy devices and `1` for affected devices.
+6. Re-expand assignment after at least one scheduled run and report cycle.
+
+### If the Remediation Script Made a Bad Change
+
+1. Stop further runs by removing assignment or adding an exclusion.
+2. Create a rollback remediation package with a detection script that only targets devices with the bad state.
+3. Keep the rollback output short and non-sensitive.
+4. Run on a pilot group first.
+5. Export results before broad deployment.
+
+Example rollback detection pattern:
+
+```powershell
+$Path = "HKLM:\SOFTWARE\AdminSignal\Test"
+$Name = "BadValue"
+
+if ((Get-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue).$Name -eq "Present") {
+    Write-Output "Rollback required"
+    exit 1
+}
+
+Write-Output "Rollback not required"
+exit 0
+```
+
+Example rollback remediation pattern:
+
+```powershell
+$Path = "HKLM:\SOFTWARE\AdminSignal\Test"
+$Name = "BadValue"
+
+Remove-ItemProperty -Path $Path -Name $Name -ErrorAction SilentlyContinue
+Write-Output "Removed bad value if present"
+exit 0
+```
+
+Do not put reboot commands in detection or remediation scripts. Microsoft explicitly warns against this for Remediations. If a restart is required, use a separate deployment and user communication path.
+
+## Prevention Checklist
+
+Before assigning a remediation broadly:
+
+- [ ] Device and user licensing requirements are confirmed.
+- [ ] The package has a named owner and clear purpose.
+- [ ] Detection script makes no changes unless detection-only behaviour is deliberate.
+- [ ] Detection exits `0` only when no issue is found.
+- [ ] Detection exits `1` only when remediation should run.
+- [ ] All other error paths are logged clearly and kept rare.
+- [ ] Remediation script ends with explicit `exit 0` on success.
+- [ ] Scripts are encoded as UTF-8.
+- [ ] Signature enforcement setting matches your signing and trusted publisher model.
+- [ ] 64-bit PowerShell setting matches registry and file system paths used by the script.
+- [ ] Logged-on user vs System context is deliberately chosen.
+- [ ] Output stays below 2,048 characters and contains no secrets or personal data.
+- [ ] The script does not use `Read-Host`, GUI prompts, reboot commands, or long-running network scans.
+- [ ] Assignment uses device groups unless user context is required.
+- [ ] Include and exclude assignments do not mix user and device groups.
+- [ ] Filters are documented.
+- [ ] A pilot group runs at least one full schedule before broad assignment.
+- [ ] `HealthScripts.log`, `AgentExecutor.log`, and `IntuneManagementExtension.log` are checked on a pilot device.
+- [ ] A rollback script or exclusion group exists before a remediation changes many devices.
+
+## Related Resources
+
+- [Microsoft Intune hub](/intune)
+- [PowerShell hub](/powershell)
+- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Get Stale Devices](/scripts/get-stale-devices)
+- [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Microsoft documentation: Remediations in Intune](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations)
+- [Microsoft documentation: PowerShell scripts for Remediations](https://learn.microsoft.com/en-us/intune/device-management/tools/ref-remediation-scripts)
+- [Microsoft documentation: Intune Management Extension for Windows](https://learn.microsoft.com/en-us/intune/device-management/tools/management-extension-windows)
+- [Microsoft documentation: Use PowerShell scripts on Windows devices in Intune](https://learn.microsoft.com/en-us/intune/device-management/tools/run-powershell-scripts-windows)
