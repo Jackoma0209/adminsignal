@@ -15,6 +15,20 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '8',
+    title: 'Intune Win32 App Install Stuck at Waiting, Pending, Installing, or Failed',
+    slug: 'intune-win32-app-install-stuck-waiting',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical troubleshooting guide for stuck Intune Win32 app installs, covering IME health, AppWorkload.log, detection and requirement rules, targeting, dependencies, supersedence, Company Portal sync, retry, and rollback.',
+    affectedProducts: ['Microsoft Intune', 'Intune Management Extension', 'Win32 apps', 'Windows 11'],
+    difficulty: 'Intermediate',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '19 min read',
+    authorId: 'jack',
+  },
+  {
     id: '7',
     title: 'Windows Update for Business Deferral Policy Not Applying in Intune: Practical Diagnosis',
     slug: 'wufb-deferral-not-respected',
