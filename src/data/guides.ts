@@ -17,6 +17,20 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '10',
+    title: 'Migrating Intune Administrative Templates to Settings Catalog Without Breaking Policy Behaviour',
+    slug: 'intune-admin-templates-to-settings-catalog-migration',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical migration guide for moving Intune Administrative Templates and older configuration profiles to Settings Catalog, covering inventory, duplicate settings, assignments, Graph PowerShell checks, conflict detection, pilot design, validation, reporting, rollback, and prevention controls.',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '26 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['Intune', 'Settings Catalog', 'Administrative Templates', 'Graph PowerShell', 'Endpoint Management'],
+  },
+  {
     id: '9',
     title: 'Microsoft 365 Admin Centre Mandatory MFA Readiness for Admins',
     slug: 'microsoft-365-admin-centre-mfa-readiness',
