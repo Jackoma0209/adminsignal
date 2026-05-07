@@ -17,6 +17,20 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '8',
+    title: 'Secure Boot CA 2023 Rollout Readiness for Enterprise Windows Fleets',
+    slug: 'secure-boot-ca-2023-rollout-enterprise-readiness',
+    category: 'Endpoint Security',
+    excerpt:
+      'A practical enterprise readiness guide for the Secure Boot CA 2023 rollout, covering 2026 certificate expirations, client and server differences, Intune readiness checks, PowerShell verification, registry and event evidence, BitLocker risk, Hyper-V Generation 2 VMs, firmware coordination, rollout rings, and recovery planning.',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '24 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['Secure Boot', 'BitLocker', 'Windows Server', 'Intune', 'Patch Management', 'Firmware'],
+  },
+  {
     id: '7',
     title: 'Deploy Windows 11 25H2 with Intune + Autopilot v2 (Zero-Touch, Production-Ready)',
     slug: 'windows-11-25h2-autopilot-v2',

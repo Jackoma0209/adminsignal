@@ -1,0 +1,731 @@
+---
+title: "Secure Boot CA 2023 Rollout Readiness for Enterprise Windows Fleets"
+category: "Endpoint Security"
+date: "May 7, 2026"
+authorId: "jack"
+lastReviewed: "May 7, 2026"
+reviewNote: "Initial operational guide based on current Microsoft Secure Boot certificate expiration, IT-managed update, Intune, registry, event log, troubleshooting, Windows Server, and Hyper-V guidance as of May 7, 2026."
+tags: ["Secure Boot", "BitLocker", "Windows Server", "Intune", "Patch Management", "Firmware"]
+---
+
+## Why Secure Boot CA Rotation Matters
+
+Secure Boot is one of the controls that protects Windows before the operating system is fully loaded. The firmware checks early boot components against certificates stored in UEFI Secure Boot databases. If the chain is trusted, the device can continue to Windows. If it is not trusted, the device may block boot, fall into recovery, or continue without future boot-level protection depending on the state of the device.
+
+Microsoft's Secure Boot certificates issued in 2011 begin expiring in 2026. The first important deadline is June 2026, with the Windows boot loader signing certificate following in October 2026. Microsoft guidance says devices that do not receive the 2023 certificates may still start and install normal Windows updates, but they may not receive future Secure Boot protections for early boot components, revocation lists, or mitigations for newly discovered boot-level vulnerabilities.
+
+That means this is not just a patching housekeeping task. It sits at the join point between firmware, Windows servicing, BitLocker, Hyper-V, OEM lifecycle support, and your normal change process.
+
+For adjacent planning, keep these internal references close:
+
+- [Endpoint Security](/endpoint-security)
+- [Patch Management](/patch-management)
+- [Intune](/intune)
+- [Windows Server](/windows-server)
+- [Fixing the April 2026 BitLocker Recovery Loop](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063)
+- [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
+
+Official Microsoft references used for this guide:
+
+- [Windows Secure Boot certificate expiration and CA updates](https://support.microsoft.com/en-us/help/5062710)
+- [Secure Boot Certificate updates for IT professionals and organizations](https://support.microsoft.com/en-us/help/5062713)
+- [Registry key updates for Secure Boot](https://support.microsoft.com/en-us/topic/registry-key-updates-for-secure-boot-windows-devices-with-it-managed-updates-a7be69c9-4634-42e1-9ca1-df06f43f360d)
+- [Microsoft Intune method of Secure Boot for IT-managed updates](https://support.microsoft.com/en-us/help/5073196)
+- [Monitoring Secure Boot certificate status with Intune remediations](https://support.microsoft.com/en-us/help/5080921)
+- [Secure Boot troubleshooting guide](https://support.microsoft.com/en-us/help/5085046)
+- [Secure Boot DB and DBX variable update events](https://support.microsoft.com/en-us/topic/secure-boot-db-and-dbx-variable-update-events-37e47cf8-608b-4a87-8175-bdead630eb69)
+- [Windows Server Secure Boot playbook](https://techcommunity.microsoft.com/blog/windowsservernewsandbestpractices/windows-server-secure-boot-playbook-for-certificates-expiring-in-2026/4495789)
+- [Hyper-V generation 2 virtual machine security features](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/generation-2-virtual-machine-security-features)
+
+## Tested Environment Note
+
+This guide is written for supported Windows 10, Windows 11, Windows Server 2016, Windows Server 2019, Windows Server 2022, and Windows Server 2025 devices that boot with UEFI Secure Boot. It assumes Microsoft Secure Boot certificate servicing guidance current on May 7, 2026.
+
+The commands are written for elevated PowerShell on Windows devices, Hyper-V hosts, or remote administration sessions where you already have permission to query firmware, registry, scheduled tasks, BitLocker state, and event logs. Expected outputs are shapes only. They are not tenant or hardware-specific results.
+
+Do not treat one successful model as proof that the fleet is ready. Secure Boot certificate servicing depends on firmware behaviour, so readiness has to be validated by manufacturer, model, firmware version, virtual platform, and workload class.
+
+## Prerequisites
+
+Before enabling rollout, confirm these basics:
+
+- Devices are running supported Windows builds and have recent cumulative updates installed.
+- Secure Boot is enabled where you expect it to be enabled.
+- Firmware is supported by the OEM and current enough to accept Secure Boot database updates.
+- BitLocker recovery keys are escrowed and recoverable before firmware or boot-chain changes.
+- You have an inventory of manufacturer, model, BIOS version, baseboard product, OS version, Secure Boot state, and virtual platform.
+- You have a pilot group that represents the actual fleet, not only new laptop models.
+- You have a rollback and break-fix path for physical devices, remote users, servers, and virtual machines.
+- You know which deployment method will own the setting. Avoid mixing registry, Intune, GPO, and WinCS on the same device.
+- Service desk and field support teams know what a one-time BitLocker prompt means and how to retrieve a key.
+
+For client devices, Intune can be used for both deployment settings and readiness reporting. For server devices, Microsoft guidance is clearer: Windows Server requires admin-led action when the server is in scope and has not already received the 2023 certificates through firmware or another supported path.
+
+## What Is Expiring and What Each Certificate Does
+
+The certificate names matter because each certificate protects a different part of the Secure Boot chain.
+
+| Expiring certificate | Expiry | New certificate | Location | Used for |
+|---|---|---|---|---|
+| Microsoft Corporation KEK CA 2011 | June 2026 | Microsoft Corporation KEK 2K CA 2023 | KEK | Authorises updates to Secure Boot DB and DBX |
+| Microsoft Windows Production PCA 2011 | October 2026 | Windows UEFI CA 2023 | DB | Signs the Windows boot manager and boot components |
+| Microsoft UEFI CA 2011 | June 2026 | Microsoft UEFI CA 2023 | DB | Signs third-party boot loaders and EFI applications |
+| Microsoft UEFI CA 2011 | June 2026 | Microsoft Option ROM UEFI CA 2023 | DB | Signs third-party option ROMs |
+
+In practical terms:
+
+- The KEK update allows future DB and DBX updates to continue to be trusted.
+- The Windows UEFI CA 2023 update allows Windows boot components signed with the newer CA to boot.
+- The Microsoft UEFI CA 2023 and Microsoft Option ROM UEFI CA 2023 split older third-party trust into more specific purposes.
+- The boot manager update is the final sensitive step because it changes what the device measures during boot.
+
+The goal is not to remove every 2011 trace immediately. The goal is to ensure the required 2023 trust anchors and boot manager path are present before the 2011 certificates expire or are later revoked in a controlled DBX update.
+
+## Client vs Server Differences
+
+Do not run the same rollout plan for Windows laptops and Windows Server workloads.
+
+| Area | Windows client | Windows Server |
+|---|---|---|
+| Automatic assistance | Some devices may receive high-confidence rollout help through monthly updates | Servers do not receive 2023 certificates through Controlled Feature Rollout |
+| Intune support | Settings Catalog can manage Secure Boot settings on supported client versions | Server management is usually registry, GPO, WinCS, or platform tooling |
+| Operational risk | User disruption, BitLocker prompt, remote-worker recovery | Workload outage, cluster impact, hypervisor or virtual platform dependency |
+| Firmware path | OEM client firmware and Windows Update for Business are common | Server vendor lifecycle, iDRAC/iLO/XClarity, cluster and maintenance windows matter more |
+| Rollout unit | Device model, firmware version, department, update ring | Hardware generation, role, cluster, site, application owner, VM platform |
+| Recovery path | Recovery key, remote hands, Autopilot or reimage if needed | Console access, backup, out-of-band management, VM checkpoint, workload failover |
+
+The most important server point is simple: if a server is in scope, do not assume Windows Update will quietly finish this for you. Inventory, pilot, manually initiate where needed, monitor, and then expand.
+
+## Step 1: Build the Readiness Inventory
+
+Start with evidence, not policy.
+
+Capture these fields for every in-scope device:
+
+| Field | Why it matters |
+|---|---|
+| Device name | Ties local evidence to management records |
+| Manufacturer and model | Firmware support is model-specific |
+| BIOS version and release date | Required for OEM coordination |
+| Baseboard product | Helps group devices that share firmware behaviour |
+| OS name and version | Determines servicing support |
+| Secure Boot enabled | Devices without Secure Boot enabled do not process the same update path |
+| UEFICA2023Status | Primary local status signal |
+| UEFICA2023Error and UEFICA2023ErrorEvent | Error evidence if servicing stalls |
+| AvailableUpdates and AvailableUpdatesPolicy | Shows pending or policy-driven update actions |
+| Latest TPM-WMI event | Correlates registry status with actual servicing events |
+| BitLocker protection state | Needed before any boot-chain change |
+| Recovery key escrow status | Needed before pilot and broad rollout |
+| VM generation and secure boot template | Required for Hyper-V and other virtual platforms |
+
+Run this locally on a sample device:
+
+```powershell
+$SecureBootPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot"
+$ServicingPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing"
+
+$Result = [ordered]@{
+    Hostname = $env:COMPUTERNAME
+    CollectionTime = (Get-Date).ToString("o")
+    SecureBootEnabled = $null
+    Manufacturer = (Get-CimInstance Win32_ComputerSystem).Manufacturer
+    Model = (Get-CimInstance Win32_ComputerSystem).Model
+    BiosVersion = (Get-CimInstance Win32_BIOS).SMBIOSBIOSVersion
+    BiosReleaseDate = (Get-CimInstance Win32_BIOS).ReleaseDate
+    BaseBoardProduct = (Get-CimInstance Win32_BaseBoard).Product
+    OSVersion = (Get-CimInstance Win32_OperatingSystem).Version
+    UEFICA2023Status = $null
+    UEFICA2023Error = $null
+    UEFICA2023ErrorEvent = $null
+    AvailableUpdates = $null
+    AvailableUpdatesPolicy = $null
+}
+
+try {
+    $Result.SecureBootEnabled = Confirm-SecureBootUEFI -ErrorAction Stop
+} catch {
+    $Result.SecureBootEnabled = $null
+}
+
+if (Test-Path $SecureBootPath) {
+    $Main = Get-ItemProperty -Path $SecureBootPath
+    $Result.AvailableUpdates = ("0x{0:X}" -f ($Main.AvailableUpdates -as [int]))
+    $Result.AvailableUpdatesPolicy = ("0x{0:X}" -f ($Main.AvailableUpdatesPolicy -as [int]))
+}
+
+if (Test-Path $ServicingPath) {
+    $Servicing = Get-ItemProperty -Path $ServicingPath
+    $Result.UEFICA2023Status = $Servicing.UEFICA2023Status
+    $Result.UEFICA2023Error = $Servicing.UEFICA2023Error
+    $Result.UEFICA2023ErrorEvent = $Servicing.UEFICA2023ErrorEvent
+}
+
+[PSCustomObject]$Result
+```
+
+Expected output shape:
+
+```text
+Hostname               : DEVICE-NAME
+CollectionTime         : 2026-05-07T10:15:00.0000000+01:00
+SecureBootEnabled      : True
+Manufacturer           : <manufacturer>
+Model                  : <model>
+BiosVersion            : <firmware version>
+BiosReleaseDate        : <date value>
+BaseBoardProduct       : <baseboard product>
+OSVersion              : <version>
+UEFICA2023Status       : Updated, InProgress, NotStarted, or blank
+UEFICA2023Error        : <blank or error code>
+UEFICA2023ErrorEvent   : <blank or event ID>
+AvailableUpdates       : 0x0, 0x4000, 0x4100, 0x5944, or another bitmask
+AvailableUpdatesPolicy : <blank or policy bitmask>
+```
+
+For fleet collection, use Intune Remediations where available, a script delivered through your endpoint management tool, or a temporary scheduled task that writes results to your normal inventory store.
+
+## Step 2: Verify Secure Boot and Certificate State with PowerShell
+
+Use these commands on pilot devices before changing policy.
+
+Check whether Secure Boot is enabled:
+
+```powershell
+Confirm-SecureBootUEFI
+```
+
+Expected output:
+
+```text
+True
+```
+
+If the command returns `False`, Secure Boot is disabled. If it errors, the device may not be UEFI-based, the session may not have permission, or the platform may not expose the expected firmware interface.
+
+Check the Secure Boot update scheduled task:
+
+```powershell
+Get-ScheduledTask -TaskPath "\Microsoft\Windows\PI\" -TaskName "Secure-Boot-Update" |
+    Select-Object TaskName, State, Author
+
+Get-ScheduledTaskInfo -TaskPath "\Microsoft\Windows\PI\" -TaskName "Secure-Boot-Update" |
+    Select-Object LastRunTime, LastTaskResult, NextRunTime
+```
+
+Expected output shape:
+
+```text
+TaskName           State Author
+--------           ----- ------
+Secure-Boot-Update Ready Microsoft Corporation
+
+LastRunTime        : <date/time>
+LastTaskResult     : 0
+NextRunTime        : <date/time>
+```
+
+Check for certificate names in Secure Boot variables. Treat this as a useful local check, not a replacement for `UEFICA2023Status` and events.
+
+```powershell
+$DbText = [System.Text.Encoding]::ASCII.GetString((Get-SecureBootUEFI -Name db).Bytes)
+$KekText = [System.Text.Encoding]::ASCII.GetString((Get-SecureBootUEFI -Name KEK).Bytes)
+
+[PSCustomObject]@{
+    WindowsUEFICA2023 = $DbText -match "Windows UEFI CA 2023"
+    MicrosoftUEFICA2023 = $DbText -match "Microsoft UEFI CA 2023"
+    OptionROMUEFICA2023 = $DbText -match "Microsoft Option ROM UEFI CA 2023"
+    MicrosoftKEK2023 = $KekText -match "Microsoft Corporation KEK 2K CA 2023"
+}
+```
+
+Expected output shape:
+
+```text
+WindowsUEFICA2023   : True
+MicrosoftUEFICA2023 : True or False depending on platform trust
+OptionROMUEFICA2023 : True or False depending on platform trust
+MicrosoftKEK2023    : True
+```
+
+Do not panic if one third-party CA value is `False`. Some devices do not trust the older Microsoft UEFI CA 2011 and should not automatically receive both third-party replacement certificates. Compare the result with Microsoft registry status, event logs, and your use of third-party boot loaders or option ROMs.
+
+## Step 3: Read the Registry Signals Correctly
+
+Microsoft documents two registry paths that matter.
+
+| Path | Purpose |
+|---|---|
+| `HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot` | Trigger and policy values such as `AvailableUpdates` and `AvailableUpdatesPolicy` |
+| `HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing` | Status, error, event, confidence, and device attribute values |
+
+Use this check:
+
+```powershell
+$SecureBootPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot"
+$ServicingPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing"
+
+Get-ItemProperty -Path $SecureBootPath |
+    Select-Object AvailableUpdates, AvailableUpdatesPolicy, HighConfidenceOptOut, MicrosoftUpdateManagedOptIn
+
+Get-ItemProperty -Path $ServicingPath |
+    Select-Object UEFICA2023Status, UEFICA2023Error, UEFICA2023ErrorEvent,
+        WindowsUEFICA2023Capable, BucketHash, ConfidenceLevel
+```
+
+Expected healthy output shape:
+
+```text
+AvailableUpdates         : 0, 16384, or another expected bitmask
+AvailableUpdatesPolicy   : <blank or policy bitmask>
+HighConfidenceOptOut     : 0 or blank
+MicrosoftUpdateManagedOptIn : 0, 1, or blank
+
+UEFICA2023Status         : Updated
+UEFICA2023Error          : 0 or blank
+UEFICA2023ErrorEvent     : 0 or blank
+WindowsUEFICA2023Capable : 2
+BucketHash               : <hash or blank>
+ConfidenceLevel          : High Confidence or another documented value
+```
+
+Important reading notes:
+
+- `UEFICA2023Status` is the main progress value. Look for `Updated`.
+- `UEFICA2023Error` should not exist or should be zero.
+- `UEFICA2023ErrorEvent` points you to the event ID to investigate.
+- `AvailableUpdates` is a bitmask. Do not treat it as a simple pass or fail value.
+- `0x5944` starts the full deployment sequence when using registry control.
+- A remaining value such as `0x4000` can be expected after processing, depending on how the device was targeted.
+- `AvailableUpdatesPolicy` is for policy state from Intune or Group Policy. Do not hand-edit it.
+
+## Step 4: Check Event Logs
+
+Secure Boot certificate servicing writes to the Windows System log, commonly under the `TPM-WMI` provider.
+
+```powershell
+$Ids = 1795,1796,1797,1798,1799,1800,1801,1802,1803,1808
+
+Get-WinEvent -FilterHashtable @{
+    LogName = "System"
+    ProviderName = "TPM-WMI"
+    Id = $Ids
+    StartTime = (Get-Date).AddDays(-30)
+} | Select-Object TimeCreated, Id, LevelDisplayName, Message -First 30
+```
+
+Expected output shape:
+
+```text
+TimeCreated          Id LevelDisplayName Message
+-----------          -- ---------------- -------
+<date/time>        1808 Information      <new Secure Boot certificates applied>
+<date/time>        1799 Information      <2023 signed boot manager installed>
+<date/time>        1800 Warning          <restart required before installing update>
+<date/time>        1801 Error            <device-specific update status or failure>
+```
+
+Events to watch:
+
+| Event ID | Meaning |
+|---|---|
+| 1795 | Windows attempted to hand off Secure Boot variable updates and hit a platform or firmware issue |
+| 1796 | Unexpected Secure Boot update error |
+| 1797 | DBX update failed because Windows UEFI CA 2023 was not present in DB |
+| 1798 | DBX update failed because the boot manager was not signed with Windows UEFI CA 2023 |
+| 1799 | Boot manager signed by Windows UEFI CA 2023 was installed |
+| 1800 | Restart required before the next Secure Boot update action |
+| 1801 | Updated certificates or boot manager have not fully applied |
+| 1802 | Known issue or pause information for the device bucket |
+| 1803 | PK-signed KEK cannot be found for this device |
+| 1808 | Required new Secure Boot certificates are applied to firmware |
+
+If the registry says `Updated` and the event log has recent 1808 evidence, the device is in a good state. If the registry says `InProgress` and you see event 1800, schedule a restart and re-check. If you see 1795 or 1803 across a hardware family, stop expanding the rollout and involve the OEM or virtual platform owner.
+
+## Step 5: Windows Client Rollout Considerations
+
+For Windows clients, your rollout plan should separate monitoring, targeting, and support readiness.
+
+Client-specific points:
+
+- Some supported Windows clients may receive high-confidence deployment through monthly updates.
+- Controlled Feature Rollout can help some client fleets, but Microsoft guidance says it depends on diagnostic data and should not be the only enterprise plan.
+- Intune Settings Catalog includes Secure Boot settings on supported Windows 10 and Windows 11 client versions.
+- Intune Remediations can collect readiness status as JSON without changing the device.
+- Firmware updates should be deployed before certificate rollout on older or less common hardware.
+- Remote users need a recovery workflow before any boot-chain change.
+
+In Intune, use a dedicated Settings Catalog profile:
+
+1. Go to **Devices > Manage devices > Configuration**.
+2. Create a new policy.
+3. Select **Windows 10 and later**.
+4. Select **Settings catalog**.
+5. Search for **Secure Boot**.
+6. Configure the Secure Boot certificate update setting for the rollout ring.
+7. Assign to a small pilot group first.
+
+Use one Intune profile per ring. That makes it easier to pause, expand, or remove assignment without changing the same profile repeatedly.
+
+Suggested client rings:
+
+| Ring | Membership | Goal |
+|---|---|---|
+| Lab | IT-owned devices from each OEM and firmware family | Confirm registry, events, reboot behaviour, BitLocker recovery |
+| Pilot | 1 percent to 3 percent of normal user devices | Validate support desk process and remote-user experience |
+| Early adopters | 5 percent to 10 percent by region or department | Confirm real workload compatibility |
+| Broad | Main fleet by model and site | Controlled expansion with daily monitoring |
+| Exceptions | Unsupported, paused, or firmware-blocked devices | OEM escalation, replacement, or separate risk acceptance |
+
+For patch process alignment, keep the rollout with your normal [Patch Management](/patch-management) governance rather than treating it as a one-off endpoint script.
+
+## Step 6: Intune Fleet-Readiness Checks
+
+Use Intune Remediations or a read-only script first. Do not start with a remediation that changes `AvailableUpdates`.
+
+Detection script pattern:
+
+```powershell
+$SecureBootPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot"
+$ServicingPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing"
+
+$LatestEvents = Get-WinEvent -FilterHashtable @{
+    LogName = "System"
+    ProviderName = "TPM-WMI"
+    Id = 1795,1796,1797,1798,1799,1800,1801,1802,1803,1808
+    StartTime = (Get-Date).AddDays(-30)
+} -ErrorAction SilentlyContinue | Select-Object -First 5
+
+$Data = [ordered]@{
+    Hostname = $env:COMPUTERNAME
+    SecureBootEnabled = $null
+    Manufacturer = (Get-CimInstance Win32_ComputerSystem).Manufacturer
+    Model = (Get-CimInstance Win32_ComputerSystem).Model
+    BiosVersion = (Get-CimInstance Win32_BIOS).SMBIOSBIOSVersion
+    UEFICA2023Status = $null
+    UEFICA2023Error = $null
+    UEFICA2023ErrorEvent = $null
+    LatestSecureBootEventId = $LatestEvents[0].Id
+}
+
+try {
+    $Data.SecureBootEnabled = Confirm-SecureBootUEFI -ErrorAction Stop
+} catch {
+    $Data.SecureBootEnabled = $null
+}
+
+if (Test-Path $ServicingPath) {
+    $Servicing = Get-ItemProperty -Path $ServicingPath
+    $Data.UEFICA2023Status = $Servicing.UEFICA2023Status
+    $Data.UEFICA2023Error = $Servicing.UEFICA2023Error
+    $Data.UEFICA2023ErrorEvent = $Servicing.UEFICA2023ErrorEvent
+}
+
+$Data | ConvertTo-Json -Compress
+exit 0
+```
+
+Expected output shape in Intune:
+
+```json
+{"Hostname":"DEVICE-NAME","SecureBootEnabled":true,"Manufacturer":"<manufacturer>","Model":"<model>","BiosVersion":"<version>","UEFICA2023Status":"Updated","UEFICA2023Error":null,"UEFICA2023ErrorEvent":null,"LatestSecureBootEventId":1808}
+```
+
+Readiness buckets:
+
+| Bucket | Criteria | Action |
+|---|---|---|
+| Ready | Secure Boot enabled, `Updated`, no error, event 1808 present | Include in reporting, no action needed |
+| Needs rollout | Secure Boot enabled, `NotStarted` or blank, supported firmware | Add to lab or pilot ring |
+| In progress | `InProgress`, no error, event 1800 or recent task run | Wait for restart and re-check |
+| Blocked | Error present, event 1795, 1801, 1802, or 1803 | Hold rollout, investigate firmware or platform |
+| Not applicable | Secure Boot disabled, Generation 1 VM, legacy BIOS | Document exception or separate enablement plan |
+| Replace or retire | Unsupported hardware, no firmware support, no reliable recovery | Risk review and lifecycle action |
+
+## Step 7: Windows Server Manual Action Considerations
+
+Windows Server needs a more conservative path than Windows client. Workload impact and firmware support matter more than speed.
+
+Server plan:
+
+1. Inventory Secure Boot state across physical servers and Generation 2 VMs.
+2. Separate physical servers, Hyper-V VMs, VMware VMs, cloud VMs, and appliances.
+3. Confirm supported OS level and latest cumulative update.
+4. Check OEM firmware guidance for the exact model and BIOS version.
+5. Validate on low-impact servers first.
+6. Use registry or Group Policy to trigger the update, not multiple methods.
+7. Monitor event 1808, `UEFICA2023Status`, and workload health.
+8. Expand by cluster, site, hardware family, and application owner.
+
+For one server test using registry control:
+
+```powershell
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\SecureBoot" /v AvailableUpdates /t REG_DWORD /d 0x5944 /f
+Start-ScheduledTask -TaskPath "\Microsoft\Windows\PI\" -TaskName "Secure-Boot-Update"
+```
+
+Expected output shape:
+
+```text
+The operation completed successfully.
+```
+
+Then monitor:
+
+```powershell
+Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\SecureBoot\Servicing" |
+    Select-Object UEFICA2023Status, UEFICA2023Error, UEFICA2023ErrorEvent
+
+Get-WinEvent -FilterHashtable @{
+    LogName = "System"
+    ProviderName = "TPM-WMI"
+    Id = 1800,1801,1808
+    StartTime = (Get-Date).AddDays(-7)
+} | Select-Object TimeCreated, Id, Message -First 10
+```
+
+If event 1800 appears, schedule a normal maintenance restart. If event 1803 appears and the device cannot find a PK-signed KEK, Microsoft guidance points to OEM or platform provider support.
+
+For high-availability roles:
+
+- Move workloads off the node first.
+- Update one node in a cluster at a time.
+- Confirm out-of-band console access before triggering the update.
+- Avoid combining firmware updates, Secure Boot certificate deployment, hypervisor patching, and application maintenance in the same first pilot window.
+- Keep enough capacity online for failover while a node is being tested.
+
+## Step 8: Hyper-V Generation 2 VM Considerations
+
+Hyper-V Generation 1 VMs do not support Secure Boot. Hyper-V Generation 2 VMs can use Secure Boot and are in scope when Secure Boot is enabled.
+
+On a Hyper-V host, inventory VM generation and Secure Boot state:
+
+```powershell
+Get-VM | ForEach-Object {
+    $Vm = $_
+    $Firmware = $null
+
+    if ($Vm.Generation -eq 2) {
+        $Firmware = Get-VMFirmware -VMName $Vm.Name
+    }
+
+    [PSCustomObject]@{
+        VMName = $Vm.Name
+        Generation = $Vm.Generation
+        State = $Vm.State
+        SecureBoot = $Firmware.SecureBoot
+        SecureBootTemplate = $Firmware.SecureBootTemplate
+    }
+} | Sort-Object Generation, VMName
+```
+
+Expected output shape:
+
+```text
+VMName          Generation State   SecureBoot SecureBootTemplate
+------          ---------- -----   ---------- ------------------
+CLIENT-TEST     2          Off     On         Microsoft Windows
+SERVER-APP01    2          Running On         Microsoft Windows
+LEGACY-VM01     1          Off
+```
+
+For Generation 2 Windows VMs:
+
+- Patch the Hyper-V host first.
+- Confirm the VM uses the correct Secure Boot template.
+- Create a valid backup before changing guest Secure Boot state.
+- Use production checkpoints only where your workload supports them.
+- Apply the certificate update inside the guest OS, then monitor guest registry and events.
+- Watch for event 1795 or 1801 patterns on a specific host build or VM platform.
+- Do not assume behaviour from Hyper-V maps exactly to VMware, Azure, or another virtual platform.
+
+For Linux Generation 2 VMs, do not target Windows Secure Boot certificate update scripts inside the guest. Validate the template and trust path with the OS and platform vendor.
+
+## Step 9: BitLocker and PCR7 Recovery Risk
+
+Secure Boot changes can affect measured boot values. BitLocker often uses TPM PCR measurements, including Secure Boot state, to decide whether the boot path is trusted. A certificate update, boot manager change, firmware update, or boot order change can therefore trigger recovery.
+
+Microsoft's troubleshooting guidance calls out two practical patterns:
+
+- A one-time BitLocker recovery prompt can happen after a Secure Boot update. After the recovery key is entered, later boots may be normal.
+- Repeated recovery can occur when PXE or network boot is first in boot order and the PXE path uses a different signing chain from the on-disk Windows boot manager.
+
+Before rollout, verify recovery key readiness:
+
+```powershell
+Get-BitLockerVolume -MountPoint C: |
+    Select-Object MountPoint, ProtectionStatus, LockStatus, VolumeStatus
+
+manage-bde -protectors -get C:
+```
+
+Expected output shape:
+
+```text
+MountPoint ProtectionStatus LockStatus VolumeStatus
+---------- ---------------- ---------- ------------
+C:         On               Unlocked   FullyEncrypted
+
+Numerical Password:
+  ID: {<recovery-password-protector-id>}
+  Password:
+    <recovery-key-shape>
+```
+
+For PCR7 and Secure Boot state, use `msinfo32` export where local GUI access is not practical:
+
+```powershell
+New-Item -Path C:\Temp -ItemType Directory -Force
+msinfo32.exe /report C:\Temp\msinfo32-secureboot.txt
+Start-Sleep -Seconds 10
+Select-String -Path C:\Temp\msinfo32-secureboot.txt -Pattern "Secure Boot State","PCR7 Configuration","BIOS Mode"
+```
+
+Expected output shape:
+
+```text
+BIOS Mode              UEFI
+Secure Boot State      On
+PCR7 Configuration     Binding Possible
+```
+
+Operational safeguards:
+
+- Confirm BitLocker recovery keys are backed up before the pilot. Use [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra) if escrow is unreliable.
+- Do not start broad rollout on devices with missing recovery keys.
+- Avoid PXE-first boot order on BitLocker-protected devices unless the PXE path is tested with the new signing chain.
+- Coordinate Secure Boot certificate updates with firmware updates rather than stacking them blindly.
+- For devices with a known BitLocker loop pattern, use the recovery guidance in [Fixing the April 2026 BitLocker Recovery Loop](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063).
+
+## Step 10: OEM Firmware Coordination
+
+Firmware is the part you do not fully control from Windows. Secure Boot certificate servicing writes UEFI variables, and the firmware has to preserve, append, validate, and report those variables correctly.
+
+Create an OEM coordination tracker:
+
+| Field | Example shape |
+|---|---|
+| Manufacturer | `<OEM name>` |
+| Model | `<model>` |
+| Baseboard product | `<baseboard product>` |
+| BIOS version tested | `<version>` |
+| Latest BIOS available | `<version>` |
+| Firmware support status | Supported, paused, unknown, out of support |
+| Secure Boot status | Updated, in progress, blocked |
+| Error events | None, 1795, 1801, 1803 |
+| BitLocker result | No prompt, one-time prompt, repeated prompt |
+| Owner | Endpoint team, server team, vendor manager |
+| Next action | Expand, wait, firmware update, replace |
+
+OEM questions to ask before broad rollout:
+
+- Does this model have a firmware update that includes or supports the 2023 Secure Boot certificates?
+- Does resetting Secure Boot to defaults retain 2023 certificates on this firmware version?
+- Are there known issues applying the 2023 KEK or DB updates?
+- Is the device still supported for firmware updates?
+- Is there separate guidance for docking stations, option ROMs, PXE adapters, storage controllers, or GPUs?
+- For servers, is there guidance for the exact platform generation and hypervisor configuration?
+
+If a model is out of firmware support and blocks certificate servicing, do not bury it in an exception spreadsheet. Treat it as a lifecycle risk.
+
+## Step 11: Rollout Rings
+
+Use rings that match both technical risk and support capacity.
+
+| Ring | Entry criteria | Exit criteria |
+|---|---|---|
+| Discovery | All managed Windows devices | Inventory coverage above agreed threshold |
+| Lab | IT-owned devices from each model and firmware family | Registry status updated, event 1808 seen, no repeated BitLocker recovery |
+| Pilot client | Small user group with recovery support | No unresolved 1795, 1801, 1803 patterns |
+| Pilot server | Low-impact servers and non-critical Generation 2 VMs | Workload restart tested, monitoring clean |
+| Expanded client | Common hardware families with successful pilot | Support tickets within normal change tolerance |
+| Expanded server | One cluster, site, or workload family at a time | No capacity or recovery issues |
+| Broad | Remaining supported devices | Daily exception review only |
+| Exception | Unsupported or blocked devices | OEM fix, replacement, or accepted risk |
+
+For each ring, capture:
+
+- Device count and representative models.
+- Firmware versions included.
+- BitLocker escrow pass rate.
+- Expected restart windows.
+- Event 1808 success count.
+- Event 1801, 1802, 1803 and 1795 counts.
+- User or workload impact.
+- Decision to expand, hold, or remediate.
+
+The cleanest rollout report is a simple daily table:
+
+```text
+Ring               Devices  Updated  InProgress  Blocked  NotApplicable  Notes
+----               -------  -------  ----------  -------  -------------  -----
+Lab                <n>      <n>      <n>         <n>      <n>            <summary>
+Pilot client       <n>      <n>      <n>         <n>      <n>            <summary>
+Pilot server       <n>      <n>      <n>         <n>      <n>            <summary>
+Broad client       <n>      <n>      <n>         <n>      <n>            <summary>
+```
+
+## Step 12: Rollback and Recovery Notes
+
+There is no simple "undo the Secure Boot certificate rotation" button. Once certificates and a new boot manager have been applied, recovery is about restoring bootability and completing servicing safely, not manually deleting trust anchors.
+
+Before rollout:
+
+- Remove or unassign the deployment profile if the ring has not started.
+- Keep `AvailableUpdates` unset on devices you are not targeting.
+- Confirm backups, recovery keys, console access, and firmware update packages.
+
+If rollout is in progress:
+
+- Do not edit `AvailableUpdatesPolicy` by hand.
+- Do not clear Secure Boot databases from firmware.
+- Do not reset Secure Boot to defaults unless the OEM confirms the defaults include the 2023 certificates.
+- If event 1800 appears, restart in a controlled maintenance window and re-check.
+- If event 1795 or 1803 appears repeatedly, hold the ring and work with the OEM or platform provider.
+
+If a device boots to BitLocker recovery:
+
+1. Retrieve the recovery key through your normal process.
+2. Boot once with the key.
+3. Confirm firmware boot order starts with Windows Boot Manager unless PXE is deliberately required.
+4. Confirm `UEFICA2023Status`, events, and BitLocker protection state.
+5. Resume or reseal BitLocker only after the boot path is stable.
+
+If a device fails Secure Boot validation after firmware defaults were reset, Microsoft documents a Secure Boot recovery utility path using `SecureBootRecovery.efi` from a patched Windows system. Use official Microsoft recovery guidance and OEM support for that scenario, then reapply firmware updates and complete certificate servicing.
+
+For servers and VMs:
+
+- Prefer workload failover before recovery work.
+- Use console access rather than relying on guest network availability.
+- Use backup or checkpoint recovery only when the application owner has approved it.
+- Record whether the problem followed the guest OS, the host, the firmware version, or the virtual platform.
+
+## Prevention Checklist
+
+Use this checklist before expanding beyond pilot:
+
+- Secure Boot inventory covers clients, servers, and Generation 2 VMs.
+- Every ring has a named owner and stop condition.
+- BitLocker recovery keys are escrowed and tested for the pilot group.
+- Firmware versions are known and matched to OEM guidance.
+- The deployment method is consistent per device group.
+- Intune monitoring is read-only before rollout begins.
+- Event IDs 1795, 1801, 1802, 1803 and 1808 are collected centrally.
+- Service desk has a recovery key process and user-facing wording.
+- Server owners have approved maintenance windows and workload failover plans.
+- PXE-first boot devices are identified and tested separately.
+- Unsupported hardware has a replacement, isolation, or risk acceptance plan.
+- No broad rollout starts on a Friday or before a support holiday.
+- Final status is based on `UEFICA2023Status`, event evidence, boot success, and BitLocker stability, not only on a successful script exit code.
+
+## Related Resources
+
+- [Endpoint Security](/endpoint-security)
+- [Patch Management](/patch-management)
+- [Intune](/intune)
+- [Windows Server](/windows-server)
+- [Fixing the April 2026 BitLocker Recovery Loop](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063)
+- [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
+- [Windows Secure Boot certificate expiration and CA updates](https://support.microsoft.com/en-us/help/5062710)
+- [Secure Boot Certificate updates for IT professionals and organizations](https://support.microsoft.com/en-us/help/5062713)
+- [Secure Boot troubleshooting guide](https://support.microsoft.com/en-us/help/5085046)
+- [Windows Server Secure Boot playbook](https://techcommunity.microsoft.com/blog/windowsservernewsandbestpractices/windows-server-secure-boot-playbook-for-certificates-expiring-in-2026/4495789)
