@@ -17,6 +17,20 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '9',
+    title: 'Microsoft 365 Admin Centre Mandatory MFA Readiness for Admins',
+    slug: 'microsoft-365-admin-centre-mfa-readiness',
+    category: 'Microsoft 365',
+    excerpt:
+      'A practical operational guide for Microsoft 365 admin centre mandatory MFA readiness, covering affected admins, break-glass accounts, security defaults, Conditional Access, per-user MFA, phishing-resistant methods, Graph PowerShell audits, sign-in checks, service-style admin accounts, Phase 2 tooling impact, safe rollout, and recovery planning.',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '22 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['Microsoft 365', 'MFA', 'Microsoft Entra ID', 'Conditional Access', 'Graph PowerShell'],
+  },
+  {
     id: '8',
     title: 'Secure Boot CA 2023 Rollout Readiness for Enterprise Windows Fleets',
     slug: 'secure-boot-ca-2023-rollout-enterprise-readiness',

@@ -1,0 +1,669 @@
+---
+title: "Microsoft 365 Admin Centre Mandatory MFA Readiness for Admins"
+category: "Microsoft 365"
+date: "May 7, 2026"
+authorId: "jack"
+lastReviewed: "May 7, 2026"
+reviewNote: "Initial operational guide based on current Microsoft mandatory MFA guidance for Microsoft 365 admin centre, Microsoft admin portals, Azure Phase 2 clients, emergency access accounts, authentication methods, sign-in logs, and Graph PowerShell reporting as of May 7, 2026."
+tags: ["Microsoft 365", "MFA", "Microsoft Entra ID", "Conditional Access", "Graph PowerShell", "Admin Security"]
+---
+
+## What Changed and Who Is Affected
+
+Microsoft began mandatory multifactor authentication enforcement for the Microsoft 365 admin centre in February 2025. The affected Microsoft 365 admin centre URLs are:
+
+- `https://admin.microsoft.com`
+- `https://admin.cloud.microsoft`
+- `https://portal.office.com/adminportal/home`
+
+The enforcement applies when a user account signs in to the Microsoft 365 admin centre. It is not limited to Global Administrators. If an account can reach the admin centre and perform admin work, plan as if it needs MFA.
+
+The important operational detail is that this Microsoft enforcement is separate from your own Conditional Access design. If you already require MFA for admin centre access, users should see little change. If you excluded some admins from MFA, or relied on per-user MFA in an inconsistent way, Microsoft enforcement can expose the gap.
+
+Phase 2 Azure enforcement is still relevant for administrators who manage Azure or Microsoft 365 infrastructure through command-line and automation tooling. From 1 October 2025, Microsoft began enforcing MFA for user accounts that perform create, update, or delete operations through Azure CLI, Azure PowerShell, Azure mobile app, Infrastructure as Code tools, and Azure Resource Manager REST endpoints. Microsoft allows some tenants to postpone Phase 2 until 1 July 2026 where there are complex technical blockers.
+
+For wider planning, use these internal references:
+
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Microsoft Entra ID](/microsoft-entra-id)
+- [Microsoft 365](/microsoft-365)
+- [PowerShell](/powershell)
+- [Entra ID P1 vs P2](/comparisons/entra-id-p1-vs-p2)
+- [Export Intune Device Report](/scripts/export-intune-device-report)
+
+Official Microsoft references used for this guide:
+
+- [Mandatory multifactor authentication for Azure and admin portals](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)
+- [Verify that users are set up for mandatory MFA](https://learn.microsoft.com/en-us/entra/identity/authentication/how-to-mandatory-multifactor-authentication)
+- [Require multifactor authentication for admins accessing Microsoft admin portals](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-old-require-mfa-admin-portals)
+- [Set up multifactor authentication for Microsoft 365](https://learn.microsoft.com/en-us/microsoft-365/admin/security-and-compliance/set-up-multi-factor-authentication?view=o365-worldwide)
+- [Manage emergency access accounts in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)
+- [Require phishing-resistant MFA for administrator roles](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-admin-phish-resistant-mfa)
+- [Manage user authentication methods](https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-userdevicesettings)
+- [Get-MgReportAuthenticationMethodUserRegistrationDetail](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.reports/get-mgreportauthenticationmethoduserregistrationdetail?view=graph-powershell-1.0)
+- [Get-MgUserAuthenticationMethod](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.signins/get-mguserauthenticationmethod?view=graph-powershell-1.0)
+- [List Microsoft Entra role assignments](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/view-assignments)
+
+## Tested Environment Note
+
+This guide is written for Microsoft 365 tenants backed by Microsoft Entra ID, with audit checks run through Microsoft Graph PowerShell in May 2026.
+
+The examples assume:
+
+- Microsoft Graph PowerShell SDK is installed on an administrator workstation.
+- The operator can consent to read-only Graph scopes or has an admin who can grant consent.
+- Sign-in logs are available for the period being queried.
+- Admin roles are managed through Microsoft Entra built-in roles, with Privileged Identity Management where available.
+- The tenant may use security defaults, Conditional Access, or legacy per-user MFA.
+
+The commands show expected output shapes only. They do not include real tenant IDs, user names, app IDs from your tenant, IP addresses, or admin account names.
+
+## Prerequisites
+
+Before you make policy changes, gather these items:
+
+- At least one current Global Administrator who can still sign in.
+- Two or more emergency access accounts designed and tested for Microsoft Entra recovery.
+- A list of active and eligible admin role assignments.
+- A list of admins with no registered MFA-capable authentication methods.
+- Recent Microsoft 365 admin centre sign-ins.
+- Recent Azure CLI, Azure PowerShell, IaC, Azure mobile app, and Azure Resource Manager activity if your admins use those tools.
+- A decision on whether MFA is enforced through security defaults, Conditional Access, or legacy per-user MFA.
+- A plan for user-based service accounts that currently perform admin work.
+- A tested help desk process for registering or resetting admin authentication methods.
+
+For Graph PowerShell:
+
+```powershell
+Install-Module Microsoft.Graph -Scope CurrentUser
+Import-Module Microsoft.Graph.Authentication
+Import-Module Microsoft.Graph.Reports
+Import-Module Microsoft.Graph.Identity.SignIns
+Import-Module Microsoft.Graph.Identity.Governance
+```
+
+Connect with read scopes first:
+
+```powershell
+Connect-MgGraph -Scopes @(
+    "User.Read.All",
+    "Directory.Read.All",
+    "RoleManagement.Read.Directory",
+    "AuditLog.Read.All",
+    "UserAuthenticationMethod.Read.All"
+)
+
+Get-MgContext | Select-Object Account, TenantId, Scopes
+```
+
+Expected output shape:
+
+```text
+Account  : admin@domain.example
+TenantId : <tenant-id>
+Scopes   : {User.Read.All, Directory.Read.All, RoleManagement.Read.Directory, AuditLog.Read.All...}
+```
+
+Use an account with the least privilege needed for the audit. For many checks, Global Reader plus the needed Graph consent is enough. Use Global Administrator only when you are changing policy, consenting to tenant-wide permissions, or performing emergency recovery.
+
+## Admin Roles That Need Attention
+
+Microsoft recommends MFA for admin roles that can change identity, mail, security, billing, SharePoint, user, app, or policy state. At a minimum, audit these roles:
+
+| Role | Why it matters |
+|---|---|
+| Global Administrator | Full tenant control and recovery authority |
+| Privileged Role Administrator | Can change role assignments and PIM settings |
+| Conditional Access Administrator | Can create lockout or bypass paths |
+| Security Administrator | Can alter security controls and investigation state |
+| Authentication Administrator | Can reset or change user authentication methods |
+| Privileged Authentication Administrator | Can manage authentication methods for admins |
+| User Administrator | Can reset users and change many account properties |
+| Password Administrator | Can reset passwords for non-admin accounts |
+| Exchange Administrator | Can access and alter mail flow and mailbox settings |
+| SharePoint Administrator | Can access and alter SharePoint and OneDrive settings |
+| Application Administrator | Can manage app registrations and credentials |
+| Cloud Application Administrator | Can manage enterprise apps and consent-related paths |
+| Billing Administrator | Can alter billing and subscription access |
+| Helpdesk Administrator | Can assist with user recovery and reset workflows |
+
+Also include:
+
+- Eligible PIM admins, not only active admins.
+- Role-assignable groups that grant admin roles.
+- Administrative unit scoped admins where their scope still includes sensitive users or objects.
+- Guest admins who can access the tenant.
+- Any account that signs in to the Microsoft 365 admin centre even if its role is narrow.
+
+## Break-Glass Account Design
+
+Microsoft emergency access guidance now needs to be read together with mandatory MFA enforcement. Emergency access accounts are still required, but they should not be "no MFA forever" accounts. Microsoft states that emergency access accounts are also required to complete MFA once enforcement begins.
+
+Design them like this:
+
+| Design choice | Recommended approach |
+|---|---|
+| Count | Two or more emergency access accounts |
+| Source | Cloud-only, using the tenant `onmicrosoft.com` domain |
+| Role | Global Administrator, kept out of daily use |
+| Authentication | Passkey (FIDO2) or certificate-based authentication where possible |
+| Ownership | Not assigned to a single named employee device |
+| Password | Long, unique, vaulted, and access-controlled |
+| Conditional Access | Excluded from custom CA lockout risk, but still capable of satisfying Microsoft mandatory MFA |
+| Monitoring | Alert on any sign-in, role change, credential change, or method change |
+| Validation | Tested on a schedule and after major Conditional Access changes |
+
+Do not use SMS as the only emergency access method. It may satisfy basic MFA, but it is fragile during travel, telecom outages, number reassignment, and targeted attacks. For emergency accounts, FIDO2 security keys or certificate-based authentication give you a much cleaner recovery path.
+
+## Security Defaults vs Conditional Access vs Per-User MFA
+
+There are three common MFA control models in Microsoft 365 tenants.
+
+| Model | Good fit | Limitations |
+|---|---|---|
+| Security defaults | Small tenants, Microsoft Entra ID Free, no complex access rules | Little control over scope, exclusions, locations, devices, or authentication strength |
+| Conditional Access | Most managed tenants with Entra ID P1 or P2 | Needs careful report-only testing, exclusions, monitoring, and licence coverage |
+| Legacy per-user MFA | Short-term legacy fallback only | Not recommended for modern policy design and hard to audit consistently |
+
+Use security defaults if the tenant is simple and does not have Entra ID P1. Use Conditional Access if you need precise policy design, phased rollout, authentication strengths, sign-in risk controls, named locations, or workload-specific rules.
+
+Avoid mixing all three models unless you are in a migration window. Mixed MFA models create confusing sign-in behaviour, poor audit quality, and painful lockout investigations.
+
+For a full Conditional Access baseline, use [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map). For licence planning, compare [Entra ID P1 vs P2](/comparisons/entra-id-p1-vs-p2).
+
+## Phishing-Resistant MFA Options
+
+Mandatory MFA does not mean every MFA method is equally good. Admin accounts deserve stronger methods than normal user accounts.
+
+Microsoft's phishing-resistant options include:
+
+- Windows Hello for Business.
+- Platform Credential for macOS.
+- Passkeys, including FIDO2 security keys and supported passkey providers.
+- Passkeys in Microsoft Authenticator.
+- Certificate-based authentication.
+
+For admin accounts:
+
+| Admin type | Practical method |
+|---|---|
+| Daily named admin | Windows Hello for Business plus FIDO2 security key backup |
+| Emergency access account | FIDO2 security key or certificate-based authentication |
+| High-risk admin role | Conditional Access authentication strength requiring phishing-resistant MFA |
+| Temporary setup | Temporary Access Pass to bootstrap a passkey or Windows Hello for Business |
+| Guest admin | Confirm home tenant MFA trust or require methods in the resource tenant |
+
+Do not jump straight to phishing-resistant MFA for every administrator without registration evidence. Microsoft warns that enforcing a phishing-resistant policy before admins have registered suitable methods can lock you out.
+
+## Step 1: Audit Active Admin Accounts
+
+Use Microsoft Graph to list active role assignments.
+
+```powershell
+$RoleDefinitions = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/roleManagement/directory/roleDefinitions?`$select=id,displayName,isBuiltIn,isPrivileged"
+$RoleDefinitionById = @{}
+
+foreach ($Role in $RoleDefinitions.value) {
+    $RoleDefinitionById[$Role.id] = $Role
+}
+
+$Assignments = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?`$select=id,principalId,roleDefinitionId,directoryScopeId&`$top=999"
+
+$ActiveAdmins = foreach ($Assignment in $Assignments.value) {
+    $Role = $RoleDefinitionById[$Assignment.roleDefinitionId]
+    if (-not $Role) { continue }
+
+    $Principal = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/directoryObjects/$($Assignment.principalId)?`$select=id,displayName,userPrincipalName,accountEnabled"
+
+    [PSCustomObject]@{
+        PrincipalId = $Assignment.principalId
+        DisplayName = $Principal.displayName
+        UserPrincipalName = $Principal.userPrincipalName
+        AccountEnabled = $Principal.accountEnabled
+        Role = $Role.displayName
+        IsPrivilegedRole = $Role.isPrivileged
+        Scope = $Assignment.directoryScopeId
+    }
+}
+
+$ActiveAdmins |
+    Sort-Object Role, UserPrincipalName |
+    Format-Table UserPrincipalName, DisplayName, Role, AccountEnabled, Scope
+```
+
+For very large tenants, follow `@odata.nextLink` when using `Invoke-MgGraphRequest`, or split role and principal lookups into smaller batches. The shape above is intentionally readable for an operational audit.
+
+Expected output shape:
+
+```text
+UserPrincipalName        DisplayName        Role                         AccountEnabled Scope
+-----------------        -----------        ----                         -------------- -----
+admin@domain.example     Admin User         Global Administrator         True           /
+security@domain.example  Security Admin     Security Administrator       True           /
+helpdesk@domain.example  Helpdesk Admin     Helpdesk Administrator       True           /
+```
+
+Review anything that looks like:
+
+- A disabled account with an active role.
+- A shared mailbox or service-style name with an active role.
+- A guest account with broad admin access.
+- A user admin who also has authentication admin permissions.
+- A role assignment scoped to `/` that should be narrower.
+
+## Step 2: Include Eligible PIM Admins
+
+If you use Microsoft Entra ID P2 and PIM, active assignments are not enough. Eligible admins can activate privileges and then access the admin centre.
+
+```powershell
+$EligibilityUri = "https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilityScheduleInstances?`$select=id,principalId,roleDefinitionId,directoryScopeId,memberType,startDateTime,endDateTime&`$top=999"
+$Eligibility = Invoke-MgGraphRequest -Method GET -Uri $EligibilityUri
+
+$EligibleAdmins = foreach ($Item in $Eligibility.value) {
+    $Role = $RoleDefinitionById[$Item.roleDefinitionId]
+    if (-not $Role) { continue }
+
+    $Principal = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/directoryObjects/$($Item.principalId)?`$select=id,displayName,userPrincipalName,accountEnabled"
+
+    [PSCustomObject]@{
+        PrincipalId = $Item.principalId
+        DisplayName = $Principal.displayName
+        UserPrincipalName = $Principal.userPrincipalName
+        AccountEnabled = $Principal.accountEnabled
+        Role = $Role.displayName
+        MemberType = $Item.memberType
+        Scope = $Item.directoryScopeId
+        EndDateTime = $Item.endDateTime
+    }
+}
+
+$EligibleAdmins |
+    Sort-Object Role, UserPrincipalName |
+    Format-Table UserPrincipalName, Role, MemberType, AccountEnabled, Scope, EndDateTime
+```
+
+Expected output shape:
+
+```text
+UserPrincipalName        Role                         MemberType AccountEnabled Scope EndDateTime
+-----------------        ----                         ---------- -------------- ----- -----------
+admin@domain.example     Global Administrator         Direct     True           /     <blank>
+secops@domain.example    Security Administrator       Direct     True           /     <date or blank>
+```
+
+If your tenant does not use PIM, the query may return no rows. That is useful evidence, not a failure.
+
+## Step 3: Find Admins Without Registered Authentication Methods
+
+There are two useful checks. The first uses the authentication method registration report. The second inspects individual methods for the admin accounts you found.
+
+Start with the report:
+
+```powershell
+$Registration = Get-MgReportAuthenticationMethodUserRegistrationDetail -All |
+    Select-Object Id, UserPrincipalName, UserDisplayName,
+        IsMfaRegistered, IsMfaCapable, IsPasswordlessCapable,
+        IsSsprRegistered, MethodsRegistered
+
+$AdminIds = @($ActiveAdmins.PrincipalId + $EligibleAdmins.PrincipalId) |
+    Where-Object { $_ } |
+    Sort-Object -Unique
+
+$AdminRegistration = $Registration |
+    Where-Object { $AdminIds -contains $_.Id }
+
+$AdminRegistration |
+    Sort-Object IsMfaCapable, UserPrincipalName |
+    Format-Table UserPrincipalName, IsMfaRegistered, IsMfaCapable, IsPasswordlessCapable, MethodsRegistered
+```
+
+Expected output shape:
+
+```text
+UserPrincipalName        IsMfaRegistered IsMfaCapable IsPasswordlessCapable MethodsRegistered
+-----------------        --------------- ------------ --------------------- -----------------
+admin@domain.example     True            True         True                  {microsoftAuthenticator, fido2SecurityKey}
+legacy@domain.example    False           False        False                 {}
+```
+
+Then inspect methods directly for any admin with a gap:
+
+```powershell
+$AdminsMissingMfa = $AdminRegistration |
+    Where-Object { $_.IsMfaCapable -ne $true -or $_.IsMfaRegistered -ne $true }
+
+foreach ($Admin in $AdminsMissingMfa) {
+    $Methods = Get-MgUserAuthenticationMethod -UserId $Admin.Id
+
+    [PSCustomObject]@{
+        UserPrincipalName = $Admin.UserPrincipalName
+        MethodCount = @($Methods).Count
+        MethodTypes = ($Methods.AdditionalProperties.'@odata.type' -join ", ")
+    }
+}
+```
+
+Expected output shape:
+
+```text
+UserPrincipalName      MethodCount MethodTypes
+-----------------      ----------- -----------
+legacy@domain.example  1           #microsoft.graph.passwordAuthenticationMethod
+```
+
+Treat a password-only result as not ready. A password authentication method is normal on a user object, but it does not satisfy MFA.
+
+## Step 4: Check Recent Admin Centre Sign-Ins
+
+Now find which accounts actually use the Microsoft 365 admin centre.
+
+```powershell
+$Since = (Get-Date).AddDays(-30).ToUniversalTime().ToString("o")
+
+$RecentSignIns = Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -All |
+    Where-Object {
+        $_.AppDisplayName -match "Microsoft 365 Admin|Office 365 Admin|Admin Center" -or
+        $_.ResourceDisplayName -match "Microsoft 365|Office 365"
+    } |
+    Select-Object CreatedDateTime, UserPrincipalName, AppDisplayName,
+        ResourceDisplayName, Status, ConditionalAccessStatus,
+        IpAddress, ClientAppUsed
+
+$RecentSignIns |
+    Sort-Object CreatedDateTime -Descending |
+    Select-Object -First 25 |
+    Format-Table CreatedDateTime, UserPrincipalName, AppDisplayName, ConditionalAccessStatus, ClientAppUsed
+```
+
+Expected output shape:
+
+```text
+CreatedDateTime       UserPrincipalName        AppDisplayName              ConditionalAccessStatus ClientAppUsed
+---------------       -----------------        --------------              ----------------------- -------------
+<date/time>           admin@domain.example     Microsoft 365 Admin Center  success                 Browser
+<date/time>           helpdesk@domain.example  Office 365 Admin Portal     notApplied              Browser
+```
+
+If the app display name differs in your tenant, use the portal sign-in logs to identify the exact application names and app IDs, then adjust the filter. Do not rely on one hard-coded app name across every tenant.
+
+For deeper MFA detail, use the Entra sign-in logs in the portal and add columns for:
+
+- Authentication requirement.
+- Authentication requirement policies.
+- Authentication methods used.
+- Conditional Access status.
+- Application.
+- Resource.
+- Client app.
+- User type.
+
+Graph PowerShell can give you enough data for triage, but the portal is still useful when you need the complete authentication details for one sign-in.
+
+## Step 5: Check Recent Azure Phase 2 Tooling Use
+
+This section matters if administrators use Azure CLI, Azure PowerShell, Azure mobile app, Terraform, Bicep, ARM templates, REST API calls, or scripts that call Azure Resource Manager.
+
+Microsoft Phase 2 enforcement targets user accounts performing create, update, or delete operations through Azure management clients. Read operations do not require MFA under the Phase 2 enforcement, but your Conditional Access policies may still require it.
+
+Useful application IDs from Microsoft guidance:
+
+| Tool | App ID |
+|---|---|
+| Azure CLI | `04b07795-8ddb-461a-bbee-02f9e1bf7b46` |
+| Azure PowerShell | `1950a258-227b-4e31-a9cf-717495945fc2` |
+| Azure mobile app | `0c1307d4-29d6-4389-a11c-5cbe7f65d7fa` |
+
+Audit recent sign-ins:
+
+```powershell
+$Phase2AppIds = @(
+    "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+    "1950a258-227b-4e31-a9cf-717495945fc2",
+    "0c1307d4-29d6-4389-a11c-5cbe7f65d7fa"
+)
+
+$Phase2SignIns = foreach ($AppId in $Phase2AppIds) {
+    Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since and appId eq '$AppId'" -All
+}
+
+$Phase2SignIns |
+    Select-Object CreatedDateTime, UserPrincipalName, AppDisplayName,
+        Status, ConditionalAccessStatus, ClientAppUsed, IpAddress |
+    Sort-Object CreatedDateTime -Descending |
+    Format-Table CreatedDateTime, UserPrincipalName, AppDisplayName, ConditionalAccessStatus, ClientAppUsed
+```
+
+Expected output shape:
+
+```text
+CreatedDateTime       UserPrincipalName        AppDisplayName      ConditionalAccessStatus ClientAppUsed
+---------------       -----------------        --------------      ----------------------- -------------
+<date/time>           admin@domain.example     Azure PowerShell    success                 Mobile Apps and Desktop clients
+<date/time>           ops@domain.example       Azure CLI           failure                 Mobile Apps and Desktop clients
+```
+
+If you find user accounts used by scripts, move them to workload identities. Managed identities and service principals are not affected by the mandatory MFA enforcement in the same way user accounts are, but they need their own controls such as certificate credentials, secret hygiene, workload identity Conditional Access where licensed, and least privilege.
+
+## Step 6: Handle Service-Style Admin Accounts
+
+Service-style admin accounts are the awkward ones: they look like users, but people depend on them for automation, mailbox administration, scheduled scripts, reports, or old operational habits.
+
+Typical names:
+
+- `svc-admin@domain.example`
+- `m365automation@domain.example`
+- `exoadmin@domain.example`
+- `reports-admin@domain.example`
+- `tenantsetup@domain.example`
+
+Do not "solve" these by adding a shared mobile phone for MFA. That creates a shared credential with a shared second factor, poor accountability, and a future lockout.
+
+Use this decision table:
+
+| Use case | Better pattern |
+|---|---|
+| Azure automation or deployment | Managed identity or service principal |
+| Graph reporting | App registration with certificate credential and least privilege |
+| Exchange Online admin scripts | App-only Exchange Online PowerShell where supported |
+| Human admin work | Named admin account with PIM and MFA |
+| Emergency access | Cloud-only emergency account with FIDO2 or certificate-based authentication |
+| Legacy app that only supports username and password | Replace, isolate, or formally risk accept while planning removal |
+
+For each service-style account:
+
+1. Identify what signs in with it.
+2. Check whether sign-ins are interactive or non-interactive.
+3. Remove admin roles that are no longer needed.
+4. Convert automation to workload identity.
+5. Disable the account after migration and monitor for failed sign-ins.
+
+## Step 7: Decide the Control Model
+
+Choose one primary MFA control model.
+
+### Option A: Security Defaults
+
+Use this when:
+
+- The tenant is small.
+- You do not have Microsoft Entra ID P1.
+- You do not need named locations, report-only mode, authentication strengths, or complex exclusions.
+- You can accept Microsoft's default behaviour.
+
+Checks:
+
+1. Go to **Microsoft Entra admin centre > Identity > Overview > Properties**.
+2. Check **Security defaults**.
+3. If security defaults are enabled, do not also build overlapping per-user MFA unless you are cleaning up a legacy state.
+
+### Option B: Conditional Access
+
+Use this for most managed tenants.
+
+Recommended policy shape for admin centre readiness:
+
+| Setting | Recommendation |
+|---|---|
+| Users | Include admin roles and any known admin centre users |
+| Exclusions | Emergency accounts only where needed for custom CA lockout protection |
+| Target resource | Microsoft Admin Portals |
+| Grant | Require MFA or require authentication strength |
+| State | Start in report-only |
+| Session | Avoid aggressive sign-in frequency until MFA registration is stable |
+| Monitoring | Review sign-in logs and Conditional Access insights |
+
+For high-risk admin roles, prefer phishing-resistant MFA after registration is complete.
+
+### Option C: Legacy Per-User MFA
+
+Use this only as a temporary fallback. It is not the clean modern control model for an enterprise tenant.
+
+If you still have per-user MFA:
+
+- Export the current state.
+- Identify any admin still relying on it.
+- Move to security defaults or Conditional Access.
+- Disable per-user MFA only after the replacement policy is active and tested.
+
+## Step 8: Prepare Admins Without Methods
+
+For each admin who is not MFA capable:
+
+1. Confirm they still need an admin role.
+2. Remove stale admin roles first.
+3. Ask the admin to register at `https://aka.ms/mfasetup` or `https://mysignins.microsoft.com/security-info`.
+4. Use Temporary Access Pass where appropriate to bootstrap passkeys or Windows Hello for Business.
+5. Confirm registration with Graph.
+6. Test sign-in to `https://admin.microsoft.com`.
+7. Confirm the sign-in log shows MFA satisfied.
+
+For a single admin:
+
+```powershell
+$UserId = "<user-principal-name-or-object-id>"
+
+Get-MgUserAuthenticationMethod -UserId $UserId |
+    Select-Object Id, @{Name="MethodType";Expression={$_.AdditionalProperties.'@odata.type'}}
+```
+
+Expected output shape:
+
+```text
+Id                                   MethodType
+--                                   ----------
+<method-id>                          #microsoft.graph.passwordAuthenticationMethod
+<method-id>                          #microsoft.graph.microsoftAuthenticatorAuthenticationMethod
+<method-id>                          #microsoft.graph.fido2AuthenticationMethod
+```
+
+Healthy admin accounts should have at least one MFA-capable method, and high-privilege admins should have a phishing-resistant method.
+
+## Step 9: What to Do If an Admin Is Locked Out
+
+First, separate Microsoft mandatory MFA from your own policy mistakes.
+
+| Symptom | Likely cause |
+|---|---|
+| Admin centre prompts for MFA registration | Mandatory MFA is active and the account needs a method |
+| Admin cannot satisfy MFA because phone or app is gone | Lost authentication method or stale registration |
+| Admin is blocked by a Conditional Access failure | Your CA policy may be blocking sign-in |
+| Admin can sign in but cannot activate PIM | PIM activation rule, MFA claim, approval, or role eligibility issue |
+| User-based automation fails after Phase 2 | It needs MFA or migration to workload identity |
+
+Safe recovery order:
+
+1. Try another Global Administrator or Privileged Authentication Administrator.
+2. Use an emergency access account with its phishing-resistant method.
+3. In Entra, open the affected user and review **Authentication methods**.
+4. Add a Temporary Access Pass or reset methods only after verifying the caller's identity.
+5. Revoke sessions if there is compromise concern.
+6. Review sign-in logs to confirm whether the block came from Conditional Access, mandatory MFA, risk, disabled account, password state, or federation.
+7. If all admins are locked out, follow Microsoft support and emergency access recovery guidance.
+
+Do not disable broad MFA policy as the first move unless you have confirmed your own Conditional Access policy is the cause. Microsoft system enforcement for covered admin portals is not removed by switching off your local CA policy.
+
+## Step 10: Safe Rollout Plan
+
+Use a staged operational rollout even if Microsoft enforcement is already active. The purpose is to remove the messy edge cases before they become outages.
+
+| Phase | Work |
+|---|---|
+| Phase 0: Source check | Confirm Microsoft Message centre notices, current Microsoft guidance, and tenant enforcement status |
+| Phase 1: Inventory | Export active admins, eligible admins, admin centre sign-ins, and auth method registration |
+| Phase 2: Clean roles | Remove stale admin roles, shared admin accounts, and unnecessary guest admin access |
+| Phase 3: Emergency access | Create or fix two emergency accounts with FIDO2 or certificate-based authentication |
+| Phase 4: Registration | Register named admins with MFA-capable and phishing-resistant methods |
+| Phase 5: Report-only CA | Model Microsoft Admin Portals policy in report-only mode |
+| Phase 6: Pilot | Test admin centre, Exchange admin, Entra, Intune, PowerShell, CLI, and mobile workflows |
+| Phase 7: Enforce | Turn on Conditional Access where needed and keep monitoring sign-in logs |
+| Phase 8: Automation | Replace user-based service accounts with workload identities |
+| Phase 9: Review | Monthly admin role and authentication method review |
+
+Pilot test cases:
+
+- Global Administrator signing in to Microsoft 365 admin centre.
+- Helpdesk Administrator resetting a test user's password.
+- Exchange Administrator opening Exchange admin centre from Microsoft 365 admin centre.
+- Conditional Access Administrator editing a report-only policy.
+- Privileged Role Administrator activating through PIM.
+- Azure PowerShell create or update command with MFA satisfied.
+- Azure CLI read-only command and create/update command.
+- Emergency account sign-in test.
+- Admin without a registered method following the registration path.
+
+## Step 11: Rollback and Emergency Recovery Notes
+
+Rollback depends on what you changed.
+
+| Change | Rollback |
+|---|---|
+| Report-only Conditional Access policy | Delete or leave in report-only |
+| Enforced custom Conditional Access policy | Disable the policy using an emergency account |
+| Authentication strength too strict | Change grant control back to standard MFA temporarily |
+| Admin missing method | Add Temporary Access Pass or register a suitable method |
+| Per-user MFA migration issue | Re-enable per-user MFA only for a short, documented recovery window |
+| Service account broken by Phase 2 | Move to workload identity, or use a temporary Global Administrator request where Microsoft guidance allows support escalation |
+| All admins locked out | Use emergency access account, then Microsoft support if no admin path remains |
+
+What not to do:
+
+- Do not remove MFA from every administrator to fix one broken account.
+- Do not assign Global Administrator to a normal user just to bypass recovery process.
+- Do not use a shared phone number as a long-term MFA method.
+- Do not exclude emergency accounts from every monitoring rule.
+- Do not keep user-based automation because "the script still works today".
+
+For Phase 2 Azure enforcement, if your tenant has complex technical blockers and enforcement has not yet started or is still postponable, Microsoft documents a Phase 2 postponement path until 1 July 2026. Treat that as a temporary risk acceptance, not as a permanent control.
+
+## Prevention Checklist
+
+Use this checklist monthly and before major admin policy changes:
+
+- Two or more emergency access accounts exist.
+- Emergency accounts use FIDO2 or certificate-based authentication.
+- Emergency account sign-ins are monitored and tested.
+- Every active admin has at least one MFA-capable method.
+- High-privilege admins have a phishing-resistant method.
+- Eligible PIM admins are included in MFA readiness checks.
+- Admin role assignments are reviewed for stale users, guests, groups, and service-style accounts.
+- Microsoft 365 admin centre sign-ins are reviewed for MFA satisfaction.
+- Azure CLI and Azure PowerShell usage is reviewed for user-based automation.
+- User-based service accounts are migrating to workload identities.
+- Conditional Access policies for admin portals are tested in report-only before enforcement.
+- Per-user MFA is not the long-term control model.
+- Authentication method reset process includes identity verification.
+- The help desk knows how to use Temporary Access Pass safely.
+- All admin policy changes have a backout path and a named owner.
+
+## Related Resources
+
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Microsoft Entra ID](/microsoft-entra-id)
+- [Microsoft 365](/microsoft-365)
+- [PowerShell](/powershell)
+- [Entra ID P1 vs P2](/comparisons/entra-id-p1-vs-p2)
+- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Mandatory multifactor authentication for Azure and admin portals](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication)
+- [Verify that users are set up for mandatory MFA](https://learn.microsoft.com/en-us/entra/identity/authentication/how-to-mandatory-multifactor-authentication)
+- [Manage emergency access accounts in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)
+- [Require phishing-resistant MFA for administrator roles](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-admin-phish-resistant-mfa)
