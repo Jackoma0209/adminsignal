@@ -1,0 +1,634 @@
+---
+title: "Microsoft Entra Dynamic Group Not Updating: Users, Devices, and Intune Assignments"
+category: "Microsoft Entra ID"
+date: "May 7, 2026"
+authorId: "jack"
+lastReviewed: "May 7, 2026"
+reviewNote: "Initial practical guide covering dynamic user and device groups, rule syntax, Microsoft Graph checks, processing state, expected delays, Intune assignment impact, Autopilot targeting, stale device objects, safe recovery, and prevention."
+tags: ["Microsoft Entra ID", "Dynamic groups", "Intune", "Autopilot", "PowerShell"]
+---
+
+## When to Use This Guide
+
+Use this guide when a Microsoft Entra dynamic group is not updating as expected, or when an Intune assignment does not apply because group membership is delayed or wrong.
+
+Common examples:
+
+- A Windows device is enrolled in Intune but does not join the expected dynamic device group
+- A user has the right department, office or account state but does not appear in a dynamic user group
+- An Intune app, compliance policy, configuration profile or update ring is assigned to a dynamic group but never reaches the target device
+- An Autopilot profile is targeted to a dynamic group but new devices do not receive the profile in time
+- The group says rule processing is complete, but the membership is still wrong
+- The rule looks right in the portal, but Graph shows a different attribute value on the user or device
+- A stale or duplicate device object is in the group instead of the active enrolled device
+
+Do not start by recreating the group. First prove whether the rule is valid, whether the object has the attributes you expect, and whether dynamic membership processing is actually running.
+
+For related AdminSignal guidance, see the [Microsoft Entra ID hub](/microsoft-entra-id), the [Intune hub](/intune), and the [PowerShell hub](/powershell).
+
+## Tested Environment and Scope
+
+This guide is written for Microsoft Entra ID dynamic membership groups used with Microsoft Intune, Microsoft 365, Conditional Access planning and Windows Autopilot. It covers dynamic user groups, dynamic device groups, security groups and Microsoft 365 groups where dynamic membership is supported.
+
+It assumes you are checking Microsoft Entra ID and Microsoft Graph as the source of truth. Intune assignment status is covered, but only after group membership has been checked in Entra.
+
+Microsoft's dynamic membership documentation is here: [Manage rules for dynamic membership groups in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/users/groups-dynamic-membership).
+
+## Prerequisites and Licensing
+
+Before troubleshooting, confirm these basics:
+
+- You have a role that can read groups, users and devices in Microsoft Entra ID.
+- To edit rules, use at least the **Groups Administrator** role or another role with equivalent group permissions.
+- Dynamic membership groups require Microsoft Entra ID P1 or Intune for Education licensing for each unique user who is a member of one or more dynamic membership groups.
+- Microsoft documents that no licence is required for devices that are members of a device-based dynamic group.
+- Security groups can contain users or devices.
+- Microsoft 365 groups can contain users only.
+- A single dynamic group cannot contain both users and devices.
+- Device membership rules can reference only device attributes, not attributes of the device owner.
+
+Check the object type before you write the rule. A common mistake is trying to build an Intune device assignment group from user attributes such as department or job title. That cannot work directly. Use a dynamic user group for user assignments, or populate a device attribute that can be evaluated on the device object.
+
+## Symptoms
+
+Use the symptom to choose the first diagnostic path.
+
+| Symptom | First place to check |
+|---|---|
+| Device not joining a Windows Intune group | Device object attributes, stale objects, rule processing state |
+| User not joining a department group | User attribute value, case, spaces, sync timing |
+| Group shows Processing for a long time | Tenant-wide dynamic membership delay, rule complexity |
+| Group shows Processing error | Rule syntax, unsupported property, invalid operator |
+| Intune policy not applying | Entra group membership first, then Intune assignment status |
+| Autopilot profile not assigned | Autopilot device identity, device import, dynamic group delay |
+| Old device joins but new device does not | Duplicate or stale Entra device object |
+| Rule works for test users but not synced users | On-premises attribute sync and source authority |
+
+If the issue only appears after group membership is correct, move to the downstream workload. For apps, use [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting). For compliance assignment issues, use [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating).
+
+## Dynamic User Groups vs Dynamic Device Groups
+
+Choose the group type based on what you are targeting.
+
+| Use case | Better group type | Why |
+|---|---|---|
+| Assign a Microsoft 365 licence to Finance users | Dynamic user group | The rule uses user attributes such as department |
+| Assign an Intune compliance policy to all corporate Windows devices | Dynamic device group | Compliance evaluates on devices |
+| Assign a required Win32 app to a device before user sign-in | Dynamic device group | Device targeting can apply before user context |
+| Assign an available Company Portal app by department | Dynamic user group | The app is offered to users |
+| Assign an Autopilot deployment profile | Dynamic device group | Autopilot targets device objects |
+| Build Conditional Access policy scopes | Usually user group | Conditional Access primarily evaluates users, with device conditions separate |
+
+Examples:
+
+```text
+device.deviceOSType -eq "Windows"
+device.deviceOwnership -eq "Company"
+device.managementType -eq "MDM"
+user.department -eq "Finance"
+user.accountEnabled -eq true
+```
+
+The first three are device rules. The last two are user rules. Do not combine them in one dynamic group.
+
+## Likely Causes
+
+These are the most common causes, in the order I normally check them.
+
+1. **Wrong group type.** A device group cannot use `user.department`, and a user group cannot use `device.deviceOSType`.
+
+2. **The object does not have the attribute value you think it has.** The portal may show a friendly value, while Graph returns null, a different casing, a trailing space or a different property name.
+
+3. **The rule syntax is invalid or too complex.** Unsupported properties, missing quotes, wrong boolean values and incorrect null checks can stop processing.
+
+4. **Dynamic rule processing is paused or in error.** The group can sit in `Paused`, `Processing error`, `Not started` or long-running `Processing`.
+
+5. **The change has not processed yet.** Microsoft says changes are usually processed within a few hours, but can take more than 24 hours depending on tenant size, group size, attribute changes, rule complexity and operators.
+
+6. **The rule uses slow operators.** `-contains`, `-match` and `memberOf` can be more expensive than simple `-eq` or `-startsWith` rules.
+
+7. **Intune is waiting on group membership.** Intune cannot assign a profile, app or policy to a device until Entra says the device is a member of the target group.
+
+8. **The wrong device object is being evaluated.** Rebuilds, Autopilot resets, hybrid joins and re-enrolments can leave duplicate device objects.
+
+9. **Autopilot attributes are not present yet.** An imported Autopilot device may not yet have the same attributes as an enrolled Intune device.
+
+10. **Source attributes are synced from on-premises AD and have not synced yet.** If the rule uses department, office or extension attributes from AD, Entra cannot evaluate the new value until sync completes.
+
+## Step 1: Confirm the Group Configuration
+
+In the Microsoft Entra admin centre:
+
+1. Go to **Microsoft Entra ID > Groups > All groups**.
+2. Open the affected group.
+3. Check **Group type** and **Membership type**.
+4. Open **Dynamic membership rules**.
+5. Check whether the membership type is **Dynamic User** or **Dynamic Device**.
+6. Check **Dynamic rule processing status** on the group overview page.
+7. Check **Last membership change**.
+
+Record:
+
+| Question | Example answer shape |
+|---|---|
+| Group display name | `GROUP-NAME` |
+| Group object ID | `<group-guid>` |
+| Group type | `Security` or `Microsoft 365` |
+| Membership type | `Dynamic User` or `Dynamic Device` |
+| Rule processing status | `Update complete`, `Processing`, `Processing error`, `Paused`, `Not started` |
+| Last membership change | `<date and time>`, `In Progress`, or `Unknown` |
+| Expected object | `USER-UPN` or `DEVICE-NAME` |
+
+Microsoft documents these processing states: Evaluating, Processing, Update complete, Processing error, Update paused and Not started. If the group is paused, membership will not update until processing is resumed.
+
+## Step 2: Check Rule Syntax
+
+Dynamic membership rules use this basic shape:
+
+```text
+<object>.<property> <operator> <value>
+```
+
+Good examples:
+
+```text
+user.department -eq "Finance"
+user.accountEnabled -eq true
+device.deviceOSType -eq "Windows"
+device.deviceOwnership -eq "Company"
+device.managementType -eq "MDM"
+```
+
+Rules with multiple expressions should use clear parentheses:
+
+```text
+(device.deviceOSType -eq "Windows") -and (device.deviceOwnership -eq "Company")
+```
+
+```text
+(user.department -eq "Finance") -and (user.accountEnabled -eq true)
+```
+
+Common syntax mistakes:
+
+| Mistake | Correct pattern |
+|---|---|
+| `device.deviceOSType eq "Windows"` | `device.deviceOSType -eq "Windows"` |
+| `user.accountEnabled -eq "true"` | `user.accountEnabled -eq true` |
+| `user.department -eq Finance` | `user.department -eq "Finance"` |
+| `user.department -eq "finance "` | Match the actual value, or fix the source value |
+| `device.owner.department -eq "Finance"` | Device rules cannot use owner user attributes |
+| `user.department -eq $null` | `user.department -eq null` |
+
+Microsoft notes that property names are case sensitive, while regex and string operations are not case sensitive. Keep property names exactly as documented.
+
+For complex rules, use the text box. The rule builder supports only a limited set of expressions and is not available for every advanced rule shape.
+
+## Step 3: Check Common Device Properties for Intune Rules
+
+Device dynamic groups used for Intune often rely on a small set of properties.
+
+| Property | Common use | Example |
+|---|---|---|
+| `device.deviceOSType` | Windows, iOS, Android targeting | `device.deviceOSType -eq "Windows"` |
+| `device.deviceOwnership` | Corporate device targeting | `device.deviceOwnership -eq "Company"` |
+| `device.managementType` | MDM-managed devices | `device.managementType -eq "MDM"` |
+| `device.deviceTrustType` | Entra joined, hybrid joined or registered | `device.deviceTrustType -eq "AzureAD"` |
+| `device.displayName` | Naming convention based targeting | `device.displayName -startsWith "LON-"` |
+| `device.deviceManufacturer` | Hardware vendor targeting | `device.deviceManufacturer -eq "Dell Inc."` |
+| `device.deviceModel` | Model targeting | `device.deviceModel -startsWith "Latitude"` |
+| `device.deviceOSVersion` | OS build targeting | `device.deviceOSVersion -startsWith "10.0.26100"` |
+| `device.accountEnabled` | Enabled devices only | `device.accountEnabled -eq true` |
+
+Important gotcha: Microsoft documents that dynamic group rules use `Company` for `device.deviceOwnership`, while Intune commonly shows ownership as **Corporate** in the admin centre. If your rule says `Corporate`, check it carefully.
+
+Check the device properties with Graph PowerShell:
+
+```powershell
+Connect-MgGraph -Scopes "Device.Read.All"
+
+$DeviceName = "DEVICE-NAME"
+
+Get-MgDevice -Search "displayName:$DeviceName" -ConsistencyLevel eventual -All |
+    Select-Object `
+        Id,
+        DisplayName,
+        DeviceId,
+        AccountEnabled,
+        OperatingSystem,
+        OperatingSystemVersion,
+        TrustType,
+        ProfileType,
+        ApproximateLastSignInDateTime |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+Id                            : <entra-object-id>
+DisplayName                   : DEVICE-NAME
+DeviceId                      : <device-id-guid>
+AccountEnabled                : True
+OperatingSystem               : Windows
+OperatingSystemVersion        : 10.0.xxxxx.x
+TrustType                     : AzureAD or ServerAD or Workplace
+ProfileType                   : RegisteredDevice
+ApproximateLastSignInDateTime : <date and time>
+```
+
+Not every rule property is returned by the same Graph cmdlet projection. If the property is not visible in `Get-MgDevice`, use the Entra admin centre device properties, Graph Explorer, or a direct Graph request with `$select`.
+
+## Step 4: Check Common User Properties for Microsoft 365 Rules
+
+Dynamic user groups often depend on HR or directory attributes.
+
+| Property | Common use | Example |
+|---|---|---|
+| `user.department` | Department groups | `user.department -eq "Finance"` |
+| `user.accountEnabled` | Active users only | `user.accountEnabled -eq true` |
+| `user.companyName` | Subsidiary or partner grouping | `user.companyName -eq "Contoso"` |
+| `user.country` | Country policy targeting | `user.country -eq "GB"` |
+| `user.city` | Site or office targeting | `user.city -eq "London"` |
+| `user.jobTitle` | Role-based targeting | `user.jobTitle -startsWith "Service Desk"` |
+| `user.userType` | Member or guest targeting | `user.userType -eq "Member"` |
+| `user.usageLocation` | Licensing and regional services | `user.usageLocation -eq "GB"` |
+| `user.extensionAttribute1` to `15` | Synced custom attributes | `user.extensionAttribute15 -eq "Finance"` |
+
+Check the user properties:
+
+```powershell
+Connect-MgGraph -Scopes "User.Read.All"
+
+$UserPrincipalName = "user@domain.example"
+
+Get-MgUser -UserId $UserPrincipalName -Property `
+    "id,displayName,userPrincipalName,accountEnabled,department,companyName,country,city,jobTitle,userType,usageLocation,onPremisesSyncEnabled" |
+    Select-Object `
+        Id,
+        DisplayName,
+        UserPrincipalName,
+        AccountEnabled,
+        Department,
+        CompanyName,
+        Country,
+        City,
+        JobTitle,
+        UserType,
+        UsageLocation,
+        OnPremisesSyncEnabled |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+Id                    : <user-object-id>
+DisplayName           : <display name>
+UserPrincipalName     : user@domain.example
+AccountEnabled        : True
+Department            : Finance
+CompanyName           : <company value or blank>
+Country               : GB
+City                  : London
+JobTitle              : <job title>
+UserType              : Member
+UsageLocation         : GB
+OnPremisesSyncEnabled : True or False
+```
+
+If `OnPremisesSyncEnabled` is `True`, fix the source attribute in on-premises AD rather than editing it directly in Entra, unless that attribute is cloud-managed in your tenant design.
+
+## Step 5: Check Membership Evaluation Timing
+
+Dynamic membership is not always immediate.
+
+Microsoft's troubleshooting guidance says dynamic membership group changes are usually processed within a few hours, but processing can take more than 24 hours depending on tenant size, group size, number of attribute changes, rule complexity and operator choice.
+
+Use this timing model:
+
+| Situation | Expected behaviour |
+|---|---|
+| New simple group, small tenant | Often updates within a few hours |
+| Large group or large tenant | Can take longer |
+| Many user or device attributes changed at once | Re-evaluation backlog can grow |
+| Complex rule using `-contains`, `-match`, or `memberOf` | Can take longer |
+| Processing paused | No membership changes until resumed |
+| Processing error | Fix the rule, then wait for processing |
+
+Do not promise users instant Intune policy application from a new dynamic group. The chain is:
+
+1. User or device attribute changes.
+2. Entra dynamic group evaluates the rule.
+3. Group membership changes.
+4. Intune receives or reads the updated group membership.
+5. The device checks in and receives the assignment.
+
+Each step has its own delay.
+
+## Step 6: Check Rule Processing State with Graph
+
+Use Microsoft Graph to confirm what the group really contains and whether dynamic processing is on.
+
+```powershell
+Connect-MgGraph -Scopes "Group.Read.All", "Directory.Read.All"
+
+$GroupName = "GROUP-NAME"
+
+$Group = Get-MgGroup -Filter "displayName eq '$GroupName'" -ConsistencyLevel eventual -All |
+    Select-Object -First 1
+
+$GroupDetails = Get-MgGroup -GroupId $Group.Id -Property `
+    "id,displayName,groupTypes,securityEnabled,mailEnabled,membershipRule,membershipRuleProcessingState"
+
+$GroupDetails |
+    Select-Object Id, DisplayName, GroupTypes, SecurityEnabled, MailEnabled, MembershipRule, MembershipRuleProcessingState |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+Id                            : <group-object-id>
+DisplayName                   : GROUP-NAME
+GroupTypes                    : {DynamicMembership}
+SecurityEnabled               : True
+MailEnabled                   : False
+MembershipRule                : (device.deviceOSType -eq "Windows")
+MembershipRuleProcessingState : On
+```
+
+For Microsoft 365 dynamic groups, `GroupTypes` commonly includes both `Unified` and `DynamicMembership`.
+
+Graph beta exposes more detailed dynamic processing status. Treat beta APIs as diagnostic tools, not as production automation contracts:
+
+```powershell
+$Uri = "https://graph.microsoft.com/beta/groups/$($Group.Id)?`$select=id,displayName,membershipRule,membershipRuleProcessingState,membershipRuleProcessingStatus"
+
+Invoke-MgGraphRequest -Method GET -Uri $Uri |
+    Select-Object id, displayName, membershipRule, membershipRuleProcessingState, membershipRuleProcessingStatus |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+id                            : <group-object-id>
+displayName                   : GROUP-NAME
+membershipRule                : (device.deviceOSType -eq "Windows")
+membershipRuleProcessingState : On
+membershipRuleProcessingStatus: @{status=Succeeded; lastMembershipUpdated=<date>; errorMessage=}
+```
+
+If `membershipRuleProcessingState` is `Paused`, resume processing only after you understand why it was paused. Pausing can be a deliberate containment action during a bad rule change.
+
+## Step 7: Check Whether the Object Is Actually a Member
+
+Check group members directly. For a device group:
+
+```powershell
+Connect-MgGraph -Scopes "GroupMember.Read.All", "Device.Read.All"
+
+$GroupId = "<group-object-id>"
+$DeviceName = "DEVICE-NAME"
+
+$Members = Get-MgGroupMember -GroupId $GroupId -All
+
+$Members |
+    Where-Object { $_.AdditionalProperties.displayName -eq $DeviceName } |
+    Select-Object Id, @{ Name = "DisplayName"; Expression = { $_.AdditionalProperties.displayName } }, @{ Name = "Type"; Expression = { $_.AdditionalProperties.'@odata.type' } }
+```
+
+Expected output shape when present:
+
+```text
+Id                                    DisplayName   Type
+--                                    -----------   ----
+<directory-object-id>                 DEVICE-NAME   #microsoft.graph.device
+```
+
+Expected output shape when absent:
+
+```text
+<no rows>
+```
+
+For a user group:
+
+```powershell
+Connect-MgGraph -Scopes "GroupMember.Read.All", "User.Read.All"
+
+$GroupId = "<group-object-id>"
+$UserPrincipalName = "user@domain.example"
+
+$User = Get-MgUser -UserId $UserPrincipalName
+
+Get-MgUserMemberOf -UserId $User.Id -All |
+    Where-Object { $_.Id -eq $GroupId } |
+    Select-Object Id, @{ Name = "DisplayName"; Expression = { $_.AdditionalProperties.displayName } }, @{ Name = "Type"; Expression = { $_.AdditionalProperties.'@odata.type' } }
+```
+
+Expected output shape when present:
+
+```text
+Id                                    DisplayName   Type
+--                                    -----------   ----
+<group-object-id>                     GROUP-NAME    #microsoft.graph.group
+```
+
+If the object is not a member in Graph, Intune cannot apply an assignment that depends on this group.
+
+## Step 8: Check Intune Assignment Impact
+
+When an Intune policy, app, script or compliance policy is assigned to a dynamic group, membership timing becomes part of deployment timing.
+
+Check in this order:
+
+1. Confirm the user or device is in the Entra group.
+2. Confirm the group is assigned in Intune.
+3. Confirm no assignment filter excludes the device.
+4. Confirm there is no exclusion group with higher priority.
+5. Trigger or wait for device check-in.
+6. Check the workload-specific status.
+
+Examples:
+
+- For Win32 apps, use **Apps > Windows > [app] > Device install status**.
+- For compliance, use **Devices > Compliance > Policies > [policy] > Device status**.
+- For configuration profiles, use **Devices > Configuration > [profile] > Device status**.
+- For scripts and remediations, use **Devices > Scripts and remediations**.
+
+If the group membership changed five minutes ago and the Intune status is still old, that is not necessarily a fault. First wait for the group and device check-in chain to complete.
+
+## Step 9: Autopilot Group Targeting Issues
+
+Autopilot is especially sensitive to dynamic group timing because profile assignment may be needed before the user sees the device.
+
+Common Autopilot dynamic group patterns:
+
+```text
+(device.deviceOSType -eq "Windows") -and (device.deviceOwnership -eq "Company")
+```
+
+```text
+(device.deviceOSType -eq "Windows") -and (device.deviceTrustType -eq "AzureAD")
+```
+
+```text
+(device.devicePhysicalIds -any (_ -contains "[ZTDId]"))
+```
+
+Troubleshoot Autopilot targeting in this order:
+
+1. Confirm the hardware hash was imported successfully.
+2. Confirm the device appears under **Devices > Windows > Windows enrolment > Devices**.
+3. Confirm the Entra device object exists.
+4. Confirm the dynamic device group contains the correct object.
+5. Confirm the Autopilot profile is assigned to that group.
+6. Confirm the profile assignment status before starting OOBE.
+
+If a device is already at OOBE and the group membership has not processed, restarting OOBE is not a reliable fix. Wait for profile assignment, then reset or restart the provisioning flow if needed.
+
+For ESP and profile download failures after assignment is correct, use [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck).
+
+## Step 10: Stale Device Object Issues
+
+Duplicate device objects are a classic cause of "the group is right, but Intune is wrong".
+
+Search for duplicates:
+
+```powershell
+Connect-MgGraph -Scopes "Device.Read.All", "DeviceManagementManagedDevices.Read.All"
+
+$DeviceName = "DEVICE-NAME"
+
+Get-MgDevice -Search "displayName:$DeviceName" -ConsistencyLevel eventual -All |
+    Select-Object `
+        Id,
+        DisplayName,
+        DeviceId,
+        AccountEnabled,
+        OperatingSystem,
+        TrustType,
+        ApproximateLastSignInDateTime |
+    Sort-Object ApproximateLastSignInDateTime -Descending |
+    Format-Table -AutoSize
+```
+
+Expected output shape:
+
+```text
+Id          DisplayName   DeviceId      AccountEnabled OperatingSystem TrustType ApproximateLastSignInDateTime
+--          -----------   --------      -------------- --------------- --------- -----------------------------
+<object-id> DEVICE-NAME   <device-id>   True           Windows         AzureAD   <recent date>
+<object-id> DEVICE-NAME   <device-id>   False          Windows         AzureAD   <old date>
+```
+
+Then compare Intune managed device records:
+
+```powershell
+Get-MgDeviceManagementManagedDevice -Filter "deviceName eq '$DeviceName'" |
+    Select-Object `
+        Id,
+        DeviceName,
+        AzureAdDeviceId,
+        ManagedDeviceOwnerType,
+        ManagementAgent,
+        OperatingSystem,
+        LastSyncDateTime |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+Id                     : <intune-managed-device-id>
+DeviceName             : DEVICE-NAME
+AzureAdDeviceId        : <entra-device-id-guid>
+ManagedDeviceOwnerType : company
+ManagementAgent        : mdm
+OperatingSystem        : Windows
+LastSyncDateTime       : <date and time>
+```
+
+Match the Intune `AzureAdDeviceId` to the Entra device `DeviceId`. If the dynamic group contains an old Entra object but Intune is managing a newer object, the assignment will not land where you expect.
+
+For reporting and cleanup patterns, see [Get Stale Devices](/scripts/get-stale-devices) and [Export Intune Device Report](/scripts/export-intune-device-report).
+
+## Step 11: Safe Recovery Steps
+
+Use the least disruptive recovery that fixes the actual fault.
+
+### If the Rule Is Wrong
+
+1. Copy the existing rule into your change notes.
+2. Build a corrected rule with simple `-eq` or `-startsWith` expressions where possible.
+3. Test it against a known matching object and a known non-matching object.
+4. Save the rule outside business-critical deployment windows.
+5. Watch rule processing status until it completes.
+6. Confirm membership before relying on Intune assignment results.
+
+### If Processing Is Paused
+
+1. Confirm why it was paused.
+2. Check whether a recent attribute change could add or remove many members.
+3. Resume one critical group only if that is the intended action.
+4. Wait for processing to complete.
+5. Avoid resuming many large groups at once after a bad change.
+
+Microsoft's troubleshooting article recommends waiting at least 12 hours before resuming after widespread dynamic membership delays, then resuming critical groups first and the rest in batches.
+
+### If Intune Needs Immediate Targeting
+
+Dynamic groups are powerful, but they are not instant. If a small number of devices must receive an app or policy immediately:
+
+1. Create a temporary assigned group with a clear expiry date in the name or description.
+2. Add the affected device or user manually.
+3. Assign the Intune workload to the temporary group.
+4. Keep the dynamic group assignment in place if it is still the long-term target.
+5. Remove the temporary assignment after the dynamic group catches up.
+
+Do not convert a production dynamic group to assigned membership just to add one urgent member. That changes the group behaviour for every workload that depends on it.
+
+### If a Stale Device Object Is the Problem
+
+1. Confirm which Entra device object matches the active Intune managed device.
+2. Remove the stale object only after checking BitLocker recovery key, Autopilot, compliance and audit implications.
+3. Let the dynamic group re-evaluate.
+4. Confirm the active device object joins.
+5. Then re-check the Intune workload status.
+
+## Prevention Checklist
+
+Before using a dynamic group for production assignments:
+
+- [ ] The group purpose is clear from its name and description.
+- [ ] The group is either dynamic user or dynamic device, not an attempted mix.
+- [ ] Security groups are used for device dynamic groups.
+- [ ] Microsoft 365 groups are used only for user membership.
+- [ ] Licensing requirements for dynamic user membership are covered.
+- [ ] Rule properties are verified against Graph output for real users or devices.
+- [ ] Simple operators such as `-eq` and `-startsWith` are preferred over `-contains` and `-match`.
+- [ ] Rules avoid owner-based device logic, because device rules cannot use owner attributes.
+- [ ] `device.deviceOwnership` uses `Company` where needed, not the Intune portal label `Corporate`.
+- [ ] Autopilot groups are tested with newly imported devices before broad deployment.
+- [ ] Dynamic group processing status is checked after every rule change.
+- [ ] Intune assignment filters are documented alongside group assignments.
+- [ ] Temporary assigned groups are used for urgent one-off targeting instead of emergency rewrites to production dynamic rules.
+- [ ] Stale device cleanup is part of regular Entra and Intune hygiene.
+- [ ] Conditional Access and app assignment groups are reviewed before changing rules. See [Conditional Access M365 Policy Map](/tutorials/conditional-access-m365-policy-map).
+
+## Related Resources
+
+- [Microsoft Entra ID hub](/microsoft-entra-id)
+- [Microsoft Intune hub](/intune)
+- [PowerShell hub](/powershell)
+- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Get Stale Devices](/scripts/get-stale-devices)
+- [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Conditional Access M365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Microsoft documentation: Manage rules for dynamic membership groups](https://learn.microsoft.com/en-us/entra/identity/users/groups-dynamic-membership)
+- [Microsoft documentation: Create or update a dynamic membership group](https://learn.microsoft.com/en-us/entra/identity/users/groups-create-rule)
+- [Microsoft documentation: Troubleshooting dynamic group processing](https://learn.microsoft.com/en-us/troubleshoot/entra/entra-id/dir-dmns-obj/troubleshoot-dynamic-group-processing)
+- [Microsoft Graph documentation: Manage groups](https://learn.microsoft.com/en-us/graph/api/resources/groups-overview?view=graph-rest-1.0)

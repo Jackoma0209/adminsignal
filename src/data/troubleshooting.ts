@@ -15,6 +15,20 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '10',
+    title: 'Microsoft Entra Dynamic Group Not Updating: Users, Devices, and Intune Assignments',
+    slug: 'entra-dynamic-group-not-updating',
+    category: 'Microsoft Entra ID',
+    excerpt:
+      'A practical troubleshooting guide for Microsoft Entra dynamic groups that do not update, including rule syntax, user and device attributes, Graph checks, processing delays, Intune assignment impact, Autopilot targeting, stale device objects, and safe recovery.',
+    affectedProducts: ['Microsoft Entra ID', 'Microsoft Intune', 'Autopilot', 'Microsoft Graph'],
+    difficulty: 'Intermediate',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '20 min read',
+    authorId: 'jack',
+  },
+  {
     id: '9',
     title: 'Intune Remediation Script Not Running, Detecting, Remediating, or Reporting',
     slug: 'intune-remediation-script-not-running',
