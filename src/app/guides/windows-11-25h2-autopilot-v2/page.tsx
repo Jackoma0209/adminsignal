@@ -1,4 +1,5 @@
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -204,13 +205,17 @@ export default async function Windows1125H2AutopilotV2Page() {
         <div className="py-10 lg:py-14">
           {lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />}
 
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px]">
+          <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
             {/* ── Article body ──────────────────────────────────────────── */}
-            <article>
+            <article className="min-w-0">
               <AdSlot variant="banner" className="mb-8" />
 
               <Prose>
-                <MDXRemote source={content} components={mdxComponents} />
+                <MDXRemote
+                  source={content}
+                  options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                  components={mdxComponents}
+                />
               </Prose>
 
               {/* ── Affiliate block ─────────────────────────────────────── */}
@@ -257,7 +262,7 @@ export default async function Windows1125H2AutopilotV2Page() {
             </article>
 
             {/* ── Sidebar ───────────────────────────────────────────────── */}
-            <aside>
+            <aside className="min-w-0">
               <div className="sticky top-20 space-y-6">
                 {headings.length >= 2 && (
                   <div className="rounded-xl border border-border bg-surface p-5">
