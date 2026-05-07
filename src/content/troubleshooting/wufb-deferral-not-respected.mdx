@@ -1,0 +1,748 @@
+---
+title: "Windows Update for Business Deferral Policy Not Applying in Intune: Practical Diagnosis"
+category: "Microsoft Intune"
+date: "May 7, 2026"
+authorId: "jack"
+lastReviewed: "May 7, 2026"
+reviewNote: "Initial practical guide covering Intune update rings, feature update policies, quality update policies, local CSP registry state, event logs, Graph checks, Group Policy, WSUS, MECM, and co-management conflicts."
+tags: ["Intune", "Windows Update for Business", "Patch Management", "Windows 11", "PowerShell"]
+---
+
+## When to Use This Guide
+
+Use this guide when Windows Update for Business settings delivered from Intune do not behave the way the ring says they should. Typical examples:
+
+- A device installs a feature update before the configured feature update deferral has passed
+- A device installs a monthly quality update before the quality update deferral has passed
+- A device stays on an older build after the deferral period should have expired
+- A feature update policy says the device should remain on a target release, but the device moves beyond it
+- Intune shows the update ring as assigned or succeeded, but the endpoint has different local Windows Update policy values
+- Co-managed devices behave differently from cloud-only Intune devices in the same ring
+
+Do not start by deleting and recreating rings. First prove which management plane is currently controlling the Windows Update client.
+
+For the broader patching model, see the [Patch Management hub](/patch-management), the [Intune hub](/intune), and the [SCCM and MECM hub](/sccm-mecm).
+
+## Tested Environment and Scope
+
+This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2 and 25H2 devices managed by Microsoft Intune update rings, feature update policies and quality update policies.
+
+It assumes the device is Microsoft Entra joined or Microsoft Entra hybrid joined, enrolled in Intune, and expected to scan against Windows Update rather than only WSUS or Configuration Manager software updates.
+
+The exact Intune admin centre labels move over time. The local checks below focus on the underlying Update Policy CSP, Windows Update registry policy keys, event logs and Graph data because those are the evidence you need when the portal summary looks correct but the endpoint disagrees.
+
+## Prerequisites
+
+Before troubleshooting, confirm these basics:
+
+- The device is enrolled in Intune and has checked in recently.
+- The device is Microsoft Entra joined or hybrid joined. Microsoft Entra registered only is not enough for feature update, quality update and driver update policies that use the same backend service as Windows Autopatch.
+- The device is running a supported Windows edition. Windows Enterprise LTSC and IoT Enterprise LTSC can receive quality updates, but several feature update ring controls do not apply.
+- The device can reach Intune and Windows Update endpoints. See Microsoft's [Windows update management overview](https://learn.microsoft.com/en-us/intune/device-updates/windows/).
+- The Microsoft Account Sign-In Assistant service, `wlidsvc`, is enabled and running. Microsoft documents this as a requirement for feature update offers.
+- You know whether the device should be managed by Intune, Group Policy, WSUS, MECM, Windows Autopatch, or a deliberate mix.
+
+Check the local join and enrolment state first:
+
+```cmd
+dsregcmd /status
+```
+
+Expected output shape:
+
+```text
+AzureAdJoined : YES
+DomainJoined  : YES or NO
+WorkplaceJoined : NO
+
+MdmUrl        : https://enrollment.manage.microsoft.com/...
+TenantName    : <tenant display name>
+```
+
+If `AzureAdJoined` is `NO` and only `WorkplaceJoined` is `YES`, treat this as an identity and enrolment issue before investigating deferrals.
+
+## Symptoms
+
+The most common symptom is not simply "updates installed too early". Be specific, because each symptom points to a different policy layer.
+
+| Symptom | Most likely layer to check first |
+|---|---|
+| Feature update installed before the ring deferral | Feature update policy, update ring assignment, local CSP value, Group Policy |
+| Feature update went beyond the target version | Feature update policy target, product version, assignments, co-management |
+| Quality update installed before the ring deferral | Expedited quality update policy, quality update policy, local CSP value |
+| Device never receives the feature update after deferral | Safeguard hold, target release policy, unsupported edition, disabled `wlidsvc`, Windows Update connectivity |
+| Intune says Succeeded but registry shows different values | Multiple policies, winning provider, Group Policy, co-management workload |
+| Only MECM devices are affected | Windows Update workload, WSUS scan source, Configuration Manager software update client settings |
+
+## Likely Causes
+
+Work through these in order. The first three account for most real cases.
+
+1. **The device is not actually targeted by the intended update ring.** The ring exists, but the device is in an exclusion group, the assignment is user-based and no user has signed in, or dynamic group membership has not updated.
+
+2. **A feature update policy is being confused with a deferral.** A feature update policy pins a device to a target Windows version. It does not downgrade a device that is already on a later version, and Microsoft recommends avoiding extra feature update deferrals in rings when you use feature update policies.
+
+3. **An expedited quality update policy bypassed the normal deferral.** Expedited quality updates are designed to install quickly and can override quality update deferral timing for the targeted update.
+
+4. **A pause was expected to last forever.** Feature and quality update pauses expire after 35 days. If the device checks in after the pause expires, Windows Update scans again.
+
+5. **The device is still pointed at WSUS or MECM.** WUfB deferrals control Windows Update scan behaviour. If the device is scanning WSUS because `UseWUServer` or scan source policies are set, Intune ring timing may not be the active decision point.
+
+6. **Co-management workload is still with Configuration Manager.** Microsoft documents Windows Update policies as a co-management workload. If that workload has not moved to Intune, MECM can remain the authority for update policy.
+
+7. **Group Policy is writing equivalent Windows Update policy values.** MDM can win over Group Policy for some Policy CSP settings when configured, but that does not cover every Windows Update setting or every management path.
+
+8. **Multiple Intune policies set the same Update CSP setting.** Update rings, Settings Catalog policies, Windows Autopatch managed policies and old device configuration profiles can all touch related update settings.
+
+9. **The device has not received the newest policy yet.** Intune policy status can look healthy while the endpoint has not checked in since the edit.
+
+10. **The device is blocked from the update, not ignoring the deferral.** Safeguard holds, unsupported editions, missing services, insufficient telemetry for quality update reporting, or network restrictions can make the device look late rather than early.
+
+## Step 1: Define the Exact Failure
+
+Before changing policy, write down the expected and observed state.
+
+Use this small table in your incident notes:
+
+| Question | Example answer shape |
+|---|---|
+| Device name | `DEVICE-NAME` |
+| Expected ring | `Windows Update - Pilot` |
+| Expected feature deferral | `30 days` |
+| Expected quality deferral | `7 days` |
+| Expected target version | `Windows 11, 24H2` or `Not configured` |
+| Installed feature version | `24H2` |
+| Latest installed KB | `KBxxxxxxx` |
+| Install time | `yyyy-mm-dd hh:mm` |
+| Management path expected | `Intune only` or `Co-managed, Windows Update workload in Intune` |
+
+This prevents a common mistake: treating a quality update expedite, a feature update target policy and a ring deferral as if they are the same control.
+
+## Step 2: PowerShell Checks on the Device
+
+Run these in an elevated PowerShell session on an affected device.
+
+```powershell
+$Computer = Get-ComputerInfo
+$LatestHotFix = Get-HotFix |
+    Sort-Object InstalledOn -Descending |
+    Select-Object -First 1 HotFixID, InstalledOn, Description
+
+[pscustomobject]@{
+    ComputerName       = $env:COMPUTERNAME
+    WindowsProductName = $Computer.WindowsProductName
+    WindowsVersion     = $Computer.WindowsVersion
+    OsBuildNumber      = $Computer.OsBuildNumber
+    LastBootUpTime     = $Computer.OsLastBootUpTime
+    LatestHotFix       = $LatestHotFix.HotFixID
+    LatestInstalledOn  = $LatestHotFix.InstalledOn
+    HotFixDescription  = $LatestHotFix.Description
+} | Format-List
+```
+
+Expected output shape:
+
+```text
+ComputerName       : DEVICE-NAME
+WindowsProductName : Windows 11 Enterprise
+WindowsVersion     : 24H2
+OsBuildNumber      : <build number>
+LastBootUpTime     : <date and time>
+LatestHotFix       : KBxxxxxxx
+LatestInstalledOn  : <date>
+HotFixDescription  : Security Update
+```
+
+If the installed build is already later than the feature update policy target, Intune cannot downgrade it through that policy. You need rollback or rebuild planning, not more deferral tuning.
+
+Check the update services:
+
+```powershell
+Get-Service wuauserv, usosvc, bits, wlidsvc |
+    Select-Object Name, Status, StartType
+```
+
+Expected output shape:
+
+```text
+Name     Status   StartType
+----     ------   ---------
+wuauserv Running  Manual
+usosvc   Running  Manual
+bits     Running  Manual
+wlidsvc  Running  Manual
+```
+
+If `wlidsvc` is disabled, fix that before investigating feature update offers.
+
+## Step 3: Intune Update Ring Checks
+
+In the Intune admin centre:
+
+1. Go to **Devices > By platform > Windows > Manage updates > Windows updates**.
+2. Open the **Update rings** tab.
+3. Open the ring you expected the device to receive.
+4. Check **Assignments**. Prefer device groups for update rings because the policy can apply before a user signs in.
+5. Check **Device and user check-in status** for the affected device.
+6. Open **Per setting status**. A ring-level success summary is not enough.
+
+Focus on these settings:
+
+| Setting | What to confirm |
+|---|---|
+| Quality update deferral period | Must match the value you expect, from 0 to 30 days |
+| Feature update deferral period | Must match the value you expect, from 0 to 365 days for General Availability Channel |
+| Feature update pause | Confirm whether it is active or expired |
+| Quality update pause | Confirm whether it is active or expired |
+| Feature update uninstall period | Confirm whether rollback is still possible |
+| Deadline settings | These affect install and restart pressure after an update is offered |
+| Upgrade Windows 10 devices to latest Windows 11 release | Check this carefully on Windows 10 rings |
+
+Microsoft's update ring documentation is here: [Manage Windows Update ring policies](https://learn.microsoft.com/en-us/intune/device-updates/windows/manage-update-rings).
+
+### If Multiple Rings Target the Same Device
+
+Do not assume the ring with the friendliest name wins. If two rings or a ring plus Settings Catalog policy sets the same Update CSP value, check Intune's per-setting status and the local winning provider registry values in the next section.
+
+If you need a clean test, create a temporary Entra device group with one affected device, assign only the intended ring and exclude that group from every other Windows update policy. Wait for check-in, then compare local registry values.
+
+## Step 4: Feature Update Policy Checks
+
+Feature update policies answer a different question from update ring deferrals:
+
+- Update ring deferral asks: "How many days after release should this device wait before it is offered a feature update?"
+- Feature update policy asks: "Which Windows version should this device move to or remain on?"
+
+In Intune:
+
+1. Go to **Devices > By platform > Windows > Manage updates > Windows updates**.
+2. Open **Feature updates**.
+3. Check whether the affected device is assigned to a feature update policy.
+4. Confirm the target version and rollout settings.
+5. Open the feature update report and find the device state.
+
+Important checks:
+
+- If the device is already on a newer Windows version than the target, the policy does not downgrade it.
+- If the device has a safeguard hold, Windows Update may not offer the target version even after the deferral window.
+- If you use feature update policies, avoid also setting feature deferrals in update rings unless you have a documented reason. Combining them makes diagnosis harder and can delay offers.
+- Confirm `ProductVersion` and `TargetReleaseVersion` are both present locally when using target release controls.
+
+Microsoft's feature update policy documentation is here: [Feature updates for Windows 10 and later in Intune](https://learn.microsoft.com/en-us/intune/intune-service/protect/windows-10-feature-updates).
+
+## Step 5: Quality Update Policy Checks
+
+For normal monthly patching, update rings usually control quality update deferral, deadlines and restart behaviour. Quality update policies add scenarios such as expedited updates, hotpatch and Autopatch-managed quality update workflows.
+
+Check these Intune areas:
+
+1. **Quality updates**: Look for an expedite policy assigned to the affected device.
+2. **Reports > Windows Updates**: Check expedited update reports and quality update states.
+3. **Update rings**: Confirm the normal quality update deferral and deadline values.
+4. **Autopatch groups or policies**: If the device is Autopatch-managed, confirm whether service-managed policy is expected.
+
+An expedite policy is not a ring misfire. It is designed to install the selected quality update quickly and can bypass deferral timing for that update.
+
+Check local installed quality updates:
+
+```powershell
+Get-HotFix |
+    Sort-Object InstalledOn -Descending |
+    Select-Object -First 10 HotFixID, InstalledOn, Description
+```
+
+Expected output shape:
+
+```text
+HotFixID   InstalledOn  Description
+--------   -----------  -----------
+KBxxxxxxx  <date>       Security Update
+KBxxxxxxx  <date>       Update
+```
+
+If the KB was installed by an expedite policy, the fix is not to increase the ring deferral. Review the expedite assignment and scope.
+
+Microsoft's quality update documentation is here: [Manage Windows quality updates](https://learn.microsoft.com/en-us/intune/device-updates/windows/manage-quality-updates).
+
+## Step 6: Windows Registry Checks
+
+The Intune portal tells you what should happen. The registry shows what the endpoint has received.
+
+Check the MDM PolicyManager path first:
+
+```powershell
+$MdmUpdatePath = "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\Update"
+
+if (Test-Path $MdmUpdatePath) {
+    Get-ItemProperty -Path $MdmUpdatePath |
+        Select-Object `
+            DeferFeatureUpdatesPeriodInDays,
+            DeferQualityUpdatesPeriodInDays,
+            PauseFeatureUpdatesStartTime,
+            PauseQualityUpdatesStartTime,
+            ProductVersion,
+            TargetReleaseVersion,
+            SetPolicyDrivenUpdateSourceForFeatureUpdates,
+            SetPolicyDrivenUpdateSourceForQualityUpdates |
+        Format-List
+} else {
+    Write-Output "No MDM Update policy path found."
+}
+```
+
+Expected output shape:
+
+```text
+DeferFeatureUpdatesPeriodInDays             : <number or blank>
+DeferQualityUpdatesPeriodInDays             : <number or blank>
+PauseFeatureUpdatesStartTime                : <date or blank>
+PauseQualityUpdatesStartTime                : <date or blank>
+ProductVersion                              : Windows 11
+TargetReleaseVersion                        : 24H2
+SetPolicyDrivenUpdateSourceForFeatureUpdates : <0, 1, or blank>
+SetPolicyDrivenUpdateSourceForQualityUpdates : <0, 1, or blank>
+```
+
+Also check provider values. These often reveal which policy source last wrote the setting:
+
+```powershell
+Get-ItemProperty -Path $MdmUpdatePath |
+    Select-Object *Defer*, *Pause*, *ProductVersion*, *TargetReleaseVersion*, *WinningProvider* |
+    Format-List
+```
+
+Then check Group Policy and WSUS policy keys:
+
+```powershell
+$GpWuPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+$GpAuPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+
+foreach ($Path in @($GpWuPath, $GpAuPath)) {
+    Write-Output ""
+    Write-Output "[$Path]"
+    if (Test-Path $Path) {
+        Get-ItemProperty -Path $Path |
+            Select-Object `
+                WUServer,
+                WUStatusServer,
+                UseWUServer,
+                DisableDualScan,
+                DeferFeatureUpdatesPeriodInDays,
+                DeferQualityUpdatesPeriodInDays,
+                ProductVersion,
+                TargetReleaseVersion,
+                TargetReleaseVersionInfo,
+                SetPolicyDrivenUpdateSourceForFeatureUpdates,
+                SetPolicyDrivenUpdateSourceForQualityUpdates,
+                NoAutoUpdate,
+                AUOptions |
+            Format-List
+    } else {
+        Write-Output "Not present"
+    }
+}
+```
+
+Expected output shape:
+
+```text
+[HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate]
+WUServer                                  : http://<wsus-server>:8530
+WUStatusServer                            : http://<wsus-server>:8530
+DisableDualScan                           : <value or blank>
+TargetReleaseVersion                      : <value or blank>
+TargetReleaseVersionInfo                  : <version or blank>
+SetPolicyDrivenUpdateSourceForQualityUpdates : <value or blank>
+
+[HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU]
+UseWUServer : 1
+AUOptions   : <value>
+```
+
+If `WUServer` and `UseWUServer` are present on a device that should be WUfB-managed, you have found a likely conflict. Either the device is intentionally WSUS-managed, or a legacy GPO, MECM client setting or baseline is still in scope.
+
+Microsoft's underlying CSP documentation is here: [Update Policy CSP](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update).
+
+## Step 7: MDM Bridge WMI Check
+
+Some devices show clearer MDM policy state through the MDM Bridge WMI provider than through the flattened registry view.
+
+Run this locally as administrator:
+
+```powershell
+Get-CimInstance -Namespace "root\cimv2\mdm\dmmap" `
+    -ClassName "MDM_Policy_Config01_Update02" |
+    Select-Object `
+        ParentID,
+        InstanceID,
+        DeferFeatureUpdatesPeriodInDays,
+        DeferQualityUpdatesPeriodInDays,
+        PauseFeatureUpdatesStartTime,
+        PauseQualityUpdatesStartTime,
+        ProductVersion,
+        TargetReleaseVersion |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+ParentID                         : ./Vendor/MSFT/Policy/Config
+InstanceID                       : Update
+DeferFeatureUpdatesPeriodInDays  : <number>
+DeferQualityUpdatesPeriodInDays  : <number>
+ProductVersion                   : Windows 11
+TargetReleaseVersion             : 24H2
+```
+
+If the class is missing or the values are blank, return to Intune assignment and MDM sync before blaming Windows Update itself.
+
+## Step 8: Event Logs
+
+Use event logs to separate policy delivery from update scan and install behaviour.
+
+### MDM Policy Delivery
+
+Check the Device Management Enterprise Diagnostics Provider log:
+
+```powershell
+$Start = (Get-Date).AddDays(-7)
+
+Get-WinEvent -FilterHashtable @{
+    LogName   = "Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin"
+    StartTime = $Start
+} |
+Where-Object { $_.Message -match "Policy/Config/Update|WindowsUpdate|Update/" } |
+Select-Object TimeCreated, Id, ProviderName, Message |
+Format-List
+```
+
+Look for messages that mention:
+
+- `Policy/Config/Update/DeferFeatureUpdatesPeriodInDays`
+- `Policy/Config/Update/DeferQualityUpdatesPeriodInDays`
+- `Policy/Config/Update/ProductVersion`
+- `Policy/Config/Update/TargetReleaseVersion`
+- `Policy/Config/Update/SetPolicyDrivenUpdateSourceForQualityUpdates`
+
+If you see errors around these settings, the problem is policy application, not Windows Update timing.
+
+### Windows Update Client
+
+Check Windows Update client activity:
+
+```powershell
+$Start = (Get-Date).AddDays(-14)
+
+Get-WinEvent -FilterHashtable @{
+    LogName   = "Microsoft-Windows-WindowsUpdateClient/Operational"
+    StartTime = $Start
+} |
+Select-Object TimeCreated, Id, LevelDisplayName, Message |
+Sort-Object TimeCreated -Descending |
+Select-Object -First 40 |
+Format-List
+```
+
+Expected output shape:
+
+```text
+TimeCreated      : <date and time>
+Id               : <event id>
+LevelDisplayName : Information
+Message          : Installation Successful: Windows successfully installed the following update: <update name>
+```
+
+Also review Update Orchestrator:
+
+```powershell
+Get-WinEvent -FilterHashtable @{
+    LogName   = "Microsoft-Windows-UpdateOrchestrator/Operational"
+    StartTime = (Get-Date).AddDays(-14)
+} |
+Select-Object TimeCreated, Id, LevelDisplayName, Message |
+Sort-Object TimeCreated -Descending |
+Select-Object -First 40 |
+Format-List
+```
+
+If you need the old-style `WindowsUpdate.log`:
+
+```powershell
+Get-WindowsUpdateLog -LogPath C:\Temp\WindowsUpdate.log
+```
+
+Search the generated log for the KB number, the feature update title, `policy`, `WSUS`, `scan`, and `deferral`.
+
+## Step 9: Graph Checks Where Useful
+
+Graph is useful for proving what Intune has configured and assigned. It does not replace local endpoint evidence.
+
+Install and connect with the Microsoft Graph PowerShell SDK:
+
+```powershell
+Connect-MgGraph -Scopes `
+    "DeviceManagementConfiguration.Read.All",
+    "DeviceManagementManagedDevices.Read.All",
+    "Device.Read.All",
+    "Group.Read.All"
+```
+
+List Windows Update for Business update rings:
+
+```powershell
+$Uri = "https://graph.microsoft.com/v1.0/deviceManagement/deviceConfigurations?`$filter=isof('microsoft.graph.windowsUpdateForBusinessConfiguration')"
+$Rings = Invoke-MgGraphRequest -Method GET -Uri $Uri
+
+$Rings.value |
+    Select-Object `
+        id,
+        displayName,
+        featureUpdatesDeferralPeriodInDays,
+        qualityUpdatesDeferralPeriodInDays,
+        featureUpdatesPaused,
+        qualityUpdatesPaused,
+        featureUpdatesPauseExpiryDateTime,
+        qualityUpdatesPauseExpiryDateTime,
+        deadlineForFeatureUpdatesInDays,
+        deadlineForQualityUpdatesInDays,
+        allowWindows11Upgrade |
+    Format-Table -AutoSize
+```
+
+Expected output shape:
+
+```text
+id        displayName             featureUpdatesDeferralPeriodInDays qualityUpdatesDeferralPeriodInDays ...
+--        -----------             ----------------------------------- ----------------------------------- ---
+<guid>    Windows Update - Pilot   30                                  7                                   ...
+<guid>    Windows Update - Broad   90                                  14                                  ...
+```
+
+Check assignments for a specific ring:
+
+```powershell
+$RingId = "<update-ring-policy-id>"
+Invoke-MgGraphRequest -Method GET `
+    -Uri "https://graph.microsoft.com/v1.0/deviceManagement/deviceConfigurations/$RingId/assignments" |
+    Select-Object -ExpandProperty value |
+    Select-Object id, target |
+    Format-List
+```
+
+Expected output shape:
+
+```text
+id     : <assignment id>
+target : @{groupId=<group id>; @odata.type=#microsoft.graph.groupAssignmentTarget}
+```
+
+Check whether a device is in the expected assignment group:
+
+```powershell
+$DeviceName = "DEVICE-NAME"
+$Device = Get-MgDevice -Filter "displayName eq '$DeviceName'" -ConsistencyLevel eventual
+
+Get-MgDeviceTransitiveMemberOf -DeviceId $Device.Id -All |
+    Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } |
+    Select-Object Id, @{ Name = "DisplayName"; Expression = { $_.AdditionalProperties.displayName } } |
+    Sort-Object DisplayName
+```
+
+Expected output shape:
+
+```text
+Id                                    DisplayName
+--                                    -----------
+<group id>                            Windows Update - Pilot Devices
+<group id>                            All Windows Workstations
+```
+
+Microsoft's Graph resource for update rings is here: [windowsUpdateForBusinessConfiguration resource type](https://learn.microsoft.com/en-us/graph/api/resources/intune-deviceconfig-windowsupdateforbusinessconfiguration?view=graph-rest-1.0).
+
+## Step 10: Group Policy, MECM, WSUS and Co-management Conflicts
+
+This is where most "Intune ignored my deferral" cases are finally explained.
+
+### Group Policy
+
+Generate a local report:
+
+```cmd
+gpresult /H C:\Temp\gpresult.html /F
+```
+
+Open the report and review:
+
+```text
+Computer Configuration > Administrative Templates > Windows Components > Windows Update
+```
+
+Look for:
+
+- Specify intranet Microsoft update service location
+- Configure Automatic Updates
+- Select when Preview Builds and Feature Updates are received
+- Select when Quality Updates are received
+- Do not allow update deferral policies to cause scans against Windows Update
+- Select the target Feature Update version
+
+If these are configured by GPO and Intune is also configuring them, decide which authority should own update policy. Do not try to make both planes set the same values.
+
+Microsoft's MDM over Group Policy conflict setting is documented here: [Policy CSP - ControlPolicyConflict](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-controlpolicyconflict). Be careful with it. `MDMWinsOverGP` applies to Policy CSP settings where there is an equivalent Group Policy. It does not solve every conflict.
+
+### WSUS
+
+If WSUS should not be in the path, these are red flags:
+
+```text
+WUServer      : http://<wsus-server>:8530
+WUStatusServer: http://<wsus-server>:8530
+UseWUServer   : 1
+```
+
+For WUfB-managed devices, the usual target state is:
+
+- No legacy `WUServer` policy unless deliberately using WSUS for a specific content type
+- No `UseWUServer = 1` from a broad GPO
+- Scan source policies understood and documented
+- Windows Update endpoints reachable from the device
+
+### MECM and Co-management
+
+On co-managed devices, confirm the Windows Update workload.
+
+In Configuration Manager:
+
+1. Open **Administration > Cloud Services > Cloud Attach > Co-management**.
+2. Open the co-management properties.
+3. Check the **Windows Update policies** workload.
+4. Confirm whether the affected collection is in Pilot Intune or Intune, not still Configuration Manager.
+
+On the client, review these logs if the Configuration Manager client is installed:
+
+```text
+C:\Windows\CCM\Logs\CoManagementHandler.log
+C:\Windows\CCM\Logs\WUAHandler.log
+C:\Windows\CCM\Logs\UpdatesDeployment.log
+```
+
+If MECM still deploys software updates, Intune deferrals may not be the controlling mechanism. Microsoft notes that after moving the Windows Update workload to Intune, Configuration Manager client settings for the software update workflow need to be adjusted. See [Co-management workloads](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads).
+
+## Step 11: Decide the Fix
+
+Use the evidence to choose a narrow fix.
+
+| Evidence | Safer fix |
+|---|---|
+| Device not in target group | Fix group membership or assignment, then sync device |
+| Device in exclusion group | Remove exclusion or move device to correct pilot group |
+| Two rings target same device | Consolidate rings or isolate the device in one ring |
+| Settings Catalog also writes Update CSP | Remove duplicate setting or document which policy owns it |
+| Feature update policy target is wrong | Correct the target version and monitor feature update report |
+| Device already on later feature version | Use rollback window or rebuild plan, because policy will not downgrade |
+| Expedite policy installed the KB | Correct expedite scope, not ring deferral |
+| WSUS policy present unexpectedly | Remove or narrow GPO, MECM client setting or baseline |
+| Co-management workload still in MECM | Move Windows Update workload or stop expecting Intune to control it |
+| MDM registry values are absent | Force sync, check MDM enrolment, then collect diagnostics |
+| Event logs show Windows Update scan source errors | Fix network, WSUS, proxy or Windows Update service health |
+
+Trigger an Intune sync after policy correction:
+
+```powershell
+Start-Process "ms-settings:workplace"
+```
+
+Then use **Access work or school > Info > Sync** on the device, or send **Sync** from the Intune device action. Wait for check-in before re-reading the registry.
+
+For repeatable fleet reporting, use your own export or adapt the approach in [Get Patch Compliance Report](/scripts/get-patch-compliance-report). For wider scripting patterns, see the [PowerShell hub](/powershell).
+
+## Safe Recovery and Rollback Steps
+
+Use recovery actions carefully. Some Intune update actions can trigger installation, uninstall or restart quickly after device check-in.
+
+### If a Bad Quality Update Installed
+
+First pause the affected ring for quality updates if you need to stop further exposure. Remember that a pause is temporary and expires after 35 days.
+
+Then choose one rollback method:
+
+1. In Intune, open the affected update ring and use **Uninstall** for quality updates if you want Intune to request rollback of the latest quality update.
+2. On a single device, uninstall the specific KB if it is uninstallable:
+
+```cmd
+wusa /uninstall /kb:KBNUMBER /quiet /norestart
+```
+
+Replace `KBNUMBER` with the numeric part only, for example `5030000`, not `KB5030000`.
+
+Check the result:
+
+```powershell
+Get-HotFix | Where-Object HotFixID -eq "KBxxxxxxx"
+```
+
+If the update is permanent or part of a later cumulative update, Windows may not remove it with `wusa`.
+
+### If a Bad Feature Update Installed
+
+Check the rollback window:
+
+```cmd
+DISM /Online /Get-OSUninstallWindow
+```
+
+If the device is still inside the rollback window, you can use Intune's update ring **Uninstall** action for feature updates, or perform a local rollback through Windows recovery options.
+
+For local command line recovery, test on one device first:
+
+```cmd
+DISM /Online /Initiate-OSUninstall
+```
+
+Do not run this across a fleet without a change plan. Feature update rollback can require restart and can fail if cleanup has already removed the previous OS files.
+
+### If Policy Is Wrong but Updates Have Not Installed
+
+Use the least disruptive option:
+
+1. Pause feature or quality updates on the affected ring.
+2. Create a temporary quarantine device group.
+3. Exclude the group from the bad policy.
+4. Assign the corrected ring or target policy.
+5. Sync a small pilot set and confirm local registry values.
+6. Only then expand the fix.
+
+Avoid deleting an update ring as your first recovery step. Microsoft notes that deleting a ring stops Intune enforcing that ring, but devices can keep the current settings and can receive values from other rings.
+
+## Prevention Checklist
+
+Before the next patch cycle:
+
+- [ ] Every update ring has a named owner and a clear purpose: test, pilot, broad or exception.
+- [ ] Update rings are assigned to device groups unless there is a specific reason to use user groups.
+- [ ] Feature update policies are used for target version control, not as a substitute for quality update deferrals.
+- [ ] Feature deferrals are not duplicated in update rings when feature update policies already control the target version.
+- [ ] Quality expedite policies have narrow, time-bound assignments.
+- [ ] Autopatch-managed devices are not also targeted by unmanaged custom rings unless this is deliberate.
+- [ ] Co-managed devices have the Windows Update workload set to the intended authority.
+- [ ] MECM software update client settings are adjusted when the workload moves to Intune.
+- [ ] Legacy WSUS GPOs do not apply to Intune-managed WUfB devices unless scan source policy is deliberately split.
+- [ ] `WUServer`, `UseWUServer`, `DisableDualScan`, `TargetReleaseVersionInfo`, and CSP values are included in your patch compliance evidence.
+- [ ] One pilot device per ring is checked locally after every major policy change.
+- [ ] Rollback windows are documented before feature updates are deployed.
+- [ ] Update event logs and Intune reports are captured before resetting or rebuilding affected devices.
+
+## Related Resources
+
+- [Patch Management hub](/patch-management)
+- [Microsoft Intune hub](/intune)
+- [SCCM and MECM hub](/sccm-mecm)
+- [PowerShell hub](/powershell)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Get Patch Compliance Report](/scripts/get-patch-compliance-report)
+- [Microsoft documentation: Manage Windows Update ring policies](https://learn.microsoft.com/en-us/intune/device-updates/windows/manage-update-rings)
+- [Microsoft documentation: Update Policy CSP](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-update)
+- [Microsoft documentation: Feature updates for Windows 10 and later in Intune](https://learn.microsoft.com/en-us/intune/intune-service/protect/windows-10-feature-updates)
+- [Microsoft documentation: Manage Windows quality updates](https://learn.microsoft.com/en-us/intune/device-updates/windows/manage-quality-updates)
+- [Microsoft documentation: Co-management workloads](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads)

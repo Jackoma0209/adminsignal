@@ -15,6 +15,20 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '7',
+    title: 'Windows Update for Business Deferral Policy Not Applying in Intune: Practical Diagnosis',
+    slug: 'wufb-deferral-not-respected',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical diagnostic guide for Windows Update for Business deferrals that are ignored, overwritten, or blocked by feature update policies, quality update policies, Group Policy, WSUS, MECM, or co-management.',
+    affectedProducts: ['Microsoft Intune', 'Windows Update for Business', 'Windows 11', 'Windows 10'],
+    difficulty: 'Intermediate',
+    date: 'May 7, 2026',
+    publishedAt: '2026-05-07',
+    readTime: '18 min read',
+    authorId: 'jack',
+  },
+  {
     id: '1',
     title: 'Windows Autopilot Enrollment Status Page Stuck at 0% — Causes and Fixes',
     slug: 'autopilot-enrollment-status-page-stuck',
