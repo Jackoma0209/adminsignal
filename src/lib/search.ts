@@ -44,7 +44,7 @@ function buildIndex(): IndexItem[] {
   const items: IndexItem[] = []
 
   for (const s of signals) {
-    const text = [s.title, s.excerpt, s.category, s.source ?? '', ...(s.tags ?? [])].join(' ')
+    const text = [s.title, s.slug, s.excerpt, s.category, s.source ?? '', ...(s.tags ?? [])].join(' ')
     items.push({
       title: s.title,
       excerpt: s.excerpt,
@@ -57,7 +57,7 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const g of guides) {
-    const text = [g.title, g.excerpt, g.category, ...(g.tags ?? [])].join(' ')
+    const text = [g.title, g.slug, g.excerpt, g.category, ...(g.tags ?? [])].join(' ')
     items.push({
       title: g.title,
       excerpt: g.excerpt,
@@ -70,7 +70,7 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const s of scripts) {
-    const text = [s.title, s.description, s.language, ...s.tags].join(' ')
+    const text = [s.title, s.slug, s.description, s.language, ...s.tags].join(' ')
     items.push({
       title: s.title,
       excerpt: s.description,
@@ -83,7 +83,7 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const r of reviews) {
-    const text = [r.title, r.excerpt, r.productName, r.category, r.verdict].join(' ')
+    const text = [r.title, r.slug, r.excerpt, r.productName, r.category, r.verdict].join(' ')
     items.push({
       title: r.title,
       excerpt: r.excerpt,
@@ -96,7 +96,7 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const c of comparisons) {
-    const text = [c.title, c.excerpt, c.productA, c.productB, c.category, c.verdict].join(' ')
+    const text = [c.title, c.slug, c.excerpt, c.productA, c.productB, c.category, c.verdict].join(' ')
     items.push({
       title: c.title,
       excerpt: c.excerpt,
@@ -109,7 +109,7 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const a of troubleshootingArticles) {
-    const text = [a.title, a.excerpt, a.category, ...a.affectedProducts].join(' ')
+    const text = [a.title, a.slug, a.excerpt, a.category, ...a.affectedProducts].join(' ')
     items.push({
       title: a.title,
       excerpt: a.excerpt,
