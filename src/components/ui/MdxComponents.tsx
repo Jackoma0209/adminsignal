@@ -9,6 +9,7 @@ import type { MDXComponents } from 'mdx/types'
 import type React from 'react'
 import CodeBlock from '@/components/ui/CodeBlock'
 import Checklist from '@/components/ui/Checklist'
+import { slugifyHeading } from '@/lib/content'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -71,9 +72,29 @@ function Table({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) {
   )
 }
 
+// ── Headings ────────────────────────────────────────────────────────────────
+
+function createHeading(level: 1 | 2 | 3) {
+  const Tag = `h${level}` as const
+
+  function Heading({ children, id, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+    const headingId = id ?? slugifyHeading(extractText(children))
+    return (
+      <Tag id={headingId} {...props}>
+        {children}
+      </Tag>
+    )
+  }
+
+  return Heading
+}
+
 // ── Exports ────────────────────────────────────────────────────────────────
 
 export const mdxComponents: MDXComponents = {
+  h1: createHeading(1),
+  h2: createHeading(2),
+  h3: createHeading(3),
   pre: Pre,
   table: Table,
   Checklist,

@@ -115,7 +115,7 @@ export default async function ComparisonArticlePage({ params }: Props) {
           {lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />}
 
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px]">
-            <article>
+            <article className="min-w-0">
               <header className="mb-8">
                 <div className="mb-4">
                   <Badge variant="category">{comparison.category}</Badge>
