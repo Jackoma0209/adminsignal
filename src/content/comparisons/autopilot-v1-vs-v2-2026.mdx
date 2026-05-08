@@ -1,0 +1,579 @@
+---
+title: "Windows Autopilot v1 vs. Device Preparation v2 in 2026: Practical Intune Admin Comparison"
+category: "Endpoint Management"
+date: "May 8, 2026"
+authorId: "jack"
+lastReviewed: "May 8, 2026"
+reviewNote: "Checked against current Microsoft Learn guidance for Windows Autopilot, Windows Autopilot Device Preparation, ESP, registration, supported scenarios, requirements, and app limits on May 8, 2026."
+tags: ["Windows Autopilot", "Intune", "Device Preparation", "Microsoft Entra ID", "Endpoint Management"]
+---
+
+## Who This Comparison Is For
+
+This comparison is for Intune admins who already use Windows Autopilot, or who are planning a Windows 11 provisioning design and need to decide whether the newer Windows Autopilot Device Preparation experience should replace, sit beside, or avoid their current Autopilot profiles.
+
+It is not a procurement comparison and it is not a generic list of wizard screens. It is about the operational decisions that cause real deployment failures:
+
+- Whether the device is Microsoft Entra joined or Microsoft Entra hybrid joined
+- Whether the device is registered with the Windows Autopilot service
+- Whether the build depends on hardware hash upload, corporate identifiers, dynamic groups, ESP, pre-provisioning, self-deploying mode, or kiosk behaviour
+- Whether the helpdesk can see where the deployment failed
+- Whether the migration plan has a fallback path when a pilot does not behave like the design document
+
+For wider Intune architecture, keep the [Intune hub](/intune) open beside this guide. For identity design, use the [Microsoft Entra ID hub](/microsoft-entra-id). If you are building a new Windows 11 rollout, the companion implementation guide is [Deploy Windows 11 25H2 with Intune and Autopilot v2](/guides/windows-11-25h2-autopilot-v2).
+
+## Tested Environment Note
+
+The practical checks in this comparison are written for a current Intune admin workflow using Windows 11 Enterprise, Microsoft Intune, Microsoft Entra ID, and Microsoft Graph style checks. The Device Preparation sections assume Windows 11 24H2, or Windows 11 23H2 or 22H2 with the required update level from Microsoft's Device Preparation requirements.
+
+The command output examples show shape only. They do not contain tenant-specific device names, serial numbers, object IDs, user names, or customer data. Replace placeholders such as `<serial-number>`, `<group-name>`, and `<policy-name>` with values from your own tenant.
+
+## Naming Clarification
+
+Microsoft's formal names are:
+
+- **Windows Autopilot** for the classic Autopilot service, profiles, hardware hash registration, ESP integration, pre-provisioning, self-deploying mode, existing device flows, and reset scenarios.
+- **Windows Autopilot Device Preparation** for the newer provisioning architecture that uses a Device Preparation policy, enrolment time grouping, a selected device security group, and a simplified OOBE progress experience.
+
+In admin conversations, the older experience is often called **Autopilot v1** and Device Preparation is often called **Autopilot v2**. Microsoft does not always use those short names in product documentation. This article uses **v1** for classic Windows Autopilot and **v2** for Windows Autopilot Device Preparation because that is the practical comparison most Intune teams are trying to make.
+
+One rule matters more than the label: if a device is already registered as a Windows Autopilot device and has a classic Autopilot profile, that classic profile takes precedence over Device Preparation. A device cannot run both flows at the same time.
+
+## Source Check Used For This Comparison
+
+This article was checked against these Microsoft sources:
+
+- [Compare Windows Autopilot Device Preparation and Windows Autopilot](https://learn.microsoft.com/en-us/autopilot/device-preparation/compare)
+- [Overview of Windows Autopilot Device Preparation](https://learn.microsoft.com/en-us/autopilot/device-preparation/overview)
+- [Windows Autopilot Device Preparation requirements](https://learn.microsoft.com/en-us/autopilot/device-preparation/requirements)
+- [Windows Autopilot Device Preparation FAQ](https://learn.microsoft.com/en-us/autopilot/device-preparation/faq)
+- [Windows Autopilot Device Preparation: What's new](https://learn.microsoft.com/en-us/autopilot/device-preparation/whats-new)
+- [Windows Autopilot scenarios](https://learn.microsoft.com/en-us/autopilot/tutorial/autopilot-scenarios)
+- [Windows Autopilot registration overview](https://learn.microsoft.com/en-us/autopilot/registration-overview)
+- [Windows Autopilot Enrollment Status Page](https://learn.microsoft.com/en-us/autopilot/enrollment-status)
+- [Windows Autopilot for pre-provisioned deployment](https://learn.microsoft.com/en-us/autopilot/pre-provision)
+- [Windows Autopilot self-deploying mode](https://learn.microsoft.com/en-us/autopilot/tutorial/self-deploying/self-deploying-workflow)
+
+Microsoft is still developing Device Preparation. Recheck the Learn pages before turning a pilot design into a production standard.
+
+## Executive Recommendation
+
+Use **Device Preparation v2** when the target build is a new Windows 11, Microsoft Entra joined, user-driven deployment and your goal is to make OOBE faster, simpler, and easier to report on.
+
+Use **Autopilot v1** when the deployment needs Microsoft Entra hybrid join, pre-provisioning, self-deploying kiosk style deployment, Windows 10 support, existing device flows, Windows Autopilot Reset, or detailed ESP behaviour that blocks access until user-based configuration has applied.
+
+Run **both side by side** when your estate contains more than one deployment pattern. In 2026 that is the normal answer for many organisations. Treat v2 as the clean path for new cloud-native Windows 11 devices, not as a forced replacement for every v1 scenario.
+
+## Quick Comparison Table
+
+| Area | Autopilot v1 | Device Preparation v2 |
+|---|---|---|
+| Formal Microsoft name | Windows Autopilot | Windows Autopilot Device Preparation |
+| Best fit | Mature deployments with varied scenarios | New Windows 11 Microsoft Entra joined user-driven deployments |
+| Device registration | Requires Windows Autopilot registration for normal Autopilot deployment | Does not require Autopilot registration |
+| Identity support | Microsoft Entra join and Microsoft Entra hybrid join, depending on scenario | Microsoft Entra join only |
+| Windows support | Supported Windows 10 and Windows 11 channels, depending on current support | Windows 11 24H2 or Windows 11 23H2 or 22H2 with required update level |
+| User-driven mode | Supported | Supported |
+| Pre-provisioning | Supported | Not currently supported |
+| Self-deploying mode | Supported | Not currently supported for physical kiosk style devices |
+| Existing devices | Supported through the existing devices flow | Not currently supported |
+| Autopilot Reset | Supported | Not currently supported |
+| Assignment model | Deployment profile assigned to device groups | Device Preparation policy assigned to user groups, with a selected device security group |
+| OOBE tracking | Enrollment Status Page | Device Preparation progress experience, not ESP |
+| Apps during provisioning | Up to 100 applications in Microsoft's comparison guidance | Up to 25 managed applications and 10 PowerShell scripts |
+| User-based configuration during provisioning | Can be tracked in user ESP | Not delivered during OOBE |
+| Reporting | Autopilot deployment report, not near real-time | Device Preparation deployment report with near real-time status |
+| Mixing LOB and Win32 in the same deployment | Avoid for ESP critical v1 deployments | Supported by Device Preparation |
+
+## What Autopilot v1 Still Does Well
+
+Autopilot v1 is not dead weight. It is still the broader deployment platform.
+
+### It covers more scenarios
+
+Classic Windows Autopilot still handles user-driven, pre-provisioned, self-deploying, existing device, and reset scenarios. If your estate uses more than simple user-driven laptop provisioning, v1 still has the wider coverage.
+
+Pre-provisioning is the obvious example. If IT, a partner, or an OEM needs to complete the heavy device setup before shipping the device to the user, v1 remains the supported path. The user still completes OOBE, but the long device setup work has already happened.
+
+Self-deploying mode is another example. Shared devices, kiosks, and digital signage builds need a flow where no named user signs in to drive deployment. Classic self-deploying mode exists for that design. Device Preparation does not replace it for physical Windows kiosk deployments.
+
+### It supports Microsoft Entra hybrid join where you still need it
+
+Microsoft recommends Microsoft Entra join for new cloud-native endpoints, but some organisations still have hard dependencies on on-premises Active Directory. Classic Autopilot user-driven and pre-provisioned scenarios can support Microsoft Entra hybrid join. Device Preparation v2 cannot.
+
+That does not mean hybrid join should be the default. It means v1 is still the practical option where the dependency has not been removed.
+
+### It gives you deeper ESP control
+
+The Enrollment Status Page can block access while device and user setup completes. It can track device-based and user-based stages, force selected apps, allow log collection, and control what a user can do when setup fails.
+
+That control can also make v1 deployments more fragile. A badly chosen blocking app, a user-targeted dependency, or a slow dynamic group can make ESP look like the deployment problem when it is really exposing an assignment problem.
+
+### It is better for older or mixed estates
+
+If you still deploy supported Windows 10 devices, HoloLens, Teams Rooms, DFCI scenarios, co-management entry points, or existing devices through Configuration Manager, v1 is still the supported Autopilot family. Device Preparation is deliberately narrower.
+
+For a broader cloud management decision, see [Intune vs. SCCM/MECM](/comparisons/intune-vs-sccm-mecm-2025).
+
+## What Device Preparation v2 Changes
+
+Device Preparation v2 is not just a cleaner wizard. It changes the deployment mechanics.
+
+### The policy starts from the user, not a pre-registered device
+
+In v1, the normal flow starts with a Windows Autopilot device identity. The device is registered with the Autopilot service, usually by OEM, reseller, partner, CSV import, or hardware hash collection.
+
+In v2, the Device Preparation policy is assigned to a user group. When a user in scope signs in during OOBE, the policy runs and the device is added to the selected device security group through enrolment time grouping.
+
+That difference removes a lot of pre-staging work for clean Microsoft Entra joined user-driven deployments.
+
+### Enrolment time grouping replaces the usual dynamic group wait
+
+Classic v1 designs often depend on dynamic device groups based on Autopilot attributes such as group tag, purchase order, or profile assignment. Those groups work, but the wait time can be painful during pilots and helpdesk rebuilds.
+
+Device Preparation uses a selected assigned device security group. During enrolment, the device is added to that group. Apps, scripts, and device policies assigned to that group can then flow without waiting for a dynamic membership query to catch up.
+
+If your existing pain is dynamic group delay, the related troubleshooting guide is [Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating).
+
+### The reporting model is better
+
+Microsoft's Device Preparation reporting is designed to be nearer to real time and more explicit about app and script status. That matters in support because "Autopilot failed" is rarely specific enough. You need to know whether the issue was policy selection, app install, script execution, user sign-in, network access, or a device that accidentally ran the wrong flow.
+
+### OOBE is simpler
+
+Device Preparation does not use the Enrollment Status Page. It uses its own setup progress experience and completion page. That can be less confusing for users, but it also means you lose some ESP-specific controls.
+
+If you expect ESP and see the Device Preparation progress page, check the policy design. If you expect Device Preparation and see ESP, check whether the device is still registered for classic Autopilot or has a classic profile assignment.
+
+## Supported and Unsupported Scenarios
+
+The fastest way to choose wrongly is to compare the two products only by "newer" and "older". Compare by scenario instead.
+
+| Scenario | Use v1? | Use v2? | Practical note |
+|---|---:|---:|---|
+| New Windows 11 laptop for one user, Microsoft Entra join | Yes | Yes | v2 is usually the cleaner starting point |
+| New Windows 11 laptop for one user, Microsoft Entra hybrid join | Yes | No | v2 does not support hybrid join |
+| Windows 10 deployment | Yes | No | v2 is Windows 11 only |
+| Pre-provisioned deployment by IT, OEM, or reseller | Yes | No | Keep v1 for technician flow |
+| Self-deploying shared device or kiosk | Yes | No | Keep v1 self-deploying mode |
+| Existing device reinstall through ConfigMgr before Autopilot | Yes | No | v1 existing devices flow remains the path |
+| Windows Autopilot Reset | Yes | No | v2 does not replace reset |
+| Windows 365 automatic Device Preparation | No | Yes | v2 has automatic mode for supported Windows 365 scenarios |
+| GCCH or DoD tenant needing Device Preparation | Check current docs | Yes | Device Preparation adds support where classic Autopilot coverage is different |
+| HoloLens or Teams Rooms | Yes | No | Do not assume v2 covers non-standard Windows endpoints |
+
+## Entra Joined vs. Hybrid Joined Devices
+
+This is the fork in the road.
+
+Device Preparation v2 supports Microsoft Entra join only. If your target state is cloud-native Windows endpoints, that is fine and often desirable. If the device must join on-premises Active Directory during provisioning, v2 is not the right tool.
+
+Classic Autopilot can support Microsoft Entra hybrid join in the scenarios Microsoft documents, but hybrid join brings operational requirements:
+
+- The device needs domain controller connectivity at the right point in the flow.
+- VPN, line of sight, certificates, DNS, and time sync become deployment dependencies.
+- Remote user provisioning is harder to support.
+- Troubleshooting spreads across Intune, Entra ID, AD, network, and device logs.
+
+If a new deployment can be Microsoft Entra joined, design it that way first. Use hybrid join only when an application, policy, network, or identity dependency genuinely requires it.
+
+## Pre-Provisioning Considerations
+
+Pre-provisioning is still a strong v1 feature. It reduces the time the end user spends waiting because IT, an OEM, or a reseller completes the device setup phase before handover.
+
+Use v1 pre-provisioning when:
+
+- Devices pass through IT before they reach users.
+- A partner or reseller can run the technician flow.
+- Required apps are large or slow.
+- The user experience must be shortened.
+- The device is primarily assigned to one user.
+
+Do not plan a Device Preparation v2 migration for pre-provisioned builds until Microsoft supports that scenario. A v2 pilot that looks great for direct ship user-driven laptops does not prove anything about pre-provisioned warehouse or VIP builds.
+
+## Self-Deploying and Kiosk Considerations
+
+Classic self-deploying mode is for devices that do not need a named user to complete deployment. Think shared devices, kiosks, signage, and similar use cases.
+
+Keep v1 self-deploying mode when:
+
+- The device should enrol without a user sign-in.
+- The device should not be assigned to a primary user during deployment.
+- TPM attestation is available and reliable.
+- The device is Microsoft Entra joined, not hybrid joined.
+- ESP should block access until the device is ready.
+
+Device Preparation automatic mode exists for supported Windows 365 scenarios, but that is not the same as physical self-deploying kiosk support. Do not treat those as interchangeable.
+
+## Hardware Hash vs. Corporate Identifiers
+
+This is one of the biggest operational differences.
+
+### Autopilot v1 uses device registration
+
+Classic Autopilot identifies a device through the Windows Autopilot registration record. That usually means the hardware hash is captured and uploaded, or the OEM, reseller, or distributor registers the device for your tenant.
+
+The v1 check is simple:
+
+```text
+Question: Is this device registered with Windows Autopilot?
+Expected shape:
+
+Serial number     Group tag       Profile status
+<serial-number>   <group-tag>     Assigned or pending
+```
+
+If the device is not registered, the normal v1 Autopilot flow will not target it as expected. If the hash import fails, use [Autopilot Device Not Importing Hardware Hash](/troubleshooting/autopilot-device-not-importing-hardware-hash).
+
+### Device Preparation v2 does not require Autopilot registration
+
+Device Preparation does not need the device to be registered as a classic Windows Autopilot device. In fact, if the device is registered for v1 and has a v1 profile, that v1 profile takes precedence.
+
+Corporate identifiers are different from Autopilot hardware hash registration. In Intune, corporate identifiers let you mark Windows devices as corporate-owned by serial number, manufacturer, and model. For Device Preparation, they become important when enrolment restrictions block personal Windows devices.
+
+The practical check is:
+
+```text
+Question: Are personal Windows enrolments blocked?
+
+If yes:
+  Upload corporate identifiers for the Windows devices you expect to use with v2.
+
+If no:
+  Corporate identifiers are useful for ownership hygiene, but they are not the same as a v1 hardware hash requirement.
+```
+
+## Deployment Profile Assignment Differences
+
+Autopilot v1 and Device Preparation v2 assign at different points in the process.
+
+| Assignment area | Autopilot v1 | Device Preparation v2 |
+|---|---|---|
+| Main deployment object | Autopilot deployment profile | Device Preparation policy |
+| Primary assignment target | Device group | User group |
+| Device group use | Often dynamic, based on Autopilot attributes | Selected assigned device security group |
+| Multiple policies | Profile assignment depends on device membership and profile targeting | Highest priority Device Preparation policy assigned to the user wins |
+| Common delay | Dynamic group membership and profile assignment | User scope or selected device group/app assignment mistakes |
+
+For v1, the useful admin question is:
+
+```text
+Is the device in the correct Autopilot device group, and has the deployment profile assigned?
+```
+
+For v2, the useful admin question is:
+
+```text
+Is the user in scope for the Device Preparation policy, and does the selected device group have the right apps, scripts, and policies assigned?
+```
+
+For v2, the selected device security group should be an assigned group, not a dynamic group that reintroduces the delay you are trying to avoid.
+
+## Enrollment Status Page Differences
+
+ESP is central to v1 and not used by v2.
+
+| ESP area | Autopilot v1 | Device Preparation v2 |
+|---|---|---|
+| Uses ESP | Yes | No |
+| Device setup tracking | Yes | Device Preparation report and progress experience |
+| User setup tracking | Yes, if user ESP is configured | No, user-based configuration is not delivered during OOBE |
+| Blocking access to desktop for user-based configuration | Supported | Not supported |
+| Log collection path | ESP and Autopilot diagnostics | Device Preparation diagnostics and deployment report |
+
+If a v1 device is stuck at ESP, use [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck).
+
+If a v2 device shows ESP, suspect that it is not actually running v2. Check for a classic Autopilot registration and profile assignment first.
+
+## App Deployment and Required App Limits
+
+Microsoft's current comparison guidance says Device Preparation can deliver up to 25 essential managed applications and up to 10 PowerShell scripts during OOBE. The older 10 app limit appears in some older step-by-step context, but Microsoft's 2026 "What's new" page and comparison page reflect the 25 app update.
+
+That does not mean you should put 25 apps into every v2 policy. Treat the limit as a ceiling, not a target.
+
+### For v2, keep OOBE essential
+
+Good v2 OOBE candidates:
+
+- VPN or network access components needed immediately
+- Security agent or Defender onboarding dependencies
+- Remote support agent
+- Browser if it is a business standard
+- Microsoft 365 Apps if required before first productive use
+- One or two validation scripts that set required device state
+
+Poor v2 OOBE candidates:
+
+- Large optional business apps
+- Apps with slow content delivery
+- Apps with user context install requirements
+- Apps that need the user profile to exist first
+- Apps that can install after the desktop without business risk
+
+The expected v2 app check shape is:
+
+```text
+Device Preparation policy: <policy-name>
+Selected managed apps:     <number up to 25>
+Selected scripts:          <number up to 10>
+Assignment target:         <device security group>
+Install context:           System or device context where applicable
+```
+
+For v1, ESP can block on a much larger application set, but that does not make it a good idea. The more you block, the more likely a packaging issue becomes an Autopilot incident.
+
+## Reporting and Troubleshooting Differences
+
+Device Preparation v2 is stronger for initial deployment reporting. It exposes Device Preparation deployments, status, app status, script status, profile name, and timing in a way that is easier to use during a live pilot.
+
+Classic Autopilot reporting is useful, but it is more dependent on registered devices and is not as close to real time.
+
+Use this first-response checklist:
+
+| Symptom | First v1 check | First v2 check |
+|---|---|---|
+| Wrong deployment flow starts | Autopilot device registration and profile assignment | Whether the device is still registered for v1 |
+| User reaches ESP unexpectedly | ESP profile and Autopilot profile | v1 profile precedence |
+| Device never receives expected apps | Device group, ESP blocking apps, app assignment | Selected device group, app included in policy, system context |
+| Device target appears late | Dynamic group processing | User not in policy scope or wrong selected group |
+| Helpdesk cannot see status | Autopilot deployment report and device logs | Device Preparation deployment report |
+| Hardware hash import fails | CSV, duplicate device, permissions, serial mismatch | Not normally relevant unless falling back to v1 |
+
+For deeper v2 flow diagnosis, use [Autopilot v2 Enrollment and ESP Troubleshooting](/tutorials/autopilot-v2-enrollment-esp-troubleshooting). For import problems, use [Autopilot Device Not Importing Hardware Hash](/troubleshooting/autopilot-device-not-importing-hardware-hash).
+
+## Admin Checks Before Choosing v1 or v2
+
+Run these checks before you create another profile or policy.
+
+### Check 1: Is the target build cloud-native?
+
+```text
+Question:
+Can this device be Microsoft Entra joined without on-premises domain join?
+
+Expected answer for v2:
+Yes.
+
+If the answer is no:
+Use v1 while you remove the hybrid dependency.
+```
+
+### Check 2: Is the device already registered for v1?
+
+```text
+Portal path:
+Intune admin centre > Devices > Windows > Windows enrolment > Devices
+
+Expected shape:
+Serial number     Profile status       Group tag
+<serial-number>   Assigned             <tag>
+```
+
+If you find a v1 registration and profile, the device will not cleanly test v2. Deregister it from classic Autopilot before using it for Device Preparation.
+
+### Check 3: Does v2 have a valid assigned device group?
+
+```text
+Group display name: <device-preparation-device-group>
+Membership type:    Assigned
+Owner includes:     Intune Provisioning Client
+Used by policy:     <device-preparation-policy-name>
+```
+
+If the group is dynamic, you are likely rebuilding one of the v1 pain points inside the v2 design.
+
+### Check 4: Are selected apps device based?
+
+```text
+App name           Required assignment target       Install context
+<app-name>         <device group>                   System
+<app-name>         <device group>                   System
+```
+
+For v2 OOBE delivery, selected apps and scripts must be assigned to the selected device group and should be able to run before a user profile exists.
+
+### Check 5: Does the deployment report show the policy name?
+
+After a successful v2 deployment, expect reporting and device properties to make the Device Preparation policy visible.
+
+```text
+Device             Join type                  Enrolment profile
+<device-name>      Microsoft Entra joined      <Device Preparation policy name>
+```
+
+Do not use a single successful desktop arrival as proof. Confirm the policy, app, script, and timing evidence in Intune.
+
+## Migration Strategy
+
+Do not start by migrating every Autopilot profile. Start by sorting devices into scenarios.
+
+### Group your existing estate
+
+| Existing build type | Migration approach |
+|---|---|
+| New Windows 11 user-driven Entra join laptops | Good v2 pilot candidate |
+| New Windows 11 hybrid join laptops | Keep v1 until hybrid dependency is removed |
+| Pre-provisioned VIP or warehouse builds | Keep v1 |
+| Self-deploying shared devices and kiosks | Keep v1 |
+| Windows 10 devices | Keep v1 or move to Windows 11 first |
+| Existing device reinstall through ConfigMgr | Keep v1 existing devices flow |
+| Devices with fragile dynamic group assignment | Consider v2 if they fit Entra join and user-driven deployment |
+
+### Build the v2 pilot cleanly
+
+A good v2 pilot has:
+
+- A dedicated user group for the pilot users
+- A dedicated assigned device security group selected in the Device Preparation policy
+- No classic Autopilot registration on the pilot devices
+- A small essential app set
+- Device-based policy assignments
+- A clear support note explaining that ESP should not appear
+- A known fallback path back to v1
+
+The clean pilot matters because v2 failures often come from polluted test devices. If the same device has old Autopilot records, old Entra objects, stale Intune objects, and multiple reset attempts, the result is hard to trust.
+
+## Side-by-Side Rollout Approach
+
+Side-by-side is the sensible 2026 design for many organisations.
+
+Use a naming standard that makes the active flow obvious:
+
+```text
+APv1-Profile-UserDriven-EntraJoin-Standard
+APv1-Profile-PreProvisioned-HybridJoin-VIP
+APv1-Profile-SelfDeploying-Kiosk
+APv2-Policy-UserDriven-EntraJoin-Pilot
+APv2-DeviceGroup-UserDriven-EntraJoin-Pilot
+APv2-Users-UserDriven-EntraJoin-Pilot
+```
+
+Keep procurement and build instructions separate:
+
+- Devices for v1 should be registered with the Autopilot service by OEM, reseller, partner, or internal import.
+- Devices for v2 should not be registered as classic Autopilot devices unless you intentionally want v1 to win.
+- Service desk rebuild notes should state which experience is expected at OOBE.
+- Pilot devices should not move between v1 and v2 without a documented reset, deregistration, and object cleanup plan.
+
+Side-by-side does not mean unmanaged overlap. It means each device has one intended provisioning path.
+
+## Rollback and Fallback Planning
+
+Rollback planning is different depending on which way you are moving.
+
+### Fallback from v2 to v1
+
+If a v2 pilot fails and you need the device back on classic Autopilot:
+
+1. Register the device as a Windows Autopilot device.
+2. Confirm the hardware hash or OEM registration is valid.
+3. Add the device to the correct v1 device group.
+4. Confirm the v1 deployment profile assignment.
+5. Reset the device to OOBE.
+6. Confirm ESP and v1 profile behaviour during the next run.
+
+Do not assume assigning a v1 profile after a failed v2 attempt will repair the current OOBE session. Treat it as a clean redeployment.
+
+### Fallback from v1 to v2
+
+If a v1 test device should move to Device Preparation:
+
+1. Deregister the device from classic Autopilot.
+2. Remove stale Intune and Entra device records where your process requires it.
+3. Confirm the user is in scope for the v2 policy.
+4. Confirm the selected device group and app assignments.
+5. Reset the device to OOBE.
+6. Confirm that ESP does not appear and the Device Preparation progress experience does.
+
+If you skip deregistration, v1 can still take precedence and make the v2 pilot look broken.
+
+## Decision Matrix
+
+| Requirement | Recommendation |
+|---|---|
+| New Windows 11 laptops, one user per device, cloud-native identity | Use v2 |
+| Direct ship devices where pre-staging is painful | Prefer v2 if Entra joined and user-driven |
+| Hybrid join still required | Use v1 |
+| Pre-provisioning by IT, OEM, or reseller | Use v1 |
+| Self-deploying kiosk or shared physical endpoint | Use v1 |
+| Windows 10 still in scope | Use v1 or upgrade first |
+| Need user ESP to block until user-targeted apps apply | Use v1 |
+| Need near real-time deployment status during a new Windows 11 pilot | Prefer v2 |
+| Need to avoid hardware hash collection for clean new devices | Prefer v2 |
+| Need existing device flow with ConfigMgr | Use v1 |
+| Estate includes several of the above | Run both side by side |
+
+## Common Mistakes
+
+### Mistake 1: Calling v2 a replacement for v1
+
+Device Preparation is a better fit for some modern Windows 11 deployments, but it does not cover every v1 scenario. Calling it a replacement leads teams to discover gaps during production rollout instead of design.
+
+### Mistake 2: Testing v2 on a device that is still registered for v1
+
+This is the most common polluted pilot. If the device has a classic Autopilot registration and profile, v1 can win. Remove the v1 registration before judging v2.
+
+### Mistake 3: Reusing dynamic groups in the v2 critical path
+
+The point of enrolment time grouping is to avoid the slow, uncertain wait for dynamic group membership. Use a selected assigned device group for the v2 policy and keep dynamic groups for post-enrolment targeting where they make sense.
+
+### Mistake 4: Putting too many apps into OOBE
+
+Device Preparation can support more apps than its first release, but a longer OOBE is still a longer risk window. Make only essential apps blocking or selected during setup. Let the desktop handle non-essential installs.
+
+### Mistake 5: Expecting user-targeted apps during v2 OOBE
+
+Device Preparation delivers device-based configuration during OOBE. User-based configuration arrives later. If the business requirement is "the user cannot reach the desktop until this user app is present", v1 ESP may still be the better control.
+
+### Mistake 6: Treating corporate identifiers as hardware hashes
+
+Corporate identifiers help Intune recognise corporate-owned Windows devices, especially when personal device enrolment is blocked. They do not make a device a classic Windows Autopilot registered device.
+
+### Mistake 7: Migrating the profile instead of the process
+
+The migration is not "copy v1 settings into a v2 policy". It is a process redesign: scope users, select a device group, choose essential apps, remove v1 registration where needed, and update helpdesk troubleshooting.
+
+## Clear Recommendation
+
+### Use Autopilot v1 when
+
+- You need Microsoft Entra hybrid join.
+- You use pre-provisioning.
+- You use self-deploying mode for kiosks or shared devices.
+- You need Windows 10 support.
+- You use Windows Autopilot Reset.
+- You need the existing devices flow.
+- You need detailed ESP blocking, especially for user-based configuration.
+- You manage HoloLens, Teams Rooms, DFCI, or co-management entry scenarios.
+
+### Use Device Preparation v2 when
+
+- You are deploying new Windows 11 devices.
+- The target identity is Microsoft Entra join.
+- The deployment is user-driven.
+- You want to avoid hardware hash pre-staging.
+- You want simpler assignment with enrolment time grouping.
+- You want near real-time deployment reporting.
+- The OOBE app set can be kept to essential device-context apps and scripts.
+- You are building a new cloud-native endpoint process rather than preserving a hybrid-era process.
+
+### Run both side by side when
+
+- Some devices are cloud-native and others still need hybrid join.
+- Some users receive direct ship laptops and others receive pre-provisioned devices.
+- Kiosks or shared devices sit beside normal user laptops.
+- Windows 10 and Windows 11 both remain in scope.
+- You are migrating gradually from dynamic group heavy v1 targeting to v2 enrolment time grouping.
+
+The practical answer is not "v1 or v2 for the whole tenant". It is "which provisioning path should this device use?" Keep that question at the centre of the design and the migration becomes much less risky.
+
+## Related Reading
+
+- [Intune hub](/intune)
+- [Microsoft Entra ID hub](/microsoft-entra-id)
+- [Deploy Windows 11 25H2 with Intune and Autopilot v2](/guides/windows-11-25h2-autopilot-v2)
+- [Autopilot v2 Enrollment and ESP Troubleshooting](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck)
+- [Autopilot Device Not Importing Hardware Hash](/troubleshooting/autopilot-device-not-importing-hardware-hash)
+- [Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating)
+- [Intune vs. SCCM/MECM](/comparisons/intune-vs-sccm-mecm-2025)

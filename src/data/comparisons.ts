@@ -17,6 +17,22 @@ export interface Comparison {
 
 export const comparisons: Comparison[] = [
   {
+    id: '4',
+    title: 'Windows Autopilot v1 vs. Device Preparation v2 in 2026: Practical Intune Admin Comparison',
+    slug: 'autopilot-v1-vs-v2-2026',
+    category: 'Endpoint Management',
+    excerpt:
+      'A practical comparison for Intune admins choosing between classic Windows Autopilot and Windows Autopilot Device Preparation, including join types, app limits, ESP behaviour, registration, troubleshooting, and migration planning.',
+    productA: 'Autopilot v1',
+    productB: 'Device Preparation v2',
+    verdict:
+      'Use Device Preparation v2 for new Microsoft Entra joined Windows 11 user-driven deployments where speed, simpler assignment, and near real-time reporting matter. Keep classic Autopilot for hybrid join, pre-provisioning, self-deploying kiosks, Windows 10, reset, existing device flows, and richer ESP control. Most estates should run both side by side during 2026.',
+    date: 'May 8, 2026',
+    publishedAt: '2026-05-08',
+    readTime: '24 min read',
+    authorId: 'jack',
+  },
+  {
     id: '1',
     title: 'Microsoft Intune vs. SCCM/MECM in 2025: Which Should You Use?',
     slug: 'intune-vs-sccm-mecm-2025',
