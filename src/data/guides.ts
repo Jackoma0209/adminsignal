@@ -17,6 +17,20 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '11',
+    title: 'Rolling Out Microsoft Defender for Endpoint with Intune in a Managed Windows Fleet',
+    slug: 'microsoft-defender-for-endpoint-intune-rollout',
+    category: 'Endpoint Security',
+    excerpt:
+      'A practical operational guide for rolling out Microsoft Defender for Endpoint with Intune across a managed Windows fleet, covering tenant connection, licensing, Plan 1 versus Plan 2, onboarding, endpoint security policies, antivirus, firewall, ASR, EDR, baselines, pilot rings, reporting, coexistence, rollback, and prevention checks.',
+    date: 'May 8, 2026',
+    publishedAt: '2026-05-08',
+    readTime: '30 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['Microsoft Defender for Endpoint', 'Intune', 'Endpoint Security', 'EDR', 'Windows Security'],
+  },
+  {
     id: '10',
     title: 'Migrating Intune Administrative Templates to Settings Catalog Without Breaking Policy Behaviour',
     slug: 'intune-admin-templates-to-settings-catalog-migration',
