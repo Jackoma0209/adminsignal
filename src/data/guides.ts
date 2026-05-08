@@ -17,6 +17,20 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '13',
+    title: 'Exchange Online SMTP AUTH Basic Authentication 2026 Migration Planning',
+    slug: 'exchange-online-smtp-auth-basic-auth-2026-migration',
+    category: 'Microsoft 365',
+    excerpt:
+      'A practical operational guide for planning Exchange Online SMTP AUTH Basic Authentication and credential-based Exchange Online PowerShell automation migrations, covering inventory, EAC and Entra checks, mailbox and tenant settings, OAuth, High Volume Email, Azure Communication Services Email, relay caveats, app-only PowerShell, managed identity, rollback, and prevention controls.',
+    date: 'May 8, 2026',
+    publishedAt: '2026-05-08',
+    readTime: '32 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['Exchange Online', 'SMTP AUTH', 'Basic Authentication', 'PowerShell', 'Microsoft Entra ID'],
+  },
+  {
     id: '12',
     title: 'Migrating AzureAD and MSOnline PowerShell Scripts to Microsoft Graph PowerShell SDK',
     slug: 'azuread-msonline-to-microsoft-graph-powershell-migration',
