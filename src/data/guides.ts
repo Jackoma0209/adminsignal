@@ -17,6 +17,20 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '12',
+    title: 'Migrating AzureAD and MSOnline PowerShell Scripts to Microsoft Graph PowerShell SDK',
+    slug: 'azuread-msonline-to-microsoft-graph-powershell-migration',
+    category: 'PowerShell',
+    excerpt:
+      'A practical migration guide for replacing production AzureAD and MSOnline PowerShell scripts with Microsoft Graph PowerShell SDK, covering module strategy, delegated and app-only authentication, managed identity, permission discovery, cmdlet mapping, paging, OData filters, eventual consistency, throttling, beta endpoint risk, logging, rollback, and prevention checks.',
+    date: 'May 8, 2026',
+    publishedAt: '2026-05-08',
+    readTime: '34 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['PowerShell', 'Microsoft Graph', 'Microsoft Entra ID', 'MSOnline', 'AzureAD'],
+  },
+  {
     id: '11',
     title: 'Rolling Out Microsoft Defender for Endpoint with Intune in a Managed Windows Fleet',
     slug: 'microsoft-defender-for-endpoint-intune-rollout',
