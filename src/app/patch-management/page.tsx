@@ -223,7 +223,7 @@ export default function PatchManagementPage() {
             ].map((item) => (
               <div
                 key={item.heading}
-                className="rounded-xl border border-border bg-surface p-5 shadow-card"
+                className="rounded-xl border border-border bg-surface p-5 shadow-card [overflow-wrap:anywhere]"
               >
                 <p className="mb-2 text-sm font-semibold text-foreground">{item.heading}</p>
                 <p className="text-xs leading-relaxed text-muted">{item.body}</p>
@@ -319,23 +319,23 @@ export default function PatchManagementPage() {
             title="Recommended Patch Ring Structure"
             description="Four rings cover most enterprise fleet sizes. Adjust sizing to fit your environment — the key constraint is that each ring must be large enough to reliably surface regressions before the next ring deploys."
           />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="max-w-full overflow-x-auto">
+            <table className="w-full table-fixed text-sm sm:table-auto">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="pb-3 text-left text-xs font-semibold uppercase tracking-widest text-muted/60">
+                  <th className="break-words pb-3 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-muted/60 sm:pr-6 sm:tracking-widest">
                     Ring
                   </th>
-                  <th className="pb-3 text-left text-xs font-semibold uppercase tracking-widest text-muted/60">
+                  <th className="break-words pb-3 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-muted/60 sm:pr-6 sm:tracking-widest">
                     Typical size
                   </th>
-                  <th className="pb-3 text-left text-xs font-semibold uppercase tracking-widest text-muted/60">
+                  <th className="break-words pb-3 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-muted/60 sm:pr-6 sm:tracking-widest">
                     Quality update deferral
                   </th>
-                  <th className="pb-3 text-left text-xs font-semibold uppercase tracking-widest text-muted/60">
+                  <th className="break-words pb-3 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-muted/60 sm:pr-6 sm:tracking-widest">
                     Target devices
                   </th>
-                  <th className="pb-3 text-left text-xs font-semibold uppercase tracking-widest text-muted/60">
+                  <th className="break-words pb-3 text-left text-xs font-semibold uppercase tracking-wide text-muted/60 sm:tracking-widest">
                     Monitoring focus
                   </th>
                 </tr>
@@ -372,11 +372,11 @@ export default function PatchManagementPage() {
                   },
                 ].map((row) => (
                   <tr key={row.ring} className="text-xs text-muted">
-                    <td className="py-3 pr-6 font-semibold text-foreground/90">{row.ring}</td>
-                    <td className="py-3 pr-6">{row.size}</td>
-                    <td className="py-3 pr-6">{row.deferral}</td>
-                    <td className="py-3 pr-6">{row.devices}</td>
-                    <td className="py-3">{row.monitor}</td>
+                    <td className="break-words py-3 pr-3 font-semibold text-foreground/90 sm:pr-6">{row.ring}</td>
+                    <td className="break-words py-3 pr-3 sm:pr-6">{row.size}</td>
+                    <td className="break-words py-3 pr-3 sm:pr-6">{row.deferral}</td>
+                    <td className="break-words py-3 pr-3 sm:pr-6">{row.devices}</td>
+                    <td className="break-words py-3">{row.monitor}</td>
                   </tr>
                 ))}
               </tbody>
@@ -506,7 +506,7 @@ export default function PatchManagementPage() {
                 className="flex gap-3 rounded-xl border border-border bg-surface p-4 shadow-card"
               >
                 <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" />
-                <div>
+                <div className="min-w-0 [overflow-wrap:anywhere]">
                   <p className="mb-1 text-sm font-semibold text-foreground">{item.title}</p>
                   <p className="text-xs leading-relaxed text-muted">{item.detail}</p>
                 </div>

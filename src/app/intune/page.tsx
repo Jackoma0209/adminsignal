@@ -356,12 +356,12 @@ export default function IntunePage() {
             title="Update Rings and Windows Autopatch"
             description="Intune update rings give you ring-based quality and feature update deferral without WSUS infrastructure. Windows Autopatch layers automation on top, managing ring assignment and pause decisions based on fleet signal."
           />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="max-w-full overflow-x-auto">
+            <table className="w-full table-fixed text-sm sm:table-auto">
               <thead>
                 <tr className="border-b border-border">
                   {['Ring', 'Quality deferral', 'Feature deferral', 'Target group', 'Deadline enforcement'].map((h) => (
-                    <th key={h} className="pb-3 pr-6 text-left text-xs font-semibold uppercase tracking-widest text-muted/60">
+                    <th key={h} className="break-words pb-3 pr-3 text-left text-xs font-semibold uppercase tracking-wide text-muted/60 sm:pr-6 sm:tracking-widest">
                       {h}
                     </th>
                   ))}
@@ -375,11 +375,11 @@ export default function IntunePage() {
                   { ring: 'Ring 3 — Production', quality: '21 days', feature: '90 days', target: 'Remaining managed fleet, VDI', deadline: '7 days' },
                 ].map((row) => (
                   <tr key={row.ring} className="text-xs text-muted">
-                    <td className="py-3 pr-6 font-semibold text-foreground/90">{row.ring}</td>
-                    <td className="py-3 pr-6">{row.quality}</td>
-                    <td className="py-3 pr-6">{row.feature}</td>
-                    <td className="py-3 pr-6">{row.target}</td>
-                    <td className="py-3">{row.deadline}</td>
+                    <td className="break-words py-3 pr-3 font-semibold text-foreground/90 sm:pr-6">{row.ring}</td>
+                    <td className="break-words py-3 pr-3 sm:pr-6">{row.quality}</td>
+                    <td className="break-words py-3 pr-3 sm:pr-6">{row.feature}</td>
+                    <td className="break-words py-3 pr-3 sm:pr-6">{row.target}</td>
+                    <td className="break-words py-3">{row.deadline}</td>
                   </tr>
                 ))}
               </tbody>
@@ -403,7 +403,7 @@ export default function IntunePage() {
                 body: 'Hybrid-joined devices with both a WSUS-targeting GPO and an Intune update ring will behave unpredictably. Audit with gpresult /H — only one management authority should own Windows Update settings.',
               },
             ].map((item) => (
-              <div key={item.heading} className="rounded-xl border border-border bg-surface p-5 shadow-card">
+              <div key={item.heading} className="rounded-xl border border-border bg-surface p-5 shadow-card [overflow-wrap:anywhere]">
                 <p className="mb-2 text-sm font-semibold text-foreground">{item.heading}</p>
                 <p className="text-xs leading-relaxed text-muted">{item.body}</p>
               </div>
@@ -450,7 +450,7 @@ export default function IntunePage() {
                 body: 'One-time PowerShell scripts run once per device and are suited for configuration tasks at provisioning time. Unlike Proactive Remediations, they do not re-run on schedule. The Intune Management Extension (IME) log at C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\IntuneManagementExtension.log captures execution detail.',
               },
             ].map((item) => (
-              <div key={item.heading} className="rounded-xl border border-border bg-surface p-5 shadow-card">
+              <div key={item.heading} className="rounded-xl border border-border bg-surface p-5 shadow-card [overflow-wrap:anywhere]">
                 <p className="mb-2 text-sm font-semibold text-foreground">{item.heading}</p>
                 <p className="text-xs leading-relaxed text-muted">{item.body}</p>
               </div>
@@ -497,7 +497,7 @@ export default function IntunePage() {
                 body: 'Devices > Monitor > Autopilot deployments shows per-device phase timing, ESP step results, and failure codes. The deployment profile assignment column confirms which profile the device matched. Cross-reference with the hardware hash in Devices > Enrollment > Windows enrollment > Devices.',
               },
             ].map((item) => (
-              <div key={item.heading} className="rounded-xl border border-border bg-surface p-5 shadow-card">
+              <div key={item.heading} className="rounded-xl border border-border bg-surface p-5 shadow-card [overflow-wrap:anywhere]">
                 <p className="mb-2 text-sm font-semibold text-foreground">{item.heading}</p>
                 <p className="text-xs leading-relaxed text-muted">{item.body}</p>
               </div>
@@ -569,7 +569,7 @@ export default function IntunePage() {
                 className="flex gap-3 rounded-xl border border-border bg-surface p-4 shadow-card"
               >
                 <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-primary/60" />
-                <div>
+                <div className="min-w-0 [overflow-wrap:anywhere]">
                   <p className="mb-1 text-sm font-semibold text-foreground">{item.title}</p>
                   <p className="text-xs leading-relaxed text-muted">{item.detail}</p>
                 </div>
