@@ -29,6 +29,7 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Exchange Online', 'SMTP AUTH', 'Basic Authentication', 'PowerShell', 'Microsoft Entra ID'],
+    isFeatured: true,
   },
   {
     id: '12',
@@ -43,6 +44,7 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['PowerShell', 'Microsoft Graph', 'Microsoft Entra ID', 'MSOnline', 'AzureAD'],
+    isFeatured: true,
   },
   {
     id: '11',
@@ -57,6 +59,7 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Microsoft Defender for Endpoint', 'Intune', 'Endpoint Security', 'EDR', 'Windows Security'],
+    isFeatured: true,
   },
   {
     id: '10',
@@ -71,6 +74,7 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Intune', 'Settings Catalog', 'Administrative Templates', 'Graph PowerShell', 'Endpoint Management'],
+    isFeatured: true,
   },
   {
     id: '9',
@@ -85,6 +89,7 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Microsoft 365', 'MFA', 'Microsoft Entra ID', 'Conditional Access', 'Graph PowerShell'],
+    isFeatured: true,
   },
   {
     id: '8',
@@ -99,6 +104,7 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Secure Boot', 'BitLocker', 'Windows Server', 'Intune', 'Patch Management', 'Firmware'],
+    isFeatured: true,
   },
   {
     id: '7',

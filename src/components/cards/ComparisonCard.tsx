@@ -32,8 +32,23 @@ export default function ComparisonCard({ comparison }: ComparisonCardProps) {
 
       <p className="line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{comparison.excerpt}</p>
 
+      {comparison.tags && comparison.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {comparison.tags.slice(0, 3).map((tag) => (
+            <span
+              key={tag}
+              className="rounded border border-border bg-surface-elevated px-2 py-0.5 text-xs text-muted"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
       <div className="mt-auto flex items-center justify-between">
-        <span className="text-xs text-muted/60">{comparison.date}</span>
+        <span className="text-xs text-muted/60">
+          {comparison.date} · {comparison.readTime}
+        </span>
         <Link
           href={`/comparisons/${comparison.slug}`}
           className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"

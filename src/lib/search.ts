@@ -96,7 +96,16 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const c of comparisons) {
-    const text = [c.title, c.slug, c.excerpt, c.productA, c.productB, c.category, c.verdict].join(' ')
+    const text = [
+      c.title,
+      c.slug,
+      c.excerpt,
+      c.productA,
+      c.productB,
+      c.category,
+      c.verdict,
+      ...(c.tags ?? []),
+    ].join(' ')
     items.push({
       title: c.title,
       excerpt: c.excerpt,

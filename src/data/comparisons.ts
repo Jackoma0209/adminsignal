@@ -12,6 +12,7 @@ export interface Comparison {
   publishedAt: string
   readTime: string
   authorId: string
+  tags?: string[]
   isFeatured?: boolean
 }
 
@@ -31,6 +32,7 @@ export const comparisons: Comparison[] = [
     publishedAt: '2026-05-08',
     readTime: '24 min read',
     authorId: 'jack',
+    tags: ['Windows Autopilot', 'Device Preparation', 'Intune', 'Endpoint Management'],
   },
   {
     id: '1',
@@ -48,6 +50,7 @@ export const comparisons: Comparison[] = [
     publishedAt: '2025-03-24',
     readTime: '12 min read',
     authorId: 'sarah-chen',
+    tags: ['Intune', 'SCCM', 'MECM', 'Co-management'],
     isFeatured: true,
   },
   {
@@ -65,6 +68,7 @@ export const comparisons: Comparison[] = [
     publishedAt: '2025-03-10',
     readTime: '11 min read',
     authorId: 'marcus-webb',
+    tags: ['Microsoft Defender for Endpoint', 'CrowdStrike', 'EDR', 'Endpoint Security'],
     isFeatured: true,
   },
   {
@@ -83,6 +87,7 @@ export const comparisons: Comparison[] = [
     publishedAt: '2025-02-20',
     readTime: '8 min read',
     authorId: 'priya-nair',
+    tags: ['Microsoft Entra ID', 'Conditional Access', 'PIM', 'Identity'],
     isFeatured: true,
   },
 ]

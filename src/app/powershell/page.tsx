@@ -76,6 +76,7 @@ export default function PowerShellPage() {
     .filter(
       (g) =>
         g.tags?.includes('PowerShell') ||
+        g.tags?.includes('Graph PowerShell') ||
         g.category === 'PowerShell' ||
         g.tags?.includes('WMI') ||
         g.tags?.includes('Automation'),
@@ -100,6 +101,7 @@ export default function PowerShellPage() {
   const troubleshootingItems = troubleshootingArticles
     .filter(
       (a) =>
+        a.affectedProducts.includes('PowerShell') ||
         a.affectedProducts.includes('Group Policy') ||
         a.affectedProducts.includes('Windows Update for Business') ||
         a.affectedProducts.includes('Windows Autopilot'),

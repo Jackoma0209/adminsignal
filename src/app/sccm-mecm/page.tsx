@@ -98,11 +98,13 @@ export default function SccmMecmPage() {
       (g) =>
         g.tags?.includes('SCCM') ||
         g.tags?.includes('MECM') ||
+        g.tags?.includes('Endpoint Management') ||
+        g.tags?.includes('Settings Catalog') ||
         g.category === 'SCCM / MECM' ||
         g.tags?.includes('Autopilot') ||
         g.category === 'Group Policy',
     )
-    .slice(0, 3)
+    .slice(0, 4)
     .map((g) => ({
       title: g.title,
       href: g.href ?? `/tutorials/${g.slug}`,

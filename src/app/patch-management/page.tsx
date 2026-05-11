@@ -89,15 +89,16 @@ export default function PatchManagementPage() {
       meta: s.date,
     }))
 
-  // Curated: GP troubleshooting (WUfB ring policy), CIS hardening (update controls), 25H2 deployment (ring setup)
   const tutorials = guides
     .filter((g) =>
+      g.tags?.includes('Patch Management') ||
       [
         'group-policy-troubleshooting-rsop-gpresult',
         'hardening-windows-11-cis-benchmark',
         'windows-11-25h2-autopilot-v2',
       ].includes(g.slug),
     )
+    .slice(0, 4)
     .map((g) => ({
       title: g.title,
       href: g.href ?? `/tutorials/${g.slug}`,

@@ -24,6 +24,10 @@ export default function FeaturedGuidesSection() {
 
   const heroGradient = categoryGradients[hero.category] ?? 'from-slate-900 via-slate-900 to-slate-950'
   const heroHref = hero.href ?? `/tutorials/${hero.slug}`
+  const updatedLabel = new Intl.DateTimeFormat('en-GB', {
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(hero.publishedAt))
 
   return (
     <section className="border-t border-border bg-surface/20 py-20">
@@ -72,7 +76,7 @@ export default function FeaturedGuidesSection() {
                   <Badge variant="language">{hero.difficulty}</Badge>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-2.5 py-1 text-xs font-medium text-emerald-400">
                     <ShieldCheck className="h-3 w-3" />
-                    Updated April 2026
+                    Updated {updatedLabel}
                   </span>
                 </div>
 

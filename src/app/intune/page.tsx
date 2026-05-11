@@ -110,7 +110,7 @@ export default function IntunePage() {
         a.affectedProducts.includes('Microsoft Intune') ||
         a.affectedProducts.includes('Windows Autopilot'),
     )
-    .slice(0, 4)
+    .slice(0, 6)
     .map((a) => ({
       title: a.title,
       href: `/troubleshooting/${a.slug}`,

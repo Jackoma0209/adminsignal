@@ -88,6 +88,7 @@ export default function EntraIdPage() {
     .filter(
       (g) =>
         g.tags?.includes('Entra ID') ||
+        g.tags?.includes('Microsoft Entra ID') ||
         g.category === 'Microsoft Entra ID' ||
         g.tags?.includes('Conditional Access') ||
         g.tags?.includes('Identity') ||
@@ -115,6 +116,7 @@ export default function EntraIdPage() {
     .filter(
       (a) =>
         a.affectedProducts.includes('Entra ID') ||
+        a.affectedProducts.includes('Microsoft Entra ID') ||
         a.affectedProducts.includes('Microsoft Intune') ||
         a.affectedProducts.includes('Windows Autopilot'),
     )

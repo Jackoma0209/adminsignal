@@ -145,6 +145,10 @@ export default function EndpointSecurityPage() {
 
   const endpointComparisons = comparisons
     .filter((c) => c.category === 'Endpoint Security' || c.category === 'Endpoint Management')
+    .sort((a, b) => {
+      if (a.category === b.category) return 0
+      return a.category === 'Endpoint Security' ? -1 : 1
+    })
     .slice(0, 2)
     .map((c) => ({
       title: c.title,
