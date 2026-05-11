@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07121f"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="48%" cy="42%" r="60%">
+      <stop offset="0" stop-color="#34d399" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0v40" fill="none" stroke="#93c5fd" stroke-opacity=".07"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#grid)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="258" y="270" width="426" height="258" rx="30" fill="#0b1728" stroke="#60a5fa" stroke-width="6"/>
+    <path d="M362 604h218M446 528v76" stroke="#60a5fa" stroke-width="7"/>
+    <path d="M344 350h254M344 412h168" stroke="#93c5fd" stroke-opacity=".28" stroke-width="10"/>
+    <path d="M842 232h390c36 0 65 29 65 65v316c0 36-29 65-65 65H842c-36 0-65-29-65-65V297c0-36 29-65 65-65z" fill="#0b1728" stroke="#34d399" stroke-width="6"/>
+    <g stroke="#86efac" stroke-width="8">
+      <path d="M860 342l23 24 48-58"/>
+      <path d="M860 454l23 24 48-58"/>
+      <path d="M860 566l23 24 48-58"/>
+    </g>
+    <path d="M992 342h208M992 454h208M992 566h208" stroke="#93c5fd" stroke-opacity=".28" stroke-width="10"/>
+    <path d="M1210 200l96 34v76c0 82-36 136-96 170-60-34-96-88-96-170v-76z" fill="#071525" stroke="#22d3ee" stroke-width="5"/>
+    <path d="M1178 318l25 25 55-66" stroke="#67e8f9" stroke-width="9"/>
+  </g>
+</svg>

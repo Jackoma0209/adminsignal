@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#071426"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="72%" cy="44%" r="58%">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="38" height="38" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#67e8f9" fill-opacity=".2"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#dots)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#38bdf8" stroke-opacity=".55" stroke-width="5">
+      <rect x="190" y="236" width="220" height="118" rx="20" fill="#0b1728"/>
+      <rect x="190" y="398" width="220" height="118" rx="20" fill="#0b1728"/>
+      <rect x="190" y="560" width="220" height="118" rx="20" fill="#0b1728"/>
+    </g>
+    <path d="M254 292h92M254 454h92M254 616h92" stroke="#93c5fd" stroke-opacity=".32" stroke-width="9"/>
+    <path d="M430 295c170 0 180 98 304 98M430 457c158 0 180 0 304 0M430 619c170 0 180-98 304-98" stroke="#22d3ee" stroke-opacity=".45" stroke-width="7"/>
+    <path d="M700 456l54-42v84z" fill="#22d3ee" fill-opacity=".55"/>
+    <rect x="786" y="206" width="610" height="492" rx="32" fill="#0b1728" stroke="#34d399" stroke-opacity=".5" stroke-width="6"/>
+    <g stroke="#86efac" stroke-opacity=".58" stroke-width="4">
+      <rect x="850" y="276" width="126" height="96" rx="14"/>
+      <rect x="1016" y="276" width="126" height="96" rx="14"/>
+      <rect x="1182" y="276" width="126" height="96" rx="14"/>
+      <rect x="850" y="414" width="126" height="96" rx="14"/>
+      <rect x="1016" y="414" width="126" height="96" rx="14"/>
+      <rect x="1182" y="414" width="126" height="96" rx="14"/>
+      <rect x="850" y="552" width="126" height="96" rx="14"/>
+      <rect x="1016" y="552" width="126" height="96" rx="14"/>
+      <rect x="1182" y="552" width="126" height="96" rx="14"/>
+    </g>
+    <circle cx="913" cy="324" r="12" fill="#22d3ee"/>
+    <circle cx="1079" cy="462" r="12" fill="#34d399"/>
+    <circle cx="1245" cy="600" r="12" fill="#a78bfa"/>
+  </g>
+</svg>

@@ -12,6 +12,10 @@ export interface Guide {
   difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
   authorId?: string
   tags?: string[]
+  coverImage?: {
+    src: string
+    alt: string
+  }
   isFeatured?: boolean
 }
 
@@ -29,6 +33,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Exchange Online', 'SMTP AUTH', 'Basic Authentication', 'PowerShell', 'Microsoft Entra ID'],
+    coverImage: {
+      src: '/images/article-covers/exchange-online-smtp-auth-basic-auth-2026-migration.svg',
+      alt: 'Abstract mail flow path with authentication lock and secure routing nodes',
+    },
     isFeatured: true,
   },
   {
@@ -44,6 +52,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['PowerShell', 'Microsoft Graph', 'Microsoft Entra ID', 'MSOnline', 'AzureAD'],
+    coverImage: {
+      src: '/images/article-covers/azuread-msonline-to-microsoft-graph-powershell-migration.svg',
+      alt: 'Abstract terminal panel connected to Microsoft Graph style automation nodes',
+    },
     isFeatured: true,
   },
   {
@@ -59,6 +71,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Microsoft Defender for Endpoint', 'Intune', 'Endpoint Security', 'EDR', 'Windows Security'],
+    coverImage: {
+      src: '/images/article-covers/microsoft-defender-for-endpoint-intune-rollout.svg',
+      alt: 'Abstract managed endpoint fleet with shield and telemetry lines',
+    },
     isFeatured: true,
   },
   {
@@ -74,6 +90,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Intune', 'Settings Catalog', 'Administrative Templates', 'Graph PowerShell', 'Endpoint Management'],
+    coverImage: {
+      src: '/images/article-covers/intune-admin-templates-to-settings-catalog-migration.svg',
+      alt: 'Abstract policy tiles moving into a structured settings catalog grid',
+    },
     isFeatured: true,
   },
   {
@@ -89,6 +109,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Microsoft 365', 'MFA', 'Microsoft Entra ID', 'Conditional Access', 'Graph PowerShell'],
+    coverImage: {
+      src: '/images/article-covers/microsoft-365-admin-centre-mfa-readiness.svg',
+      alt: 'Abstract admin identity checkpoint with MFA signal and emergency access key',
+    },
     isFeatured: true,
   },
   {
@@ -104,6 +128,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Secure Boot', 'BitLocker', 'Windows Server', 'Intune', 'Patch Management', 'Firmware'],
+    coverImage: {
+      src: '/images/article-covers/secure-boot-ca-2023-rollout-enterprise-readiness.svg',
+      alt: 'Abstract firmware chip linked to certificate chain and secure boot path',
+    },
     isFeatured: true,
   },
   {
@@ -120,6 +148,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'jack',
     tags: ['Windows 11', 'Autopilot', 'Intune', '25H2', 'Zero-Touch', 'Deployment', 'Endpoint Management'],
+    coverImage: {
+      src: '/images/article-covers/windows-11-25h2-autopilot-v2.svg',
+      alt: 'Abstract device provisioning flow with staged deployment rings',
+    },
     isFeatured: true,
   },
   {
@@ -135,6 +167,10 @@ export const guides: Guide[] = [
     difficulty: 'Intermediate',
     authorId: 'sarah-chen',
     tags: ['Intune', 'LAPS', 'Entra ID', 'Security Baseline'],
+    coverImage: {
+      src: '/images/article-covers/deploy-windows-laps-intune.svg',
+      alt: 'Abstract local admin key rotation flow across managed devices',
+    },
     isFeatured: true,
   },
   {
@@ -150,6 +186,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'marcus-webb',
     tags: ['CIS Benchmark', 'Windows 11', 'Hardening', 'Endpoint Security'],
+    coverImage: {
+      src: '/images/article-covers/hardening-windows-11-cis-benchmark.svg',
+      alt: 'Abstract hardened workstation with baseline checklist and security controls',
+    },
     isFeatured: true,
   },
   {
@@ -165,6 +205,10 @@ export const guides: Guide[] = [
     difficulty: 'Intermediate',
     authorId: 'sarah-chen',
     tags: ['Autopilot', 'Intune', 'Windows 11', 'Enrollment'],
+    coverImage: {
+      src: '/images/article-covers/autopilot-v2-enrollment-esp-troubleshooting.svg',
+      alt: 'Abstract setup progress ring with diagnostic nodes for Autopilot troubleshooting',
+    },
     isFeatured: true,
   },
   {
@@ -180,6 +224,10 @@ export const guides: Guide[] = [
     difficulty: 'Intermediate',
     authorId: 'james-holbrook',
     tags: ['PowerShell', 'WMI', 'Inventory', 'Automation'],
+    coverImage: {
+      src: '/images/article-covers/powershell-software-inventory-system.svg',
+      alt: 'Abstract terminal linked to endpoint inventory grid and export path',
+    },
   },
   {
     id: '5',
@@ -194,6 +242,10 @@ export const guides: Guide[] = [
     difficulty: 'Advanced',
     authorId: 'priya-nair',
     tags: ['Conditional Access', 'Entra ID', 'Microsoft 365', 'Identity'],
+    coverImage: {
+      src: '/images/article-covers/conditional-access-m365-policy-map.svg',
+      alt: 'Abstract identity access gate with device compliance signal',
+    },
   },
   {
     id: '6',
@@ -208,5 +260,9 @@ export const guides: Guide[] = [
     difficulty: 'Beginner',
     authorId: 'james-holbrook',
     tags: ['Group Policy', 'Active Directory', 'Windows Server', 'Troubleshooting'],
+    coverImage: {
+      src: '/images/article-covers/group-policy-troubleshooting-rsop-gpresult.svg',
+      alt: 'Abstract organisational unit tree with policy link and diagnostic path',
+    },
   },
 ]

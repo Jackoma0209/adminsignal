@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, ArrowUpRight, Clock, ShieldCheck } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
@@ -105,33 +106,48 @@ export default function FeaturedGuidesSection() {
                 </div>
               </div>
 
-              {/* Right: decorative terminal-style block */}
+              {/* Right: guide preview art with the previous terminal block as fallback */}
               <div
                 className="mt-8 hidden shrink-0 lg:mt-0 lg:block lg:w-72"
-                aria-hidden="true"
               >
-                <div className="rounded-lg border border-border/50 bg-black/40 p-4 font-mono text-xs leading-relaxed text-muted/70">
-                  <div className="mb-2 flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-green-500/60" />
-                    <span className="ml-2 text-muted/40">preflight.ps1</span>
+                {hero.coverImage ? (
+                  <div className="relative aspect-video overflow-hidden rounded-lg border border-border/50 bg-black/40 shadow-card">
+                    <Image
+                      src={hero.coverImage.src}
+                      alt={hero.coverImage.alt}
+                      fill
+                      className="object-cover opacity-95 transition-transform duration-500 group-hover:scale-[1.02]"
+                      sizes="288px"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/45 via-transparent to-transparent" />
                   </div>
-                  <div className="space-y-0.5 text-[11px]">
-                    <p><span className="text-cyan-400">function</span> <span className="text-yellow-300">Test-AutopilotReadiness</span> {'{'}</p>
-                    <p className="pl-3 text-muted/50">  # TPM + SecureBoot + OS build</p>
-                    <p className="pl-3"><span className="text-green-400">$tpm</span> = Get-Tpm</p>
-                    <p className="pl-3"><span className="text-green-400">$sb</span>  = Confirm-SecureBootUEFI</p>
-                    <p className="pl-3"><span className="text-green-400">$os</span>  = Get-CimInstance Win32_OS</p>
-                    <p className="pl-3 text-muted/50">  # Network reachability check</p>
-                    <p className="pl-3">Test-NetConnection -Port 443</p>
-                    <p>{'}'}</p>
-                    <p className="pt-1 text-green-400">✓ TPM Present · PASS</p>
-                    <p className="text-green-400">✓ Secure Boot  · PASS</p>
-                    <p className="text-green-400">✓ Build 26100  · PASS</p>
-                    <p className="text-green-400">✓ Intune reachable · PASS</p>
+                ) : (
+                  <div
+                    className="rounded-lg border border-border/50 bg-black/40 p-4 font-mono text-xs leading-relaxed text-muted/70"
+                    aria-hidden="true"
+                  >
+                    <div className="mb-2 flex items-center gap-1.5">
+                      <span className="h-2.5 w-2.5 rounded-full bg-red-500/60" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/60" />
+                      <span className="h-2.5 w-2.5 rounded-full bg-green-500/60" />
+                      <span className="ml-2 text-muted/40">preflight.ps1</span>
+                    </div>
+                    <div className="space-y-0.5 text-[11px]">
+                      <p><span className="text-cyan-400">function</span> <span className="text-yellow-300">Test-AutopilotReadiness</span> {'{'}</p>
+                      <p className="pl-3 text-muted/50">  # TPM + SecureBoot + OS build</p>
+                      <p className="pl-3"><span className="text-green-400">$tpm</span> = Get-Tpm</p>
+                      <p className="pl-3"><span className="text-green-400">$sb</span>  = Confirm-SecureBootUEFI</p>
+                      <p className="pl-3"><span className="text-green-400">$os</span>  = Get-CimInstance Win32_OS</p>
+                      <p className="pl-3 text-muted/50">  # Network reachability check</p>
+                      <p className="pl-3">Test-NetConnection -Port 443</p>
+                      <p>{'}'}</p>
+                      <p className="pt-1 text-green-400">✓ TPM Present · PASS</p>
+                      <p className="text-green-400">✓ Secure Boot  · PASS</p>
+                      <p className="text-green-400">✓ Build 26100  · PASS</p>
+                      <p className="text-green-400">✓ Intune reachable · PASS</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

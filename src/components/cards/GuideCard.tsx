@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowUpRight, Clock } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { type Guide } from '@/data/guides'
@@ -39,17 +40,30 @@ export default function GuideCard({ guide }: GuideCardProps) {
     <article className="group flex flex-col gap-0 rounded-xl border border-border bg-surface shadow-card transition-colors hover:border-border-strong hover:bg-surface-elevated/40 overflow-hidden">
       {/* Thumbnail */}
       <div
-        className={`relative h-36 w-full bg-linear-to-br ${gradient} flex items-end px-5 pb-3 shrink-0`}
-        aria-hidden="true"
+        className={`relative flex h-36 w-full shrink-0 items-end overflow-hidden bg-linear-to-br ${gradient} px-5 pb-3`}
       >
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-          }}
-        />
-        <span className={`relative font-mono text-[11px] font-semibold uppercase tracking-widest ${accent}`}>
+        {guide.coverImage ? (
+          <>
+            <Image
+              src={guide.coverImage.src}
+              alt={guide.coverImage.alt}
+              fill
+              className="object-cover opacity-90 transition-transform duration-500 group-hover:scale-[1.02]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
+          </>
+        ) : (
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            aria-hidden="true"
+            style={{
+              backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+            }}
+          />
+        )}
+        <span className={`relative font-mono text-[11px] font-semibold uppercase tracking-widest ${guide.coverImage ? 'text-white/55' : accent}`}>
           {guide.category}
         </span>
       </div>
