@@ -60,6 +60,7 @@ export const liveSignals: Signal[] = [
     ],
     isNew: true,
     isFeatured: true,
+    image: '/images/article-covers/may-2026-patch-tuesday-readiness.svg',
   },
   {
     id: 'live-0',
