@@ -20,6 +20,8 @@ import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
 import { isRecentItem } from '@/lib/utils'
 
+const siteUrl = 'https://www.adminsignal.com'
+
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
@@ -34,14 +36,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const signal = signals.find((s) => s.slug === slug)
   if (!signal) return {}
   const author = signal.authorId ? getAuthor(signal.authorId) : undefined
+  let frontmatter: Record<string, unknown> = {}
+
+  try {
+    frontmatter = getContentItem('news', slug).frontmatter
+  } catch {
+    frontmatter = {}
+  }
+
+  const image =
+    signal.image ??
+    (typeof frontmatter.image === 'string' ? frontmatter.image : undefined)
+  const imageAlt =
+    typeof frontmatter.imageAlt === 'string' ? frontmatter.imageAlt : signal.title
+
   return buildArticleMetadata({
     title: signal.title,
     description: signal.excerpt,
-    url: `https://www.adminsignal.com/news/${slug}`,
+    url: `${siteUrl}/news/${slug}`,
     category: signal.category,
     publishedTime: signal.publishedAt,
+    modifiedTime:
+      typeof frontmatter.lastReviewed === 'string'
+        ? frontmatter.lastReviewed
+        : signal.publishedAt,
     tags: signal.tags,
     authorName: author?.name,
+    ogImage: image
+      ? {
+          url: new URL(image, siteUrl).toString(),
+          width: 1200,
+          height: 630,
+          alt: imageAlt,
+        }
+      : undefined,
   })
 }
 
@@ -80,6 +108,10 @@ export default async function NewsArticlePage({ params }: Props) {
       ? frontmatter.imageAlt
       : signal.title
 
+  const featuredImageUrl = featuredImage
+    ? new URL(featuredImage, siteUrl).toString()
+    : undefined
+
   const relatedSignals = signals
     .filter((s) => s.id !== signal.id && s.category === signal.category)
     .slice(0, 3)
@@ -91,7 +123,7 @@ export default async function NewsArticlePage({ params }: Props) {
       meta: s.date,
     }))
 
-  const pageUrl = `https://www.adminsignal.com/news/${slug}`
+  const pageUrl = `${siteUrl}/news/${slug}`
 
   const jsonLdArticle = articleSchema({
     type: 'NewsArticle',
@@ -101,12 +133,13 @@ export default async function NewsArticlePage({ params }: Props) {
     modifiedTime: lastReviewed,
     authorName: author?.name,
     url: pageUrl,
+    image: featuredImageUrl,
     tags: signal.tags,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
     { name: 'Home', url: 'https://www.adminsignal.com' },
-    { name: 'News', url: 'https://www.adminsignal.com/news' },
+    { name: 'News', url: `${siteUrl}/news` },
     { name: signal.title, url: pageUrl },
   ])
 

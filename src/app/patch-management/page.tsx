@@ -305,6 +305,17 @@ export default function PatchManagementPage() {
               </div>
             ))}
           </div>
+          <p className="mt-4 text-xs leading-relaxed text-muted/70">
+            For the current release window, use the{' '}
+            <Link
+              href="/news/may-2026-patch-tuesday-readiness"
+              className="font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              May 2026 Patch Tuesday admin deployment notes
+            </Link>{' '}
+            before approving KBs across Windows Update for Business, WSUS, Intune, Autopatch, and
+            Configuration Manager.
+          </p>
         </Container>
       </div>
 

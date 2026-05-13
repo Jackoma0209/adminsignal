@@ -484,6 +484,16 @@ export default function WindowsServerPage() {
               </div>
             ))}
           </div>
+          <p className="mt-4 text-xs leading-relaxed text-muted/70">
+            Before the May server maintenance window, cross-check the{' '}
+            <Link
+              href="/news/may-2026-patch-tuesday-readiness"
+              className="font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              May 2026 Patch Tuesday KB and known issue notes
+            </Link>{' '}
+            for Windows Server build targets, WSUS notes, and Server 2025 hotpatch applicability.
+          </p>
         </Container>
       </div>
 

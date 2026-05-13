@@ -388,6 +388,16 @@ export default function IntunePage() {
           <p className="mt-4 text-xs text-muted/60">
             Map each ring to an Entra ID dynamic device group. Assign update ring policies to device groups, not user groups, to ensure consistent enforcement regardless of who signs in. For Windows Autopatch, ensure devices meet prerequisites (Windows 11 or Windows 10 22H2+, Intune-managed, Entra joined or hybrid joined).
           </p>
+          <p className="mt-3 text-xs leading-relaxed text-muted/70">
+            For the current monthly quality update, review the{' '}
+            <Link
+              href="/news/may-2026-patch-tuesday-readiness"
+              className="font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              May 2026 Patch Tuesday deployment notes
+            </Link>{' '}
+            before broad Intune, Windows Update for Business, or Autopatch rollout.
+          </p>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               {

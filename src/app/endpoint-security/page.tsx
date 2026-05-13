@@ -79,6 +79,7 @@ export default function EndpointSecurityPage() {
     .filter(
       (s) =>
         s.tags?.includes('Security') ||
+        s.tags?.includes('Endpoint Security') ||
         s.category === 'Endpoint Security' ||
         s.category === 'Security Alert',
     )

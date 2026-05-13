@@ -193,6 +193,7 @@ export function articleSchema({
   modifiedTime,
   authorName,
   url,
+  image,
   tags,
 }: {
   type?: string
@@ -202,8 +203,11 @@ export function articleSchema({
   modifiedTime?: string
   authorName?: string
   url?: string
+  image?: string | string[]
   tags?: string[]
 }) {
+  const images = Array.isArray(image) ? image : image ? [image] : undefined
+
   return cleanSchema({
     '@context': 'https://schema.org',
     '@type': type,
@@ -219,9 +223,10 @@ export function articleSchema({
       ? {
           '@type': 'WebPage',
           '@id': `${url}#webpage`,
-        }
+      }
       : undefined,
     url,
+    image: images,
     inLanguage: DEFAULT_LANGUAGE,
     audience: {
       '@type': 'Audience',

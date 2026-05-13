@@ -40,7 +40,7 @@ export const liveSignals: Signal[] = [
     slug: 'may-2026-patch-tuesday-readiness',
     category: 'Patch Tuesday',
     excerpt:
-      'A practical admin briefing for the May 2026 Microsoft security updates, including rollout priorities, KB checks, known issue review, and deployment guidance.',
+      'A practical admin briefing for the May 2026 Microsoft security updates, KB checks, known issue review, Intune, WSUS, Autopatch, and deployment guidance.',
     date: '13 May 2026',
     publishedAt: '2026-05-13',
     readTime: '8 min read',
