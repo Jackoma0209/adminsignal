@@ -36,13 +36,13 @@ export interface Signal {
 export const liveSignals: Signal[] = [
   {
     id: 'live-6',
-    title: 'May 2026 Patch Tuesday Readiness Checklist for Windows and Microsoft 365 Admins',
+    title: 'May 2026 Patch Tuesday: admin deployment notes and checks',
     slug: 'may-2026-patch-tuesday-readiness',
     category: 'Patch Tuesday',
     excerpt:
-      'A pre-release readiness checklist for the May 2026 Patch Tuesday window, covering Windows client rings, Windows Server patching, Intune, Windows Update for Business, WSUS, MECM, Defender monitoring, BitLocker recovery, Secure Boot awareness, and the first seven days of response.',
-    date: '11 May 2026',
-    publishedAt: '2026-05-11',
+      'A practical admin briefing for the May 2026 Microsoft security updates, including rollout priorities, KB checks, known issue review, and deployment guidance.',
+    date: '13 May 2026',
+    publishedAt: '2026-05-13',
     readTime: '8 min read',
     source: 'AdminSignal',
     isOfficial: false,

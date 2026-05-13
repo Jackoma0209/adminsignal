@@ -1,191 +1,144 @@
 ---
-title: "May 2026 Patch Tuesday Readiness Checklist for Windows and Microsoft 365 Admins"
+title: "May 2026 Patch Tuesday: admin deployment notes and checks"
+description: "A practical admin briefing for the May 2026 Microsoft security updates, including rollout priorities, KB checks, known issue review, and deployment guidance."
 category: "Patch Tuesday"
-date: "May 11, 2026"
+date: "May 13, 2026"
 authorId: "jack"
-lastReviewed: "May 11, 2026"
-reviewNote: "Pre-release readiness checklist. Checked against Microsoft Security Update Guide, Windows release health, Windows update release cycle documentation, Microsoft Update Catalog, and Microsoft 365 service health guidance on May 11, 2026. It does not include May 2026 CVE or KB details because Microsoft had not published the May 2026 security update details at the time of writing."
+lastReviewed: "May 13, 2026"
+reviewNote: "Post-release admin briefing. Checked against Microsoft Security Update Guide, the May 2026 Security Update Guide release note, Windows release health, Windows message centre, Windows 11 release information, Windows 10 release information, Windows Server release information, Microsoft support KBs, Microsoft Update Catalog, and Microsoft 365 service health guidance on May 13, 2026. It deliberately avoids CVE totals, severity totals, exploited status, and product impact claims not stated in the cited Microsoft sources."
 tags: ["Patch Tuesday", "Windows", "Windows Server", "Intune", "Windows Update for Business", "WSUS", "MECM", "Microsoft 365", "Endpoint Security"]
 image: "/images/article-covers/may-2026-patch-tuesday-readiness.svg"
 imageAlt: "Abstract enterprise patch readiness illustration with a calendar window, shield, update flow lines, and endpoint nodes"
 ---
 
-## Read This Before the May Updates Ship
+## Admin Briefing
 
-This is a readiness checklist, not a CVE or KB breakdown. It is written before Microsoft publishes the May 2026 security update details, so it deliberately avoids claims about affected products, exploited status, severity counts, KB numbers, or known issues.
+Microsoft has now published the May 2026 security update release notes and Windows KB pages. This article has been updated from a pre-release readiness checklist into a post-release briefing for admins who need to move from monitoring the release to deploying it safely.
 
-Use it to prepare your [patch management](/patch-management), [Intune](/intune), [MECM](/sccm-mecm), [Windows Server](/windows-server), and [endpoint security](/endpoint-security) teams for the May 2026 release window.
+Use this as a practical deployment note for [patch management](/patch-management), [Intune](/intune), [Windows Update for Business](/troubleshooting/wufb-deferral-not-respected), [MECM](/sccm-mecm), [Windows Server](/windows-server), [endpoint security](/endpoint-security), and Microsoft 365 operations. Keep Microsoft sources open while you work, because release health and known issue pages can change during the first week.
 
-Microsoft normally publishes monthly Windows security updates on the second Tuesday of each month, typically at 10:00 Pacific time. For May 2026, that points to Tuesday 12 May 2026, around 18:00 BST. Treat the exact availability, CVE list, KB articles, and known issues as items to verify from Microsoft when the release goes live.
+This briefing only includes details that were verified from Microsoft sources. It does not claim a CVE count, critical count, exploited status, full affected product list, or mitigation detail unless the cited Microsoft page states it.
 
-## Official Sources To Keep Open
+## What Changed Today
 
-Use official sources for facts that can change during the release window:
+- The [May 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-May) is live.
+- Microsoft has published May 12, 2026 Windows KB articles for supported Windows 11, Windows 10 ESU and LTSC, and Windows Server versions.
+- Windows release information now shows May 2026 KB and build details for Windows 11, Windows 10, and Windows Server.
+- Several Windows KBs include Secure Boot certificate expiration messaging. Microsoft says certificates used by most Windows devices start expiring in June 2026 and asks admins to review the Secure Boot certificate guidance.
+- The Windows message centre says Windows Autopatch is enabling hotpatch security updates by default from the May 2026 Windows security update for eligible Microsoft Intune devices.
+- Some KB pages state that Microsoft is not currently aware of issues for that update. Other KB pages list specific known issues, so check the KB for each OS version in your estate before broad deployment.
 
-- [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide) for CVEs, affected products, severity, exploitation assessment, and revision history.
-- [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/) for known issues, safeguards, resolved issues, and Windows release notes.
-- [Windows update release cycle](https://learn.microsoft.com/en-us/windows/deployment/update/release-cycle) for the monthly update cadence and release channel model.
-- [Microsoft Update Catalog](https://www.catalog.update.microsoft.com/Home.aspx) for update package lookup when you need direct download or offline servicing.
-- [Microsoft 365 admin centre Service health](https://learn.microsoft.com/en-us/microsoft-365/enterprise/view-service-health?view=o365-worldwide) for tenant service incidents that may affect Exchange Online, Teams, SharePoint, Intune, or other cloud services during the patch window.
+## Priority Actions For Admins
 
-Do not use social posts, screenshots, or third party summaries as your primary source for deployment decisions. They can be useful for early signals, but the change record should come from Microsoft.
+1. Export the May 2026 view from the [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide) for the products you own, then keep the export with the change record.
+2. Map every managed Windows client and server version to the KB and build table below. Do not approve broad deployment until the table matches your estate.
+3. Review the known issue section in each Microsoft KB before moving from pilot to broad rings.
+4. Check BitLocker recovery readiness before updating devices that use custom TPM platform validation profiles.
+5. Review Secure Boot certificate readiness, especially for older hardware, server fleets, recovery media, and virtual or cloud-managed Windows environments.
+6. Confirm whether Windows Autopatch hotpatch applies to your eligible Intune devices, then check Autopatch reporting before assuming restart behaviour.
+7. Check Microsoft 365 admin centre Service health if Teams, Exchange Online, SharePoint, Intune, identity, or portal symptoms appear during the patch window.
 
-## Checks To Finish Before Release
+## KBs And Builds To Verify
 
-Start with the boring items, because they are the ones that make recovery possible:
+Use these as verification targets, not as a replacement for your update management reports.
 
-- Confirm your pilot, early adopter, broad, and hold rings are still assigned to the right devices.
-- Check that emergency access accounts, break glass procedures, and privileged access approval paths still work.
-- Confirm recent endpoint backups for devices that support local restore or rebuild workflows.
-- Export or snapshot current Windows Update for Business, Intune update ring, WSUS, MECM, and maintenance window settings.
-- Confirm your helpdesk has the current escalation path for BitLocker recovery, Autopilot rebuilds, and failed update loops.
-- Check that reporting jobs still run and that stale inventory is understood before release day.
+| Platform | May 2026 KB | Build to verify |
+| --- | --- | --- |
+| Windows 11, version 26H1 | [KB5089548](https://support.microsoft.com/help/5089548) | 28000.2113 |
+| Windows 11, versions 25H2 and 24H2 | [KB5089549](https://support.microsoft.com/help/5089549) | 26200.8457 for 25H2, 26100.8457 for 24H2 |
+| Windows 11, version 23H2 | [KB5087420](https://support.microsoft.com/help/5087420) | 22631.7079 |
+| Windows 10 ESU, version 22H2 | [KB5087544](https://support.microsoft.com/help/5087544) | 19045.7291 |
+| Windows 10 Enterprise LTSC 2021 and IoT Enterprise LTSC 2021 | [KB5087544](https://support.microsoft.com/help/5087544) | 19044.7291 |
+| Windows Server 2025 | [KB5087539](https://support.microsoft.com/help/5087539) | 26100.32860 |
+| Windows Server, version 23H2 | [KB5087541](https://support.microsoft.com/help/5087541) | 25398.2330 |
+| Windows Server 2022 | [KB5087545](https://support.microsoft.com/help/5087545) | 20348.5139 |
+| Windows Server 2019 | [KB5087538](https://support.microsoft.com/help/5087538) | 17763.8755 |
+| Windows Server 2016 | [KB5087537](https://support.microsoft.com/help/5087537) | 14393.9140 |
 
-If you use the script library, the [patch compliance report script](/scripts/get-patch-compliance-report) is a practical way to confirm last check-in, OS version, and patch posture before the month starts moving.
+If you use Windows Server 2025 hotpatching, also check the separate [May 12, 2026 hotpatch KB5087423](https://support.microsoft.com/en-gb/topic/may-12-2026-hotpatch-kb5087423-os-build-26100-32772-6a3275dd-3206-42b4-ab09-515421b3f142) path where it applies to your estate.
 
-## Windows Client Rings
+When you need standalone packages, verify the KB in the [Microsoft Update Catalog](https://www.catalog.update.microsoft.com/Home.aspx). Microsoft support pages also state which channels offer each update, including Windows Update, Windows Update for Business, Microsoft Update Catalog, and WSUS where applicable.
 
-For Windows clients, keep the first deployment ring small enough to watch properly. The first ring should include hardware types, security baselines, VPN profiles, Autopilot build models, and remote worker patterns that resemble production.
+## Known Issues To Check Before Broad Deployment
 
-Before the May updates appear:
+Start with the KB for the OS version you are approving. These are the Microsoft-confirmed checks that matter for this release window.
 
-- Make sure every ring has an owner and a clear promotion rule.
-- Check that safeguard holds, quality update deadlines, grace periods, and restart settings still match policy.
-- Confirm whether any devices are already pending restart from previous updates.
-- Check that pilot devices are online and syncing before release day.
-- Agree what counts as a stop signal, such as repeated boot failure, widespread VPN breakage, BitLocker recovery prompts, failed sign-in, or security tool instability.
+- Windows 11 version 26H1 [KB5089548](https://support.microsoft.com/help/5089548) and Windows 11 versions 25H2 and 24H2 [KB5089549](https://support.microsoft.com/help/5089549) state that Microsoft is not currently aware of issues with those updates.
+- Windows 11 version 23H2 [KB5087420](https://support.microsoft.com/help/5087420), Windows 10 [KB5087544](https://support.microsoft.com/help/5087544), and Windows Server 2025 [KB5087539](https://support.microsoft.com/help/5087539) list a BitLocker recovery prompt issue for a limited set of devices with an unrecommended BitLocker Group Policy configuration. Microsoft describes the affected pattern as BitLocker on the OS drive, a TPM platform validation profile that explicitly includes PCR7, `msinfo32.exe` reporting Secure Boot State PCR7 Binding as `Not Possible`, the Windows UEFI CA 2023 certificate present in the Secure Boot database, and the device not already running the 2023-signed Windows Boot Manager.
+- For that BitLocker issue, Microsoft says enterprises should audit BitLocker policies for explicit PCR7 inclusion and check PCR7 binding status before installing the update. A permanent resolution is planned in a future Windows update.
+- Windows Server, version 23H2 [KB5087541](https://support.microsoft.com/help/5087541) and Windows Server 2022 [KB5087545](https://support.microsoft.com/help/5087545) list a WSUS issue where synchronisation error details do not display after specified previous updates or later. Microsoft says this functionality was temporarily removed to address CVE-2025-59287.
+- Windows Server 2025 release health also carries a mitigated issue where WUSA installations can fail when an update is installed from a network share containing multiple `.msu` files. Microsoft says the issue does not occur when only one `.msu` is present or when the `.msu` is stored locally.
+- At the time checked, the Windows release health pages listed no active known issues for Windows 11 versions 25H2 and 24H2, and no active known issues for Windows 10 version 22H2. Treat those pages as changeable and still read the per-KB known issue section.
 
-For devices managed by Intune, pair this with the [Intune hub](/intune) and the [Windows Update for Business deferral troubleshooting guide](/troubleshooting/wufb-deferral-not-respected) if updates are not appearing when you expect.
+## Deployment Checks
 
-## Windows Server Patch Windows
+For Intune and Windows Update for Business:
 
-Server patching needs a separate rhythm from client patching. Do not let workstation urgency collapse your server change process.
+- Confirm quality update ring assignments, exclusions, deadlines, grace periods, restart settings, and safeguard behaviour.
+- Check pilot devices have synced recently before using their status as deployment evidence.
+- Confirm feature update policies are not moving devices at the same time as this quality update.
+- Use expedited quality updates only where the risk justifies it and where reporting can confirm install and restart state.
+- For Autopatch-managed devices, check whether the May 2026 hotpatch default applies to eligible Intune devices and review Autopatch reporting before assuming a device will or will not restart.
 
-Before release:
+For WSUS:
 
-- Confirm maintenance windows for domain controllers, file servers, RDS hosts, Hyper-V hosts, application servers, and management servers.
-- Check restart order for clustered services and dependent applications.
-- Confirm backup health and restore ownership before approving updates.
-- Check free disk space, pending reboots, and servicing stack health on critical servers.
-- Make sure out of hours cover is assigned for the first server patch window.
+- Sync after Microsoft metadata is available, then confirm products and classifications match the platforms in scope.
+- Check that Security Updates classification is selected where the KB article requires it.
+- Watch WSUS sync health, but remember the Microsoft-confirmed WSUS error detail issue on Windows Server, version 23H2 and Windows Server 2022.
+- If manual import is needed, use Microsoft Update Catalog and record the exact KB, architecture, and package source.
 
-For wider planning, keep the [Windows Server hub](/windows-server) close to the patch runbook so server owners can separate client deployment issues from server servicing issues.
+For Configuration Manager:
 
-## Intune, Update Rings, And WUfB
+- Confirm the software update point has synced the May 2026 metadata.
+- Review automatic deployment rules before they evaluate against the new updates.
+- Validate pilot collections, maintenance windows, content distribution, and restart settings.
+- Use compliance states by error pattern, not just raw failed install counts.
 
-In Intune, most Patch Tuesday problems are caused by assignment drift, deadline confusion, or stale device check-in rather than the update content itself.
+For Windows Server:
 
-Check:
+- Patch domain controllers, file servers, Hyper-V hosts, RDS hosts, management servers, and application servers through their normal maintenance windows.
+- Check backups, restore ownership, free disk space, pending reboot state, and servicing stack prerequisites.
+- For Server 2025, confirm whether the standard cumulative update or hotpatch route applies.
+- If using standalone `.msu` files, avoid installing from a network share that contains multiple `.msu` files until you have checked the current Windows release health guidance.
 
-- Quality update ring assignments and exclusions.
-- Feature update policy assignments if you also manage Windows 11 version movement.
-- Autopatch or automated ring policy status if used in your tenant.
-- Deadline and grace period settings for each ring.
-- Device last check-in and sync status for pilot devices.
-- Conflicts between Intune, Group Policy, local policy, and legacy management agents.
+For Microsoft 365 operations:
 
-If a device is not seeing an expected update, troubleshoot policy delivery before assuming Microsoft has held the update. Start with [WUfB deferral troubleshooting](/troubleshooting/wufb-deferral-not-respected), then check device sync state and update scan logs.
+- Do not assume every service symptom during Patch Tuesday is caused by Windows updates.
+- Check Microsoft 365 admin centre Service health for Exchange Online, Teams, SharePoint, Intune, identity, and portal issues before escalating a Windows rollback.
+- Record tenant incidents separately from endpoint and server patch incidents so the next shift can see which evidence came from Microsoft 365 and which came from device telemetry.
 
-## WSUS And MECM Sync Readiness
+## What Not To Assume Yet
 
-For WSUS and MECM estates, the release day risk is often metadata and content flow.
+- Do not assume a CVE total, critical severity total, exploited status, or public disclosure status unless you have verified it in the Microsoft Security Update Guide.
+- Do not assume a third party summary is correct if it disagrees with Microsoft KBs, release health, or the Security Update Guide.
+- Do not assume "no known issues" applies to every version. Some KBs state no current issues, while other May 2026 KBs list BitLocker or WSUS known issues.
+- Do not assume every Windows Server 2025 device should use the same servicing path. Standard cumulative update and hotpatch servicing have different applicability.
+- Do not assume Microsoft 365 is healthy from public information alone. Tenant Service health is the source for your tenant.
+- Do not assume Microsoft Update Catalog has every architecture you need until you search the exact KB and architecture.
 
-Before release:
+## First 24 Hours
 
-- Confirm WSUS synchronisation succeeds before the Microsoft release window.
-- Check free disk space on WSUS content volumes and MECM distribution points.
-- Confirm products, classifications, languages, and supersedence rules are intentional.
-- Check MECM software update point health and component status.
-- Confirm automatic deployment rules are enabled only where you intend automatic approval.
-- Verify pilot collections and maintenance windows before the update sync.
+Use the first day to gather evidence and keep the blast radius small.
 
-When Microsoft publishes the updates, run a controlled synchronisation, inspect the update metadata, then deploy to a pilot collection before broad approval. Keep the [SCCM and MECM hub](/sccm-mecm) linked from the runbook for teams that still manage mixed estates.
+1. Capture the Microsoft Security Update Guide export for May 2026.
+2. Confirm every supported Windows version in your estate has a KB and build target.
+3. Read the per-KB known issue section before broad approval.
+4. Check Secure Boot certificate readiness and BitLocker recovery coverage.
+5. Sync WSUS and Configuration Manager, then validate metadata and content distribution.
+6. Confirm Intune, WUfB, and Autopatch reporting for pilot devices.
+7. Patch pilot devices and servers, then check sign-in, VPN, Defender, line of business apps, printing, backup agents, and management agents.
+8. Record the decision to hold, expand, or adjust rings.
 
-## Defender And Endpoint Security Monitoring
-
-Patch Tuesday is also a security monitoring event. Endpoint protection, attack surface reduction, and EDR telemetry should be watched before, during, and after rollout.
-
-Before release:
-
-- Check Microsoft Defender for Endpoint sensor health across pilot devices.
-- Confirm security baseline and attack surface reduction policy reporting is current.
-- Make sure endpoint isolation, live response, and incident escalation paths still work.
-- Confirm your SOC knows which pilot devices and servers are patched first.
-- Watch for abnormal crashes, service failures, blocked drivers, or repeated exploit protection events after update installation.
-
-Use the [endpoint security hub](/endpoint-security) for related hardening and monitoring guidance.
-
-## BitLocker And Secure Boot Readiness
-
-The first 24 hours are not the time to discover that recovery keys are missing or that a firmware change has altered boot measurements.
-
-Before release:
-
-- Confirm BitLocker recovery keys are escrowed for pilot and high value devices.
-- Check helpdesk access to recovery key lookup and identity verification procedures.
-- Review recent BitLocker recovery incidents, including the [April 2026 BitLocker recovery loop guide](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063).
-- Confirm Secure Boot state on representative hardware.
-- Keep the [Secure Boot CA 2023 rollout readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) in the patch planning notes, especially for fleets with older firmware, boot media dependencies, or recovery tooling.
-
-This does not mean the May 2026 updates are known to trigger BitLocker or Secure Boot issues. It means those areas are costly when they fail, so they belong in the readiness checklist.
-
-## Rollback And Recovery Planning
-
-Rollback planning should be written before the first approval, not during the first outage call.
-
-Document:
-
-- Who can pause rings or stop automatic deployment rules.
-- Which pilot devices or servers can be used for deeper diagnostics.
-- How to collect Windows Update logs, event logs, Defender logs, and MECM client logs.
-- When to uninstall an update, when to rebuild, and when to wait for Microsoft guidance.
-- How to communicate a hold to helpdesk, security, service owners, and business teams.
-- Where to record decisions so the next shift does not repeat the same triage.
-
-Keep rollback practical. The goal is not to promise that every update can be removed cleanly. The goal is to know who decides, what evidence is needed, and how service is restored.
-
-## After Microsoft Publishes The Updates
-
-Once the May 2026 security update details are live, update your runbook with facts from Microsoft:
-
-- Confirm the CVE list, affected products, severity, exploitation assessment, and revision notes in the Microsoft Security Update Guide.
-- Review Windows release health for known issues, safeguards, and resolved issue notes.
-- Open the KB articles for every supported Windows client and server version in your estate.
-- Check the Microsoft Update Catalog if you need package availability for offline servicing or manual import.
-- Check Microsoft 365 Service health if admins report portal, Exchange Online, Teams, SharePoint, Intune, or identity symptoms during the same window.
-- Re-check update applicability in WSUS, MECM, Intune, and Windows Update for Business before broad approval.
-
-If Microsoft revises the Security Update Guide or adds a known issue after release, treat that as a change to the deployment record.
-
-## First 24 Hours Checklist
-
-Use the first 24 hours to gather evidence, not to rush every device into the broad ring.
-
-1. Confirm Microsoft has published the May 2026 details in the Security Update Guide.
-2. Capture the relevant KB articles for Windows client and Windows Server versions in scope.
-3. Review Windows release health for known issues before approving broad deployment.
-4. Sync WSUS and MECM, then validate metadata and content download.
-5. Confirm Intune update ring status and pilot device check-in.
-6. Patch the pilot ring and record install, restart, and post-restart results.
-7. Check Defender, endpoint protection, VPN, sign-in, printing, line of business apps, and management agent health.
-8. Watch BitLocker recovery prompts, boot failures, Secure Boot anomalies, and update rollback events.
-9. Decide whether to hold, expand, or adjust rings based on observed evidence.
-10. Share a short status note with helpdesk and service owners.
-
-## First 7 Days Checklist
+## First 7 Days
 
 The first week is where patching becomes service management.
 
-1. Promote from pilot to early adopter only when restart and health data is clean enough.
-2. Review failed installs by error pattern, not just by count.
+1. Review Microsoft Security Update Guide revisions and Windows release health daily.
+2. Promote from pilot to early adopter only when restart, recovery, and application evidence is clean enough.
 3. Track devices that have not checked in since before release.
-4. Compare Intune, MECM, Defender, and script based reporting for drift.
-5. Confirm servers are patched within approved windows and that backups remain healthy.
-6. Review open incidents for patterns across hardware model, driver version, VPN client, security tool, or Windows version.
-7. Revisit Microsoft release health and Security Update Guide revisions at least daily during the first week.
-8. Tighten broad ring deadlines only after pilot and early adopter evidence supports it.
-9. Record any local workaround, blocked deployment, or rollback decision in the patch record.
-10. Close the cycle with a short lessons learned note before the June 2026 planning window starts.
+4. Compare Intune, MECM, Defender, WSUS, and script-based reporting for drift.
+5. Review open incidents by Windows version, KB, hardware model, driver version, VPN client, security tool, and server role.
+6. Close the cycle with a short note covering what was approved, what was held, and what must be watched before June 2026 Patch Tuesday.
 
 ## Internal References
 
@@ -202,7 +155,20 @@ The first week is where patching becomes service management.
 ## Sources
 
 - [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide)
+- [May 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-May)
 - [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/)
-- [Windows update release cycle](https://learn.microsoft.com/en-us/windows/deployment/update/release-cycle)
+- [Windows message centre](https://learn.microsoft.com/en-us/windows/release-health/windows-message-center)
+- [Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information)
+- [Windows 10 release information](https://learn.microsoft.com/en-us/windows/release-health/release-information)
+- [Windows Server release information](https://learn.microsoft.com/en-us/windows/release-health/windows-server-release-info)
+- [Windows 11 KB5089548](https://support.microsoft.com/help/5089548)
+- [Windows 11 KB5089549](https://support.microsoft.com/help/5089549)
+- [Windows 11 KB5087420](https://support.microsoft.com/help/5087420)
+- [Windows 10 KB5087544](https://support.microsoft.com/help/5087544)
+- [Windows Server 2025 KB5087539](https://support.microsoft.com/help/5087539)
+- [Windows Server version 23H2 KB5087541](https://support.microsoft.com/help/5087541)
+- [Windows Server 2022 KB5087545](https://support.microsoft.com/help/5087545)
+- [Windows Server 2019 KB5087538](https://support.microsoft.com/help/5087538)
+- [Windows Server 2016 KB5087537](https://support.microsoft.com/help/5087537)
 - [Microsoft Update Catalog](https://www.catalog.update.microsoft.com/Home.aspx)
 - [How to check Microsoft 365 service health](https://learn.microsoft.com/en-us/microsoft-365/enterprise/view-service-health?view=o365-worldwide)
