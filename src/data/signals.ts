@@ -40,10 +40,10 @@ export const liveSignals: Signal[] = [
     slug: 'may-2026-patch-tuesday-readiness',
     category: 'Patch Tuesday',
     excerpt:
-      'A practical admin briefing for the May 2026 Microsoft security updates, KB checks, known issue review, Intune, WSUS, Autopatch, and deployment guidance.',
+      'May 2026 Patch Tuesday deployment notes covering KB5089549 for Windows 11, Windows Server updates, BitLocker PCR7 known issue, Secure Boot certificate readiness, Intune Autopatch hotpatch, and WSUS deployment checks.',
     date: '13 May 2026',
     publishedAt: '2026-05-13',
-    readTime: '8 min read',
+    readTime: '10 min read',
     source: 'AdminSignal',
     isOfficial: false,
     authorId: 'jack',
