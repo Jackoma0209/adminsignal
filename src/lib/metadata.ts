@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { toIsoDate } from './dates'
 
 const siteUrl = 'https://www.adminsignal.com'
 const siteName = 'AdminSignal'
@@ -35,6 +36,9 @@ export function buildArticleMetadata({
   ogImage?: { url: string; width?: number; height?: number; alt?: string }
 }): Metadata {
   const image = ogImage ?? DEFAULT_OG_IMAGE
+  const publishedDate = toIsoDate(publishedTime)
+  const modifiedDate = toIsoDate(modifiedTime) ?? publishedDate
+
   return {
     title,
     description,
@@ -47,9 +51,9 @@ export function buildArticleMetadata({
       type: 'article',
       siteName,
       url,
-      publishedTime,
+      publishedTime: publishedDate,
       // Always carry a modifiedTime so Google sees freshness signals
-      modifiedTime: modifiedTime ?? publishedTime,
+      modifiedTime: modifiedDate,
       section: category,
       tags,
       authors: authorName ? [authorName] : undefined,

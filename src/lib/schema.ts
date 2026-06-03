@@ -4,6 +4,8 @@
  * Sanitise < chars to prevent XSS injection via dangerouslySetInnerHTML.
  */
 
+import { toIsoDate } from './dates'
+
 const SITE_URL = 'https://www.adminsignal.com'
 const SITE_NAME = 'AdminSignal'
 const DEFAULT_LANGUAGE = 'en-US'
@@ -207,14 +209,16 @@ export function articleSchema({
   tags?: string[]
 }) {
   const images = Array.isArray(image) ? image : image ? [image] : undefined
+  const publishedDate = toIsoDate(publishedTime)
+  const modifiedDate = toIsoDate(modifiedTime) ?? publishedDate
 
   return cleanSchema({
     '@context': 'https://schema.org',
     '@type': type,
     headline: title,
     description,
-    datePublished: publishedTime,
-    dateModified: modifiedTime ?? publishedTime,
+    datePublished: publishedDate,
+    dateModified: modifiedDate,
     author: authorName
       ? { '@type': 'Person', name: authorName }
       : organizationRef(),
@@ -269,8 +273,8 @@ export function softwareSourceCodeSchema({
       ? { '@type': 'Person', name: authorName }
       : organizationRef(),
     publisher: organizationRef(),
-    dateCreated,
-    dateModified,
+    dateCreated: toIsoDate(dateCreated),
+    dateModified: toIsoDate(dateModified),
     keywords: keywordList(tags),
     about: thingList(tags),
   })
@@ -335,7 +339,7 @@ export function reviewSchema({
     },
     name: `Review of ${itemName}`,
     reviewBody,
-    datePublished,
+    datePublished: toIsoDate(datePublished),
     author: authorName
       ? { '@type': 'Person', name: authorName }
       : organizationRef(),
