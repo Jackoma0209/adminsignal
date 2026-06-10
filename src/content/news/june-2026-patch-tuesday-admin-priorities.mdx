@@ -1,0 +1,256 @@
+---
+title: "June 2026 Patch Tuesday: Windows Admin Priorities"
+description: "Windows admin guide to June 2026 Patch Tuesday: CVEs, KB targets, Intune rollout checks, known issues and Secure Boot readiness."
+metaTitle: "June 2026 Patch Tuesday: Admin Checklist | AdminSignal"
+metaDescription: "Windows admin guide to June 2026 Patch Tuesday: CVEs, KB targets, Intune rollout checks, known issues and Secure Boot readiness."
+canonical: "https://www.adminsignal.com/news/june-2026-patch-tuesday-admin-priorities"
+openGraphTitle: "June 2026 Patch Tuesday: What Windows Admins Should Prioritise"
+openGraphDescription: "A practical June 2026 Patch Tuesday guide for Windows admins covering CVEs, KB targets, Intune rollout checks, known issues and Secure Boot readiness."
+openGraphImage: "/images/article-covers/june-2026-patch-tuesday-admin-priorities.svg"
+category: "Patch Tuesday"
+date: "2026-06-10"
+authorId: "jack"
+lastReviewed: "2026-06-10"
+reviewNote: "Post-release admin briefing checked against the Microsoft Security Update Guide release note and API, individual Microsoft CVE records, Windows cumulative update KBs, Windows release health, and current Microsoft Secure Boot certificate guidance on 2026-06-10. Counts and exploit status can change if Microsoft revises the release."
+tags: ["June 2026 Patch Tuesday", "Windows security updates", "Microsoft Security Update Guide", "Windows admins", "Intune", "Windows Update for Business", "endpoint management", "Secure Boot certificates"]
+keywords: ["June 2026 Patch Tuesday", "Windows security updates", "Microsoft Security Update Guide", "Windows admins", "Intune", "Windows Update for Business", "endpoint management", "Secure Boot certificates"]
+image: "/images/article-covers/june-2026-patch-tuesday-admin-priorities.svg"
+imageAlt: "Enterprise Windows patch deployment illustration with a calendar, shield, server nodes, and staged rollout rings"
+---
+
+The practical takeaway for June is straightforward: patch exposed Windows servers and domain controllers first, then move quickly through admin workstations and the wider endpoint estate. Microsoft is not reporting active exploitation in this release, so most organisations can use their normal staged rollout rather than abandoning testing.
+
+There is still plenty to review. The June 2026 Patch Tuesday release includes an unauthenticated HTTP.sys remote code execution flaw, two critical domain controller issues, several Remote Desktop Client vulnerabilities, and three publicly disclosed vulnerabilities. Windows 10 and Windows Server 2022 also carry a narrowly scoped BitLocker recovery known issue.
+
+This article turns the [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide) into a deployment plan for Windows admins, Intune teams, MSPs, and endpoint management teams. For the previous month's context, see the [May 2026 Patch Tuesday deployment notes](/news/may-2026-patch-tuesday-readiness).
+
+## What changed in June 2026 Patch Tuesday
+
+Microsoft released the June security updates on 2026-06-09. At the time of review, the [June 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-Jun) lists:
+
+- **206 Microsoft CVEs**
+- **38 Critical** and **168 Important** vulnerabilities
+- **3 publicly disclosed** vulnerabilities
+- **0 vulnerabilities marked as exploited**
+
+Those numbers describe the release, but they do not tell you which devices should move first. For deployment planning, exposure and server role matter more than the headline total.
+
+The three publicly disclosed vulnerabilities are:
+
+- [CVE-2026-45586](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45586), a Windows Collaborative Translation Framework elevation of privilege vulnerability that can lead to SYSTEM privileges after local exploitation.
+- [CVE-2026-49160](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-49160), an HTTP.sys denial of service vulnerability affecting HTTP/2 handling.
+- [CVE-2026-50507](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-50507), a BitLocker security feature bypass that requires physical access to the target.
+
+Microsoft rates exploitation as "more likely" for all three, but does not mark any of them as exploited. That distinction matters: public disclosure increases attention, but it is not evidence of active attacks.
+
+## Windows KBs and builds to verify
+
+Use the KB and build as your compliance target. Do not rely only on an update policy showing as assigned.
+
+<div className="my-5 max-w-full overflow-x-auto rounded-lg border border-border">
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>June 2026 update</th>
+        <th>Build to verify</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Windows 11, version 26H1</td>
+        <td><a href="https://support.microsoft.com/help/5095051">KB5095051</a></td>
+        <td>28000.2269</td>
+      </tr>
+      <tr>
+        <td>Windows 11, versions 25H2 and 24H2</td>
+        <td><a href="https://support.microsoft.com/help/5094126">KB5094126</a></td>
+        <td>26200.8655 / 26100.8655</td>
+      </tr>
+      <tr>
+        <td>Windows 11, version 23H2</td>
+        <td><a href="https://support.microsoft.com/help/5093998">KB5093998</a></td>
+        <td>22631.7219</td>
+      </tr>
+      <tr>
+        <td>Supported Windows 10 22H2 / 21H2 servicing paths</td>
+        <td><a href="https://support.microsoft.com/help/5094127">KB5094127</a></td>
+        <td>19045.7417 / 19044.7417</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2025</td>
+        <td><a href="https://support.microsoft.com/help/5094125">KB5094125</a></td>
+        <td>26100.32995</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2022</td>
+        <td><a href="https://support.microsoft.com/help/5094128">KB5094128</a></td>
+        <td>20348.5256</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2019</td>
+        <td><a href="https://support.microsoft.com/help/5094123">KB5094123</a></td>
+        <td>17763.8880</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2016</td>
+        <td><a href="https://support.microsoft.com/help/5094122">KB5094122</a></td>
+        <td>14393.9234</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Check the exact edition, architecture, and servicing entitlement in your environment. Windows 10 devices outside a supported LTSC or ESU path should not be treated as compliant simply because an older cumulative update is installed.
+
+## What Windows admins should prioritise
+
+### 1. Internet-facing HTTP.sys workloads
+
+[CVE-2026-47291](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-47291) is the clearest first priority for exposed Windows servers. Microsoft rates it Critical with a 9.8 base score and says an unauthenticated attacker could send a crafted packet to a server using the Windows HTTP Protocol Stack. Microsoft also assesses exploitation as more likely.
+
+Start with servers that accept untrusted HTTP or HTTPS traffic and confirm whether HTTP.sys is in the request path. `netsh http show servicestate` is useful for an initial check, but map the listeners back to the owning service before making decisions.
+
+The publicly disclosed [CVE-2026-49160](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-49160) is a separate HTTP.sys denial of service issue. The June update enables Microsoft's protection. Microsoft also documents a `MaxHeadersCount` control for limiting accepted HTTP/2 and HTTP/3 request headers in [KB5102602](https://support.microsoft.com/help/5102602). Treat that registry control as a hardening decision to test, not a value to push blindly across every server.
+
+### 2. Domain controllers
+
+Two Critical vulnerabilities make domain controllers an early server wave:
+
+- [CVE-2026-45648](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-45648) is an Active Directory Domain Services remote code execution vulnerability. Microsoft says a domain-authenticated attacker with access to the NSPI RPC interface can trigger it without admin rights or user interaction.
+- [CVE-2026-47288](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-47288) affects the Kerberos Key Distribution Center. Exploitation requires an authenticated domain attacker and has high attack complexity, but the target is still a domain controller.
+
+Patch domain controllers in a sequence that preserves authentication and DNS availability. Check replication, SYSVOL, time service, LDAP-dependent applications, and Kerberos authentication before moving to the next DC.
+
+### 3. Admin workstations and RDP jump hosts
+
+[CVE-2026-42985](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-42985) is a Critical Remote Desktop Client remote code execution vulnerability that Microsoft assesses as more likely to be exploited. The documented scenario requires a user to connect the vulnerable client to an attacker-controlled Remote Desktop server.
+
+That makes privileged endpoints more important than raw device count. Prioritise helpdesk workstations, jump hosts, MSP technician devices, and admin laptops that initiate RDP sessions into customer or third-party environments.
+
+### 4. Hyper-V, WDS, and role-specific servers
+
+The June release also contains Critical fixes for Windows Hyper-V, Windows Deployment Services, Windows graphics components, and other Windows roles. Use the Security Update Guide product filters to match vulnerabilities to roles you actually run.
+
+For Hyper-V clusters, drain and patch one node at a time. For WDS or imaging infrastructure, validate PXE boot, task sequences, WinPE, storage, and driver injection after the pilot server is updated.
+
+### 5. The publicly disclosed local and physical issues
+
+Do not ignore the publicly disclosed CTFMON and BitLocker vulnerabilities, but keep their prerequisites in view. CTFMON requires local access for privilege escalation. The BitLocker bypass requires physical access to the device.
+
+These still justify prompt endpoint patching, especially for shared workstations, kiosks, travelling laptops, and devices handled outside controlled offices. They do not justify treating every endpoint as if an unauthenticated remote exploit is already in progress.
+
+## What I'd prioritise first
+
+1. Internet-facing Windows servers that use HTTP.sys, after a focused service check and application smoke test.
+2. Domain controllers, patched in redundant waves with replication and authentication validation between each wave.
+3. Privileged workstations, RDP jump hosts, helpdesk endpoints, and MSP technician devices.
+4. Windows 10 and Windows Server 2022 devices that might match the PCR7 BitLocker known-issue configuration.
+5. Hyper-V, WDS, and other role-based servers, followed by the wider workstation estate through normal rings.
+
+The absence of Microsoft-confirmed exploitation supports a controlled rollout. It does not support leaving exposed or identity-critical systems until the end of a month-long endpoint deadline.
+
+## Suggested rollout approach
+
+Use rings that give you evidence, not rings that exist only on a diagram.
+
+**Ring 0: lab and recovery validation.** Test representative Windows versions, a domain controller, an HTTP.sys workload, an RDP client, and any image deployment path you operate. Confirm backups, recovery keys, console access, and rollback ownership before installing.
+
+**Ring 1: IT and representative pilot devices.** Include different hardware models, VPN clients, endpoint security agents, line-of-business applications, and at least one device from each active Windows build. Include a small number of servers by role.
+
+**Ring 2: early production.** Expand to business users and low-risk server groups once installation, restart, application, and security telemetry from the pilot ring is clean.
+
+**Ring 3: broad deployment.** Promote only after you have checked failure codes, restart compliance, BitLocker events, service health, and the Microsoft known-issues pages again.
+
+For exposed HTTP.sys servers, use an expedited maintenance window after focused testing rather than waiting for the broad workstation ring. For clustered or redundant server roles, keep enough capacity online to reverse course without creating an availability incident.
+
+The [patch management hub](/patch-management) covers ring design and change control. The [Windows Server hub](/windows-server) has role-aware maintenance guidance.
+
+## Intune and Windows Update for Business checks
+
+For Intune and Windows Update for Business environments, check policy intent against device state:
+
+- Confirm update ring assignments, exclusions, deadlines, grace periods, active hours, and restart settings.
+- Check that feature update policies are not moving the same pilot devices to a new Windows release during the quality update test.
+- Review devices that have not synced recently. A stale device can appear outside the failure count while still missing the June update.
+- Verify the installed OS build, not only the Intune policy deployment state.
+- For Windows Autopatch estates, confirm which devices are hotpatch eligible. A device that did not restart is not automatically evidence of a missed update.
+- Use an expedited quality update policy only for a clearly defined high-risk group, such as exposed HTTP.sys servers or privileged endpoints, after the pilot result is known.
+- Record exclusions with an owner, reason, compensating control, and review date.
+
+If ring timing does not match policy, use the [WUfB deferral troubleshooting guide](/troubleshooting/wufb-deferral-not-respected). The [Intune hub](/intune) has broader reporting and policy checks.
+
+## Watch for known issues
+
+Microsoft currently lists no known issues for the June updates covering Windows 11 26H1, 25H2, 24H2, or 23H2. That is a point-in-time status, not a guarantee that no issue will emerge after wider deployment.
+
+There are three platform-specific items to account for:
+
+**Windows 10 KB5094127:** Microsoft lists a limited BitLocker recovery issue on devices with an unrecommended PCR7 validation policy. All documented conditions must be present, including explicit PCR7 policy, `msinfo32.exe` showing PCR7 Binding as "Not Possible", the Windows UEFI CA 2023 certificate in the Secure Boot DB, and the older boot manager still in use.
+
+**Windows Server 2022 KB5094128:** The same PCR7 BitLocker recovery condition is listed. Microsoft also notes that WSUS does not display synchronisation error details after specified earlier updates.
+
+**Windows Server 2025 KB5094125:** Microsoft lists the WSUS error-detail issue. Treat missing detail as an observability limitation, not proof that synchronisation itself failed.
+
+Microsoft's June notes explicitly say the earlier boot manager servicing issue that could trigger BitLocker recovery is fixed for Windows 11 23H2 and Windows Server 2025. If your support team handled that problem in April or May, keep the [BitLocker recovery loop troubleshooting guide](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063) available during rollout.
+
+Re-check [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/) and each relevant KB before promoting a ring.
+
+## Secure Boot certificate readiness is now a June task
+
+The Secure Boot certificate transition is no longer a distant planning item. Microsoft's current dates are:
+
+- **2026-06-24:** Microsoft Corporation KEK CA 2011 expires.
+- **2026-06-27:** Microsoft UEFI CA 2011 expires.
+- **2026-10-19:** Microsoft Windows Production PCA 2011 expires.
+
+Microsoft says devices without the newer 2023 certificates will continue to start and receive normal Windows updates, but they may not receive future early-boot protections, Secure Boot database updates, revocation lists, or mitigations.
+
+Several June cumulative updates expand Microsoft's high-confidence device targeting for automatic certificate delivery and add Secure Boot status or policy changes. That helps, but it does not replace estate visibility. Use the [Secure Boot CA 2023 enterprise readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) to check client devices, servers, recovery media, virtual machines, and Intune reporting.
+
+There is also a deployment-media detail in the June KBs: when applying Dynamic Update packages to an existing Windows image, ensure the matching `boot.stl` file is included. Microsoft warns that missing it can prevent media from starting and produce error `0xc0430001`.
+
+## What to monitor after deployment
+
+During the first 24 to 48 hours, monitor by workload and failure pattern:
+
+- Update installation failures, rollback events, pending restarts, and devices still below the target build.
+- BitLocker recovery prompts, recovery-key lookups, PCR7 binding state, and helpdesk ticket volume.
+- HTTP.sys-backed service availability, application response codes, CPU and memory use, and load-balancer health.
+- Domain controller replication, Kerberos and LDAP authentication, DNS registration, and time synchronisation.
+- RDP client launches and connections from privileged endpoints.
+- Hyper-V cluster state, live migration, backup agents, and guest networking.
+- VPN, EDR, Defender for Endpoint, printing, and line-of-business application health on pilot devices.
+- WSUS synchronisation outcome, while accounting for the known error-detail display limitation.
+- Intune and Windows Update for Business reports for stale check-ins, download failures, install failures, and deadline behaviour.
+
+Group incidents by OS version, KB, hardware model, driver, security agent, and server role. A concentrated pattern is more useful than a raw failure total when deciding whether to pause a ring.
+
+## Admin checklist
+
+1. Review the June 2026 Microsoft Security Update Guide and retain the filtered export with the change record.
+2. Identify affected products and map every supported Windows version to the expected June KB and build.
+3. Patch representative pilot devices and servers before broad approval.
+4. Prioritise internet-facing HTTP.sys workloads, domain controllers, privileged endpoints, and other high-risk systems.
+5. Audit Windows 10 and Windows Server 2022 BitLocker PCR7 policy and recovery-key readiness.
+6. Review Intune or Windows Update for Business rings, exclusions, deadlines, restart settings, and recent device sync.
+7. Check Windows release health and each KB known-issues section before promoting a ring.
+8. Confirm rollback, console access, backup, recovery, and Microsoft support ownership.
+9. Monitor update failures, BitLocker prompts, authentication, RDP, HTTP services, endpoint security, and application health.
+10. Document exceptions with an owner, reason, compensating control, and review date.
+
+## Final recommendation
+
+Run June as a fast, evidence-led rollout. Move exposed HTTP.sys servers, domain controllers, and privileged RDP endpoints through focused pilots first. Keep normal rings for the wider estate, but shorten promotion decisions when telemetry is clean.
+
+Do not let the 206-CVE headline replace environment-specific prioritisation. The useful question is not "How many vulnerabilities shipped?" It is "Which of our systems expose the affected component, and what evidence do we need before expanding deployment?"
+
+## Official sources
+
+- [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide)
+- [June 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-Jun)
+- [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/)
+- [Windows Secure Boot certificate expiration and CA updates](https://support.microsoft.com/help/5062710)
+- [Secure Boot certificate guidance for IT professionals](https://support.microsoft.com/help/5062713)
+- [Microsoft Intune method for Secure Boot certificate updates](https://support.microsoft.com/help/5073196)
+- [Monitoring Secure Boot certificate status with Intune remediations](https://support.microsoft.com/help/5080921)

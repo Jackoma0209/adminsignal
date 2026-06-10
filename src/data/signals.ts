@@ -35,6 +35,33 @@ export interface Signal {
  */
 export const liveSignals: Signal[] = [
   {
+    id: 'live-7',
+    title: 'June 2026 Patch Tuesday: Windows Admin Priorities',
+    slug: 'june-2026-patch-tuesday-admin-priorities',
+    category: 'Patch Tuesday',
+    excerpt:
+      'June 2026 Patch Tuesday guidance for Windows admins: key CVEs, KBs, known issues, Intune rollout checks, Secure Boot readiness, and post-deployment monitoring.',
+    date: '10 Jun 2026',
+    publishedAt: '2026-06-10',
+    readTime: '10 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'jack',
+    tags: [
+      'June 2026 Patch Tuesday',
+      'Windows security updates',
+      'Microsoft Security Update Guide',
+      'Windows admins',
+      'Intune',
+      'Windows Update for Business',
+      'endpoint management',
+      'Secure Boot certificates',
+    ],
+    isNew: true,
+    isFeatured: true,
+    image: '/images/article-covers/june-2026-patch-tuesday-admin-priorities.svg',
+  },
+  {
     id: 'live-6',
     title: 'May 2026 Patch Tuesday: admin deployment notes and checks',
     slug: 'may-2026-patch-tuesday-readiness',

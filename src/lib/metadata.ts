@@ -15,39 +15,49 @@ const DEFAULT_OG_IMAGE = {
 
 export function buildArticleMetadata({
   title,
+  absoluteTitle,
   description,
   url,
   category,
   publishedTime,
   modifiedTime,
   tags,
+  metaKeywords = tags,
   authorName,
   ogImage,
+  openGraphTitle,
+  openGraphDescription,
 }: {
   title: string
+  absoluteTitle?: boolean
   description: string
   url?: string
   category?: string
   publishedTime?: string
   modifiedTime?: string
   tags?: string[]
+  metaKeywords?: string[] | null
   authorName?: string
   /** Pass a page-specific OG image to override the site default. */
   ogImage?: { url: string; width?: number; height?: number; alt?: string }
+  openGraphTitle?: string
+  openGraphDescription?: string
 }): Metadata {
   const image = ogImage ?? DEFAULT_OG_IMAGE
   const publishedDate = toIsoDate(publishedTime)
   const modifiedDate = toIsoDate(modifiedTime) ?? publishedDate
+  const socialTitle = openGraphTitle ?? title
+  const socialDescription = openGraphDescription ?? description
 
   return {
-    title,
+    title: absoluteTitle ? { absolute: title } : title,
     description,
-    keywords: tags,
+    keywords: metaKeywords,
     ...(authorName && { authors: [{ name: authorName, url: `${siteUrl}/about` }] }),
     ...(url && { alternates: { canonical: url } }),
     openGraph: {
-      title,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       type: 'article',
       siteName,
       url,
@@ -61,8 +71,8 @@ export function buildArticleMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       images: [image.url],
       ...(authorName && { creator: authorName }),
     },

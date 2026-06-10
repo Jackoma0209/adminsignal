@@ -45,23 +45,52 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const image =
-    signal.image ??
+    (typeof frontmatter.openGraphImage === 'string'
+      ? frontmatter.openGraphImage
+      : signal.image) ??
     (typeof frontmatter.image === 'string' ? frontmatter.image : undefined)
   const imageAlt =
     typeof frontmatter.imageAlt === 'string' ? frontmatter.imageAlt : signal.title
+  const metaTitle =
+    typeof frontmatter.metaTitle === 'string' ? frontmatter.metaTitle : signal.title
+  const metaDescription =
+    typeof frontmatter.metaDescription === 'string'
+      ? frontmatter.metaDescription
+      : signal.excerpt
+  const canonical =
+    typeof frontmatter.canonical === 'string'
+      ? frontmatter.canonical
+      : `${siteUrl}/news/${slug}`
+  const openGraphTitle =
+    typeof frontmatter.openGraphTitle === 'string'
+      ? frontmatter.openGraphTitle
+      : signal.title
+  const openGraphDescription =
+    typeof frontmatter.openGraphDescription === 'string'
+      ? frontmatter.openGraphDescription
+      : metaDescription
+  const keywords =
+    Array.isArray(frontmatter.keywords) &&
+    frontmatter.keywords.every((keyword) => typeof keyword === 'string')
+      ? frontmatter.keywords
+      : signal.tags
 
   return buildArticleMetadata({
-    title: signal.title,
-    description: signal.excerpt,
-    url: `${siteUrl}/news/${slug}`,
+    title: metaTitle,
+    absoluteTitle: typeof frontmatter.metaTitle === 'string',
+    description: metaDescription,
+    url: canonical,
     category: signal.category,
     publishedTime: signal.publishedAt,
     modifiedTime:
       typeof frontmatter.lastReviewed === 'string'
         ? frontmatter.lastReviewed
         : signal.publishedAt,
-    tags: signal.tags,
+    tags: keywords,
+    metaKeywords: Array.isArray(frontmatter.keywords) ? null : undefined,
     authorName: author?.name,
+    openGraphTitle,
+    openGraphDescription,
     ogImage: image
       ? {
           url: new URL(image, siteUrl).toString(),
@@ -123,18 +152,30 @@ export default async function NewsArticlePage({ params }: Props) {
       meta: s.date,
     }))
 
-  const pageUrl = `${siteUrl}/news/${slug}`
+  const pageUrl =
+    typeof frontmatter.canonical === 'string'
+      ? frontmatter.canonical
+      : `${siteUrl}/news/${slug}`
+  const articleDescription =
+    typeof frontmatter.metaDescription === 'string'
+      ? frontmatter.metaDescription
+      : signal.excerpt
+  const articleTags =
+    Array.isArray(frontmatter.keywords) &&
+    frontmatter.keywords.every((keyword) => typeof keyword === 'string')
+      ? frontmatter.keywords
+      : signal.tags
 
   const jsonLdArticle = articleSchema({
     type: 'NewsArticle',
     title: signal.title,
-    description: signal.excerpt,
+    description: articleDescription,
     publishedTime: signal.publishedAt,
     modifiedTime: lastReviewed,
     authorName: author?.name,
     url: pageUrl,
     image: featuredImageUrl,
-    tags: signal.tags,
+    tags: articleTags,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
