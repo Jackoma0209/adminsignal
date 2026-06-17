@@ -18,6 +18,23 @@ export interface Comparison {
 
 export const comparisons: Comparison[] = [
   {
+    id: '5',
+    title: 'Windows 11 25H2 vs 26H1: Key Differences and Upgrade Considerations for Admins in 2026',
+    slug: 'windows-11-25h2-vs-26h1-2026',
+    category: 'Windows 11',
+    excerpt:
+      'A practical comparison of Windows 11 25H2 and 26H1 for enterprise admins, covering upgrade timing, deployment risk, Intune considerations, and when to pilot the newer branch.',
+    productA: 'Windows 11 25H2',
+    productB: 'Windows 11 26H1',
+    verdict:
+      'Keep 25H2 for existing stable fleets unless there is a clear hardware or pilot reason to test 26H1. For new 2026 device purchases, validate 26H1 in a controlled ring before broad rollout.',
+    date: '17 June 2026',
+    publishedAt: '2026-06-17',
+    readTime: '5 min read',
+    authorId: 'jack',
+    tags: ['Windows 11', '25H2', '26H1', 'Endpoint Management'],
+  },
+  {
     id: '4',
     title: 'Windows Autopilot v1 vs. Device Preparation v2 in 2026: Practical Intune Admin Comparison',
     slug: 'autopilot-v1-vs-v2-2026',
