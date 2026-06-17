@@ -9,6 +9,7 @@ import { Menu, X, Search, Sun, Moon, Rss } from 'lucide-react'
 const nav = [
   { label: 'Signals', href: '/news' },
   { label: 'Guides', href: '/tutorials' },
+  { label: 'Comparisons', href: '/comparisons' },
   { label: 'Scripts', href: '/scripts' },
   { label: 'Topics', href: '/topics' },
   { label: 'Tools', href: '/best-tools' },
@@ -101,7 +102,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden items-center gap-0.5 md:flex">
+          <nav className="hidden items-center gap-0.5 lg:flex">
             {nav.map((item) => (
               <Link
                 key={item.href}
@@ -114,7 +115,7 @@ export default function Header() {
           </nav>
 
           {/* Desktop right controls */}
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             {/* Expandable search */}
             <div className="relative flex items-center">
               {searchOpen ? (
@@ -168,7 +169,7 @@ export default function Header() {
 
           {/* Mobile toggle */}
           <button
-            className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-foreground md:hidden"
+            className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-foreground lg:hidden"
             onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
@@ -180,7 +181,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="border-t border-border bg-background md:hidden">
+        <div className="border-t border-border bg-background lg:hidden">
           <nav className="flex flex-col gap-1 px-4 py-4">
             {/* Mobile search */}
             <form onSubmit={handleMobileSubmit} className="mb-3">

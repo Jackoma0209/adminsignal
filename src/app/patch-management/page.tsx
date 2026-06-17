@@ -396,7 +396,15 @@ export default function PatchManagementPage() {
           <p className="mt-4 text-xs text-muted/60">
             For Intune-managed fleets, map each ring to an Entra ID device group and assign a
             corresponding Intune update ring policy. For WUfB via GPO, use a separate OU or
-            security group filter per ring.
+            security group filter per ring. If you are deciding whether to target the newer
+            Windows branch, compare{' '}
+            <Link
+              href="/comparisons/windows-11-25h2-vs-26h1-2026"
+              className="font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              Windows 11 25H2 vs 26H1
+            </Link>{' '}
+            before changing feature update policies.
           </p>
         </Container>
       </div>

@@ -417,6 +417,13 @@ export default function WindowsServerPage() {
               ConfigMgr and co-management guidance
               <ArrowRight className="h-4 w-4" />
             </Link>
+            <Link
+              href="/comparisons/windows-11-25h2-vs-26h1-2026"
+              className="group inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
+            >
+              Windows 11 25H2 vs 26H1 comparison
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </Container>
       </div>
