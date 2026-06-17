@@ -1,80 +1,82 @@
 ---
-title: "Windows 11 25H2 vs 26H1: Key Differences and Upgrade Considerations for Admins in 2026"
-description: "A practical comparison of Windows 11 25H2 and 26H1 for enterprise admins. Learn the key differences, new features, upgrade paths, and what to consider before deploying in 2026."
+title: "Windows 11 25H2 vs 26H1: 2026 Admin Comparison and Upgrade Guidance"
+description: "Compare Windows 11 25H2 and 26H1 for admins in 2026, including Microsoft servicing scope, build numbers, Intune targeting, upgrade paths, and pilot guidance."
 category: "Windows 11"
 date: "2026-06-17"
 lastReviewed: "2026-06-17"
 authorId: "jack"
 tags: ["Windows 11", "25H2", "26H1", "Upgrade", "Endpoint Management"]
-metaTitle: "Windows 11 25H2 vs 26H1: Comparison for Admins in 2026"
-metaDescription: "Compare Windows 11 25H2 and 26H1. See the key differences, new features, upgrade considerations, and recommendations for enterprise deployments in 2026."
+metaTitle: "Windows 11 25H2 vs 26H1: 2026 Admin Comparison"
+metaDescription: "Compare Windows 11 25H2 and 26H1 for admins in 2026, including servicing scope, build numbers, Intune targeting, upgrade paths, and pilot guidance."
 ---
 
-Windows 11 25H2 and 26H1 are the two most relevant versions for enterprise deployments in mid-2026. While 25H2 has been widely adopted, many organisations are now evaluating whether to move to 26H1.
+This comparison is for Windows endpoint admins planning 2026 feature update policy in Intune, Windows Update for Business, Autopatch, WSUS, or Configuration Manager. It explains when Windows 11 25H2 is the normal managed fleet target and when Windows 11 26H1 is relevant for new eligible hardware.
 
-This article breaks down the real differences between the two versions from an admin perspective.
+The key point is scope. Microsoft's [Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information) says Windows 11 26H1 is scoped to support new devices that come to market in early 2026 and is not designed as an in-place feature update from 24H2 or 25H2 on existing devices.
 
 ## Quick Comparison: Windows 11 25H2 vs 26H1
 
-| Feature                        | Windows 11 25H2                          | Windows 11 26H1                              | Winner for Most Admins |
-|--------------------------------|------------------------------------------|----------------------------------------------|------------------------|
-| Release Date                   | Late 2025                                | Mid 2026                                     | -                      |
-| Base Build                     | 26100                                    | 26200+                                       | -                      |
-| AI Features (Copilot+)         | Good support                             | Significantly improved                       | 26H1                   |
-| Performance & Efficiency       | Very good                                | Further improvements                         | 26H1                   |
-| Security Enhancements          | Strong                                   | Additional hardening                         | 26H1                   |
-| Intune / Autopilot Support     | Excellent                                | Excellent + new capabilities                 | Tie                    |
-| Upgrade Path from 24H2         | Direct                                   | Direct                                       | Tie                    |
-| Long-term Servicing            | Standard                                 | Standard                                     | Tie                    |
-| Recommended for New Devices    | Yes                                      | Yes (especially new hardware)                | 26H1                   |
+| Admin question | Windows 11 25H2 | Windows 11 26H1 | Practical answer |
+|---|---|---|---|
+| Availability date | 2025-09-30 | 2026-02-10 | Both are current servicing releases in June 2026 |
+| OS build family | 26200 | 28000 | Use build family checks in reporting and compliance logic |
+| Existing 24H2 or 25H2 fleet upgrade | Normal feature update target | Not offered as an in-place update from 24H2 or 25H2 | Keep existing managed fleets on a 25H2 plan unless Microsoft changes servicing scope |
+| New hardware in 2026 | Suitable for most managed Windows 11 endpoints | Relevant where the device ships with, or is explicitly supported for, 26H1 | Validate by device model and OEM image, not by broad policy |
+| Intune feature update targeting | Use feature update policies and rings as normal | Do not assume it appears as a normal feature update target for existing devices | Test in a small hardware-specific ring |
+| Best default for most admins | Yes | No, unless the hardware requires it | 25H2 remains the safer baseline for broad estate planning |
 
-## Key Differences in 2026
+## What Microsoft Says About 26H1
 
-### 1. AI and Copilot+ Experience
-Windows 11 26H1 brings meaningful improvements to on-device AI features. If you're deploying Copilot+ PCs or planning to use local AI capabilities (Recall, Live Captions, Studio Effects, etc.), 26H1 offers better performance and integration.
+For admin planning, the most important Microsoft statement is not a feature list. It is that 26H1 is device-scoped and not designed as a normal in-place upgrade from 24H2 or 25H2.
 
-25H2 still supports these features but with more limitations on older hardware.
+That changes the decision:
 
-### 2. Performance and Battery Life
-Microsoft has continued optimising the kernel and power management in 26H1. Many admins report noticeably better battery life and lower idle CPU usage on 26H1 compared to 25H2, especially on newer Intel and AMD hardware.
+- Do not build a broad Windows Update for Business or Intune feature update plan around moving existing 25H2 devices to 26H1.
+- Do review 26H1 when buying new early-2026 hardware that ships with it or is documented by the OEM as requiring it.
+- Do keep reporting logic aware of both build families so 26H1 devices are not misclassified as outliers.
 
-### 3. Security Improvements
-26H1 includes additional memory safety improvements and enhanced Credential Guard protections. While both versions are secure, 26H1 has a stronger default security posture out of the box.
+## Key Differences for Admins
 
-### 4. Intune and Autopilot Experience
-Both versions work excellently with Intune and Autopilot. However, 26H1 includes some quality-of-life improvements in the enrollment experience and better reporting in the Intune portal for newer devices.
+### Servicing and Upgrade Path
 
-## Upgrade Considerations for Admins
+Windows 11 25H2 is the practical target for most existing enterprise endpoints. It fits the normal feature update planning model: pilot, expand, pause if needed, and report compliance through Intune, Windows Update for Business reports, ConfigMgr, or your own inventory exports.
 
-### When You Should Consider Windows 11 26H1
+Windows 11 26H1 needs a different handling model. Treat it as a supported release for specific new devices, not as the next broad branch for the whole estate.
 
-- You're buying **new hardware** in 2026 (especially Copilot+ PCs)
-- You want the **best battery life and performance** on modern devices
-- Your organisation is increasing use of **on-device AI features**
-- You prefer to stay on the newer servicing branch
+### Intune and Update Rings
 
-### When Windows 11 25H2 Is Still a Good Choice
+For Intune-managed fleets, keep feature update policies explicit. If your policy should hold existing devices on 25H2, target 25H2 directly rather than using a vague "latest" approach.
 
-- You have a large existing fleet on 24H2/25H2 and want to minimise change
-- You're not heavily using Copilot+ features yet
-- You prefer to wait for 26H1 to mature (typical advice for the first 3–6 months after release)
-- Your hardware is older and may not benefit significantly from 26H1
+For 26H1 devices, use a separate dynamic group or hardware-specific assignment model. Track build family, OEM model, Autopilot profile, update ring, and compliance policy separately until the device class is proven stable.
+
+### Reporting and Compliance
+
+Update reporting should not flag 26H1 devices as unmanaged simply because they are outside the 25H2 build family. At the same time, do not treat 26H1 as a required target for devices that Microsoft does not offer an in-place path for.
+
+Useful checks include:
+
+- OS build family: 26200 for 25H2 and 28000 for 26H1.
+- Device model and processor family.
+- Whether the device shipped with 26H1.
+- Whether the device is assigned to a 25H2 feature update policy, a 26H1-specific ring, or a hold group.
+- Whether compliance policies use minimum build logic that accidentally excludes 26H1.
 
 ## Recommended Approach in June 2026
 
-| Scenario                                      | Recommended Version | Reason |
-|-----------------------------------------------|---------------------|--------|
-| New device purchases                          | **26H1**            | Better long-term support and features |
-| Existing stable environments                  | **25H2**            | Lower risk, proven stability |
-| Heavy Copilot+ / AI usage                     | **26H1**            | Improved on-device AI performance |
-| Conservative / highly regulated environments  | **25H2**            | More mature and widely tested |
-| Planning major refresh in next 12 months      | **26H1**            | Future-proofing |
+| Scenario | Recommended handling | Reason |
+|---|---|---|
+| Existing managed Windows 11 24H2 devices | Plan the normal move to 25H2 | 26H1 is not offered as an in-place upgrade from 24H2 |
+| Existing managed Windows 11 25H2 devices | Stay on 25H2 unless a specific hardware path requires otherwise | 25H2 is the broad fleet baseline |
+| New devices that ship with 26H1 | Pilot 26H1 in a separate hardware ring | Validate drivers, security baselines, Autopilot flow, update reporting, and support model |
+| Regulated or change-controlled environments | Keep 25H2 as the standard branch | Avoid adding a device-scoped release to broad policy without a requirement |
+| Mixed estate with some 26H1 hardware | Segment by hardware and build family | Prevent compliance and reporting noise |
 
 ## Final Recommendation
 
 As of June 2026:
 
-- **New deployments** → Go with **Windows 11 26H1**
-- **Existing stable environments** → Stay on **25H2** for now and plan a controlled move to 26H1 later in the year or in 2027
+- Use **Windows 11 25H2** as the normal enterprise feature update target for existing managed fleets.
+- Treat **Windows 11 26H1** as a separate path for eligible new hardware, not as a general replacement for 25H2.
+- Keep Intune update rings, Autopatch assignments, and compliance policies explicit so 25H2 and 26H1 devices are measured correctly.
 
-Most organisations will benefit from running a mixed environment during the second half of 2026 while they evaluate 26H1 in pilot groups.
+Most organisations should only run 26H1 where hardware or procurement creates a real need. For the rest of the estate, a controlled 25H2 rollout is the cleaner operational plan.

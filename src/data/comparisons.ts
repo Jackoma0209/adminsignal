@@ -19,15 +19,15 @@ export interface Comparison {
 export const comparisons: Comparison[] = [
   {
     id: '5',
-    title: 'Windows 11 25H2 vs 26H1: Key Differences and Upgrade Considerations for Admins in 2026',
+    title: 'Windows 11 25H2 vs 26H1: 2026 Admin Comparison and Upgrade Guidance',
     slug: 'windows-11-25h2-vs-26h1-2026',
     category: 'Windows 11',
     excerpt:
-      'A practical comparison of Windows 11 25H2 and 26H1 for enterprise admins, covering upgrade timing, deployment risk, Intune considerations, and when to pilot the newer branch.',
+      'Compare Windows 11 25H2 and 26H1 for admins in 2026, including Microsoft servicing scope, build numbers, Intune targeting, upgrade paths, and pilot guidance.',
     productA: 'Windows 11 25H2',
     productB: 'Windows 11 26H1',
     verdict:
-      'Keep 25H2 for existing stable fleets unless there is a clear hardware or pilot reason to test 26H1. For new 2026 device purchases, validate 26H1 in a controlled ring before broad rollout.',
+      'Use Windows 11 25H2 as the normal feature update target for existing managed fleets. Treat 26H1 as a device-scoped release for eligible new hardware, not as a broad in-place upgrade from 24H2 or 25H2.',
     date: '17 June 2026',
     publishedAt: '2026-06-17',
     readTime: '5 min read',
