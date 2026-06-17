@@ -13,6 +13,10 @@ export interface Comparison {
   readTime: string
   authorId: string
   tags?: string[]
+  coverImage?: {
+    src: string
+    alt: string
+  }
   isFeatured?: boolean
 }
 
@@ -33,6 +37,10 @@ export const comparisons: Comparison[] = [
     readTime: '5 min read',
     authorId: 'jack',
     tags: ['Windows 11', '25H2', '26H1', 'Endpoint Management'],
+    coverImage: {
+      src: '/images/article-covers/windows-11-25h2-vs-26h1-2026.svg',
+      alt: 'Abstract Windows 11 version comparison illustration with two update lanes, endpoint nodes, and deployment check markers',
+    },
   },
   {
     id: '4',

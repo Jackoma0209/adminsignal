@@ -20,6 +20,8 @@ import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
 import { ArrowLeftRight, Trophy } from 'lucide-react'
 
+const siteUrl = 'https://www.adminsignal.com'
+
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
@@ -31,14 +33,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const comparison = comparisons.find((c) => c.slug === slug)
   if (!comparison) return {}
   const author = getAuthor(comparison.authorId)
+  const coverImage = comparison.coverImage
   return buildArticleMetadata({
     title: comparison.title,
     description: comparison.excerpt,
-    url: `https://www.adminsignal.com/comparisons/${slug}`,
+    url: `${siteUrl}/comparisons/${slug}`,
     category: comparison.category,
     publishedTime: comparison.publishedAt,
     tags: [comparison.productA, comparison.productB, comparison.category],
     authorName: author?.name,
+    ogImage: coverImage
+      ? {
+          url: new URL(coverImage.src, siteUrl).toString(),
+          width: 1200,
+          height: 630,
+          alt: coverImage.alt,
+        }
+      : undefined,
   })
 }
 
@@ -75,7 +86,10 @@ export default async function ComparisonArticlePage({ params }: Props) {
       meta: c.readTime,
     }))
 
-  const pageUrl = `https://www.adminsignal.com/comparisons/${slug}`
+  const pageUrl = `${siteUrl}/comparisons/${slug}`
+  const coverImageUrl = comparison.coverImage
+    ? new URL(comparison.coverImage.src, siteUrl).toString()
+    : undefined
 
   const jsonLd = articleSchema({
     title: comparison.title,
@@ -84,12 +98,13 @@ export default async function ComparisonArticlePage({ params }: Props) {
     modifiedTime: lastReviewed,
     authorName: author?.name,
     url: pageUrl,
+    image: coverImageUrl,
     tags: [comparison.productA, comparison.productB, comparison.category],
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://www.adminsignal.com' },
-    { name: 'Comparisons', url: 'https://www.adminsignal.com/comparisons' },
+    { name: 'Home', url: siteUrl },
+    { name: 'Comparisons', url: `${siteUrl}/comparisons` },
     { name: comparison.title, url: pageUrl },
   ])
 

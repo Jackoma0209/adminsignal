@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Windows 11 25H2 vs 26H1 admin comparison cover</title>
+  <desc id="desc">Abstract Windows 11 version comparison illustration with two update lanes, endpoint nodes, and deployment check markers.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset="0.58" stop-color="#0b1727"/>
+      <stop offset="1" stop-color="#08101b"/>
+    </linearGradient>
+    <linearGradient id="lane25" x1="190" y1="0" x2="500" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#2563eb" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="lane26" x1="700" y1="0" x2="1010" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60a5fa" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#94a3b8" stroke-opacity="0.08" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <path d="M112 506 C238 434 292 532 414 466 C566 384 642 516 816 424 C926 366 1006 386 1088 320" fill="none" stroke="#38bdf8" stroke-opacity="0.13" stroke-width="2"/>
+  <path d="M106 184 C240 124 310 188 416 154 C546 112 650 132 766 178 C898 230 1012 148 1094 108" fill="none" stroke="#60a5fa" stroke-opacity="0.11" stroke-width="2"/>
+
+  <rect x="116" y="94" width="968" height="442" rx="28" fill="#0d1828" fill-opacity="0.82" stroke="#1e3a5f" stroke-width="1.5"/>
+  <rect x="144" y="122" width="912" height="386" rx="22" fill="#081320" stroke="#24364f" stroke-opacity="0.9"/>
+
+  <g opacity="0.9">
+    <rect x="180" y="172" width="382" height="254" rx="20" fill="#0f1d30" stroke="#244760"/>
+    <rect x="638" y="172" width="382" height="254" rx="20" fill="#0f1d30" stroke="#244760"/>
+    <line x1="600" y1="160" x2="600" y2="442" stroke="#35516d" stroke-width="1" stroke-dasharray="6 12"/>
+  </g>
+
+  <text x="180" y="94" fill="#8fb8d8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3">ADMINSIGNAL COMPARISON</text>
+  <text x="180" y="500" fill="#d8e7f5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="46" font-weight="800">Windows 11 25H2 vs 26H1</text>
+  <text x="180" y="546" fill="#86a7c5" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="25" font-weight="600">2026 admin upgrade planning</text>
+
+  <g>
+    <text x="216" y="228" fill="#f8fbff" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="54" font-weight="800">25H2</text>
+    <text x="216" y="262" fill="#8fb8d8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19" font-weight="600">Broad fleet target</text>
+    <line x1="216" y1="316" x2="506" y2="316" stroke="url(#lane25)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="242" cy="316" r="16" fill="#38bdf8" filter="url(#softGlow)"/>
+    <circle cx="334" cy="316" r="12" fill="#0f1d30" stroke="#60a5fa" stroke-width="4"/>
+    <circle cx="426" cy="316" r="12" fill="#0f1d30" stroke="#60a5fa" stroke-width="4"/>
+    <path d="M486 306 L500 318 L526 288" fill="none" stroke="#7dd3fc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="216" y="354" width="104" height="34" rx="17" fill="#102944" stroke="#245d82"/>
+    <text x="240" y="377" fill="#b9d8ee" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">26200</text>
+  </g>
+
+  <g>
+    <text x="674" y="228" fill="#f8fbff" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="54" font-weight="800">26H1</text>
+    <text x="674" y="262" fill="#8fb8d8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="19" font-weight="600">New hardware path</text>
+    <line x1="674" y1="316" x2="964" y2="316" stroke="url(#lane26)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="700" cy="316" r="16" fill="#60a5fa" filter="url(#softGlow)"/>
+    <circle cx="792" cy="316" r="12" fill="#0f1d30" stroke="#67e8f9" stroke-width="4"/>
+    <circle cx="884" cy="316" r="12" fill="#0f1d30" stroke="#67e8f9" stroke-width="4"/>
+    <path d="M944 306 L958 318 L984 288" fill="none" stroke="#a5f3fc" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="674" y="354" width="104" height="34" rx="17" fill="#102944" stroke="#246982"/>
+    <text x="699" y="377" fill="#c8eef6" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">28000</text>
+  </g>
+
+  <g fill="none" stroke="#2f8ed8" stroke-opacity="0.45" stroke-width="2">
+    <path d="M386 196 C454 156 500 158 548 198"/>
+    <path d="M812 196 C880 156 926 158 974 198"/>
+    <path d="M386 402 C454 442 500 440 548 400"/>
+    <path d="M812 402 C880 442 926 440 974 400"/>
+  </g>
+
+  <g fill="#7dd3fc" opacity="0.9">
+    <circle cx="548" cy="198" r="4"/>
+    <circle cx="974" cy="198" r="4"/>
+    <circle cx="548" cy="400" r="4"/>
+    <circle cx="974" cy="400" r="4"/>
+  </g>
+
+  <g opacity="0.45">
+    <rect x="884" y="122" width="172" height="386" rx="22" fill="#0b2034"/>
+    <path d="M912 176 H1028 M912 224 H1002 M912 272 H1032 M912 406 H1012" stroke="#7dd3fc" stroke-opacity="0.38" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>
