@@ -74,6 +74,8 @@ export default async function ComparisonArticlePage({ params }: Props) {
   }
 
   const author = getAuthor(comparison.authorId)
+  const coverImage = comparison.coverImage?.src
+  const coverImageAlt = comparison.coverImage?.alt
 
   const relatedComparisons = comparisons
     .filter((c) => c.id !== comparison.id && c.category === comparison.category)
@@ -146,6 +148,17 @@ export default async function ComparisonArticlePage({ params }: Props) {
                   <span>{comparison.readTime}</span>
                 </div>
               </header>
+
+              {coverImage && (
+                <div className="mb-8 overflow-hidden rounded-xl border border-border bg-surface">
+                  <img
+                    src={coverImage}
+                    alt={coverImageAlt ?? ''}
+                    className="block h-auto w-full"
+                    loading="eager"
+                  />
+                </div>
+              )}
 
               <div className="mb-8 rounded-xl border border-border bg-surface p-6">
                 <div className="mb-4 flex items-center justify-center gap-4">
