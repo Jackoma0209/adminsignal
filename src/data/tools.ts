@@ -45,7 +45,7 @@ export const tools: Tool[] = [
     name: 'PowerShell Pro Tools',
     category: 'Automation',
     description:
-      'Build production-grade Windows Forms GUIs, package scripts as signed executables, and debug complex runbooks directly inside VS Code.',
+      'Build Windows Forms GUIs, package scripts as signed executables, and debug complex runbooks directly inside VS Code.',
     url: 'https://ironmansoftware.com/powershell-pro-tools',
     badge: 'Paid',
     isVerified: true,

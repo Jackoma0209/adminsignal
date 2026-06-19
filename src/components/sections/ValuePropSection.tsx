@@ -18,13 +18,13 @@ const pillars = [
     icon: Terminal,
     title: 'Scripts That Actually Work',
     description:
-      'Production-tested PowerShell, ready for enterprise environments. Reviewed, documented, and built for real deployments, not just demos.',
+      'PowerShell examples written for real admin workflows. Reviewed for prerequisites, rollback risk, and clear usage before publication.',
   },
   {
     icon: Wrench,
     title: 'Curated Tool Intelligence',
     description:
-      'Honest, practitioner-reviewed recommendations. No affiliate fluff — just tools that experienced sysadmins actually reach for on hard days.',
+      'Tool recommendations based on practical admin needs. No affiliate fluff, just clear trade-offs and use cases for busy sysadmins.',
   },
 ]
 

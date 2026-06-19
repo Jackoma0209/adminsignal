@@ -17,8 +17,8 @@ export interface Author {
 export const primaryAuthor: Author = {
   id: 'jack',
   name: 'Jack',
-  role: 'Senior Enterprise Sysadmin · 12+ Years Windows & Intune',
-  bio: "I've spent 12+ years managing Windows fleets, Intune tenants, and Active Directory environments for enterprise clients across finance, logistics, and professional services. AdminSignal exists because I got tired of docs that stop at \"click Apply.\" Everything here is tested in production before it goes on the page.",
+  role: 'Microsoft Admin Practitioner and AdminSignal Author',
+  bio: 'I write from practical experience managing Windows, Intune, and Active Directory environments, with a focus on source-backed guidance, operational risk, and clear admin workflows. AdminSignal exists because I wanted documentation that goes beyond "click Apply" without pretending every environment is the same.',
   initials: 'J',
   // Replace with /images/authors/jack.jpg once you have a real photo
   avatarUrl: undefined,

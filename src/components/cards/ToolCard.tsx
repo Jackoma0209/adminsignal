@@ -1,4 +1,4 @@
-import { ArrowRight, CheckCircle2, ShieldCheck } from 'lucide-react'
+import { ArrowRight, ShieldCheck } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { type Tool } from '@/data/tools'
 
@@ -40,7 +40,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
         {tool.isVerified && (
           <div className="flex items-center gap-1.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 text-xs font-medium text-emerald-400">
             <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
-            <span>Verified in production</span>
+            <span>Operational fit reviewed</span>
           </div>
         )}
         <span className="ml-auto flex items-center gap-1 text-sm font-semibold text-primary transition-colors group-hover:gap-2">

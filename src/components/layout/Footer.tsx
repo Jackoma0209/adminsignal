@@ -71,7 +71,7 @@ export default function Footer() {
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-surface/60 p-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary/70" aria-hidden="true" />
               <p className="text-xs leading-relaxed text-muted/80">
-                Written by a senior enterprise sysadmin with 12+ years managing Windows fleets, Intune tenants, and AD environments. Everything is tested in production before it goes on the page.
+                Written from practical Microsoft admin experience, with guidance reviewed for operational risk, source accuracy, and real-world usefulness before publication.
               </p>
             </div>
             <div className="mt-4 flex flex-col gap-1.5">

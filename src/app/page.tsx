@@ -17,7 +17,7 @@ import { primaryAuthor } from '@/data/authors'
 
 const homeTitle = 'AdminSignal — Practitioner-Focused Content for Sysadmins'
 const homeDescription =
-  'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. Written by a practitioner with 12+ years of enterprise Windows and Intune experience.'
+  'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. Written from practical Microsoft admin experience, with a focus on operational risk and source-backed guidance.'
 const homeUrl = 'https://www.adminsignal.com'
 
 export const metadata: Metadata = {
@@ -83,7 +83,7 @@ export default function HomePage() {
               </span>
               <span className="mx-2 hidden sm:inline" aria-hidden="true">·</span>
               <br className="sm:hidden" />
-              All content written and tested in production environments by a senior enterprise sysadmin.
+              Guidance reviewed for operational risk, source accuracy, and real-world usefulness before publication.
             </p>
           </div>
         </Container>

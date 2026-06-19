@@ -5,8 +5,8 @@ import Container from '@/components/layout/Container'
 import { primaryAuthor } from '@/data/authors'
 
 const credentials = [
-  { icon: Briefcase, label: '12+ years enterprise Windows & Intune' },
-  { icon: BadgeCheck, label: 'Production-tested — not lab theory' },
+  { icon: Briefcase, label: 'Practical Windows and Intune admin experience' },
+  { icon: BadgeCheck, label: 'Operational risk reviewed before publication' },
   { icon: CalendarCheck, label: 'Content updated regularly, not published once and forgotten' },
 ]
 
@@ -120,9 +120,9 @@ export default function AuthorBioSection() {
             {/* Last updated trust signal */}
             <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
               <p className="text-xs leading-relaxed text-emerald-400">
-                <span className="font-semibold">Content kept current.</span> All guides and scripts
-                are reviewed and updated as Microsoft ships changes — not published once and left to
-                rot.
+                <span className="font-semibold">Content kept current.</span> Published guides and
+                scripts are reviewed as Microsoft changes the platform, with stale or risky guidance
+                revised where needed.
               </p>
               <p className="mt-1 text-xs text-muted/50">
                 Last site-wide review:{' '}
@@ -143,15 +143,14 @@ export default function AuthorBioSection() {
               <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
                 <p>
                   AdminSignal exists because I kept hitting the same wall: Microsoft docs that stop
-                  at &quot;click Apply&quot;, blog posts written by people who clearly haven&apos;t
-                  touched a real fleet, and Reddit threads that end with &quot;it depends.&quot;
+                  at &quot;click Apply&quot;, blog posts that skip the operational details, and
+                  Reddit threads that end with &quot;it depends.&quot;
                 </p>
                 <p>
-                  Everything I publish here is drawn from 12+ years managing Windows environments —
-                  Intune tenants with 10,000+ devices, Active Directory migrations, endpoint security
-                  hardening for regulated industries, and the kind of PowerShell that gets written at
-                  2 AM when something breaks. If a guide is on AdminSignal, it has been run in
-                  production, not just a dev VM.
+                  I write from practical Microsoft admin experience: Windows endpoints, Intune
+                  policy work, Active Directory, endpoint security, and the PowerShell that supports
+                  day-to-day operations. Before publication, guidance is checked for source accuracy,
+                  operational risk, and whether it is useful outside a tidy lab example.
                 </p>
                 <p>
                   The site covers{' '}
@@ -171,7 +170,7 @@ export default function AuthorBioSection() {
                     endpoint security
                   </Link>
                   , and the day-to-day reality of running enterprise IT. I write the content I
-                  wish existed when I was learning — and the content I still reach for when I&apos;m
+                  wish existed when I was learning, and the content I still reach for when I&apos;m
                   stuck.
                 </p>
               </div>
