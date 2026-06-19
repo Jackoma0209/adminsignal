@@ -12,7 +12,6 @@ const nav = [
   { label: 'Comparisons', href: '/comparisons' },
   { label: 'Scripts', href: '/scripts' },
   { label: 'Topics', href: '/topics' },
-  { label: 'Tools', href: '/best-tools' },
   { label: 'Weekly', href: '/#newsletter' },
 ]
 

@@ -11,7 +11,6 @@ const footerLinks = [
       { label: 'Tutorials', href: '/tutorials' },
       { label: 'Troubleshooting', href: '/troubleshooting' },
       { label: 'Scripts', href: '/scripts' },
-      { label: 'Reviews', href: '/reviews' },
       { label: 'Comparisons', href: '/comparisons' },
     ],
   },
@@ -29,7 +28,6 @@ const footerLinks = [
   {
     heading: 'Resources',
     links: [
-      { label: 'Best Tools', href: '/best-tools' },
       { label: 'Script Library', href: '/scripts' },
       { label: 'Comparisons', href: '/comparisons' },
       { label: 'SCCM / MECM', href: '/sccm-mecm' },
@@ -42,7 +40,6 @@ const footerLinks = [
       { label: 'Contact', href: '/contact' },
       { label: 'Editorial Policy', href: '/editorial-policy' },
       { label: 'Affiliate Disclosure', href: '/affiliate-disclosure' },
-      { label: 'Advertise', href: '/advertise' },
       { label: 'Cookie Policy', href: '/cookies' },
     ],
   },

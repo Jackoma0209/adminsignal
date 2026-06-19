@@ -6,6 +6,7 @@ import { reviews } from '@/data/reviews'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
+import { withNoindex } from '@/lib/noindex'
 import { articleSchema, reviewSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const review = reviews.find((r) => r.slug === slug)
   if (!review) return {}
   const author = getAuthor(review.authorId)
-  return buildArticleMetadata({
+  const metadata = buildArticleMetadata({
     title: review.title,
     description: review.excerpt,
     url: `https://www.adminsignal.com/reviews/${slug}`,
@@ -39,6 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     tags: [review.productName, review.category],
     authorName: author?.name,
   })
+
+  return withNoindex(metadata)
 }
 
 function RatingBar({ value, max = 5 }: { value: number; max?: number }) {

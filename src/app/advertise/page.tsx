@@ -1,10 +1,15 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import { NOINDEX_ROBOTS } from '@/lib/noindex'
 
 export const metadata: Metadata = {
   title: 'Advertise',
   description:
     'Reach IT professionals, sysadmins, and endpoint specialists through AdminSignal.',
+  alternates: {
+    canonical: 'https://www.adminsignal.com/advertise',
+  },
+  robots: NOINDEX_ROBOTS,
 }
 
 export default function AdvertisePage() {

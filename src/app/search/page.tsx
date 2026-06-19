@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     title: query ? `"${query}" — Search AdminSignal` : 'Search — AdminSignal',
     description: query
       ? `AdminSignal search results for "${query}"`
-      : 'Search guides, scripts, news, reviews, and more on AdminSignal.',
+      : 'Search guides, scripts, news, comparisons, and more on AdminSignal.',
     robots: { index: false, follow: true },
   }
 }
@@ -55,7 +55,7 @@ export default async function SearchPage({ searchParams }: Props) {
 
           {!hasQuery && (
             <p className="text-base leading-relaxed text-muted">
-              Use the search box in the header to find guides, tutorials, scripts, news, reviews,
+              Use the search box in the header to find guides, tutorials, scripts, news,
               comparisons, and troubleshooting articles across the entire AdminSignal library.
             </p>
           )}

@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
@@ -7,6 +7,11 @@ import { guides } from '@/data/guides'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
+import {
+  getDuplicateTutorialRedirect,
+  isNoindexTutorialSlug,
+  withNoindex,
+} from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -31,19 +36,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const guide = guides.find((g) => g.slug === slug)
   if (!guide) return {}
   const author = guide.authorId ? getAuthor(guide.authorId) : undefined
-  return buildArticleMetadata({
+  const duplicateRedirect = getDuplicateTutorialRedirect(slug)
+  const canonicalPath = duplicateRedirect ?? `/tutorials/${slug}`
+  const metadata = buildArticleMetadata({
     title: guide.title,
     description: guide.excerpt,
-    url: `https://www.adminsignal.com/tutorials/${slug}`,
+    url: `https://www.adminsignal.com${canonicalPath}`,
     category: guide.category,
     publishedTime: guide.publishedAt,
     tags: guide.tags,
     authorName: author?.name,
   })
+
+  return duplicateRedirect || isNoindexTutorialSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function TutorialPage({ params }: Props) {
   const { slug } = await params
+  const duplicateRedirect = getDuplicateTutorialRedirect(slug)
+  if (duplicateRedirect) permanentRedirect(duplicateRedirect)
+
   const guide = guides.find((g) => g.slug === slug)
   if (!guide) notFound()
 
@@ -69,7 +81,7 @@ export default async function TutorialPage({ params }: Props) {
     .slice(0, 3)
     .map((g) => ({
       title: g.title,
-      href: `/tutorials/${g.slug}`,
+      href: g.href ?? `/tutorials/${g.slug}`,
       type: 'tutorial' as const,
       excerpt: g.excerpt,
       meta: `${g.readTime} · ${g.difficulty}`,

@@ -1,5 +1,11 @@
 import type { MetadataRoute } from 'next'
 import { getContentSlugs } from '@/lib/content'
+import {
+  getDuplicateTutorialRedirect,
+  isNoindexContentRoute,
+  isNoindexNewsSlug,
+  isNoindexPath,
+} from '@/lib/noindex'
 import { liveSignals } from '@/data/signals'
 import { guides } from '@/data/guides'
 
@@ -51,20 +57,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const nonNewsRoutes: MetadataRoute.Sitemap = nonNewsTypes.flatMap(
     ({ type, segment, priority }) =>
-      getContentSlugs(type).map((slug) => ({
-        url: `${BASE}/${segment}/${slug}`,
-        priority,
-        changeFrequency: 'monthly' as const,
-      }))
+      getContentSlugs(type)
+        .filter((slug) => !isNoindexContentRoute(segment, slug))
+        .filter((slug) => segment !== 'tutorials' || !getDuplicateTutorialRedirect(slug))
+        .map((slug) => ({
+          url: `${BASE}/${segment}/${slug}`,
+          priority,
+          changeFrequency: 'monthly' as const,
+        }))
   )
 
   // Only index live (non-demo) news articles
-  const newsRoutes: MetadataRoute.Sitemap = liveSignals.map((signal) => ({
-    url: `${BASE}/news/${signal.slug}`,
-    priority: 0.8,
-    changeFrequency: 'monthly' as const,
-    lastModified: signal.publishedAt,
-  }))
+  const newsRoutes: MetadataRoute.Sitemap = liveSignals
+    .filter((signal) => !isNoindexNewsSlug(signal.slug))
+    .map((signal) => ({
+      url: `${BASE}/news/${signal.slug}`,
+      priority: 0.8,
+      changeFrequency: 'monthly' as const,
+      lastModified: signal.publishedAt,
+    }))
 
   // Flagship guides that have a dedicated /guides/{slug} page (href override set).
   // These are NOT under /tutorials so they are not caught by getContentSlugs('tutorials').
@@ -77,5 +88,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: g.publishedAt,
     }))
 
-  return [...staticRoutes, ...nonNewsRoutes, ...newsRoutes, ...flagshipGuideRoutes]
+  return [
+    ...staticRoutes.filter((route) => !isNoindexPath(new URL(route.url).pathname)),
+    ...nonNewsRoutes,
+    ...newsRoutes,
+    ...flagshipGuideRoutes,
+  ]
 }

@@ -7,6 +7,7 @@ import { liveSignals, signals } from '@/data/signals'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
+import { isNoindexNewsSlug, withNoindex } from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -75,7 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ? frontmatter.keywords
       : signal.tags
 
-  return buildArticleMetadata({
+  const metadata = buildArticleMetadata({
     title: metaTitle,
     absoluteTitle: typeof frontmatter.metaTitle === 'string',
     description: metaDescription,
@@ -100,6 +101,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }
       : undefined,
   })
+
+  return isNoindexNewsSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function NewsArticlePage({ params }: Props) {

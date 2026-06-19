@@ -4,6 +4,7 @@ import ReviewCard from '@/components/cards/ReviewCard'
 import CategoryPageTemplate from '@/components/templates/CategoryPageTemplate'
 import StructuredData from '@/components/StructuredData'
 import { buildCategoryMetadata } from '@/lib/metadata'
+import { withNoindex } from '@/lib/noindex'
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const pageTitle = 'Tool & Product Reviews'
@@ -11,11 +12,13 @@ const pageDescription =
   'Practitioner reviews of endpoint security, management, and Microsoft 365 tools. Real deployment experience, honest verdicts — no sponsored content.'
 const pagePath = '/reviews'
 
-export const metadata: Metadata = buildCategoryMetadata({
-  title: pageTitle,
-  description: pageDescription,
-  path: pagePath,
-})
+export const metadata: Metadata = withNoindex(
+  buildCategoryMetadata({
+    title: pageTitle,
+    description: pageDescription,
+    path: pagePath,
+  })
+)
 
 const categories = [...new Set(reviews.map((r) => r.category))]
 

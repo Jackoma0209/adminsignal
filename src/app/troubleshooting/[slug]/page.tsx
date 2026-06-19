@@ -7,6 +7,7 @@ import { troubleshootingArticles } from '@/data/troubleshooting'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
+import { isNoindexTroubleshootingSlug, withNoindex } from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = troubleshootingArticles.find((a) => a.slug === slug)
   if (!article) return {}
   const author = getAuthor(article.authorId)
-  return buildArticleMetadata({
+  const metadata = buildArticleMetadata({
     title: article.title,
     description: article.excerpt,
     url: `https://www.adminsignal.com/troubleshooting/${slug}`,
@@ -39,6 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     tags: article.affectedProducts,
     authorName: author?.name,
   })
+
+  return isNoindexTroubleshootingSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function TroubleshootingArticlePage({ params }: Props) {

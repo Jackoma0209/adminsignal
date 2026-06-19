@@ -3,13 +3,16 @@ import { tools } from '@/data/tools'
 import ToolCard from '@/components/cards/ToolCard'
 import CategoryPageTemplate from '@/components/templates/CategoryPageTemplate'
 import { buildCategoryMetadata } from '@/lib/metadata'
+import { withNoindex } from '@/lib/noindex'
 
-export const metadata: Metadata = buildCategoryMetadata({
-  title: 'Best Tools for Sysadmins',
-  description:
-    'Practitioner-curated tool recommendations for Windows administrators and endpoint specialists. No affiliate fluff — just tools that experienced sysadmins actually reach for.',
-  path: '/best-tools',
-})
+export const metadata: Metadata = withNoindex(
+  buildCategoryMetadata({
+    title: 'Best Tools for Sysadmins',
+    description:
+      'Practitioner-curated tool recommendations for Windows administrators and endpoint specialists. No affiliate fluff — just tools that experienced sysadmins actually reach for.',
+    path: '/best-tools',
+  })
+)
 
 const categories = [...new Set(tools.map((t) => t.category))]
 

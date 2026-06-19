@@ -1,10 +1,15 @@
 import { signals } from '@/data/signals'
 import { guides } from '@/data/guides'
 import { scripts } from '@/data/scripts'
-import { reviews } from '@/data/reviews'
 import { comparisons } from '@/data/comparisons'
 import { topics } from '@/data/topics'
 import { troubleshootingArticles } from '@/data/troubleshooting'
+import {
+  isNoindexComparisonSlug,
+  isNoindexNewsSlug,
+  isNoindexTroubleshootingSlug,
+  isNoindexTutorialSlug,
+} from '@/lib/noindex'
 
 export type ContentType =
   | 'news'
@@ -44,6 +49,8 @@ function buildIndex(): IndexItem[] {
   const items: IndexItem[] = []
 
   for (const s of signals) {
+    if (isNoindexNewsSlug(s.slug)) continue
+
     const text = [s.title, s.slug, s.excerpt, s.category, s.source ?? '', ...(s.tags ?? [])].join(' ')
     items.push({
       title: s.title,
@@ -57,6 +64,8 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const g of guides) {
+    if (isNoindexTutorialSlug(g.slug)) continue
+
     const text = [g.title, g.slug, g.excerpt, g.category, ...(g.tags ?? [])].join(' ')
     items.push({
       title: g.title,
@@ -82,20 +91,9 @@ function buildIndex(): IndexItem[] {
     })
   }
 
-  for (const r of reviews) {
-    const text = [r.title, r.slug, r.excerpt, r.productName, r.category, r.verdict].join(' ')
-    items.push({
-      title: r.title,
-      excerpt: r.excerpt,
-      href: `/reviews/${r.slug}`,
-      type: 'review',
-      meta: `${r.readTime} · ${r.productName}`,
-      titleLower: r.title.toLowerCase(),
-      blob: text.toLowerCase(),
-    })
-  }
-
   for (const c of comparisons) {
+    if (isNoindexComparisonSlug(c.slug)) continue
+
     const text = [
       c.title,
       c.slug,
@@ -118,6 +116,8 @@ function buildIndex(): IndexItem[] {
   }
 
   for (const a of troubleshootingArticles) {
+    if (isNoindexTroubleshootingSlug(a.slug)) continue
+
     const text = [a.title, a.slug, a.excerpt, a.category, ...a.affectedProducts].join(' ')
     items.push({
       title: a.title,
