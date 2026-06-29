@@ -126,6 +126,39 @@ export const liveSignals: Signal[] = [
     image: '/images/article-covers/april-2026-patch-tuesday-breakdown.svg',
   },
   {
+    id: 'live-2',
+    title: 'Windows App Migration Plan: Replacing Deprecated Remote Desktop Clients in Commercial Cloud',
+    slug: 'windows-app-rd-client-deprecation-2026',
+    category: 'Windows 365 / Remote Access',
+    excerpt:
+      'Enterprise admin guide to replacing the deprecated Remote Desktop MSI and web clients with Windows App: inventory, Intune deployment, pilot testing, and helpdesk cutover.',
+    date: '30 Mar 2026',
+    publishedAt: '2026-03-30',
+    readTime: '9 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'jack',
+    tags: ['Windows App', 'Remote Desktop', 'Windows 365', 'Azure Virtual Desktop', 'Intune'],
+    isFeatured: true,
+    image: '/images/article-covers/windows-app-rd-client-deprecation-2026.svg',
+  },
+  {
+    id: 'live-5',
+    title: 'Frontline Mobile Migration to Intune: A Shift-Ready Operational Playbook',
+    slug: 'intune-frontline-mobile-migration',
+    category: 'Microsoft Intune',
+    excerpt:
+      'Operational playbook for migrating frontline Android and iOS devices to Intune: reliability windows, app continuity, Wi-Fi and certificate sequencing, pilot rings, and rollback.',
+    date: '30 Mar 2026',
+    publishedAt: '2026-03-30',
+    readTime: '10 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'jack',
+    tags: ['Intune', 'Frontline Workers', 'Mobile', 'Migration', 'Android', 'iOS'],
+    image: '/images/article-covers/intune-frontline-mobile-migration.svg',
+  },
+  {
     id: 'live-1',
     title: 'Windows Cross-Signed Driver Trust Removal: Enterprise Readiness and Rollout Plan',
     slug: 'windows-driver-cross-signed-trust-removal',
@@ -164,42 +197,7 @@ export const liveSignals: Signal[] = [
  * Draft news — held offline until expanded to original operational depth.
  * Not included in the public feed, RSS, sitemap, or static page generation.
  */
-export const draftSignals: Signal[] = [
-  {
-    id: 'live-2',
-    title: 'Windows App Updates: Remote Desktop Client for Windows (MSI) and Web Client Deprecated in Commercial Clouds',
-    slug: 'windows-app-rd-client-deprecation-2026',
-    category: 'Windows 365 / Remote Access',
-    excerpt:
-      'The Remote Desktop client for Windows (MSI) and the Remote Desktop web client are no longer supported in commercial clouds as of March 27, 2026. Microsoft is directing organisations to the Windows App, which also gains keyboard input protection in this update.',
-    date: 'Mar 30, 2026',
-    publishedAt: '2026-03-30',
-    readTime: '3 min read',
-    source: 'Windows IT Pro Blog',
-    sourceUrl: 'https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-app-updates-reliability-productivity-and-security-improvements/4494681',
-    isOfficial: true,
-    tags: ['Windows App', 'Remote Desktop', 'Windows 365', 'Commercial Cloud'],
-    isNew: true,
-    isFeatured: true,
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: 'live-5',
-    title: 'Migrating Frontline Mobile Devices: A Frontline-First Approach to Moving to Microsoft Intune',
-    slug: 'intune-frontline-mobile-migration',
-    category: 'Microsoft Intune',
-    excerpt:
-      'Practical migration guidance for organisations moving frontline mobile fleets to Intune, covering reliability planning, app continuity, connectivity, certificate dependencies, and infrastructure prerequisites.',
-    date: 'Mar 30, 2026',
-    publishedAt: '2026-03-30',
-    readTime: '4 min read',
-    source: 'Intune Customer Success',
-    sourceUrl: 'https://techcommunity.microsoft.com/blog/intunecustomersuccess/migrating-frontline-mobile-devices-a-frontline-first-approach-to-moving-to-micro/4501347',
-    isOfficial: true,
-    tags: ['Intune', 'Frontline Workers', 'Mobile', 'Migration'],
-    image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&w=1200&q=80',
-  },
-]
+export const draftSignals: Signal[] = []
 
 /**
  * Archival/demo items — real events from 2025 used as structural placeholders

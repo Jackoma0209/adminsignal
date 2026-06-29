@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06121f"/>
+      <stop offset="1" stop-color="#102033"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="48%" cy="50%" r="58%">
+      <stop offset="0" stop-color="#f59e0b" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#f59e0b" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="34" height="34" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#93c5fd" fill-opacity=".18"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#dots)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="380" y="320" width="140" height="260" rx="22" fill="#0b1728" stroke="#60a5fa" stroke-width="6"/>
+    <rect x="560" y="360" width="140" height="220" rx="22" fill="#0b1728" stroke="#34d399" stroke-width="6"/>
+    <rect x="1020" y="300" width="200" height="140" rx="20" fill="#0b1728" stroke="#a78bfa" stroke-width="5"/>
+    <rect x="1100" y="480" width="200" height="140" rx="20" fill="#0b1728" stroke="#22d3ee" stroke-width="5"/>
+    <path d="M520 450h280M700 380v200" stroke="#93c5fd" stroke-opacity=".35" stroke-width="6"/>
+    <path d="M760 450c90-40 180-70 250-80" stroke="#f59e0b" stroke-opacity=".55" stroke-width="7"/>
+    <path d="M450 390h60M450 450h80M630 410h60" stroke="#93c5fd" stroke-opacity=".25" stroke-width="7"/>
+  </g>
+</svg>

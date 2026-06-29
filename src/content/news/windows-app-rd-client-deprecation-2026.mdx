@@ -1,41 +1,169 @@
 ---
-title: "Windows App Updates: Remote Desktop Client for Windows (MSI) and Web Client Deprecated in Commercial Clouds"
+title: "Windows App Migration Plan: Replacing Deprecated Remote Desktop Clients in Commercial Cloud"
+description: "Enterprise admin guide to replacing the deprecated Remote Desktop MSI and web clients with Windows App: inventory, Intune deployment, pilot testing, and helpdesk cutover."
 category: "Windows 365 / Remote Access"
-date: "Mar 30, 2026"
-lastReviewed: "Mar 30, 2026"
-tags: ["Windows App", "Remote Desktop", "Windows 365", "Commercial Cloud"]
-image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80"
-imageAlt: "Person working remotely on a laptop with an external monitor showing a Windows desktop"
+date: "Jun 29, 2026"
+authorId: "jack"
+lastReviewed: "Jun 29, 2026"
+reviewNote: "Operational migration guide based on Microsoft Windows IT Pro Blog Windows App update and Remote Desktop client deprecation guidance. Checked on 2026-06-29."
+tags: ["Windows App", "Remote Desktop", "Windows 365", "Azure Virtual Desktop", "Intune"]
+image: "/images/article-covers/windows-app-rd-client-deprecation-2026.svg"
+imageAlt: "Abstract remote desktop migration illustration with client nodes, cloud session path, and keyboard protection shield"
 ---
 
-## Remote Desktop Clients Are No Longer Supported
+From **March 27, 2026**, Microsoft no longer supports two legacy remote access clients in commercial cloud environments:
 
-Effective **March 27, 2026**, the following clients are no longer supported in Microsoft commercial cloud environments:
+- **Remote Desktop client for Windows (MSI)** — the traditional MSTSC-based installer
+- **Remote Desktop web client** — browser-based RD Web Access
 
-- **Remote Desktop client for Windows (MSI)** — the traditional MSTSC-based installer package
-- **Remote Desktop web client** — the browser-based RD Web Access client
+Microsoft's direction is the **Windows App** as the unified client for Azure Virtual Desktop, Windows 365 Cloud PC, and Remote Desktop Services in commercial cloud scenarios. The March 2026 Windows App update also adds **keyboard input protection** and reliability fixes.
 
-Microsoft's direction is to migrate to the **Windows App** as the single client for accessing Azure Virtual Desktop, Windows 365, and Remote Desktop Services in commercial cloud scenarios.
+This guide is an admin cutover plan: inventory who still uses legacy clients, deploy Windows App through Intune, validate session scenarios, and update helpdesk documentation before users hit a dead client.
 
-## Windows App Improvements in This Update
+See the [Intune hub](/intune), [Intune vs SCCM comparison](/comparisons/intune-vs-sccm-mecm-2025), and [Conditional Access policy map](/tutorials/conditional-access-m365-policy-map) for related deployment context.
 
-The March 2026 Windows App update also introduces several reliability and security improvements highlighted in the Microsoft post, including:
+## Who Needs To Act
 
-- **Keyboard input protection** — an updated security control for remote sessions
-- Productivity and reliability fixes across the Windows App client
+| Team | Responsibility |
+|---|---|
+| EUC / desktop engineering | Client packaging, Intune deployment, pilot rings |
+| AVD / Windows 365 platform team | Feed URL validation, session host compatibility |
+| Identity | Conditional Access for remote access apps where used |
+| Service desk | Updated user guidance and escalation paths |
+| Security | Review keyboard input protection and data boundary comms |
 
-## What Endpoint and EUC Teams Should Do
+If you only manage corporate laptops and nobody uses AVD, Windows 365, or RDS through the MSI client, impact may be limited. Still run inventory — shadow IT remote access is common.
 
-1. **Inventory current RD client usage.** Identify users and managed devices still using the MSI-based Remote Desktop client or accessing resources via the RD web client.
-2. **Deploy Windows App to affected devices via Intune or SCCM.** The Windows App is available from the Microsoft Store and as a deployable package.
-3. **Update user-facing guidance and helpdesk documentation** to reference the Windows App rather than legacy client paths.
-4. **Test session host compatibility** with the Windows App before cutting over user populations, particularly for RemoteApp and full desktop scenarios.
+## Phase 1: Inventory Legacy Client Usage
+
+### What to find
+
+| Signal | Where |
+|---|---|
+| Installed Remote Desktop MSI | Intune discovered apps, ConfigMgr inventory, or software inventory script |
+| RD web client bookmarks | Service desk tickets, browser favourites audits, published RD Web URLs |
+| Windows App already present | Microsoft Store apps report in Intune |
+| Active connection paths | AVD diagnostics, Windows 365 connectivity reports, RDS gateway logs |
+
+### PowerShell inventory example (local audit script)
+
+```powershell
+$UninstallKeys = @(
+    'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*',
+    'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+)
+
+Get-ItemProperty $UninstallKeys -ErrorAction SilentlyContinue |
+    Where-Object { $_.DisplayName -match 'Remote Desktop' } |
+    Select-Object DisplayName, DisplayVersion, Publisher, InstallDate
+```
+
+Expected output shape: zero or more Remote Desktop MSI entries with version and install date.
+
+### User population segmentation
+
+Build three groups:
+
+1. **AVD users** — full desktop or RemoteApp via feed
+2. **Windows 365 users** — Cloud PC connections
+3. **RDS gateway / RD Web users** — web client or MSI to on-premises or cloud-hosted collections
+
+Each group may need different feed URLs, MFA behaviour, and test cases.
+
+## Phase 2: Deploy Windows App Through Intune
+
+### Preferred distribution paths
+
+| Method | When to use |
+|---|---|
+| Microsoft Store app (Intune) | Default for most managed Windows 11/10 devices |
+| Store app with offline license | Devices with restricted Store access |
+| Required app assignment | Standard corporate remote-access users |
+| Available in Company Portal | Optional installs for infrequent users |
+
+In Intune:
+
+1. **Apps > Windows > Microsoft Store app (new)**
+2. Search for **Windows App**
+3. Assign as **Required** to pilot group, then production remote-access groups
+4. Confirm install status in **Devices > Monitor > App install status**
+
+### Coexistence during pilot
+
+Do not remove the MSI client until Windows App is validated for each scenario. Run both briefly in pilot if policy allows, so users can fall back during testing.
+
+## Phase 3: Pilot Test Matrix
+
+Test every scenario your users actually run — not just "can I connect."
+
+| Scenario | Pass criteria |
+|---|---|
+| AVD full desktop | Session launches, audio, clipboard, drive redirection as policy allows |
+| AVD RemoteApp | Published app opens and reconnects after sleep |
+| Windows 365 Cloud PC | Cloud PC connects with expected MFA prompt |
+| RDS feed via gateway | Gateway sign-in and resource list load |
+| Reconnect after network change | Session resumes or clean reconnect without data loss |
+| Keyboard input protection | Security team confirms control meets policy (per Microsoft release notes) |
+
+Record build versions of Windows App tested and the session host image versions they connected to.
+
+## Phase 4: User And Helpdesk Cutover
+
+### Helpdesk script update
+
+Replace references to:
+
+- "Open Remote Desktop" MSI shortcut
+- RD Web portal URL as primary path
+
+With:
+
+- **Windows App** from Start menu or pinned taskbar
+- Your organisation's published feed URL or Windows 365 entry point
+
+### Communication template
+
+> **What is changing:** The old Remote Desktop (MSI) app and browser web client are no longer supported for connecting to `<AVD / Windows 365 / RDS>`.
+>
+> **What to do:** Use **Windows App** on your managed device. It is installed automatically. Sign in with your work account and open your usual desktop or app.
+>
+> **If connection fails:** Contact the service desk and include the time of failure and whether you are on office or home network.
+
+### Conditional Access check
+
+If CA policies target the legacy client or generic "Microsoft Remote Desktop" app IDs, update policies to include Windows App where Microsoft documents the new application identifier. Test sign-in from pilot users before broad removal of legacy client.
+
+## Phase 5: Remove Legacy Client
+
+After pilot sign-off:
+
+1. Create Intune **Uninstall** assignment for the MSI Remote Desktop package where you previously deployed it
+2. Block legacy client reinstall via App Control or software restriction policy if needed
+3. Retire RD Web portal bookmarks from the intranet landing page — redirect to Windows App guidance
+4. Monitor helpdesk volume for two weeks
+
+## Rollback
+
+| Issue | Response |
+|---|---|
+| Windows App fails for one app collection | Keep MSI for that pilot group only until platform team resolves; document exception |
+| Store install blocked on network | Deploy via allowed offline package path; fix proxy/Store endpoints |
+| MFA loop on launch | Review CA policy and primary refresh token state before reverting client |
+
+## Prevention Checks
+
+- Add Windows App version to standard desktop build image going forward
+- Include remote access client in new-starter onboarding checklist
+- Review Microsoft release notes quarterly for Windows App breaking changes
+- Keep AVD and Windows 365 feed URLs in a single internally owned configuration document
 
 ## Related Resources
 
-- [Microsoft Intune topic hub — deploy and manage apps at scale](/intune)
-- [Microsoft Intune vs. SCCM/MECM in 2025](/comparisons/intune-vs-sccm-mecm-2025)
+- [Microsoft Intune hub](/intune)
+- [Intune vs SCCM/MECM in 2025](/comparisons/intune-vs-sccm-mecm-2025)
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Export Intune Device Report script](/scripts/export-intune-device-report)
 
 ## Source
 
-This guidance is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-app-updates-reliability-productivity-and-security-improvements/4494681) published by Microsoft on March 30, 2026.
+This operational migration plan is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-app-updates-reliability-productivity-and-security-improvements/4494681) published by Microsoft on March 30, 2026, extended with enterprise inventory, Intune deployment, and cutover steps for EUC administrators.

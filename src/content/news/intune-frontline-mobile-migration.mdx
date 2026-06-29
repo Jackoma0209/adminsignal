@@ -1,62 +1,173 @@
 ---
-title: "Migrating Frontline Mobile Devices: A Frontline-First Approach to Moving to Microsoft Intune"
+title: "Frontline Mobile Migration to Intune: A Shift-Ready Operational Playbook"
+description: "Operational playbook for migrating frontline Android and iOS devices to Intune: reliability windows, app continuity, Wi-Fi and certificate sequencing, pilot rings, and rollback."
 category: "Microsoft Intune"
-date: "Mar 30, 2026"
-lastReviewed: "Mar 30, 2026"
-tags: ["Intune", "Frontline Workers", "Mobile", "Migration"]
+date: "Jun 29, 2026"
+authorId: "jack"
+lastReviewed: "Jun 29, 2026"
+reviewNote: "Operational migration playbook based on Microsoft Intune Customer Success frontline mobile migration guidance. Checked on 2026-06-29."
+tags: ["Intune", "Frontline Workers", "Mobile", "Migration", "Android", "iOS"]
+image: "/images/article-covers/intune-frontline-mobile-migration.svg"
+imageAlt: "Abstract frontline mobile fleet illustration with handheld devices, Wi-Fi nodes, and migration path"
 ---
 
-## Overview
+Migrating a frontline mobile fleet is not the same project as migrating corporate laptops. Shared handhelds in warehouses, retail, healthcare, and field operations have shift-based uptime requirements, certificate-dependent Wi-Fi, line-of-business apps with per-device licensing, and no tolerance for "enroll it tomorrow."
 
-Migrating a frontline mobile fleet is a different challenge from migrating corporate laptops. Frontline devices — shared Android or iOS handhelds used in warehouses, retail, healthcare, or field operations — have distinct reliability requirements, app dependencies, and operational constraints. Microsoft's Intune Customer Success team has published practical migration guidance taking a frontline-first perspective.
+Microsoft's Intune Customer Success team published frontline-first migration guidance in March 2026. This playbook turns that guidance into sequencing you can run: infrastructure prerequisites, pilot rings by site, certificate and Wi-Fi ordering, app validation gates, and rollback paths that do not leave a shift without a working device.
 
-## Key Focus Areas
+Use with the [Intune hub](/intune), [Conditional Access policy map](/tutorials/conditional-access-m365-policy-map), and [Intune device not syncing troubleshooting](/troubleshooting/intune-device-not-syncing).
 
-### Reliability
+## Who This Playbook Is For
 
-Frontline workers depend on their devices staying functional during shifts. The guidance emphasises planning migrations to minimise downtime, including:
+- Intune engineers migrating Android or iOS frontline devices from another MDM
+- Infrastructure teams responsible for Wi-Fi, RADIUS, and certificate services
+- Operations managers who own shift continuity during device changeovers
+- Identity teams aligning Conditional Access with newly enrolled shared devices
 
-- Staging migrations outside peak operational hours
-- Validating that enrolled devices reach a fully functional state before handing back to workers
-- Having a rollback or re-enrolment path ready if a migration step fails mid-shift
+## How Frontline Migration Differs From Laptop Migration
 
-### App Continuity
+| Factor | Corporate laptop | Frontline mobile |
+|---|---|---|
+| Ownership | Usually one user per device | Shared across shifts |
+| Downtime window | Business hours with spare laptop | Minutes between handovers |
+| Network | Corporate Wi-Fi or VPN | Often certificate-locked store Wi-Fi |
+| Apps | Standard Office + LOB | Scanning, inventory, task apps with device binding |
+| Success metric | User productive same day | Device returned to pool functional before next shift |
 
-Apps used by frontline workers — task management, communication, inventory, and line-of-business applications — must be present and functional after migration. The guidance recommends:
+## Phase 0: Prerequisites Before Touching Devices
 
-- Mapping all apps currently deployed on the source MDM platform before migration begins
-- Confirming Intune app deployment and configuration is validated on a pilot group before wide rollout
-- Handling apps that require device-specific licensing or per-device activation separately
+Confirm infrastructure before migration day:
 
-### Connectivity
+| Prerequisite | Validation |
+|---|---|
+| Intune licences for frontline devices | Count devices + spare pool in scope |
+| Apple ABM / ASM or Android Enterprise enrolled | Corporate-owned enrollment path confirmed |
+| Intune Certificate Connector or NDES | Test certificate issued to lab device |
+| Wi-Fi and VPN profiles built in Intune | SCEP/PKCS profile deploys on lab hardware |
+| Conditional Access reviewed | Shared devices and break-glass accounts documented |
+| Source MDM export | Full device list, apps, profiles, certificates |
 
-Frontline devices often connect to dedicated Wi-Fi infrastructure with certificate-based authentication. Migration planning must account for:
+Do not start user migration until a lab device completes: enroll → receive Wi-Fi profile → receive cert → install critical LOB app → passes sign-in to required backend.
 
-- Deploying Wi-Fi profiles via Intune before or during migration so devices do not lose network access
-- Validating that SCEP or PKCS certificate profiles are provisioned and trusted before cutting over
+## Phase 1: App And Profile Inventory
 
-### Certificate Dependencies
+### Application register
 
-Many frontline environments use certificates for Wi-Fi, VPN, or app authentication. The guidance calls out the importance of:
+For each app on the source MDM platform:
 
-- Identifying all certificate requirements ahead of migration
-- Ensuring the Intune Certificate Connector or NDES infrastructure is in place and tested
-- Sequencing certificate profile deployment ahead of dependent Wi-Fi or VPN profile deployment
+| Field | Notes |
+|---|---|
+| App name | |
+| Platform | iOS / Android |
+| Deployment type | Required / available / kiosk |
+| Per-device license? | Some scanning apps bind to serial |
+| Store vs LOB package | Intune packaging path |
+| Offline requirement? | Warehouse dead zones |
 
-### Infrastructure Dependencies
+### Profile register
 
-Beyond devices, the migration may require changes to or validation of:
+| Profile | Dependency |
+|---|---|
+| Wi-Fi (WPA2-Enterprise) | Certificate profile must deploy first |
+| VPN | Often certificate or per-app |
+| Restrictions / kiosk | May block enrollment if mis-sequenced |
+| Email / Teams | Usually after network connectivity confirmed |
 
-- Network infrastructure (RADIUS, NDES, proxy settings)
-- Conditional Access policies that would apply to newly enrolled devices
-- Integration with any MDM-connected business systems
+Map dependencies explicitly. The most common frontline outage is Wi-Fi profile deploying before the device trusts the RADIUS certificate.
+
+## Phase 2: Certificate And Wi-Fi Sequencing
+
+Recommended order:
+
+1. Deploy **trusted root** and **SCEP/PKCS** certificate profiles to pilot group
+2. Deploy **Wi-Fi profile** referencing the same certificate template
+3. Confirm device connects automatically without manual cert install
+4. Deploy **VPN** if required by LOB apps
+5. Only then migrate enrollment from source MDM
+
+Test on one device per site where RADIUS policy differs. Retail and warehouse SSIDs often use different VLANs and cert templates.
+
+## Phase 3: Pilot Ring Design
+
+### Ring 0 — Lab and IT
+
+- 3–5 devices per platform (iOS/Android)
+- Full profile and app stack
+- Deliberate aeroplane-mode and Wi-Fi drop tests
+
+### Ring 1 — Single low-risk site
+
+- One store or warehouse with onsite champion
+- Migration window outside peak volume (not pre-holiday, not inventory week)
+- Spare device pool on site equal to 10% of fleet minimum
+
+### Ring 2 — Regional rollout
+
+- Repeatable runbook per site
+- Same-day rollback: re-enroll to source MDM or swap to spare if Intune path fails
+
+### Ring 3 — Enterprise completion
+
+- Only after Ring 2 shows < agreed failure rate (define upfront, e.g. 2% per site)
+
+## Phase 4: Migration Day Runbook (Per Device)
+
+1. Remove device from source MDM (or wipe per vendor procedure)
+2. Enroll into Intune via ABM/ASM or Android Enterprise workflow
+3. Wait for Wi-Fi and certificate profiles — confirm connectivity before handing to worker
+4. Confirm required apps show **Installed** in Intune
+5. Worker signs into LOB app and completes one real transaction (scan, pick, clock-in)
+6. Record serial, site, migration time, and technician in the register
+
+If step 3 fails, swap to spare device and troubleshoot offline — do not hand a non-networked device to frontline staff.
+
+## Phase 5: Reliability And Rollback
+
+### Rollback triggers
+
+- Device cannot join store Wi-Fi within 15 minutes of enrollment
+- Critical LOB app missing or failing license check
+- Shared device login flow broken for next shift
+
+### Rollback options
+
+| Option | When |
+|---|---|
+| Spare device swap | Fastest restore of shift continuity |
+| Re-enroll to source MDM | If migration window can extend |
+| Wipe and re-provision | If only Intune state is corrupt |
+
+Keep source MDM licenses active until Ring 2 completes.
+
+## Reporting And Evidence
+
+After each ring:
+
+```powershell
+Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
+
+Get-MgDeviceManagementManagedDevice -Filter "operatingSystem eq 'iOS' or operatingSystem eq 'Android'" |
+    Select-Object deviceName, operatingSystem, complianceState, lastSyncDateTime, managementAgent |
+    Sort-Object lastSyncDateTime -Descending
+```
+
+Compare device count against site inventory. Gaps indicate incomplete enrollment or devices still on source MDM.
+
+## Prevention Checks
+
+- Maintain spare pool per site as operational standard, not migration-only
+- Version-control Wi-Fi and cert profiles; test before RADIUS cert renewal
+- Document per-app device licensing so Intune assignment groups stay accurate
+- Revisit [Intune compliance not evaluating](/troubleshooting/intune-compliance-policy-not-evaluating) if shared devices show stale compliance
 
 ## Related Resources
 
-- [Configuring Conditional Access for Microsoft 365 Tenants](/tutorials/conditional-access-m365-policy-map)
-- [Microsoft Intune vs. SCCM/MECM in 2025](/comparisons/intune-vs-sccm-mecm-2025)
-- [Microsoft Intune topic hub](/intune)
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Intune vs SCCM/MECM in 2025](/comparisons/intune-vs-sccm-mecm-2025)
+- [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing)
+- [Microsoft Intune hub](/intune)
+- [Export Intune Device Report](/scripts/export-intune-device-report)
 
 ## Source
 
-This guidance is based on the official [Intune Customer Success blog post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/migrating-frontline-mobile-devices-a-frontline-first-approach-to-moving-to-micro/4501347) published by Microsoft on March 30, 2026.
+This operational playbook is based on the official [Intune Customer Success frontline migration post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/migrating-frontline-mobile-devices-a-frontline-first-approach-to-moving-to-micro/4501347) published by Microsoft on March 30, 2026, extended with certificate sequencing, pilot rings, and shift-continuity steps for enterprise administrators.
