@@ -1,41 +1,176 @@
 ---
-title: "Rethinking \"Allow My Organisation to Manage My Device\" — Why Opt-In Enrollment Works Better for Intune"
+title: "Intune Opt-In MDM Enrollment: When To Block Automatic Enrollment at Sign-In"
+description: "Practical guide to Intune opt-in MDM enrollment preview: blocking automatic enrollment at Windows sign-in, BYOD scenarios, pilot design, user comms, and validation checks."
 category: "Microsoft Intune"
-date: "Mar 5, 2026"
-lastReviewed: "Mar 5, 2026"
-tags: ["Intune", "MDM", "BYOD", "Enrollment"]
-image: "https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&w=1200&q=80"
-imageAlt: "Multiple mobile devices and a laptop on a desk showing device management interfaces"
+date: "Jun 29, 2026"
+authorId: "jack"
+lastReviewed: "Jun 29, 2026"
+reviewNote: "Operational guide based on Microsoft Intune Customer Success opt-in MDM enrollment preview guidance, Windows enrollment behaviour, and BYOD deployment patterns. Checked on 2026-06-29."
+tags: ["Intune", "MDM", "BYOD", "Enrollment", "Autopilot", "Windows 11"]
+image: "/images/article-covers/intune-opt-in-mdm-enrollment-preview.svg"
+imageAlt: "Abstract device enrollment illustration with opt-in toggle, personal and corporate device paths"
 ---
 
-## The Problem: Unintended Automatic MDM Enrollment
+When a user signs into Windows with a work or school account through the modern app sign-in flow, the device can automatically enroll into your Intune tenant. That is convenient for corporate-owned estates. It is painful for BYOD, shared devices, contractor laptops, and multi-tenant users who never intended full MDM management.
 
-When a user signs into a Windows device with a work or school account using the modern app sign-in flow, Windows can automatically trigger MDM enrollment into the organisation's Intune tenant. In mixed-ownership environments — BYOD, shared devices, or multi-tenant organisations — this automatic enrollment can enrol devices that were never intended to be managed, causing support overhead and unexpected policy application.
+Microsoft's **opt-in MDM enrollment** public preview lets administrators block automatic enrollment at sign-in and require an explicit enrollment action instead. This article explains when to enable it, how to pilot without breaking Autopilot, what to tell users, and how to verify the outcome.
 
-## The New Preview Toggle
+Use this with [Autopilot v2 enrollment troubleshooting](/tutorials/autopilot-v2-enrollment-esp-troubleshooting), [Deploy Windows 11 25H2 with Autopilot v2](/guides/windows-11-25h2-autopilot-v2), and the [Intune hub](/intune).
 
-Microsoft has introduced a **public preview toggle** in the Intune admin centre that allows administrators to **block automatic MDM enrollment** during the Windows modern app sign-in flow.
+## The Problem Automatic Enrollment Creates
 
-With this control enabled, MDM enrollment becomes opt-in: it happens only through explicit enrollment actions rather than being silently triggered at sign-in. Users or administrators must take a deliberate step to enrol a device.
+Automatic MDM enrollment at sign-in assumes the device owner accepts organisational management. In practice, admins see:
 
-## Scenarios Where This Matters
+- Personal laptops enrolled after a user opens Outlook or Teams
+- Contractor devices receiving compliance and wipe-capable policy
+- Multi-tenant users enrolled into the wrong tenant during a secondary account sign-in
+- Helpdesk tickets from users who did not understand their personal device was now managed
 
-- **BYOD programmes** — employees signing into corporate apps on personal devices should not have those devices automatically managed
-- **Mixed device ownership** — environments where both corporate-owned and personally-owned devices are in use need a way to ensure only intended devices enter management
-- **Multi-tenant organisations** — users who have accounts in multiple tenants may inadvertently trigger enrollment into a secondary tenant when signing in
+The operational cost is not the enrollment itself. It is the cleanup: retire the device object, explain data boundaries, and sometimes rebuild trust with users who thought BYOD meant "apps only."
 
-## What to Review
+## What The Preview Control Changes
 
-1. Evaluate whether automatic enrollment via modern app sign-in is appropriate for your environment
-2. If BYOD or mixed ownership is in scope, consider enabling the preview toggle to shift enrollment to an explicit opt-in flow
-3. Update your enrollment documentation and user communications if you change this setting, so users understand how to enrol intentionally when needed
+With opt-in enrollment enabled:
+
+- Sign-in to Microsoft 365 apps or Windows work account **does not** silently trigger MDM enrollment
+- Enrollment requires an explicit action: Company Portal enrollment, Settings enrollment path, Autopilot, or another approved method you document
+
+Corporate-owned Autopilot and pre-provisioned flows remain valid enrollment paths when you design them deliberately. The control targets the accidental enrollment path at interactive sign-in.
+
+## Decision Matrix: Enable Or Keep Automatic Enrollment
+
+| Environment profile | Recommendation |
+|---|---|
+| Corporate-owned only, Autopilot standard | Keep automatic enrollment unless BYOD also exists |
+| Mixed corporate and personal devices | Strong candidate for opt-in |
+| Contractor / partner access on unknown hardware | Enable opt-in and pair with MAM where possible |
+| Multi-tenant user population | Enable opt-in; document per-tenant enrollment expectations |
+| Kiosk or shared devices with dedicated enrollment | Usually unaffected; validate Autopilot profile still applies |
+
+If you use [Conditional Access device compliance](/tutorials/conditional-access-m365-policy-map), decide how opt-in enrollment interacts with "require managed device" for users who have not enrolled yet.
+
+## Pilot Design
+
+Do not flip this tenant-wide on day one.
+
+### Pilot group
+
+Create an Entra ID security group:
+
+- `Pilot-OptIn-MDM-Enrollment-Users`
+- Start with IT staff and a small business unit that understands BYOD boundaries
+
+### Pilot devices
+
+Include at least:
+
+- One corporate Autopilot device (confirm corporate path still works)
+- One personal BYOD laptop
+- One re-imaged device used for sign-in testing only
+
+### Success criteria
+
+| Test | Pass condition |
+|---|---|
+| BYOD sign-in to Outlook | Device does not auto-enroll |
+| Intentional Company Portal enrollment | Device enrolls and receives expected policies |
+| Autopilot corporate device | Still enrolls through OOBE without user confusion |
+| Helpdesk documentation | Users can follow published enrollment steps |
+
+## User Communication Template
+
+Publish before enabling the control:
+
+> **What changed:** Signing into work apps on a personal device no longer automatically enrolls that device for full management.
+>
+> **If you need access to managed resources from a personal device:** Install Company Portal and complete enrollment using the steps here: `<link>`.
+>
+> **If you use a company laptop provisioned by IT:** No action required — your device is enrolled through the standard corporate process.
+
+Clear comms reduce helpdesk volume more than any portal toggle.
+
+## Portal Configuration Steps
+
+Exact preview UI labels can change. Use this sequence in the Intune admin centre:
+
+1. Open **Devices > Enroll devices > Windows enrollment**
+2. Locate the opt-in / automatic MDM enrollment control for modern app sign-in (preview)
+3. Enable the setting that **blocks automatic MDM enrollment** for the pilot scope
+4. Assign to the pilot group first, not all users
+
+Record a screenshot and the policy name in your change record. Preview features move.
+
+## Validation On The Device
+
+After a pilot user signs in on BYOD hardware:
+
+1. Open **Settings > Accounts > Access work or school**
+2. Confirm the account is present
+3. Check whether an MDM enrollment entry exists
+4. In Intune, search for the device — it should **not** appear until intentional enrollment
+
+For intentional enrollment validation:
+
+1. User installs Company Portal
+2. User completes enrollment
+3. Confirm **Devices > Windows devices** shows the device with expected ownership type and policies
+
+If enrollment fails, use [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing) and [Autopilot ESP stuck](/troubleshooting/autopilot-enrollment-status-page-stuck) depending on the path.
+
+## Coexistence With Autopilot And Corporate Ownership
+
+Corporate-owned Autopilot devices should not depend on post-sign-in automatic enrollment. If they do, fix Autopilot profile assignment and ESP configuration before enabling opt-in tenant-wide.
+
+Checklist:
+
+- Hardware hash registered
+- Autopilot profile or Device Preparation policy assigned to device group
+- ESP configured with required apps only
+- Enrollment Status Page logs reviewed on a fresh test device
+
+See [Deploy Windows 11 25H2 with Autopilot v2](/guides/windows-11-25h2-autopilot-v2) for the full corporate path.
+
+## Graph And Reporting Checks
+
+After pilot rollout, verify device counts:
+
+```powershell
+Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
+
+Get-MgDeviceManagementManagedDevice -Filter "managementAgent eq 'mdm'" |
+    Select-Object deviceName, managedDeviceOwnerType, enrolledDateTime, lastSyncDateTime |
+    Sort-Object enrolledDateTime -Descending |
+    Select-Object -First 20
+```
+
+Compare enrollment timestamps with the pilot enablement date. Unexpected new BYOD enrollments after the change suggest automatic enrollment is still occurring for some path.
+
+## Rollback
+
+If pilot fails:
+
+1. Remove the pilot assignment
+2. Re-enable prior automatic enrollment behaviour for the pilot group
+3. Retire incorrectly enrolled devices after confirming no compliance wipe actions are queued
+4. Update user comms with corrected instructions
+
+Document whether failure was portal scope, cached device state, or user workflow.
+
+## Prevention Checks
+
+- Review enrollment monthly for personal device ownership types you did not expect
+- Keep BYOD guidance linked from Company Portal and onboarding email
+- Re-test Autopilot after any change to Windows enrollment settings
+- Align opt-in policy with MAM app protection for true BYOD app-only scenarios
 
 ## Related Resources
 
-- [Understanding Autopilot v2: Enrollment Profiles, ESP, and Common Failure Modes](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
-- [Configuring Conditional Access for Microsoft 365 Tenants](/tutorials/conditional-access-m365-policy-map)
-- [Microsoft Intune topic hub](/intune)
+- [Autopilot v2 Enrollment and ESP Troubleshooting](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Deploy Windows 11 25H2 with Autopilot v2](/guides/windows-11-25h2-autopilot-v2)
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing)
+- [Microsoft Intune hub](/intune)
 
 ## Source
 
-This guidance is based on the official [Intune Customer Success blog post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766) published by Microsoft on March 5, 2026.
+This operational guide is based on the official [Intune Customer Success opt-in enrollment post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766) published by Microsoft on March 5, 2026, extended with pilot design, validation, and communication steps for enterprise administrators.

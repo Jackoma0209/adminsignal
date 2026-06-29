@@ -1,43 +1,179 @@
 ---
-title: "Advancing Windows Driver Security: Removing Trust for the Cross-Signed Driver Program"
+title: "Windows Cross-Signed Driver Trust Removal: Enterprise Readiness and Rollout Plan"
+description: "Enterprise admin guide to Microsoft's cross-signed driver trust removal: evaluation mode, Event Viewer checks, driver audit, Intune rollout sequencing, and vendor escalation."
 category: "Windows Security"
-date: "Mar 26, 2026"
-lastReviewed: "Mar 26, 2026"
-tags: ["Windows Security", "Drivers", "Windows 11", "Windows Server 2025"]
-image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80"
-imageAlt: "Close-up of server hardware components and circuit boards in a data centre rack"
+date: "Jun 29, 2026"
+authorId: "jack"
+lastReviewed: "Jun 29, 2026"
+reviewNote: "Operational readiness guide based on the Windows IT Pro Blog cross-signed driver program announcement, Secure Boot CA 2023 guidance, and April 2026 cumulative update rollout context. Checked on 2026-06-29."
+tags: ["Windows Security", "Drivers", "Windows 11", "Windows Server 2025", "Secure Boot", "Patch Management"]
+image: "/images/article-covers/windows-driver-cross-signed-trust-removal.svg"
+imageAlt: "Abstract driver security illustration with certificate nodes, kernel shield, and evaluation mode indicator"
 ---
+
+Microsoft is removing trust for kernel-mode drivers signed under the deprecated cross-signed root certificate program. The change arrives with the **April 2026 Windows cumulative update** on Windows 11 24H2, 25H2, 26H1, and Windows Server 2025. Enforcement starts in **evaluation mode**: Windows logs drivers that would be blocked but does not block them yet.
+
+That evaluation window is your only useful lead time. This guide explains what to audit, how to find affected drivers before enforcement, how to sequence rollout across Intune rings, and when to escalate to vendors.
+
+Pair this with the [April 2026 Patch Tuesday breakdown](/news/april-2026-patch-tuesday-breakdown), [Secure Boot CA 2023 enterprise readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness), and the [patch management hub](/patch-management).
+
+## Who This Affects
+
+Prioritise review for fleets with:
+
+- Legacy hardware with OEM drivers outside WHCP
+- Security products installing kernel drivers
+- Line-of-business apps with embedded kernel components
+- Virtual machines using older driver packages
+- Imaging environments that inject third-party storage or network drivers
+
+If your estate is standard Microsoft Surface or recent enterprise OEM builds on current driver packs, risk is lower — but still verify. Evaluation mode exists because Microsoft expects surprises.
 
 ## What Is Changing
 
-Microsoft is removing trust for kernel-mode drivers signed under the deprecated cross-signed root certificate program. This change ships in the **April 2026 Windows cumulative update** and affects:
+The cross-signed driver program predates current WHCP requirements for EV code signing and WHQL certification. Drivers signed only under the older cross-signed root no longer meet Microsoft's kernel trust bar.
 
-- Windows 11 24H2, 25H2, and 26H1
+| Phase | Behaviour |
+|---|---|
+| April 2026 update applied | Evaluation mode begins — affected drivers logged, not blocked |
+| Future enforcement update | Drivers failing the new trust bar can be blocked at load time |
+
+Affected platforms per Microsoft:
+
+- Windows 11 24H2, 25H2, 26H1
 - Windows Server 2025
 
-The rollout begins in **evaluation mode**, which means Windows will log events for drivers that would be blocked but will not yet enforce blocking. This gives organisations a window to identify affected drivers before enforcement is enabled in a later update.
+## Operational Impact
 
-## Why This Matters
+When enforcement eventually lands, a blocked driver can cause:
 
-The cross-signed driver program predates the Windows Hardware Compatibility Program (WHCP) requirements for Extended Validation (EV) code signing and WHQL certification. Drivers signed only under the older cross-signed root are no longer meeting the bar Microsoft sets for kernel trust.
+- Boot failure or STOP error on critical systems
+- Loss of storage, network, or security agent functionality
+- Silent failure of a kernel filter driver with no obvious user message
+- Recovery time lost to Safe Mode, WinPE, or bare-metal rebuild
 
-Removing that trust reduces the attack surface for driver-based exploits — a common persistence and privilege escalation vector in both targeted attacks and commodity malware.
+Evaluation mode is the period to find these outcomes in logs — not after enforcement.
 
-## What to Do Now
+## Pre-Flight Checks Before Broad Deployment
 
-While the system is in evaluation mode:
+### 1. Confirm update ring order
 
-1. **Review Event Viewer** for driver trust evaluation events after applying the April 2026 update. Look for events indicating a driver would be blocked under the new policy.
-2. **Audit third-party drivers** — particularly legacy hardware drivers, security tools, and any in-house signed kernel components — and confirm they hold valid WHQL or EV-signed certificates.
-3. **Contact vendors** for any driver that surfaces in the evaluation logs. Vendors should already have WHCP-compliant replacements; if they do not, factor replacement timelines into your update ring planning.
-4. **Do not defer the April 2026 update** solely to avoid this change. Use the evaluation period productively rather than delaying exposure.
+Deploy the April 2026 cumulative update through your normal rings:
+
+1. IT pilot devices with varied hardware vendors
+2. Security operations workstations
+3. Broad production
+
+Do **not** skip the update to avoid driver evaluation. Delaying security updates trades one risk for another.
+
+### 2. Baseline Secure Boot readiness
+
+Cross-signed driver trust sits inside the wider Secure Boot trust story. If you have not completed CA 2023 readiness, run that programme in parallel:
+
+- [Secure Boot CA 2023 rollout enterprise readiness](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness)
+
+### 3. Identify high-risk device groups
+
+Export hardware diversity before rollout:
+
+| Group | Why |
+|---|---|
+| Legacy laptops (5+ years) | Older OEM drivers |
+| Custom kiosk builds | Non-standard driver stacks |
+| VMs with legacy integration services | Synthetic driver packages |
+| Servers with hardware monitoring agents | Kernel filter drivers |
+| Devices with third-party disk encryption | Lower-level storage drivers |
+
+## Finding Affected Drivers In Evaluation Mode
+
+### Event Viewer
+
+After the April 2026 update installs on a pilot device:
+
+1. Open **Event Viewer**
+2. Review **System** and **Microsoft-Windows-CodeIntegrity/Operational** logs
+3. Look for events indicating a driver would fail trust under the new policy during evaluation
+
+Record for each hit:
+
+- Driver file name
+- Device name and serial
+- Hardware model
+- Business owner
+- Vendor contact
+
+### PowerShell driver inventory
+
+Collect third-party kernel drivers on a pilot device:
+
+```powershell
+Get-WmiObject Win32_PnPSignedDriver |
+    Where-Object { $_.DeviceClass -ne $null } |
+    Select-Object DeviceName, DriverVersion, DriverProviderName, DriverDate, IsSigned |
+    Sort-Object DriverProviderName, DeviceName |
+    Export-Csv -Path "C:\Temp\driver-inventory.csv" -NoTypeInformation
+```
+
+Expected output shape: one row per signed driver with provider and version. Compare providers against your approved vendor list.
+
+### Intune reporting angle
+
+For managed devices, combine:
+
+- Hardware manufacturer and model from **Devices > Windows devices**
+- Last logged-on user and group membership for ring targeting
+- Patch compliance state from [Get-PatchComplianceReport](/scripts/get-patch-compliance-report) patterns
+
+There is no single Intune blade that lists kernel driver trust failures yet — local Event Viewer on pilot hardware remains the fastest signal.
+
+## Vendor Escalation Template
+
+When evaluation logs surface a driver, open a vendor ticket with:
+
+- Device model and OS build
+- Driver name, version, and signing publisher
+- Event log excerpt with timestamp
+- Ask explicitly: "Is a WHCP-compliant replacement available before enforcement?"
+
+Track responses in the same register as your patch exceptions.
+
+## Rollout Sequence For Intune-Managed Fleets
+
+| Ring | Action |
+|---|---|
+| Ring 0 — IT engineering | Apply April update; collect evaluation logs for 7 days |
+| Ring 1 — Representative hardware sample | One device per OEM family minimum |
+| Ring 2 — Department pilot | Monitor helpdesk tickets for boot or agent failures |
+| Ring 3 — Production | Proceed only when Ring 2 shows no unresolved driver hits |
+
+Pause ring progression when evaluation logs show an unresolved kernel driver from a business-critical app. Fix or exception the driver first.
+
+## Rollback And Recovery Considerations
+
+| Scenario | Response |
+|---|---|
+| Evaluation log shows non-critical optional driver | Plan vendor upgrade; do not block rollout for entire ring |
+| Evaluation log shows boot-critical storage driver | Stop ring expansion; test replacement driver on lab hardware |
+| Enforcement arrives before vendor fix | Document risk acceptance per device group; isolate vulnerable systems |
+
+Keep recovery media and BitLocker recovery keys accessible before touching server or kiosk rings.
+
+## Prevention Checks
+
+After rollout:
+
+- Add driver evaluation log review to your Patch Tuesday pilot checklist for two months
+- Require WHCP-signed drivers in imaging standards for new hardware purchases
+- Block ad-hoc driver installs without change control on servers
+- Keep Secure Boot and TPM baselines aligned with [CIS hardening guidance](/tutorials/hardening-windows-11-cis-benchmark)
 
 ## Related Resources
 
 - [April 2026 Patch Tuesday Breakdown](/news/april-2026-patch-tuesday-breakdown)
+- [Secure Boot CA 2023 Rollout Enterprise Readiness](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness)
 - [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
-- [Patch Management: WUfB, WSUS, and Update Rings](/patch-management)
+- [Patch Management hub](/patch-management)
 
 ## Source
 
-This guidance is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/advancing-windows-driver-security-removing-trust-for-the-cross-signed-driver-pro/4504818) published by Microsoft on March 26, 2026.
+This operational plan is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/advancing-windows-driver-security-removing-trust-for-the-cross-signed-driver-pro/4504818) published by Microsoft on March 26, 2026, extended with enterprise rollout and evidence collection steps for Windows administrators.

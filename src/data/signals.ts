@@ -62,6 +62,24 @@ export const liveSignals: Signal[] = [
     image: '/images/article-covers/june-2026-patch-tuesday-admin-priorities.svg',
   },
   {
+    id: 'live-8',
+    title: 'Securing Your Intune Tenant: An Operational Hardening Plan for Enterprise Admins',
+    slug: 'intune-security-best-practices-2026',
+    category: 'Microsoft Intune',
+    excerpt:
+      'Turn Microsoft\'s Intune security guidance into an operational plan: least-privilege roles, phishing-resistant MFA, PIM, Multi Admin Approval, audit checks, and rollout sequencing for enterprise admins.',
+    date: '29 Jun 2026',
+    publishedAt: '2026-06-29',
+    readTime: '11 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'jack',
+    tags: ['Intune', 'Security', 'Zero Trust', 'Admin Roles', 'Conditional Access', 'PIM'],
+    isNew: true,
+    isFeatured: true,
+    image: '/images/article-covers/intune-security-best-practices-2026.svg',
+  },
+  {
     id: 'live-6',
     title: 'May 2026 Patch Tuesday: admin deployment notes and checks',
     slug: 'may-2026-patch-tuesday-readiness',
@@ -105,33 +123,48 @@ export const liveSignals: Signal[] = [
     tags: ['Patch Tuesday', 'Windows 11', 'Intune', 'Autopilot', 'Security', 'CVE'],
     isNew: true,
     isFeatured: true,
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80',
+    image: '/images/article-covers/april-2026-patch-tuesday-breakdown.svg',
+  },
+  {
+    id: 'live-1',
+    title: 'Windows Cross-Signed Driver Trust Removal: Enterprise Readiness and Rollout Plan',
+    slug: 'windows-driver-cross-signed-trust-removal',
+    category: 'Windows Security',
+    excerpt:
+      'Enterprise admin guide to Microsoft\'s cross-signed driver trust removal: evaluation mode, Event Viewer checks, driver audit, Intune rollout sequencing, and vendor escalation.',
+    date: '26 Mar 2026',
+    publishedAt: '2026-03-26',
+    readTime: '9 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'jack',
+    tags: ['Windows Security', 'Drivers', 'Windows 11', 'Windows Server 2025', 'Secure Boot'],
+    isFeatured: true,
+    image: '/images/article-covers/windows-driver-cross-signed-trust-removal.svg',
+  },
+  {
+    id: 'live-4',
+    title: 'Intune Opt-In MDM Enrollment: When To Block Automatic Enrollment at Sign-In',
+    slug: 'intune-opt-in-mdm-enrollment-preview',
+    category: 'Microsoft Intune',
+    excerpt:
+      'Practical guide to Intune opt-in MDM enrollment preview: blocking automatic enrollment at Windows sign-in, BYOD scenarios, pilot design, user comms, and validation checks.',
+    date: '5 Mar 2026',
+    publishedAt: '2026-03-05',
+    readTime: '8 min read',
+    source: 'AdminSignal',
+    isOfficial: false,
+    authorId: 'jack',
+    tags: ['Intune', 'MDM', 'BYOD', 'Enrollment', 'Autopilot'],
+    image: '/images/article-covers/intune-opt-in-mdm-enrollment-preview.svg',
   },
 ]
 
 /**
- * Draft news — thin vendor summaries held offline until expanded to original operational depth.
+ * Draft news — held offline until expanded to original operational depth.
  * Not included in the public feed, RSS, sitemap, or static page generation.
  */
 export const draftSignals: Signal[] = [
-  {
-    id: 'live-1',
-    title: 'Advancing Windows Driver Security: Removing Trust for the Cross-Signed Driver Program',
-    slug: 'windows-driver-cross-signed-trust-removal',
-    category: 'Windows Security',
-    excerpt:
-      'Microsoft will remove trust for kernel drivers signed under the deprecated cross-signed root program in the April 2026 Windows update, starting in evaluation mode. Affects Windows 11 24H2/25H2/26H1 and Windows Server 2025.',
-    date: 'Mar 26, 2026',
-    publishedAt: '2026-03-26',
-    readTime: '3 min read',
-    source: 'Windows IT Pro Blog',
-    sourceUrl: 'https://techcommunity.microsoft.com/blog/windows-itpro-blog/advancing-windows-driver-security-removing-trust-for-the-cross-signed-driver-pro/4504818',
-    isOfficial: true,
-    tags: ['Windows Security', 'Drivers', 'Windows 11', 'Windows Server 2025'],
-    isNew: true,
-    isFeatured: true,
-    image: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80',
-  },
   {
     id: 'live-2',
     title: 'Windows App Updates: Remote Desktop Client for Windows (MSI) and Web Client Deprecated in Commercial Clouds',
@@ -149,39 +182,6 @@ export const draftSignals: Signal[] = [
     isNew: true,
     isFeatured: true,
     image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: 'live-3',
-    title: 'Best Practices for Securing Microsoft Intune',
-    slug: 'intune-security-best-practices-2026',
-    category: 'Microsoft Intune',
-    excerpt:
-      'Microsoft\'s Intune Customer Success team has published a security hardening guide covering least-privilege admin role assignments, phishing-resistant authentication, privileged access hygiene, and Multi Admin Approval for sensitive configuration changes.',
-    date: 'Mar 14, 2026',
-    publishedAt: '2026-03-14',
-    readTime: '4 min read',
-    source: 'Intune Customer Success',
-    sourceUrl: 'https://techcommunity.microsoft.com/blog/intunecustomersuccess/best-practices-for-securing-microsoft-intune/4502117',
-    isOfficial: true,
-    tags: ['Intune', 'Security', 'Zero Trust', 'Admin Roles'],
-    isFeatured: true,
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
-  },
-  {
-    id: 'live-4',
-    title: 'Rethinking "Allow My Organisation to Manage My Device" — Why Opt-In Enrollment Works Better for Intune',
-    slug: 'intune-opt-in-mdm-enrollment-preview',
-    category: 'Microsoft Intune',
-    excerpt:
-      'Microsoft has introduced a public preview toggle that allows admins to block automatic MDM enrollment triggered during Windows modern app sign-in. The change addresses BYOD, mixed device ownership, and multi-tenant deployment scenarios.',
-    date: 'Mar 5, 2026',
-    publishedAt: '2026-03-05',
-    readTime: '3 min read',
-    source: 'Intune Customer Success',
-    sourceUrl: 'https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766',
-    isOfficial: true,
-    tags: ['Intune', 'MDM', 'BYOD', 'Enrollment'],
-    image: 'https://images.unsplash.com/photo-1563206767-5b18f218e8de?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 'live-5',

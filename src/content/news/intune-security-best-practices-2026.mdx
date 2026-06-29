@@ -1,50 +1,235 @@
 ---
-title: "Best Practices for Securing Microsoft Intune"
+title: "Securing Your Intune Tenant: An Operational Hardening Plan for Enterprise Admins"
+description: "Practical Intune tenant security hardening for enterprise admins: least-privilege roles, phishing-resistant MFA, PIM, Multi Admin Approval, audit checks, and rollout sequencing."
 category: "Microsoft Intune"
-date: "Mar 14, 2026"
-lastReviewed: "Mar 14, 2026"
-tags: ["Intune", "Security", "Zero Trust", "Admin Roles"]
-image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80"
-imageAlt: "Green binary code streaming down a dark screen, representing data security and encryption"
+date: "Jun 29, 2026"
+authorId: "jack"
+lastReviewed: "Jun 29, 2026"
+reviewNote: "Operational hardening guide based on Microsoft Intune Customer Success security guidance, Entra ID role management, Conditional Access, and PIM documentation. Checked against current portal paths and admin control options on 2026-06-29."
+tags: ["Intune", "Security", "Zero Trust", "Admin Roles", "Conditional Access", "PIM"]
+image: "/images/article-covers/intune-security-best-practices-2026.svg"
+imageAlt: "Abstract Intune tenant security illustration with shield, role tiles, and policy nodes"
 ---
 
-## Overview
+Microsoft's Intune Customer Success team published a security hardening guide in March 2026. The official post is useful, but it stops at principles. This article turns that guidance into an operational plan you can run in a real tenant: inventory admin access, reduce standing privilege, protect portal sign-in, add approval gates for destructive actions, and prove the controls are working before you widen scope.
 
-Microsoft's Intune Customer Success team has published a security hardening guide for Intune tenants. The guidance focuses on three core areas: administrative privilege hygiene, authentication security, and change control for sensitive operations.
+Read this alongside the [Intune hub](/intune), [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map), [Entra ID P1 vs P2 comparison](/comparisons/entra-id-p1-vs-p2), and [Microsoft Defender for Endpoint Intune rollout](/tutorials/microsoft-defender-for-endpoint-intune-rollout).
 
-## Least Privilege for Admin Roles
+## Who This Guide Is For
 
-Over-privileged admin accounts are a significant risk in Intune tenants. The guidance recommends:
+This guide is for Microsoft 365 and endpoint administrators responsible for:
 
-- Assign built-in Intune roles with the minimum permissions required for each function rather than defaulting to the Global Administrator or Intune Administrator roles
-- Use **custom roles** to scope permissions precisely when built-in roles are broader than needed
-- Regularly review role assignments and remove stale or unnecessary delegations
-- Separate day-to-day operational roles from emergency access accounts
+- Intune admin centre access and delegated operational roles
+- Entra ID role assignments that include Intune workload permissions
+- Conditional Access policies affecting admin portal sign-in
+- Change control for wipe, retire, compliance, and assignment changes
 
-## Phishing-Resistant Authentication and Privileged Access Hygiene
+It assumes you already manage devices through Intune and can make Entra ID policy changes with appropriate approval.
 
-All Intune administrators should be protected by phishing-resistant MFA. The guidance specifically calls out:
+## What Microsoft Is Asking You To Fix
 
-- **FIDO2 security keys** or **Windows Hello for Business** as preferred authentication methods for admin accounts
-- Avoiding SMS and voice call MFA for privileged identities
-- Applying Conditional Access policies that enforce compliant devices and phishing-resistant authentication for Intune portal access
-- Using **Privileged Identity Management (PIM)** in Microsoft Entra ID to require just-in-time activation for sensitive Intune roles rather than permanent role assignments
+The official guidance groups tenant risk into three areas:
 
-## Multi Admin Approval for Sensitive Changes
+1. **Administrative privilege hygiene** — too many users hold broad Intune or Global Administrator rights permanently
+2. **Authentication security** — privileged identities still protected by weak MFA methods
+3. **Change control** — high-impact Intune operations can execute without a second approver
 
-The guide highlights **Multi Admin Approval (MAA)** as a control for high-impact Intune operations. When configured:
+None of these are theoretical. Compromised admin accounts, credential phishing, and insider mistakes are the practical drivers.
 
-- Sensitive changes — such as modifying compliance policies, wipe commands, or assignment group membership — require approval from a second administrator before taking effect
-- This creates an audit trail and a check against both insider risk and compromised admin accounts
+## Phase 1: Inventory Standing Admin Access
+
+Before changing roles, export who can touch Intune today.
+
+### Intune built-in and custom roles
+
+In the Intune admin centre:
+
+1. Go to **Tenant administration > Roles**
+2. Open each role with assignments: **Intune Administrator**, **Cloud Device Administrator**, **Application Administrator** (where used for app deployment), and any **custom roles**
+3. For each role, open **Assignments** and record user and group members
+
+Build a register with one row per person:
+
+| Field | Example |
+|---|---|
+| User | `<upn>` |
+| Intune role | `<role name>` |
+| Entra privileged role | `<Global Administrator, etc.>` |
+| Last review date | `<date>` |
+| Business owner | `<team>` |
+| Still required? | `<yes/no>` |
+
+### Entra privileged roles that overlap Intune
+
+Some admins never appear in Intune role blades because they hold Entra roles with broader rights. Check **Microsoft Entra ID > Roles and administrators** for:
+
+- Global Administrator
+- Privileged Role Administrator
+- Cloud Application Administrator (app consent and enterprise app changes)
+
+An Intune role review that ignores Entra privileged roles is incomplete.
+
+### Graph export for evidence
+
+```powershell
+Connect-MgGraph -Scopes "RoleManagement.Read.Directory","DeviceManagementConfiguration.Read.All"
+
+Get-MgRoleManagementDirectoryRoleDefinition -Filter "displayName eq 'Intune Administrator'" |
+    ForEach-Object {
+        Get-MgRoleManagementDirectoryRoleAssignment -Filter "roleDefinitionId eq '$($_.Id)'" -All
+    }
+```
+
+Expected output shape: assignment records with principal IDs you can map back to users and groups.
+
+## Phase 2: Apply Least Privilege To Intune Roles
+
+### Replace broad defaults with scoped custom roles
+
+Built-in **Intune Administrator** is convenient but broad. For day-to-day operators, prefer custom roles scoped to the workloads they actually manage:
+
+| Function | Prefer |
+|---|---|
+| Helpdesk device actions | Custom role with remote lock/retire only where approved |
+| App packaging team | Apps + read-only device visibility |
+| Policy authors | Device configuration + compliance, not tenant-wide admin |
+| Security baseline owners | Endpoint security policies + read-only reporting |
+
+Create custom roles in **Tenant administration > Roles > Create**.
+
+### Remove stale delegations
+
+During inventory, flag:
+
+- Former employees or contractors still assigned
+- Admins with both Global Administrator and Intune Administrator without documented need
+- Service accounts with interactive admin roles
+- Vendor accounts with permanent access instead of time-bound PIM activation
+
+Removal order:
+
+1. Confirm the account is not used in automation with stored credentials
+2. Remove Intune role assignment
+3. Remove overlapping Entra privileged role if no longer required
+4. Record the change in your access review log
+
+## Phase 3: Protect Admin Sign-In With Conditional Access
+
+Intune portal access should not rely on password plus SMS MFA alone.
+
+### Minimum admin CA baseline
+
+Create or verify policies that apply to Intune admin groups:
+
+| Control | Recommendation |
+|---|---|
+| Require MFA | Yes, for all admin portal access |
+| Require phishing-resistant MFA | FIDO2 or Windows Hello for Business for privileged groups |
+| Require compliant device | Yes, for admins managing production tenants |
+| Block legacy authentication | Yes |
+| Sign-in frequency | Shorter session lifetime for privileged roles |
+
+Use the [Conditional Access policy map](/tutorials/conditional-access-m365-policy-map) to place these without breaking emergency access.
+
+### Exclude break-glass correctly
+
+Maintain two or more break-glass accounts:
+
+- Stored offline with monitored usage alerts
+- Excluded from policies that would block recovery during an identity outage
+- Tested quarterly
+
+Do not exclude regular admins "temporarily" and forget to remove the exclusion.
+
+## Phase 4: Move Standing Privilege To PIM
+
+If you have Entra ID P2, convert permanent privileged assignments to **eligible** assignments with activation requirements.
+
+Typical candidates:
+
+- Intune Administrator
+- Global Administrator (only where still justified)
+- Privileged Role Administrator
+
+Activation requirements to consider:
+
+- Approval from a second administrator
+- MFA on activation
+- Maximum activation duration of 1–8 hours
+- justification text required
+
+After migration, verify an admin cannot open destructive Intune blades without first activating the Entra role.
+
+## Phase 5: Enable Multi Admin Approval For Destructive Workloads
+
+**Multi Admin Approval (MAA)** adds a second-administrator gate for selected high-impact Intune operations.
+
+Review which operations your security team cares about most. Common candidates:
+
+- Remote wipe
+- Retire device
+- Change to compliance policy assignments affecting production groups
+- Bulk assignment changes to critical configuration profiles
+
+Configuration path:
+
+1. **Tenant administration > Multi Admin Approval**
+2. Create approval rules for the selected workload types
+3. Assign approvers who are not the same people as requestors
+4. Pilot with the endpoint engineering group before tenant-wide policy objects
+
+Document expected approval turnaround so operations teams do not bypass the control under pressure.
+
+## Phase 6: Validate The Controls
+
+After each phase, collect evidence.
+
+### Access validation
+
+- A standard helpdesk account should not see tenant administration blades
+- A policy author should not retire devices unless explicitly granted
+- PIM activation should appear in Entra audit logs with justification
+
+### Sign-in validation
+
+- Attempt Intune portal sign-in from a noncompliant personal device using an admin account — should block if CA requires compliant device
+- Attempt activation without phishing-resistant MFA — should fail for the protected group
+
+### MAA validation
+
+- Run a test wipe request against a lab device
+- Confirm the operation stays pending until a second admin approves
+- Confirm rejection leaves the device unchanged
+
+## Rollback And Exception Handling
+
+| Change | Rollback |
+|---|---|
+| Custom role too narrow | Add the missing permission scope to the custom role; avoid reassigning Global Administrator as a shortcut |
+| CA blocks admins during rollout | Use a named pilot group first; keep one controlled exclusion window with expiry date |
+| PIM slows operations | Tune activation duration and approver pool; do not remove PIM without risk acceptance |
+| MAA blocks urgent incident response | Pre-define an incident approver on-call rotation |
+
+Every exception should have an owner, expiry date, and linked risk ticket.
+
+## Prevention Checks Going Forward
+
+Add these to quarterly access review:
+
+- Intune role assignments match current job function
+- No new permanent Global Administrator assignments without CAB approval
+- Admin CA policies still include phishing-resistant MFA
+- PIM activations reviewed for unusual after-hours patterns
+- MAA approvers still active and segregated from requestors
 
 ## Related Resources
 
-- [Configuring Conditional Access for Microsoft 365 Tenants](/tutorials/conditional-access-m365-policy-map)
-- [Entra ID P1 vs P2: Is the Upgrade Worth It?](/comparisons/entra-id-p1-vs-p2)
-- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
-- [Intune Compliance Policy Not Evaluating — Troubleshooting](/troubleshooting/intune-compliance-policy-not-evaluating)
-- [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Entra ID P1 vs P2](/comparisons/entra-id-p1-vs-p2)
+- [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [BitLocker Recovery Key Not Backed Up to Entra](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 
 ## Source
 
-This guidance is based on the official [Intune Customer Success blog post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/best-practices-for-securing-microsoft-intune/4502117) published by Microsoft on March 14, 2026.
+This operational plan is based on the official [Intune Customer Success security hardening post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/best-practices-for-securing-microsoft-intune/4502117) published by Microsoft on March 14, 2026, extended with Entra ID role management, Conditional Access, and PIM implementation steps for enterprise administrators.
