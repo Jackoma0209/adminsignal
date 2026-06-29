@@ -101,12 +101,19 @@ export const liveSignals: Signal[] = [
     readTime: '7 min read',
     source: 'AdminSignal',
     isOfficial: false,
-    authorId: 'marcus-webb',
+    authorId: 'jack',
     tags: ['Patch Tuesday', 'Windows 11', 'Intune', 'Autopilot', 'Security', 'CVE'],
     isNew: true,
     isFeatured: true,
     image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80',
   },
+]
+
+/**
+ * Draft news — thin vendor summaries held offline until expanded to original operational depth.
+ * Not included in the public feed, RSS, sitemap, or static page generation.
+ */
+export const draftSignals: Signal[] = [
   {
     id: 'live-1',
     title: 'Advancing Windows Driver Security: Removing Trust for the Cross-Signed Driver Program',
@@ -214,7 +221,7 @@ export const demoSignals: Signal[] = [
     sourceUrl: 'https://msrc.microsoft.com/update-guide/vulnerability/CVE-2025-21204',
     isOfficial: true,
     isDemo: true,
-    authorId: 'marcus-webb',
+    authorId: 'jack',
     tags: ['Patch Tuesday', 'Windows', 'CVE', 'Security'],
     isFeatured: true,
   },
@@ -232,7 +239,7 @@ export const demoSignals: Signal[] = [
     sourceUrl: 'https://techcommunity.microsoft.com/blog/microsoftentraidblog/microsoft-entra-id-and-microsoft-intune-support-for-windows-laps/4116521',
     isOfficial: true,
     isDemo: true,
-    authorId: 'sarah-chen',
+    authorId: 'jack',
     tags: ['Intune', 'LAPS', 'Entra ID', 'Endpoint Management'],
     isFeatured: true,
   },
@@ -250,7 +257,7 @@ export const demoSignals: Signal[] = [
     sourceUrl: 'https://techcommunity.microsoft.com/category/windows-itpro',
     isOfficial: true,
     isDemo: true,
-    authorId: 'james-holbrook',
+    authorId: 'jack',
     tags: ['Windows 11', 'Group Policy', 'ADMX', 'Enterprise'],
     isFeatured: true,
   },
@@ -268,7 +275,7 @@ export const demoSignals: Signal[] = [
     sourceUrl: 'https://www.cisa.gov/news-events/directives/ed-25-01',
     isOfficial: true,
     isDemo: true,
-    authorId: 'marcus-webb',
+    authorId: 'jack',
     tags: ['CISA', 'Ivanti', 'CVE', 'Security Alert'],
   },
   {
@@ -285,15 +292,13 @@ export const demoSignals: Signal[] = [
     sourceUrl: 'https://www.crowdstrike.com/blog/falcon-content-update-remediation-and-guidance-hub/',
     isOfficial: true,
     isDemo: true,
-    authorId: 'marcus-webb',
+    authorId: 'jack',
     tags: ['CrowdStrike', 'EDR', 'Endpoint Security', 'Incident Response'],
   },
 ]
 
 /**
- * The public feed consumed by all pages and components.
- * Live items are shown without any banner.
+ * The public feed consumed by listings, topic hubs, search, and the homepage.
  * Falls back to demo items (shown with banner) when liveSignals is empty.
  */
-export const signals: Signal[] =
-  liveSignals.length > 0 ? liveSignals : demoSignals
+export const signals: Signal[] = liveSignals.length > 0 ? liveSignals : demoSignals

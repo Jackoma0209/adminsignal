@@ -20,8 +20,7 @@ export const primaryAuthor: Author = {
   role: 'Microsoft Admin Practitioner and AdminSignal Author',
   bio: 'I write from practical experience managing Windows, Intune, and Active Directory environments, with a focus on source-backed guidance, operational risk, and clear admin workflows. AdminSignal exists because I wanted documentation that goes beyond "click Apply" without pretending every environment is the same.',
   initials: 'J',
-  // Replace with /images/authors/jack.jpg once you have a real photo
-  avatarUrl: undefined,
+  avatarUrl: '/images/authors/jack.jpg',
   linkedIn: 'https://www.linkedin.com/in/jackoma0209',
   github: 'https://github.com/Jackoma0209',
   certifications: [
@@ -30,21 +29,9 @@ export const primaryAuthor: Author = {
   ],
 }
 
-const editorialAuthor: Omit<Author, 'id'> = {
-  name: 'AdminSignal Editorial',
-  role: 'Editorial Staff',
-  bio: 'Written and reviewed by the AdminSignal editorial team. All content is independently verified for technical accuracy against official Microsoft documentation.',
-  initials: 'AS',
-}
-
-export const authors: Author[] = [
-  primaryAuthor,
-  { id: 'marcus-webb', ...editorialAuthor },
-  { id: 'sarah-chen', ...editorialAuthor },
-  { id: 'james-holbrook', ...editorialAuthor },
-  { id: 'priya-nair', ...editorialAuthor },
-]
+export const authors: Author[] = [primaryAuthor]
 
 export function getAuthor(id: string): Author | undefined {
+  if (id === 'jack') return primaryAuthor
   return authors.find((a) => a.id === id)
 }

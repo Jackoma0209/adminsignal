@@ -43,7 +43,7 @@ export const reviews: Review[] = [
     date: 'Mar 18, 2025',
     publishedAt: '2025-03-18',
     readTime: '8 min read',
-    authorId: 'marcus-webb',
+    authorId: 'jack',
     isFeatured: true,
   },
   {
@@ -70,7 +70,7 @@ export const reviews: Review[] = [
     date: 'Feb 28, 2025',
     publishedAt: '2025-02-28',
     readTime: '10 min read',
-    authorId: 'sarah-chen',
+    authorId: 'jack',
     isFeatured: true,
   },
   {
@@ -97,7 +97,7 @@ export const reviews: Review[] = [
     date: 'Feb 10, 2025',
     publishedAt: '2025-02-10',
     readTime: '9 min read',
-    authorId: 'priya-nair',
+    authorId: 'jack',
     isFeatured: true,
   },
 ]

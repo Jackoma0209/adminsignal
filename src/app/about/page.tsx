@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
+import { primaryAuthor } from '@/data/authors'
 import {
   BadgeCheck,
   BookOpenCheck,
@@ -211,8 +213,10 @@ export default function AboutPage() {
                 Microsoft environments manageable when the documentation is not enough on its own.
               </p>
               <p className="mt-4 text-base leading-relaxed text-muted">
-                AdminSignal focuses on practical Microsoft administration: Intune, Windows endpoint
-                management, Entra ID, Active Directory, Windows Server, PowerShell, patch
+                I have spent more than 12 years managing Windows fleets, Microsoft Intune tenants,
+                and Active Directory environments across finance, logistics, and professional
+                services. AdminSignal focuses on practical Microsoft administration: Intune, Windows
+                endpoint management, Entra ID, Active Directory, Windows Server, PowerShell, patch
                 management, and endpoint security. The aim is to make the assumptions, checks, and
                 operational trade-offs visible before a reader copies a command or changes a policy.
               </p>
@@ -235,10 +239,23 @@ export default function AboutPage() {
             </div>
 
             <aside className="rounded-lg border border-border bg-surface p-5 shadow-card">
-              <div className="flex aspect-square w-full items-center justify-center rounded-lg border border-border bg-background-soft ring-1 ring-border">
-                <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-primary/30 bg-primary-soft text-4xl font-bold text-primary">
-                  J
-                </div>
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-border bg-background-soft ring-1 ring-border">
+                {primaryAuthor.avatarUrl ? (
+                  <Image
+                    src={primaryAuthor.avatarUrl}
+                    alt={`${primaryAuthor.name} — ${primaryAuthor.role}`}
+                    fill
+                    className="object-cover"
+                    sizes="340px"
+                    priority
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-primary/30 bg-primary-soft text-4xl font-bold text-primary">
+                      J
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="mt-5">
                 <p className="text-lg font-semibold text-foreground">Jack</p>

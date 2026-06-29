@@ -110,7 +110,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     date: 'Mar 15, 2025',
     publishedAt: '2025-03-15',
     readTime: '10 min read',
-    authorId: 'sarah-chen',
+    authorId: 'jack',
     isFeatured: true,
   },
   {
@@ -125,7 +125,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     date: 'Mar 5, 2025',
     publishedAt: '2025-03-05',
     readTime: '8 min read',
-    authorId: 'james-holbrook',
+    authorId: 'jack',
     isFeatured: true,
   },
   {
@@ -137,10 +137,10 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
       'When Intune reports a device as "Not evaluated" or stuck in a compliance state that does not reflect reality, the issue is usually one of four things — and this checklist covers all of them.',
     affectedProducts: ['Microsoft Intune', 'Entra ID', 'Windows 11'],
     difficulty: 'Intermediate',
-    date: 'Feb 24, 2025',
-    publishedAt: '2025-02-24',
-    readTime: '9 min read',
-    authorId: 'sarah-chen',
+    date: '29 Jun 2026',
+    publishedAt: '2026-06-29',
+    readTime: '18 min read',
+    authorId: 'jack',
     isFeatured: true,
   },
   {

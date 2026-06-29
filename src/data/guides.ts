@@ -165,7 +165,7 @@ export const guides: Guide[] = [
     publishedAt: '2025-03-20',
     readTime: '14 min read',
     difficulty: 'Intermediate',
-    authorId: 'sarah-chen',
+    authorId: 'jack',
     tags: ['Intune', 'LAPS', 'Entra ID', 'Security Baseline'],
     coverImage: {
       src: '/images/article-covers/deploy-windows-laps-intune.svg',
@@ -184,7 +184,7 @@ export const guides: Guide[] = [
     publishedAt: '2025-03-14',
     readTime: '20 min read',
     difficulty: 'Advanced',
-    authorId: 'marcus-webb',
+    authorId: 'jack',
     tags: ['CIS Benchmark', 'Windows 11', 'Hardening', 'Endpoint Security'],
     coverImage: {
       src: '/images/article-covers/hardening-windows-11-cis-benchmark.svg',
@@ -203,7 +203,7 @@ export const guides: Guide[] = [
     publishedAt: '2025-03-07',
     readTime: '16 min read',
     difficulty: 'Intermediate',
-    authorId: 'sarah-chen',
+    authorId: 'jack',
     tags: ['Autopilot', 'Intune', 'Windows 11', 'Enrollment'],
     coverImage: {
       src: '/images/article-covers/autopilot-v2-enrollment-esp-troubleshooting.svg',
@@ -222,7 +222,7 @@ export const guides: Guide[] = [
     publishedAt: '2025-02-28',
     readTime: '18 min read',
     difficulty: 'Intermediate',
-    authorId: 'james-holbrook',
+    authorId: 'jack',
     tags: ['PowerShell', 'WMI', 'Inventory', 'Automation'],
     coverImage: {
       src: '/images/article-covers/powershell-software-inventory-system.svg',
@@ -240,7 +240,7 @@ export const guides: Guide[] = [
     publishedAt: '2025-02-21',
     readTime: '22 min read',
     difficulty: 'Advanced',
-    authorId: 'priya-nair',
+    authorId: 'jack',
     tags: ['Conditional Access', 'Entra ID', 'Microsoft 365', 'Identity'],
     coverImage: {
       src: '/images/article-covers/conditional-access-m365-policy-map.svg',
@@ -258,7 +258,7 @@ export const guides: Guide[] = [
     publishedAt: '2025-02-14',
     readTime: '12 min read',
     difficulty: 'Beginner',
-    authorId: 'james-holbrook',
+    authorId: 'jack',
     tags: ['Group Policy', 'Active Directory', 'Windows Server', 'Troubleshooting'],
     coverImage: {
       src: '/images/article-covers/group-policy-troubleshooting-rsop-gpresult.svg',

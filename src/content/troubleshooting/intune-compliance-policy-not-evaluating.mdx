@@ -1,22 +1,84 @@
 ---
 title: "Intune Compliance Policy Not Evaluating: End-to-End Troubleshooting Checklist"
 category: "Microsoft Intune"
-date: "Feb 24, 2025"
-authorId: "sarah-chen"
-lastReviewed: "Feb 24, 2025"
-tags: ["Intune", "Compliance", "Entra ID", "Windows 11"]
+date: "Jun 29, 2026"
+authorId: "jack"
+lastReviewed: "Jun 29, 2026"
+reviewNote: "Expanded operational guide covering Intune portal checks, assignment scope, per-setting evaluation, grace periods, MDM sync prerequisites, event logs, registry evidence, Graph API reporting, safe retry, and recovery."
+tags: ["Intune", "Compliance", "Entra ID", "Windows 11", "Conditional Access", "PowerShell"]
 ---
+
+## When to Use This Guide
+
+Use this guide when a Windows device managed by Microsoft Intune shows **Not evaluated**, **In grace period**, **Error**, or a compliance state that does not match what you expect on the device.
+
+Common examples:
+
+- The device is online and syncing, but compliance stays **Not evaluated**.
+- **Sync** in the Intune admin centre succeeds, but compliance does not update.
+- Conditional Access blocks access because the device is noncompliant, but the portal shows a different state.
+- One setting in a compliance policy shows **Error** while the rest look fine.
+- A newly enrolled device never moves out of **Not evaluated** after Autopilot or manual enrolment.
+- Compliance worked yesterday, but a policy change or assignment change broke evaluation.
+- The device appears compliant in Intune, but Entra sign-in still fails the **Require compliant device** grant control.
+
+The useful question is not "is the policy assigned?" It is "has this device checked in recently enough for Intune to evaluate the assigned policy, can each setting be measured on this device, and is the result tied to the correct device object?"
+
+For wider context, see the [Intune hub](/intune), [Microsoft Entra ID hub](/microsoft-entra-id), and [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map).
+
+## Tested Environment and Scope
+
+This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2, and 25H2 devices enrolled in Microsoft Intune. It covers Microsoft Entra joined, Microsoft Entra hybrid joined, and co-managed Windows devices where Intune compliance is expected to feed Conditional Access.
+
+It focuses on compliance evaluation timing, assignment scope, per-setting failures, grace periods, MDM sync health, local Windows evidence, and stale Entra or Intune device records.
+
+It does not cover iOS, Android, macOS, or Configuration Manager-only compliance except where co-management affects Intune evaluation.
+
+Useful Microsoft references:
+
+- [Device compliance policies in Intune](https://learn.microsoft.com/en-us/intune/intune-service/protect/device-compliance-get-started)
+- [Monitor device compliance](https://learn.microsoft.com/en-us/intune/intune-service/protect/device-compliance-monitor)
+- [Create custom compliance policies](https://learn.microsoft.com/en-us/intune/intune-service/protect/compliance-use-custom-settings)
+- [Sync your Windows device manually](https://learn.microsoft.com/en-gb/intune/intune-service/user-help/sync-your-device-manually-windows)
+
+## Prerequisites
+
+Before troubleshooting one device, confirm the basics:
+
+- You can find the device in **Intune admin centre > Devices > Windows devices**.
+- You know the expected user, device name, serial number, and Entra device ID.
+- The device is enrolled in Intune MDM, not only registered in Entra ID.
+- The device has a valid Intune licence through the user, device licence, or another supported licensing model.
+- The device is online with a correct system clock.
+- You have local administrator rights for registry, event log, and diagnostic collection on the device.
+- You have Intune permissions to read compliance status and, if needed, trigger remote sync.
+
+Do not start by deleting the device record. If you remove the wrong object before collecting evidence, you can make assignment, Autopilot, BitLocker recovery, and Conditional Access investigations harder.
+
+## Symptoms
+
+| Symptom | First place to check |
+|---|---|
+| Compliance shows **Not evaluated** | Last check-in, policy assignment, tenant default compliance setting |
+| One setting shows **Error** | Per-setting evaluation blade, prerequisites for that setting |
+| Device shows **In grace period** | Actions for noncompliance, grace period configuration |
+| CA blocks but Intune looks compliant | Sign-in logs, device ID mismatch, stale device object |
+| Compliance never updates after enrolment | MDM enrolment completion, IME health, first sync timing |
+| Only some devices in a group fail | Dynamic group membership, exclusion groups, OS version split |
+| Custom compliance script fails | Script exit code, JSON schema, assignment to correct platform |
+
+If the device is not checking in at all, use [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing) first. If Win32 apps or remediations are stale but compliance is the only issue, stay on this guide.
 
 ## The Four Root Causes
 
-When Intune reports a device as "Not evaluated" or stuck in a compliance state that does not reflect reality, it is almost always one of these four things:
+When Intune reports a device as **Not evaluated** or stuck in a compliance state that does not reflect reality, it is almost always one of these four things:
 
-1. **The device has not synced recently enough** — Intune compliance evaluation requires a recent check-in
-2. **The compliance policy is not assigned to the device (or user)** — assignment scope mismatch
-3. **The compliance policy has a setting that cannot be evaluated** — usually a missing prerequisite
-4. **The device is in a grace period or has a noncompliance action configured** — the portal shows the grace state, not the underlying evaluation
+1. **The device has not synced recently enough** — Intune compliance evaluation requires a recent check-in.
+2. **The compliance policy is not assigned to the device or user** — assignment scope mismatch or exclusion group.
+3. **The compliance policy has a setting that cannot be evaluated** — usually a missing prerequisite or unsupported platform state.
+4. **The device is in a grace period or has a noncompliance action configured** — the portal shows the grace state, not an evaluation failure.
 
-Work through this checklist in order.
+Work through the checks below in order.
 
 ## Check 1: Last Sync Time
 
@@ -28,58 +90,202 @@ Alternatively, from Intune:
 2. Check **Last check-in** timestamp
 3. If stale, click **Sync** to push a sync request
 
-After sync, wait 5 minutes and re-check the compliance state.
+After sync, wait 5–10 minutes and re-check the compliance state. Compliance evaluation is not instantaneous; it follows MDM check-in and policy processing.
+
+If sync does not improve the state, collect MDM diagnostics before changing assignments:
+
+```powershell
+$logPath = "C:\Temp\IntuneDiag"
+New-Item -ItemType Directory -Path $logPath -Force | Out-Null
+mdmdiagnosticstool.exe -area DeviceEnrollment;DeviceProvisioning;Policy -cab "$logPath\diag.cab"
+```
+
+Expected result shape: a `.cab` file under `C:\Temp\IntuneDiag` containing MDM event logs and enrolment state.
 
 ## Check 2: Policy Assignment
 
 1. In the Intune portal, navigate to **Devices > Compliance policies > [policy name] > Device status**
 2. Search for the device. If it does not appear, the policy is not assigned to this device.
-3. Check the assignment: Is the policy assigned to a group? Is the device (or the enrolled user) a member of that group?
+3. Check the assignment: Is the policy assigned to a group? Is the device or the enrolled user a member of that group?
 4. Check for conflicting **exclusion groups** — the device may be in a group that is excluded from the policy.
+5. Confirm the policy platform matches the device OS. A Windows 10-only policy will not evaluate on Windows 11 and vice versa depending on configuration.
+
+### Tenant default: no policy means compliant
+
+A device with **no assigned compliance policy** defaults to **compliant** at the tenant level unless you changed **Endpoint security > Device compliance > Compliance policy settings**.
+
+Verify the tenant default:
+
+1. Go to **Endpoint security > Device compliance > Compliance policy settings**
+2. Review **Mark devices with no compliance policy assigned as**
+3. If this is set to **Not compliant**, devices without an assigned policy will fail Conditional Access even when individual settings look healthy
+
+This is a common source of "why is this kiosk noncompliant when I never assigned a policy?" confusion.
 
 ## Check 3: Evaluate the Specific Setting
 
-If the policy is assigned and the device has synced but a specific setting is showing "Not evaluated" or "Error":
+If the policy is assigned and the device has synced but a specific setting is showing **Not evaluated** or **Error**:
 
-1. Click on the device in the Intune portal and navigate to **Compliance > [policy name]**
-2. Expand the policy to see per-setting evaluation results
-3. Note any settings showing "Error" or "Not applicable"
+1. Click the device in the Intune portal and navigate to **Monitor > Device compliance**
+2. Open the policy and expand per-setting evaluation results
+3. Note any settings showing **Error**, **Not evaluated**, or **Not applicable**
 
 Common problematic settings:
 
 | Setting | Common issue |
 |---|---|
-| Require BitLocker | Device encryption has not been initialised yet — trigger BitLocker manually |
-| Require Secure Boot | VM or older hardware without UEFI; may need to exclude these devices |
-| Antivirus | Defender not reporting to Intune yet — check Security Center registration |
-| OS minimum version | Device is on an older build — check WUfB ring assignments |
+| Require BitLocker | Encryption not initialised; policy arrived before OS readiness |
+| Require Secure Boot | VM, legacy BIOS, or firmware without UEFI |
+| Antivirus | Defender not reporting to Intune yet; third-party AV not in supported state |
+| OS minimum version | Device on older build; feature update ring not applied |
+| Microsoft Defender for Endpoint | Onboarding incomplete; sensor not reporting |
+| Custom compliance script | Wrong exit code, invalid JSON, or script not assigned to platform |
+
+### BitLocker and Secure Boot prerequisites
+
+If BitLocker is required, confirm encryption state locally:
+
+```powershell
+manage-bde -status C:
+```
+
+Expected output shape includes **Conversion Status: Fully Encrypted** or a clear reason encryption is suspended.
+
+If Secure Boot is required on physical hardware, confirm in firmware and OS:
+
+```powershell
+Confirm-SecureBootUEFI
+```
+
+Expected output: **True** on supported hardware. VMs and lab devices often need a policy exception.
 
 ## Check 4: Grace Period and Noncompliance Actions
 
-If the compliance state shows a yellow status or "In grace period":
+If the compliance state shows a yellow status or **In grace period**:
 
 1. Navigate to the compliance policy > **Actions for noncompliance**
-2. Check the configured grace period (default is 0 days — immediate)
-3. If a grace period is set, the device will show as noncompliant-grace, not noncompliant, during the grace window
+2. Check the configured grace period. Default is 0 days (immediate noncompliance).
+3. If a grace period is set, the device shows as noncompliant-grace during the window — this is working as intended, not an evaluation failure.
 
-This is often confused with an evaluation failure but is actually working as intended.
+Document the grace period before escalating to the security team. Conditional Access may still block depending on how **Require compliant device** interprets grace state in your tenant configuration.
 
-## Collecting Diagnostic Logs
+## Portal Evidence Collection
 
-For persistent issues:
+Before changing policy, capture portal evidence for the incident record:
+
+| Field | Where to find it |
+|---|---|
+| Device name and serial | Devices > Windows devices > [device] |
+| Last check-in | Device overview blade |
+| Assigned compliance policies | Device > Monitor > Device compliance |
+| Per-setting state | Compliance policy > Device status > [device] |
+| Group membership | Entra ID > Devices or Users > member of |
+| CA result | Entra ID > Sign-in logs > Conditional Access |
+
+Export device compliance for bulk comparison when more than one device is affected:
+
+1. **Reports > Device compliance > Compliance policy device status**
+2. Filter by the affected policy
+3. Export to CSV and sort by **Compliance state**
+
+## Graph API Checks
+
+Use Microsoft Graph PowerShell when you need evidence at scale or the portal view is incomplete.
 
 ```powershell
-# On the device, collect Intune diagnostic logs
-$logPath = "C:\Temp\IntuneDiag"
-mdmdiagnosticstool.exe -area DeviceEnrollment -cab "$logPath\diag.cab"
+Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All","DeviceManagementConfiguration.Read.All"
+
+$deviceName = "<device-name>"
+$device = Get-MgDeviceManagementManagedDevice -Filter "deviceName eq '$deviceName'" | Select-Object -First 1
+
+$device | Select-Object deviceName, complianceState, lastSyncDateTime, managementAgent, operatingSystem, osVersion
 ```
 
-The IME log is also valuable:
+Expected output shape:
+
+```text
+deviceName        : <name>
+complianceState   : noncompliant | compliant | inGracePeriod | configManager
+lastSyncDateTime  : <timestamp>
+managementAgent   : mdm | eas | configurationManagerClient
 ```
-C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\IntuneManagementExtension.log
+
+List noncompliant devices for one policy when you know the policy ID:
+
+```powershell
+$policyId = "<compliance-policy-id>"
+Get-MgDeviceManagementDeviceCompliancePolicyDeviceStateSummary -DeviceCompliancePolicyId $policyId
 ```
+
+If Graph shows a different compliance state than the portal, wait 10 minutes and refresh both. Eventual consistency between reporting surfaces is normal.
+
+## Event Log and Registry Evidence
+
+On the device, MDM policy processing is recorded under:
+
+**Applications and Services Logs > Microsoft > Windows > DeviceManagement-Enterprise-Diagnostics-Provider**
+
+Useful event patterns:
+
+| Event pattern | Likely meaning |
+|---|---|
+| Event ID 404 | CSP setting failed to apply or report |
+| Event ID 814 | Policy conflict or invalid payload |
+| Enrollment failures in Admin log | MDM channel unhealthy — fix sync first |
+
+Check whether compliance-related CSP state exists:
+
+```powershell
+Get-ChildItem "HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device" -ErrorAction SilentlyContinue |
+    Select-Object -First 10 PSChildName
+```
+
+If PolicyManager is empty and MDM enrolment looks incomplete, return to [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing).
+
+## Custom Compliance Scripts
+
+Custom compliance policies depend on a detection script returning valid JSON. Common failure modes:
+
+- Script exits non-zero even when detection succeeds
+- JSON schema does not match Microsoft requirements
+- Script runs in user context when it needs SYSTEM context
+- Assignment targets the wrong platform or architecture
+
+Validate locally before re-uploading:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File "C:\Path\Detect-Compliance.ps1"
+echo $LASTEXITCODE
+```
+
+Expected exit code: **1** for compliant, **0** for noncompliant per Microsoft custom compliance script conventions. Verify against the exact documentation for your policy version before changing production scripts.
+
+## Safe Retry and Recovery
+
+Use the smallest change that restores evidence-backed compliance reporting.
+
+1. Trigger one manual sync from the portal and one from the device.
+2. Wait 10 minutes and re-check per-setting evaluation.
+3. If one setting is wrong, test a pilot exclusion for that setting on a lab device before changing production policy.
+4. If the device object is stale after re-enrolment, compare Entra device ID with the active Intune managed device record before deleting anything.
+5. If you must retire and re-enrol, document BitLocker recovery key location and Autopilot assignment impact first.
+
+Do not widen policy exceptions tenant-wide as a first response. Fix assignment, sync, or the failing setting on a named pilot group instead.
+
+## Prevention Checks
+
+After recovery, add these checks to change control:
+
+- Every compliance policy has an owner, assignment description, and exception expiry where needed.
+- Pilot groups exist for new BitLocker, Secure Boot, and minimum OS version requirements.
+- Conditional Access policies that require compliant devices exclude break-glass accounts correctly.
+- New Autopilot profiles include enough time for first compliance evaluation before user reaches production apps.
+- Custom compliance scripts are version-controlled and tested with the same exit code convention as production.
 
 ## Related Resources
 
+- [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing)
 - [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck)
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
+- [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
+- [Rolling Out Microsoft Defender for Endpoint with Intune](/tutorials/microsoft-defender-for-endpoint-intune-rollout)

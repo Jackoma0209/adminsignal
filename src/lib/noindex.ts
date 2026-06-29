@@ -7,7 +7,8 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
 
 export const NOINDEX_STATIC_PATHS = new Set(['/advertise', '/best-tools', '/reviews'])
 
-export const NOINDEX_NEWS_SLUGS = new Set([
+/** Draft news kept offline until expanded — URLs return 404 if not in liveSignals. */
+export const DRAFT_NEWS_SLUGS = new Set([
   'windows-driver-cross-signed-trust-removal',
   'windows-app-rd-client-deprecation-2026',
   'intune-security-best-practices-2026',
@@ -15,8 +16,9 @@ export const NOINDEX_NEWS_SLUGS = new Set([
   'intune-frontline-mobile-migration',
 ])
 
+export const NOINDEX_NEWS_SLUGS = new Set<string>()
+
 export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set([
-  'intune-compliance-policy-not-evaluating',
   'april-2026-bitlocker-recovery-loop-kb5082063',
 ])
 
