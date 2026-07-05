@@ -9,7 +9,6 @@ import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
 import {
   getDuplicateTutorialRedirect,
-  isNoindexTutorialSlug,
   withNoindex,
 } from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
@@ -48,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     authorName: author?.name,
   })
 
-  return duplicateRedirect || isNoindexTutorialSlug(slug) ? withNoindex(metadata) : metadata
+  return duplicateRedirect ? withNoindex(metadata) : metadata
 }
 
 export default async function TutorialPage({ params }: Props) {

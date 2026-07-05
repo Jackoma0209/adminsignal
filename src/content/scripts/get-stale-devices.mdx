@@ -18,6 +18,10 @@ Stale device cleanup is an underappreciated security hygiene task. Inactive devi
 
 **Tested environment**: Windows 11 24H2 management workstation, Microsoft Graph PowerShell SDK 2.x, Intune and Entra ID tenants on April 2026 service release.
 
+## Purpose
+
+Use this guide to build a defensive device-hygiene report for authorised administrators. The goal is to identify stale records, compare state across management planes, and prepare a human-reviewed remediation queue. It is not intended for unauthorised discovery or automated removal of devices.
+
 ## Prerequisites
 
 The script requires the following before running:
@@ -77,7 +81,7 @@ $cred      = New-Object PSCredential($appId, $appSecret)
 Get-StaleDevices -GraphCredential $cred -StaleThresholdDays 90 -IncludeRemediation -OutputPath C:\Reports
 ```
 
-## Output
+## Expected Output
 
 The script writes two files per run to the specified `-OutputPath`:
 
@@ -99,6 +103,10 @@ When `-IncludeRemediation` is specified, each device row includes a `Recommended
 | Stale in AD only | Check if device was decommissioned but AD record not cleaned up |
 
 **Do not bulk-delete devices based solely on this report without a manual review pass.** Active devices with clock drift, offline periods, or VPN-only connectivity can appear stale with a 60–90 day threshold.
+
+## Rollback and Remediation Notes
+
+The reporting workflow makes no tenant or directory changes, so there is no script rollback action. Treat the remediation column as a queue for separate change-controlled work: verify ownership, check recent sign-ins or check-ins, confirm device retirement records, and only then delete or disable stale objects through your normal administrative process.
 
 ## Validation
 
@@ -135,6 +143,13 @@ Verify the `-StaleThresholdDays` value. A threshold of 7 days in an active fleet
 - When using a service principal (`-GraphCredential`), store the client secret in a secrets vault (Azure Key Vault, Windows Credential Manager) rather than hardcoding it in scripts or scheduled task arguments.
 - The output CSV and HTML files contain device names, last check-in dates, and compliance states. Treat them as internal data — do not share publicly or store in unprotected locations.
 - **Do not automate device deletion** based on this report without a human review step. Automated deletion of devices that are merely inactive can remove valid hardware from management.
+
+## Version and Changelog
+
+| Version | Date | Notes |
+|---|---|---|
+| Guide v0.2 | Apr 27, 2026 | Added Graph permission guidance, validation checks, and read-only safety notes |
+| Guide v0.1 | Feb 2025 | Initial implementation guide |
 
 ## Related Resources
 

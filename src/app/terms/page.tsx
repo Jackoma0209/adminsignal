@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Terms of Use',
   description:
     'Terms governing access to AdminSignal articles, scripts, examples, advertising, and related resources.',
-}
+  path: '/terms',
+})
 
 const linkClass = 'text-primary underline underline-offset-2'
 
@@ -18,7 +20,7 @@ export default function TermsPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Terms of Use
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: June 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
               These Terms of Use govern your access to and use of AdminSignal. By using this site,
@@ -157,6 +159,11 @@ export default function TermsPage() {
                   Cookie Policy
                 </a>{' '}
                 for more information.
+              </p>
+              <p className="mt-3">
+                Advertisers, sponsors, and affiliate partners do not control independent editorial
+                conclusions, product ratings, comparisons, recommendations, or review verdicts.
+                Sponsored content, if published, is labelled as sponsored.
               </p>
             </section>
 

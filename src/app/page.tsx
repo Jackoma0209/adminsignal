@@ -19,15 +19,35 @@ const homeTitle = 'AdminSignal — Practitioner-Focused Content for Sysadmins'
 const homeDescription =
   'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. Written from practical Microsoft admin experience, with a focus on operational risk and source-backed guidance.'
 const homeUrl = 'https://www.adminsignal.com'
+const ogImage = `${homeUrl}/og-default.png`
 
 export const metadata: Metadata = {
+  title: {
+    absolute: homeTitle,
+  },
   alternates: { canonical: homeUrl },
   description: homeDescription,
   openGraph: {
     url: homeUrl,
     type: 'website',
+    siteName: 'AdminSignal',
+    locale: 'en_US',
     title: homeTitle,
     description: homeDescription,
+    images: [
+      {
+        url: ogImage,
+        width: 1200,
+        height: 630,
+        alt: 'AdminSignal — practitioner-focused Microsoft admin guidance',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: homeTitle,
+    description: homeDescription,
+    images: [ogImage],
   },
 }
 

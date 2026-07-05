@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Cookie Policy',
   description:
     'How AdminSignal uses cookies and similar technologies for site operation, analytics, advertising, and consent management.',
-  alternates: { canonical: 'https://www.adminsignal.com/cookies' },
-}
+  path: '/cookies',
+})
 
 const linkClass = 'break-all text-primary underline underline-offset-2'
 
@@ -19,7 +20,7 @@ export default function CookiesPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Cookie Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: June 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
 
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
@@ -104,9 +105,10 @@ export default function CookiesPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Analytics Cookies</h2>
               <p>
-                AdminSignal uses <strong className="text-foreground-soft">Google Analytics 4</strong>{' '}
-                to understand how visitors use the site. This helps us improve guides, scripts,
-                topic coverage, navigation, and performance.
+                AdminSignal uses, or may use,{' '}
+                <strong className="text-foreground-soft">Google Analytics 4</strong> to understand
+                how visitors use the site. This helps us improve guides, scripts, topic coverage,
+                navigation, and performance.
               </p>
               <p className="mt-3">Google Analytics may collect information such as:</p>
               <ul className="mt-3 list-disc space-y-1 pl-5">
@@ -117,9 +119,11 @@ export default function CookiesPage() {
                 <li>Time spent on pages</li>
               </ul>
               <p className="mt-3">
-                AdminSignal uses Google Consent Mode v2 where applicable. If analytics consent is
-                not granted, analytics cookies are not set, and Google Analytics operates with
-                limited measurement.
+                AdminSignal is configured to use Google Consent Mode v2 defaults where Google tags
+                are enabled. If analytics consent is not granted, analytics cookies should not be
+                set by Google tags, and measurement is limited. Non-essential analytics tags should
+                remain disabled until the required consent mechanism is configured for the
+                visitor&apos;s region.
               </p>
               <p className="mt-3">
                 You can opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -148,6 +152,7 @@ export default function CookiesPage() {
               <ul className="mt-3 list-disc space-y-1 pl-5">
                 <li>Serve ads on AdminSignal</li>
                 <li>Personalise ads where consent and applicable law allow</li>
+                <li>Serve non-personalised ads where personalisation is not permitted or not selected</li>
                 <li>Measure ad impressions and interactions</li>
                 <li>Prevent fraud and abuse</li>
                 <li>Limit how often the same ad is shown</li>
@@ -180,17 +185,24 @@ export default function CookiesPage() {
               </p>
             </section>
 
-            <section>
+            <section id="manage-consent">
               <h2 className="mb-2 text-lg font-semibold text-foreground">Consent Management</h2>
               <p>
-                Visitors in regions where cookie consent is required, including the UK and EU/EEA,
-                are shown a consent prompt before non-essential analytics or advertising cookies
-                are used.
+                Visitors in regions where cookie consent is required, including the UK, EU/EEA, and
+                Switzerland, must be shown consent and vendor choices before non-essential
+                analytics or advertising cookies are used.
               </p>
               <p className="mt-3">
-                You can accept, reject, or customise cookie categories. You can update or withdraw
-                your consent at any time using the privacy or cookie settings link in the site
-                footer.
+                For AdSense personalised ads in those regions, AdminSignal must use a
+                Google-certified consent management platform integrated with IAB Europe&apos;s
+                Transparency and Consent Framework. This repository provides the integration
+                points, but does not claim that a certified CMP is already configured.
+              </p>
+              <p className="mt-3">
+                Once a CMP is configured, you should be able to accept, reject, or customise cookie
+                categories and vendor choices, including advertising vendors. You should also be
+                able to update or withdraw consent at any time using the privacy or cookie settings
+                link in the site footer.
               </p>
               <p className="mt-3">
                 Withdrawing consent does not remove cookies that were already stored. You can delete

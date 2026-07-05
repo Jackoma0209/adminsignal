@@ -1,19 +1,23 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import Script from 'next/script'
-import { adsenseScriptEnabled, ADSENSE_PUBLISHER_ID } from '@/lib/consent'
+import { adsenseScriptEnabled, ADSENSE_CLIENT_ID, isAdScriptEligiblePath } from '@/lib/consent'
 
 /**
- * Loads adsbygoogle.js so the AdSense Privacy & Messaging CMP can surface consent dialogs.
- * Controlled by NEXT_PUBLIC_ADSENSE_ENABLED — independent of live ad unit rendering.
+ * Loads adsbygoogle.js only after a real Google-certified CMP has been configured.
+ * Controlled by NEXT_PUBLIC_ADSENSE_ENABLED and NEXT_PUBLIC_GOOGLE_CERTIFIED_CMP_ENABLED.
+ * Live ad unit rendering remains separately gated by NEXT_PUBLIC_ADS_ENABLED.
  */
 export default function AdSenseScript() {
-  if (!adsenseScriptEnabled) return null
+  const pathname = usePathname()
+
+  if (!adsenseScriptEnabled || !isAdScriptEligiblePath(pathname)) return null
 
   return (
     <Script
       id="adsense-script"
-      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
+      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
       crossOrigin="anonymous"
       strategy="afterInteractive"
     />

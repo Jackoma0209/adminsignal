@@ -6,7 +6,6 @@ import { reviews } from '@/data/reviews'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { withNoindex } from '@/lib/noindex'
 import { articleSchema, reviewSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -15,6 +14,7 @@ import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
+import ReviewDisclosure from '@/components/article/ReviewDisclosure'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const review = reviews.find((r) => r.slug === slug)
   if (!review) return {}
   const author = getAuthor(review.authorId)
-  const metadata = buildArticleMetadata({
+  return buildArticleMetadata({
     title: review.title,
     description: review.excerpt,
     url: `https://www.adminsignal.com/reviews/${slug}`,
@@ -40,8 +40,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     tags: [review.productName, review.category],
     authorName: author?.name,
   })
-
-  return withNoindex(metadata)
 }
 
 function RatingBar({ value, max = 5 }: { value: number; max?: number }) {
@@ -173,6 +171,8 @@ export default async function ReviewArticlePage({ params }: Props) {
                   <span>{review.readTime}</span>
                 </div>
               </header>
+
+              <ReviewDisclosure kind="review" />
 
               <div className="mb-8 rounded-xl border border-border bg-surface p-6">
                 <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted/60">

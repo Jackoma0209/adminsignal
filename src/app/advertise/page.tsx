@@ -1,16 +1,13 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
-import { NOINDEX_ROBOTS } from '@/lib/noindex'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Advertise',
   description:
-    'Reach IT professionals, sysadmins, and endpoint specialists through AdminSignal.',
-  alternates: {
-    canonical: 'https://www.adminsignal.com/advertise',
-  },
-  robots: NOINDEX_ROBOTS,
-}
+    'Reach IT professionals, sysadmins, and endpoint specialists through clearly labelled advertising on AdminSignal.',
+  path: '/advertise',
+})
 
 export default function AdvertisePage() {
   return (
@@ -36,6 +33,16 @@ export default function AdvertisePage() {
                 editorial policy
               </a>
               .
+            </p>
+            <p>
+              Advertising and sponsorship do not buy editorial conclusions. Advertisers do not
+              control reviews, comparisons, ratings, recommendations, or the final wording of
+              independent editorial content.
+            </p>
+            <p>
+              Sponsored articles, if accepted, are reviewed for audience fit, factual clarity, and
+              disclosure. They are visibly labelled as sponsored and kept separate from independent
+              reviews and comparisons.
             </p>
             <p>
               To discuss options, contact us at{' '}

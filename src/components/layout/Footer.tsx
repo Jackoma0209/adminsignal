@@ -7,11 +7,13 @@ const footerLinks = [
   {
     heading: 'Content',
     links: [
+      { label: 'Home', href: '/' },
       { label: 'News', href: '/news' },
       { label: 'Tutorials', href: '/tutorials' },
       { label: 'Troubleshooting', href: '/troubleshooting' },
       { label: 'Scripts', href: '/scripts' },
       { label: 'Comparisons', href: '/comparisons' },
+      { label: 'Reviews', href: '/reviews' },
     ],
   },
   {
@@ -30,6 +32,8 @@ const footerLinks = [
     links: [
       { label: 'Script Library', href: '/scripts' },
       { label: 'Comparisons', href: '/comparisons' },
+      { label: 'Reviews', href: '/reviews' },
+      { label: 'Recommended Tools', href: '/best-tools' },
       { label: 'SCCM / MECM', href: '/sccm-mecm' },
     ],
   },
@@ -38,9 +42,12 @@ const footerLinks = [
     links: [
       { label: 'About', href: '/about' },
       { label: 'Contact', href: '/contact' },
+      { label: 'Advertise', href: '/advertise' },
       { label: 'Editorial Policy', href: '/editorial-policy' },
       { label: 'Affiliate Disclosure', href: '/affiliate-disclosure' },
+      { label: 'Privacy Policy', href: '/privacy' },
       { label: 'Cookie Policy', href: '/cookies' },
+      { label: 'Terms', href: '/terms' },
     ],
   },
 ]

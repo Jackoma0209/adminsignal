@@ -7,12 +7,13 @@ import Image from 'next/image'
 import { Menu, X, Search, Sun, Moon, Rss } from 'lucide-react'
 
 const nav = [
-  { label: 'Signals', href: '/news' },
-  { label: 'Guides', href: '/tutorials' },
-  { label: 'Comparisons', href: '/comparisons' },
+  { label: 'News', href: '/news' },
+  { label: 'Tutorials', href: '/tutorials' },
+  { label: 'Troubleshooting', href: '/troubleshooting' },
   { label: 'Scripts', href: '/scripts' },
+  { label: 'Comparisons', href: '/comparisons' },
+  { label: 'Reviews', href: '/reviews' },
   { label: 'Topics', href: '/topics' },
-  { label: 'Weekly', href: '/#newsletter' },
 ]
 
 function useTheme() {

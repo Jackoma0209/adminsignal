@@ -5,7 +5,7 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
   follow: true,
 }
 
-export const NOINDEX_STATIC_PATHS = new Set(['/advertise', '/best-tools', '/reviews'])
+export const NOINDEX_STATIC_PATHS = new Set<string>()
 
 /** Draft news kept offline until expanded — URLs return 404 if not in liveSignals. */
 export const DRAFT_NEWS_SLUGS = new Set([
@@ -18,15 +18,11 @@ export const DRAFT_NEWS_SLUGS = new Set([
 
 export const NOINDEX_NEWS_SLUGS = new Set<string>()
 
-export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set([
-  'april-2026-bitlocker-recovery-loop-kb5082063',
-])
+export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set<string>()
 
-export const NOINDEX_COMPARISON_SLUGS = new Set([
-  'windows-defender-vs-crowdstrike-falcon',
-])
+export const NOINDEX_COMPARISON_SLUGS = new Set<string>()
 
-export const NOINDEX_TUTORIAL_SLUGS = new Set(['powershell-software-inventory-system'])
+export const NOINDEX_TUTORIAL_SLUGS = new Set<string>()
 
 const DUPLICATE_TUTORIAL_REDIRECTS = new Map([
   ['windows-11-25h2-autopilot-v2', '/guides/windows-11-25h2-autopilot-v2'],
@@ -68,7 +64,7 @@ export function isNoindexContentRoute(segment: string, slug: string): boolean {
     case 'news':
       return isNoindexNewsSlug(slug)
     case 'reviews':
-      return true
+      return false
     case 'troubleshooting':
       return isNoindexTroubleshootingSlug(slug)
     case 'comparisons':

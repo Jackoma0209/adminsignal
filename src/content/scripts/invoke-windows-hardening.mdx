@@ -16,6 +16,10 @@ The script is designed for environments that need to apply hardening without a f
 
 **Tested environment**: Windows 11 22H2 and 24H2, Windows 10 22H2. PowerShell 5.1 and PowerShell 7.4. Local and SYSTEM execution contexts. Tested against CIS Windows 11 Benchmark v3.0.0.
 
+## Purpose
+
+Use this guide to plan an authorised defensive hardening workflow for managed Windows endpoints. The goal is to audit configuration drift, apply approved baseline settings in a pilot-first sequence, and produce evidence for compliance review. It is not a tool for bypassing policy, hiding activity, or changing systems without owner approval.
+
 ## Safety First: Always Audit Before Applying
 
 > **Important**: This script modifies registry values, security policy settings, and Windows Defender configuration. Run `-Mode Audit` on a pilot machine first and review the delta report before running `-Mode Apply` in any production environment. Some controls — particularly NTLM restrictions and BitLocker settings — can break legacy applications and require a reboot to take effect.
@@ -122,7 +126,7 @@ Each category can be individually excluded via `-ExcludeCategories`:
 | `BitLocker` | Require TPM, enable OS drive encryption |
 | `PowerShellLogging` | Script block logging, module logging, transcription |
 
-## Report Output
+## Expected Output
 
 The HTML report includes:
 
@@ -200,6 +204,13 @@ Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa' `
 - **Reboot required for some controls**: BitLocker encryption start, several SecurityOptions values, and PowerShell logging transcription paths do not take effect until the next reboot.
 - **Application conflicts**: NTLM restrictions can break older LOB applications that use Basic authentication or NTLM-only connections to file shares. Test with your critical application set before broad deployment. See the [CIS Benchmark hardening guide](/tutorials/hardening-windows-11-cis-benchmark) for a detailed conflict table.
 - **Level 2 controls**: CIS Level 2 includes additional restrictions (e.g., disabling the Remote Registry service, restricting PowerShell execution more aggressively) that are more disruptive in general enterprise environments. Use Level 2 only after thorough testing.
+
+## Version and Changelog
+
+| Version | Date | Notes |
+|---|---|---|
+| Guide v0.2 | Apr 27, 2026 | Added pilot-first safety sequence, rollback guidance, and Intune remediation notes |
+| Guide v0.1 | Mar 2025 | Initial hardening implementation guide |
 
 ## Related Resources
 

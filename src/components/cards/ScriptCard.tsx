@@ -44,15 +44,15 @@ export default function ScriptCard({ script }: ScriptCardProps) {
       )}
 
       <div className="mt-auto flex items-center justify-between">
-        <span className="text-xs text-muted/60">Real-world script</span>
-        <Link
-          href={`/scripts/${script.slug}`}
-          className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
-          aria-label={`View ${script.title}`}
-        >
-          View script
-          <ArrowUpRight className="h-3 w-3" />
-        </Link>
+      <span className="text-xs text-muted/60">Implementation guide</span>
+      <Link
+        href={`/scripts/${script.slug}`}
+        className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
+        aria-label={`View ${script.title} implementation guide`}
+      >
+        View guide
+        <ArrowUpRight className="h-3 w-3" />
+      </Link>
       </div>
     </article>
   )

@@ -8,7 +8,7 @@ const BASE = 'https://www.adminsignal.com'
 const FEED_URL = `${BASE}/rss.xml`
 const SITE_TITLE = 'AdminSignal'
 const SITE_DESCRIPTION =
-  'Production-tested guides, PowerShell scripts, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets and Intune tenants.'
+  'Practical guides, PowerShell implementation notes, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets and Intune tenants.'
 
 function escapeXml(str: string): string {
   return str

@@ -16,6 +16,10 @@ Stop building lab VMs manually. This script gives you a consistent, reproducible
 
 **Tested environment**: Windows 11 24H2 Hyper-V host (Hyper-V Version 10.0.26100), Windows 11 24H2 Enterprise ISO. PowerShell 5.1 and 7.4.
 
+## Purpose
+
+Use this guide to create repeatable lab or pilot virtual machines for authorised testing of endpoint policy, Group Policy, Intune enrolment, hardening, and troubleshooting workflows. It is intended for isolated administrative test environments, not for creating unmanaged production endpoints.
+
 ## Prerequisites
 
 Before running, confirm:
@@ -91,7 +95,7 @@ New-AdminLabVM -VMName "WIN11-DOMAIN-TEST" `
                -DomainJoin -DomainName "corp.local"
 ```
 
-## What Gets Configured
+## Expected Output
 
 The script runs the following steps in sequence:
 
@@ -182,6 +186,13 @@ For domain-joined VMs, also remove the computer account from AD before deleting 
 # Remove AD computer account (requires AD PowerShell module)
 Remove-ADComputer -Identity $VMName -Confirm:$false
 ```
+
+## Version and Changelog
+
+| Version | Date | Notes |
+|---|---|---|
+| Guide v0.2 | Apr 27, 2026 | Added WinRM, Secure Boot, teardown, and password-handling guidance |
+| Guide v0.1 | Jan 2025 | Initial Hyper-V lab VM implementation guide |
 
 ## Security Notes
 

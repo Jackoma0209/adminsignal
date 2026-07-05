@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AdminSignal
 
-## Getting Started
+AdminSignal is a Next.js App Router site for authorised enterprise IT administration content: Microsoft Intune, Windows endpoints, Microsoft 365, PowerShell, troubleshooting, scripts, reviews, comparisons, and security-hardening guidance.
 
-First, run the development server:
+## Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run check:adsense
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) during local development.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## AdSense Readiness Notes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `https://www.adminsignal.com/ads.txt` is served by `src/app/ads.txt/route.ts`.
+- The live AdSense seller Publisher ID for `ads.txt` is `pub-5563142788194204`.
+- The exact seller line emitted by `/ads.txt` is:
 
-## Learn More
+```text
+google.com, pub-5563142788194204, DIRECT, f08c47fec0942fa0
+```
 
-To learn more about Next.js, take a look at the following resources:
+- AdSense ad code uses the client value `ca-pub-5563142788194204`.
+- Do not use the AdSense Customer ID in `ads.txt`.
+- Do not replace these IDs with placeholder or fake publisher IDs.
+- The AdSense loader is route-gated so it stays off legal pages, search/noindex pages, topic/listing pages, and script library pages while those remain implementation guides.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## CMP And Consent Status
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This repo does not currently include a Google-certified CMP package. Non-essential Google Analytics and AdSense scripts are gated behind:
 
-## Deploy on Vercel
+```env
+NEXT_PUBLIC_GOOGLE_CERTIFIED_CMP_ENABLED=true
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Keep that flag `false` until a Google-certified CMP integrated with IAB Europe's TCF is configured and verified for UK, EEA, and Switzerland traffic. After CMP setup, verify that users can accept, reject, customise, and withdraw consent, and that Google Consent Mode updates are sent before analytics or advertising storage is granted.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Script Library Status
+
+The `/scripts` pages currently provide implementation guidance, prerequisites, permissions, examples, validation steps, safety notes, and expected output. Full downloadable `.ps1` files are not present in this repo yet, so every script page displays the honest notice:
+
+```text
+Full script download coming soon — this page currently provides implementation guidance, safety notes, and validation steps.
+```
+
+Add real GitHub or download links only after the full script source exists and has been reviewed.
+
+## Newsletter Status
+
+The homepage newsletter form posts to `/api/newsletter`, which only returns success after MailerLite accepts the subscription. If `MAILERLITE_API_TOKEN` and `MAILERLITE_GROUP_ID` are missing, the form renders as inactive and the API returns `503 not_configured`.
+
+## Legal And Disclosure Pages
+
+Sitewide footer links include Privacy Policy, Cookie Policy, Terms, Editorial Policy, Affiliate Disclosure, Contact, About, and Advertise. Update these pages whenever analytics, advertising, affiliate relationships, sponsorship options, or editorial standards change.

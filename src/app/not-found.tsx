@@ -24,7 +24,7 @@ export default function NotFound() {
               <Link href="/scripts" className="text-primary hover:underline">
                 Script Library
               </Link>{' '}
-              — ready-to-run PowerShell scripts
+              — PowerShell implementation guides and safety notes
             </li>
             <li>
               <Link href="/news" className="text-primary hover:underline">

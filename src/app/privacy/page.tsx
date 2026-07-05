@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Privacy Policy',
   description:
     'What AdminSignal collects, how we use it, and how visitors can manage privacy and cookie choices.',
-}
+  path: '/privacy',
+})
 
 const linkClass = 'break-words text-primary underline underline-offset-2'
 
@@ -18,7 +20,7 @@ export default function PrivacyPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Privacy Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: June 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
               AdminSignal publishes technical guides, scripts, and analysis for enterprise
@@ -49,6 +51,11 @@ export default function PrivacyPage() {
                 details included in your request.
               </p>
               <p className="mt-3">
+                If you subscribe to AdminSignal Weekly, we collect the email address you submit and
+                the provider status needed to manage the subscription, unsubscribe requests, and
+                delivery issues.
+              </p>
+              <p className="mt-3">
                 AdminSignal does not require user accounts, does not process payments, and does
                 not intentionally collect sensitive personal information.
               </p>
@@ -64,6 +71,7 @@ export default function PrivacyPage() {
                 <li>Understand which articles, scripts, and technical topics are useful to readers</li>
                 <li>Diagnose technical issues and prevent abuse</li>
                 <li>Respond to messages submitted through the contact page</li>
+                <li>Send newsletter updates you requested and manage unsubscribes</li>
                 <li>Improve site content, navigation, and performance</li>
                 <li>Measure traffic and aggregate usage trends</li>
                 <li>Display and measure advertising where permitted</li>
@@ -75,20 +83,21 @@ export default function PrivacyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Analytics</h2>
               <p>
-                AdminSignal uses <strong className="text-foreground-soft">Google Analytics 4</strong>{' '}
-                to understand aggregate traffic patterns, such as page views, referral sources,
-                device categories, approximate location, and article performance.
+                AdminSignal uses, or may use,{' '}
+                <strong className="text-foreground-soft">Google Analytics 4</strong> to understand
+                aggregate traffic patterns, such as page views, referral sources, device
+                categories, approximate location, and article performance.
               </p>
               <p className="mt-3">
                 Google Analytics 4 helps us improve technical content and site usability. We do not
                 use Google Analytics to identify individual readers.
               </p>
               <p className="mt-3">
-                AdminSignal uses Google Consent Mode v2 where applicable. Consent Mode allows
-                Google tags to adjust their behaviour based on your consent choices for analytics
-                storage, advertising storage, ad user data, and ad personalisation. If analytics
-                consent is not granted, analytics cookies are not set by our Google tags, and
-                measurement is limited.
+                AdminSignal is configured to use Google Consent Mode v2 defaults where Google tags
+                are enabled. Consent Mode allows Google tags to adjust their behaviour based on
+                your consent choices for analytics storage, advertising storage, ad user data, and
+                ad personalisation. Non-essential analytics tags should remain disabled until the
+                required consent mechanism is configured for the visitor&apos;s region.
               </p>
               <p className="mt-3">
                 You can also opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -112,6 +121,14 @@ export default function PrivacyPage() {
                 to display advertising. AdSense and other third-party advertising vendors may use
                 cookies, device identifiers, IP addresses, and similar technologies for ad serving,
                 measurement, fraud prevention, and personalisation where permitted.
+              </p>
+              <p className="mt-3">
+                AdSense may serve personalised ads or non-personalised ads depending on the
+                visitor&apos;s region, consent choices, Google settings, and publisher
+                configuration. Visitors in the UK, EEA, and Switzerland must be given appropriate
+                consent choices through a Google-certified consent management platform integrated
+                with IAB Europe&apos;s Transparency and Consent Framework before personalised ads
+                are served.
               </p>
               <p className="mt-3">Google requires publishers using AdSense to disclose the following:</p>
               <ul className="mt-3 list-disc space-y-2 pl-5">
@@ -179,10 +196,12 @@ export default function PrivacyPage() {
                 <li>Other trusted service providers involved in hosting, security, or site delivery</li>
               </ul>
               <p className="mt-3">
-                Visitors in regions where consent is required, including the UK and EU/EEA, are
-                presented with cookie choices before non-essential cookies are used. You can update
-                or withdraw your choices at any time using the privacy or cookie settings link in
-                the site footer.
+                Visitors in regions where consent is required, including the UK, EU/EEA, and
+                Switzerland, must be presented with cookie and vendor choices before non-essential
+                analytics or advertising cookies are used. You can update or withdraw your choices
+                using the privacy or cookie settings link in the site footer once the consent
+                management platform is configured. Until then, AdminSignal should keep
+                non-essential Google advertising and analytics tags disabled.
               </p>
               <p className="mt-3">
                 For more detail, see our{' '}
@@ -190,6 +209,21 @@ export default function PrivacyPage() {
                   Cookie Policy
                 </a>
                 {'.'}
+              </p>
+            </section>
+
+            <section>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">Newsletter Provider</h2>
+              <p>
+                AdminSignal may use MailerLite or another email service provider to manage
+                newsletter subscriptions, confirmation emails, delivery, and unsubscribe handling.
+                Newsletter signup is only complete after the provider accepts the request. If the
+                provider integration is not configured, the site should not show a successful
+                subscription message.
+              </p>
+              <p className="mt-3">
+                Newsletter emails are used only for the updates you requested. You can unsubscribe
+                using the link in the email or contact us through the privacy request process below.
               </p>
             </section>
 
@@ -219,6 +253,10 @@ export default function PrivacyPage() {
                 <li>
                   Contact form messages retained as long as needed to respond and maintain
                   appropriate records
+                </li>
+                <li>
+                  Newsletter subscription records retained until you unsubscribe, request deletion,
+                  or the list is retired
                 </li>
                 <li>Analytics data retained according to the configured Google Analytics retention settings</li>
                 <li>Consent records retained as needed to respect and document visitor choices</li>

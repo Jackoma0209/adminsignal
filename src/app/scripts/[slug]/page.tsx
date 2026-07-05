@@ -14,6 +14,7 @@ import TableOfContents from '@/components/article/TableOfContents'
 import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
+import ScriptSafetyNotice from '@/components/article/ScriptSafetyNotice'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
@@ -82,6 +83,7 @@ export default async function ScriptDetailPage({ params }: Props) {
     programmingLanguage: script.language,
     tags: frontmatterTags ?? script.tags,
     authorName: author?.name,
+    dateModified: script.lastTested,
   })
 
   const jsonLdBreadcrumb = breadcrumbSchema([
@@ -136,9 +138,11 @@ export default async function ScriptDetailPage({ params }: Props) {
                       {tag}
                     </span>
                   ))}
-                  <span className="ml-auto text-xs text-muted/60">Real-world script</span>
+                  <span className="ml-auto text-xs text-muted/60">Implementation guide</span>
                 </div>
               </header>
+
+              <ScriptSafetyNotice script={script} />
 
               <AdSlot variant="banner" className="mb-8" />
 

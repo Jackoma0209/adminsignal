@@ -1,11 +1,12 @@
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import AdSenseScript from '@/components/AdSenseScript'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { analyticsEnabled, adsenseScriptEnabled, ADSENSE_PUBLISHER_ID, CONSENT_DEFAULTS } from '@/lib/consent'
+import { googleTagsRequested, ADSENSE_CLIENT_ID, CONSENT_DEFAULTS } from '@/lib/consent'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -20,7 +21,7 @@ const geistMono = Geist_Mono({
 const SITE_NAME = 'AdminSignal'
 const SITE_URL = 'https://www.adminsignal.com'
 const SITE_DESCRIPTION =
-  'Production-tested guides, PowerShell scripts, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets, Microsoft Intune tenants, and Active Directory environments across finance, logistics, and professional services.'
+  'Practical guides, PowerShell implementation notes, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets, Microsoft Intune tenants, and Active Directory environments across finance, logistics, and professional services.'
 const OG_IMAGE = `${SITE_URL}/og-default.png`
 
 export const metadata: Metadata = {
@@ -95,12 +96,12 @@ export const metadata: Metadata = {
     creator: '@adminsignal',
     title: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
     description:
-      'Production-tested guides, PowerShell scripts, and analysis for Windows admins and endpoint engineers. 12+ years enterprise experience, no lab theory.',
+      'Practical guides, PowerShell implementation notes, and analysis for Windows admins and endpoint engineers. 12+ years enterprise experience, no lab theory.',
     images: [OG_IMAGE],
   },
   category: 'technology',
   other: {
-    'google-adsense-account': 'ca-pub-5563142788194204',
+    'google-adsense-account': ADSENSE_CLIENT_ID,
   },
   alternates: {
     types: {
@@ -122,17 +123,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-      <head>
-        {adsenseScriptEnabled && (
-          <script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
-            crossOrigin="anonymous"
-          />
-        )}
-      </head>
       <body className="flex min-h-full flex-col antialiased">
-        {analyticsEnabled && (
+        {googleTagsRequested && (
           <Script id="consent-defaults" strategy="beforeInteractive">{`
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
@@ -140,6 +132,7 @@ export default function RootLayout({
           `}</Script>
         )}
         <GoogleAnalytics />
+        <AdSenseScript />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

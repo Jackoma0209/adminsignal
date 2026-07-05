@@ -16,6 +16,10 @@ tags: ["Intune", "Graph API", "Reporting", "Inventory"]
 
 **Tested environment**: Intune tenant on April 2026 service release. Microsoft Graph PowerShell SDK 2.x. Windows 11 24H2 management workstation. Tenants ranging from 500 to 18,000 managed devices.
 
+## Purpose
+
+Use this guide to build an authorised Intune inventory export for audit, troubleshooting, compliance review, licence reconciliation, and management reporting. The workflow is designed to minimise permissions and produce evidence without changing Intune configuration or device state.
+
 ## Field Notes
 
 Use this export as an operational snapshot, not as the only source of truth. Intune data can lag behind the device, especially for last check-in, compliance state, and encryption state. For a board report or audit pack, include the export time and avoid presenting stale devices as if they were current live failures.
@@ -139,7 +143,7 @@ Export-IntuneDeviceReport -Interactive -OutputFormat CSV -OutputPath C:\Reports\
 | `DeviceManagementConfiguration.Read.All` | Application | Compliance policy results (`-IncludeCompliance`) |
 | `Directory.Read.All` | Application | Primary user UPN resolution |
 
-## Output Fields
+## Expected Output
 
 The CSV/JSON output includes one record per managed device:
 
@@ -158,6 +162,10 @@ The CSV/JSON output includes one record per managed device:
 | `SerialNumber` | Device serial number (where reported by the platform) |
 
 When `-IncludeCompliance` is specified, one additional column per assigned compliance policy is appended with per-policy compliance state.
+
+## Rollback and Remediation Notes
+
+The export workflow is read-only and makes no Intune, Entra ID, or device changes, so there is no script rollback action. Treat findings as input for a separate change-controlled process: device sync, compliance policy investigation, stale device review, licence cleanup, or helpdesk escalation.
 
 ## Validation
 
@@ -211,6 +219,13 @@ Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Thumbprint -eq 'YOUR_THUM
 - **Compliance data lag**: The `ComplianceState` field reflects the last evaluation cached in Intune. Devices that have not synced in 8+ hours may show a stale compliance state. Trigger a device sync before running the export if freshness is critical.
 - **Personal/BYOD devices**: Devices enrolled via MAM-without-enrollment or under a personal enrollment type may have limited fields populated (particularly `SerialNumber` and `EncryptionState`) due to privacy partitioning in Graph.
 - **iOS/macOS EncryptionState**: The `EncryptionState` field is only populated for Windows devices. iOS and macOS report encryption status through a different Graph property that this script does not currently surface.
+
+## Version and Changelog
+
+| Version | Date | Notes |
+|---|---|---|
+| Guide v0.2 | Apr 27, 2026 | Added certificate-auth guidance, validation steps, and PII handling notes |
+| Guide v0.1 | Feb 2025 | Initial Intune export implementation guide |
 
 ## Related Resources
 

@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import Container from '@/components/layout/Container'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Contact',
   description: 'Get in touch with Jack, author of AdminSignal.',
-}
+  path: '/contact',
+})
 
 export default function ContactPage() {
   return (

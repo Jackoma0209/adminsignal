@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Editorial Policy',
   description:
     'How AdminSignal produces, reviews, and maintains content — our standards for accuracy, independence, and transparency.',
-}
+  path: '/editorial-policy',
+})
 
 export default function EditorialPolicyPage() {
   return (
@@ -18,7 +20,7 @@ export default function EditorialPolicyPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Editorial Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: April 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
           <p className="mb-8 text-base leading-relaxed text-muted">
             This policy explains how AdminSignal produces and maintains content. For background on
             the site and who writes for it, see the{' '}
@@ -65,7 +67,9 @@ export default function EditorialPolicyPage() {
               <p>
                 Some articles may contain affiliate links or be produced in partnership with a
                 vendor. Sponsored or affiliate content is always clearly labelled. Commercial
-                relationships do not affect editorial scores or recommendations.
+                relationships do not affect editorial scores or recommendations. Advertisers,
+                sponsors, and affiliate partners do not control reviews, comparisons, ratings,
+                verdicts, rankings, or conclusions.
               </p>
             </section>
 

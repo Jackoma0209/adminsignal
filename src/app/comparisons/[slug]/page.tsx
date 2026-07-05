@@ -1,13 +1,13 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import { comparisons } from '@/data/comparisons'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { isNoindexComparisonSlug, withNoindex } from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -16,6 +16,7 @@ import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
+import ReviewDisclosure from '@/components/article/ReviewDisclosure'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!comparison) return {}
   const author = getAuthor(comparison.authorId)
   const coverImage = comparison.coverImage
-  const metadata = buildArticleMetadata({
+  return buildArticleMetadata({
     title: comparison.title,
     description: comparison.excerpt,
     url: `${siteUrl}/comparisons/${slug}`,
@@ -52,8 +53,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }
       : undefined,
   })
-
-  return isNoindexComparisonSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function ComparisonArticlePage({ params }: Props) {
@@ -154,14 +153,19 @@ export default async function ComparisonArticlePage({ params }: Props) {
 
               {coverImage && (
                 <div className="mb-8 overflow-hidden rounded-xl border border-border bg-surface">
-                  <img
+                  <Image
                     src={coverImage}
                     alt={coverImageAlt ?? ''}
+                    width={1200}
+                    height={630}
                     className="block h-auto w-full"
                     loading="eager"
+                    priority
                   />
                 </div>
               )}
+
+              <ReviewDisclosure kind="comparison" />
 
               <div className="mb-8 rounded-xl border border-border bg-surface p-6">
                 <div className="mb-4 flex items-center justify-center gap-4">

@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import { buildCategoryMetadata } from '@/lib/metadata'
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildCategoryMetadata({
   title: 'Affiliate Disclosure',
   description:
     'AdminSignal may participate in affiliate programmes. This page explains how those relationships work and how they affect our content.',
-}
+  path: '/affiliate-disclosure',
+})
 
 export default function AffiliateDisclosurePage() {
   return (
@@ -16,7 +18,7 @@ export default function AffiliateDisclosurePage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Affiliate Disclosure
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: April 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Disclosure</h2>
@@ -46,7 +48,9 @@ export default function AffiliateDisclosurePage() {
               <p>
                 Commercial relationships — affiliate or otherwise — do not influence which products
                 we recommend, how we rate them, or the conclusions we reach in reviews and
-                comparisons. We only recommend tools we would genuinely suggest to colleagues. See
+                comparisons. Advertisers and affiliate partners do not control reviews,
+                comparisons, ratings, verdicts, rankings, or conclusions. We only recommend tools
+                we would genuinely suggest to colleagues. See
                 our{' '}
                 <a href="/editorial-policy" className="text-primary underline underline-offset-2">
                   editorial policy

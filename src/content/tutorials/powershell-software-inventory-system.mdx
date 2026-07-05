@@ -17,6 +17,20 @@ This guide builds a three-source inventory system that combines:
 2. **Registry uninstall keys** (broader coverage, including non-MSI installs)
 3. **A lightweight SQLite output** for persistence and querying across multiple hosts
 
+Use this only on systems you are authorised to administer. Software inventory can expose installed security tools, business applications, usernames embedded in paths, and licensing data, so treat exports as internal operational evidence rather than general-purpose files.
+
+## Prerequisites and Scope
+
+Before you run inventory collection across more than your own workstation, confirm:
+
+- You have permission to query each endpoint.
+- WinRM or another approved remote execution method is enabled and monitored.
+- The account has read access to the target registry paths.
+- The output folder is restricted to IT administrators.
+- You know whether the fleet includes 32-bit apps, per-user apps, portable apps, or AppX/MSIX packages.
+
+This guide focuses on installed desktop software visible through machine-level registry uninstall keys and MSI inventory. It does not fully enumerate browser extensions, user-profile portable applications, Store apps installed per user, or application usage frequency.
+
 ## Source 1: Registry-Based Inventory (Recommended Primary Source)
 
 The registry uninstall keys provide the most complete picture of installed software and are faster to query than WMI:
@@ -44,6 +58,16 @@ function Get-InstalledSoftwareFromRegistry {
 }
 ```
 
+For remote collection, avoid assuming the local registry provider can see another computer. Use PowerShell remoting and run the registry query on the remote endpoint:
+
+```powershell
+Invoke-Command -ComputerName "LAPTOP-042" -ScriptBlock {
+    Get-InstalledSoftwareFromRegistry
+}
+```
+
+If WinRM is not available, fall back to your approved endpoint management platform rather than enabling remoting across production without change control.
+
 ## Source 2: WMI Win32_Product
 
 Use this as a supplementary source. Note that querying `Win32_Product` triggers an MSI reconfiguration check, which can cause performance issues on some systems. Do not use it as a primary source for frequent polling.
@@ -61,6 +85,21 @@ function Get-InstalledSoftwareFromWmi {
                       @{N='ComputerName';E={$ComputerName}}
 }
 ```
+
+Use `Win32_Product` only for targeted troubleshooting or one-off validation. For scheduled inventory, registry-based collection plus Intune, Configuration Manager, or an approved RMM export is usually safer and faster.
+
+## Source 3: AppX and Store Apps
+
+Modern Store and MSIX packages do not always appear in the classic uninstall keys. For Windows 10/11 endpoints, collect provisioned and installed packages separately:
+
+```powershell
+function Get-AppxInventory {
+    Get-AppxPackage -AllUsers |
+        Select-Object Name, PackageFullName, Version, Publisher, InstallLocation
+}
+```
+
+Do not mix AppX package names directly into the same deduplication key as desktop software. Keep a `Source` column so later reporting can distinguish MSI, registry, and AppX records.
 
 ## Merging and Deduplicating
 
@@ -81,6 +120,8 @@ function Get-CompleteSoftwareInventory {
 }
 ```
 
+For better deduplication, normalise publisher names and trim whitespace before grouping. Do not deduplicate on name alone: products such as Microsoft Visual C++ Redistributable legitimately exist in multiple versions.
+
 ## Running Across Multiple Hosts
 
 For environments where WinRM is available:
@@ -98,6 +139,17 @@ $results = foreach ($computer in $computers) {
 $results | Export-Csv "C:\Inventory\software-inventory-$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
 ```
 
+For larger environments, add throttling and error capture so one offline device does not hide the rest of the inventory run:
+
+```powershell
+$inventory = Invoke-Command -ComputerName $computers -ThrottleLimit 16 -ScriptBlock {
+    Get-CompleteSoftwareInventory
+} -ErrorVariable inventoryErrors -ErrorAction Continue
+
+$inventoryErrors | Select-Object TargetObject, Exception |
+    Export-Csv "C:\Inventory\software-inventory-errors-$(Get-Date -Format yyyyMMdd).csv" -NoTypeInformation
+```
+
 ## Output and Querying
 
 Export to HTML for a shareable report:
@@ -112,7 +164,37 @@ $results |
 
 For environments where you want persistent, queryable results, consider exporting to CSV and importing into a scheduled task that builds a rolling inventory database.
 
+## Validation Steps
+
+After the first run, validate the data before making decisions from it:
+
+1. Pick five known endpoints: a clean Windows build, a heavy developer workstation, a shared device, a recently rebuilt machine, and an older legacy device.
+2. Compare the report against Control Panel, Settings > Apps, Intune discovered apps, or Configuration Manager inventory.
+3. Confirm 32-bit applications appear from the `WOW6432Node` registry path.
+4. Confirm failed devices are recorded in the error export.
+5. Check that the output does not include secrets, command-line arguments, or user data outside the software inventory scope.
+
+## Common Errors
+
+**Access is denied**
+
+The account does not have permission to query the remote endpoint or WinRM is blocked. Confirm the device is reachable, the account is in an approved admin group, and remote management is allowed by policy.
+
+**The report misses per-user apps**
+
+Machine-level uninstall keys do not cover every per-user installer. Add user-hive collection only if you have a documented need and a privacy-approved handling process for user-profile data.
+
+**Win32_Product run is slow**
+
+This is expected on some systems because MSI consistency checks are triggered. Use it as a supplementary source, not the default scheduled source.
+
+## Rollback and Data Handling
+
+The inventory functions shown here are read-only. There is no endpoint rollback action unless you separately deploy changes based on the report. If an export was written to the wrong location, remove it from that location, rotate any exposed shared links, and regenerate the report into an IT-restricted path.
+
 ## Related Resources
 
 - [Get-StaleDevices script](/scripts/get-stale-devices)
 - [Export-IntuneDeviceReport script](/scripts/export-intune-device-report)
+- [PowerShell topic hub](/powershell)
+- [Microsoft PowerShell remoting documentation](https://learn.microsoft.com/en-us/powershell/scripting/learn/remoting/running-remote-commands)

@@ -1,12 +1,12 @@
-import { adsEnabled } from '@/lib/consent'
+import { adsEnabled, ADSENSE_CLIENT_ID } from '@/lib/consent'
 
 interface AdSlotProps {
   variant?: 'banner' | 'sidebar'
   className?: string
   /**
-   * AdSense publisher ID, e.g. "ca-pub-0000000000000000".
-   * When both adClient and adSlot are provided, renders a live AdSense unit.
-   * Leave unset to render the placeholder.
+   * AdSense client ID. Defaults to AdminSignal's configured ca-pub value.
+   * When adSlot is provided and ads are enabled, renders a live AdSense unit.
+   * Leave adSlot unset to render the development placeholder only.
    */
   adClient?: string
   /**
@@ -24,7 +24,9 @@ export default function AdSlot({ variant = 'banner', className, adClient, adSlot
 
   // Live AdSense unit — requires adsEnabled flag + valid adClient + adSlot.
   // Set NEXT_PUBLIC_ADS_ENABLED=true and wire a CMP before activating.
-  if (adsEnabled && adClient && adSlot) {
+  const clientId = adClient ?? ADSENSE_CLIENT_ID
+
+  if (adsEnabled && clientId && adSlot) {
     return (
       <div
         className={['ad-slot-wrapper w-full overflow-hidden', className].filter(Boolean).join(' ')}
@@ -33,7 +35,7 @@ export default function AdSlot({ variant = 'banner', className, adClient, adSlot
         <ins
           className="adsbygoogle"
           style={{ display: 'block', minHeight }}
-          data-ad-client={adClient}
+          data-ad-client={clientId}
           data-ad-slot={adSlot}
           data-ad-format={isBanner ? 'horizontal' : 'rectangle'}
           data-full-width-responsive="true"
