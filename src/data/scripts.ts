@@ -13,7 +13,7 @@ export interface Script {
   requiredPermissions: string[]
   expectedOutput: string
   sourceUrl?: string
-  downloadUrl?: string
+  sourceFileUrl?: string
   isNew?: boolean
   isFeatured?: boolean
 }

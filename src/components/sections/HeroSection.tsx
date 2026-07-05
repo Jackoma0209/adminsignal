@@ -52,7 +52,7 @@ export default function HeroSection() {
 
           {/* Subtext */}
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
-            In-depth guides, scripts, and analysis for endpoint specialists, Windows admins,
+            In-depth guides, script implementation notes, and analysis for endpoint specialists, Windows admins,
             and IT engineers who need signal — not noise.
           </p>
 
@@ -83,7 +83,7 @@ export default function HeroSection() {
 
           {/* Trust line */}
           <p className="text-sm text-muted/70">
-            Growing library of real sysadmin guides, scripts &amp; analysis — written for working engineers.
+            Growing library of practical sysadmin guides, script patterns, and analysis for working engineers.
           </p>
         </div>
       </div>

@@ -8,7 +8,7 @@ import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const pageTitle = 'Tutorials & Deep-Dive Guides'
 const pageDescription =
-  'Step-by-step technical guides for Windows administrators — Intune deployments, Group Policy, PowerShell, Entra ID, and endpoint security. Written for engineers who manage real environments.'
+  'Step-by-step technical guides for Windows administrators: Intune deployments, Group Policy, PowerShell, Entra ID, and endpoint security. Written for engineers managing business environments.'
 const pagePath = '/tutorials'
 
 export const metadata: Metadata = buildCategoryMetadata({
@@ -56,12 +56,36 @@ export default async function TutorialsPage({
       <CategoryPageTemplate
         eyebrow="Tutorials"
         title={pageTitle}
-        description="Technical guides that go where official documentation stops. Step-by-step walkthroughs for Intune, Group Policy, PowerShell, Entra ID, and endpoint security."
+        description="Technical guides for the operational details that official quickstarts often skip: prerequisites, permissions, validation, rollback, and support handover."
         itemCount={guides.length}
         categories={categories}
         activeCategory={category}
         basePath="/tutorials"
       >
+        <div className="mb-10 grid gap-5 lg:grid-cols-3">
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Choose a guide by risk</h2>
+            <p>
+              Start with the topic that matches the change you are planning, then scan the
+              prerequisites, permissions, pilot scope, and rollback sections before touching a
+              broad device or user group.
+            </p>
+          </section>
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">What the guides include</h2>
+            <p>
+              AdminSignal tutorials favour commands, portal checkpoints, Graph examples, validation
+              steps, failure modes, and operational caveats over generic feature summaries.
+            </p>
+          </section>
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Pilot first</h2>
+            <p>
+              Use lab devices, test tenants, pilot users, and staged assignments where possible.
+              Many Microsoft admin changes are easy to deploy and much harder to unwind cleanly.
+            </p>
+          </section>
+        </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((guide) => (
             <GuideCard key={guide.id} guide={guide} />

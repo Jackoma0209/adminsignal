@@ -33,7 +33,6 @@ const footerLinks = [
       { label: 'Script Library', href: '/scripts' },
       { label: 'Comparisons', href: '/comparisons' },
       { label: 'Reviews', href: '/reviews' },
-      { label: 'Recommended Tools', href: '/best-tools' },
       { label: 'SCCM / MECM', href: '/sccm-mecm' },
     ],
   },
@@ -73,7 +72,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              Practitioner-focused guides, scripts, and analysis for enterprise sysadmins and endpoint engineers.
+              Practitioner-focused guides, script patterns, and analysis for enterprise sysadmins and endpoint engineers.
             </p>
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-surface/60 p-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary/70" aria-hidden="true" />

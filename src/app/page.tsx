@@ -9,7 +9,6 @@ import FeaturedGuidesSection from '@/components/sections/FeaturedGuidesSection'
 import FeaturedScriptsSection from '@/components/sections/FeaturedScriptsSection'
 import NewsletterSection from '@/components/sections/NewsletterSection'
 import TopicHubsSection from '@/components/sections/TopicHubsSection'
-import RecommendedToolsSection from '@/components/sections/RecommendedToolsSection'
 import AuthorBioSection from '@/components/sections/AuthorBioSection'
 import StructuredData from '@/components/StructuredData'
 import { organizationSchema, personSchema, webPageSchema, websiteSchema } from '@/lib/schema'
@@ -17,7 +16,7 @@ import { primaryAuthor } from '@/data/authors'
 
 const homeTitle = 'AdminSignal — Practitioner-Focused Content for Sysadmins'
 const homeDescription =
-  'In-depth guides, scripts, and analysis for endpoint specialists, Windows admins, and IT engineers. Written from practical Microsoft admin experience, with a focus on operational risk and source-backed guidance.'
+  'In-depth guides, script implementation notes, and analysis for endpoint specialists, Windows admins, and IT engineers. Written from practical Microsoft admin experience, with a focus on operational risk and source-backed guidance.'
 const homeUrl = 'https://www.adminsignal.com'
 const ogImage = `${homeUrl}/og-default.png`
 
@@ -88,7 +87,6 @@ export default function HomePage() {
       <FeaturedScriptsSection />
       <NewsletterSection />
       <TopicHubsSection />
-      <RecommendedToolsSection />
       <AuthorBioSection />
 
       {/* ── Site-wide trust strip ─────────────────────────────────────── */}

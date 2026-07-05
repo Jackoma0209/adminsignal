@@ -8,7 +8,7 @@ import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const pageTitle = 'Troubleshooting Guides'
 const pageDescription =
-  'Systematic diagnosis guides for common Windows, Intune, Group Policy, and Entra ID issues. Decision trees, log locations, and tested fixes — no generic advice.'
+  'Systematic diagnosis guides for common Windows, Intune, Group Policy, and Entra ID issues, with decision trees, log locations, validation steps, and practical fixes.'
 const pagePath = '/troubleshooting'
 
 export const metadata: Metadata = buildCategoryMetadata({
@@ -56,12 +56,36 @@ export default async function TroubleshootingPage({
       <CategoryPageTemplate
         eyebrow="Troubleshooting"
         title={pageTitle}
-        description="Systematic diagnosis guides for Intune, Windows, Group Policy, and Entra ID. Decision trees and tested fixes — not generic advice."
+        description="Systematic diagnosis guides for Intune, Windows, Group Policy, and Entra ID, with decision trees, log locations, validation steps, and practical fixes."
         itemCount={troubleshootingArticles.length}
         categories={categories}
         activeCategory={category}
         basePath="/troubleshooting"
       >
+        <div className="mb-10 grid gap-5 lg:grid-cols-3">
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Start with evidence</h2>
+            <p>
+              Each troubleshooting page is written around observable state: logs, portal status,
+              Graph output, event IDs, policy assignments, and device-side symptoms.
+            </p>
+          </section>
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Avoid destructive first fixes</h2>
+            <p>
+              AdminSignal favours diagnosis before reset actions. Clear caches, delete registry
+              keys, or re-enrol devices only when evidence points there and rollback impact is
+              understood.
+            </p>
+          </section>
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Close the loop</h2>
+            <p>
+              Validation matters as much as the fix. Use the follow-up checks to confirm policy
+              state, reporting, user impact, and whether the same fault is likely to recur.
+            </p>
+          </section>
+        </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((article) => (
             <TroubleshootingCard key={article.id} article={article} />

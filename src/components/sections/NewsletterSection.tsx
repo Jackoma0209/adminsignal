@@ -40,7 +40,7 @@ export default function NewsletterSection() {
           </h2>
           <p className="mb-10 text-base leading-relaxed text-muted">
             A curated digest of important security alerts, new guides, and PowerShell
-            implementation notes, sent once a week. No filler, no vendor hype.
+            implementation notes, sent once a week. Practical admin context without vendor pitch-deck language.
           </p>
 
           <NewsletterSignupForm enabled={newsletterEnabled} />

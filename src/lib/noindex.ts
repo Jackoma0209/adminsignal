@@ -5,7 +5,7 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
   follow: true,
 }
 
-export const NOINDEX_STATIC_PATHS = new Set<string>()
+export const NOINDEX_STATIC_PATHS = new Set<string>(['/best-tools'])
 
 /** Draft news kept offline until expanded — URLs return 404 if not in liveSignals. */
 export const DRAFT_NEWS_SLUGS = new Set([

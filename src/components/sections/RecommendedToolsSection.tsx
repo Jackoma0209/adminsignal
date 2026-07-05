@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Info } from 'lucide-react'
+import { Info } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
 import ToolCard from '@/components/cards/ToolCard'
@@ -10,18 +10,9 @@ export default function RecommendedToolsSection() {
     <section className="py-24 border-t border-border">
       <Container>
         <SectionHeader
-          eyebrow="Recommended Tools"
-          title="Tools for enterprise admin workflows"
+          eyebrow="Tool Notes"
+          title="Tool notes for enterprise admin workflows"
           description="Tools selected for practical fit, documentation quality, and operational usefulness, not referral fees."
-          action={
-            <Link
-              href="/best-tools"
-              className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
-            >
-              View all tools
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          }
         />
 
         {/* Disclosure banner */}

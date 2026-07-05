@@ -24,6 +24,12 @@ export default function ReviewDisclosure({ kind }: ReviewDisclosureProps) {
             packaging, features, support terms, and availability can change, so verify current
             details with the vendor before purchasing or renewing.
           </p>
+          {kind === 'review' && (
+            <p>
+              Ratings are editorial fit scores based on the criteria above, not independent malware
+              tests, uptime measurements, paid lab benchmarks, or guaranteed outcomes.
+            </p>
+          )}
         </div>
       </div>
     </section>

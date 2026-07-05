@@ -136,12 +136,12 @@ export const guides: Guide[] = [
   },
   {
     id: '7',
-    title: 'Deploy Windows 11 25H2 with Intune + Autopilot v2 (Zero-Touch, Production-Ready)',
+    title: 'Deploy Windows 11 25H2 with Intune and Autopilot v2: Pilot-to-Rollout Guide',
     slug: 'windows-11-25h2-autopilot-v2',
     href: '/guides/windows-11-25h2-autopilot-v2',
     category: 'Microsoft Intune',
     excerpt:
-      'A production-grade walkthrough for deploying Windows 11 25H2 across existing x86/x64 fleets using Autopilot v2 Device Preparation policies. Covers tenant readiness, ESP configuration, app tiering, update rings, a phased rollout sequence, and a PowerShell pre-flight toolkit.',
+      'A practical walkthrough for piloting and rolling out Windows 11 25H2 across existing x86/x64 fleets using Autopilot v2 Device Preparation policies. Covers tenant readiness, ESP configuration, app tiering, update rings, a phased rollout sequence, and pre-flight checks.',
     date: 'Apr 10, 2026',
     publishedAt: '2026-04-10',
     readTime: '28 min read',

@@ -617,9 +617,9 @@ export default function IntunePage() {
               },
               {
                 step: '2',
-                title: 'Deploy Windows 11 25H2 with Intune + Autopilot v2 (Zero-Touch, Production-Ready)',
+                title: 'Deploy Windows 11 25H2 with Intune and Autopilot v2: Pilot-to-Rollout Guide',
                 href: '/guides/windows-11-25h2-autopilot-v2',
-                note: 'End-to-end production deployment guide — tenant readiness, ESP config, app tiering, update rings, phased rollout, and pre-flight PowerShell toolkit.',
+                note: 'Pilot-to-rollout deployment guide covering tenant readiness, ESP config, app tiering, update rings, phased rollout, and pre-flight checks.',
               },
               {
                 step: '3',

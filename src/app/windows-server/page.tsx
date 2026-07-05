@@ -195,7 +195,7 @@ export default function WindowsServerPage() {
           <SectionHeader
             eyebrow="Overview"
             title="What Windows Server Is Still Used For"
-            description="Microsoft 365, Entra ID, and Intune have moved many workloads to cloud management, but Windows Server remains the control plane for identity, name resolution, file access, line-of-business apps, and server-side infrastructure in many real environments."
+            description="Microsoft 365, Entra ID, and Intune have moved many workloads to cloud management, but Windows Server remains the control plane for identity, name resolution, file access, line-of-business apps, and server-side infrastructure in many business environments."
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[

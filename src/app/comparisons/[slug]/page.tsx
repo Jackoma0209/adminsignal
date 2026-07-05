@@ -20,7 +20,7 @@ import ReviewDisclosure from '@/components/article/ReviewDisclosure'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
-import { ArrowLeftRight, Trophy } from 'lucide-react'
+import { ArrowLeftRight, CheckCircle2 } from 'lucide-react'
 
 const siteUrl = 'https://www.adminsignal.com'
 
@@ -179,8 +179,8 @@ export default async function ComparisonArticlePage({ params }: Props) {
                 </div>
                 {comparison.winner && (
                   <div className="mb-4 flex items-center justify-center gap-2 text-sm font-medium text-foreground">
-                    <Trophy className="h-4 w-4 text-amber-400" />
-                    <span>Winner: {comparison.winner}</span>
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span>Likely default fit: {comparison.winner}</span>
                   </div>
                 )}
                 <p className="text-sm leading-relaxed text-muted">{comparison.verdict}</p>

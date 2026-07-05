@@ -138,7 +138,7 @@ export default function AuthorBioSection() {
                 id="author-heading"
                 className="mb-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl"
               >
-                Practitioner-written. Not a content farm.
+                Practitioner-written for working IT teams.
               </h2>
               <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
                 <p>

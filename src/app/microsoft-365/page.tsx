@@ -199,7 +199,7 @@ export default function Microsoft365Page() {
         <Container>
           <SectionHeader
             eyebrow="Overview"
-            title="What Microsoft 365 Administration Covers in Real Environments"
+            title="What Microsoft 365 Administration Covers in Business Tenants"
             description="Microsoft 365 administration spans multiple product families — Exchange Online, SharePoint, Teams, Entra ID, Intune, and the Purview compliance stack — each with its own admin centre, PowerShell module, and operational surface. The Microsoft 365 admin centre (admin.microsoft.com) is the entry point, but most workload-specific administration happens in the dedicated portals."
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

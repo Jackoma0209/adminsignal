@@ -707,7 +707,7 @@ export default function PowerShellPage() {
           <SectionHeader
             eyebrow="Reading path"
             title="Recommended AdminSignal Reading Path"
-            description="Work through this sequence to go from writing your first admin script to building production-grade Graph-connected automation."
+            description="Work through this sequence to go from writing your first admin script to building maintainable Graph-connected automation."
           />
           <ol className="space-y-3">
             {[

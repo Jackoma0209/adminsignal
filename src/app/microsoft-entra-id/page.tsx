@@ -188,7 +188,7 @@ export default function EntraIdPage() {
         <Container>
           <SectionHeader
             eyebrow="Overview"
-            title="What Microsoft Entra ID Is Used For in Real Environments"
+            title="What Microsoft Entra ID Is Used For in Business Tenants"
             description="Entra ID (formerly Azure Active Directory) is the identity and access control plane for Microsoft 365, Azure, and Intune. It is the system that decides who can sign in, from where, on what device, and what they are allowed to do once authenticated."
           />
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

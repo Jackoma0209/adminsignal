@@ -6,24 +6,24 @@ interface ScriptSafetyNoticeProps {
 }
 
 export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) {
-  const hasSource = Boolean(script.sourceUrl || script.downloadUrl)
+  const hasSource = Boolean(script.sourceUrl || script.sourceFileUrl)
 
   return (
     <div className="mb-8 space-y-4">
       <section
-        aria-labelledby="full-script-status"
+        aria-labelledby="script-source-status"
         className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-5"
       >
         <div className="flex gap-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" aria-hidden="true" />
           <div className="text-sm leading-relaxed text-muted">
-            <h2 id="full-script-status" className="text-sm font-semibold text-foreground">
-              Full script
+            <h2 id="script-source-status" className="text-sm font-semibold text-foreground">
+              Source status
             </h2>
             {hasSource ? (
               <div className="mt-1 space-y-2">
                 <p>
-                  Full script source is available from the linked repository or download location.
+                  Complete source is available from the linked repository or source file location.
                   Review the code before running it in any environment.
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -37,20 +37,20 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
                       View source
                     </a>
                   )}
-                  {script.downloadUrl && (
+                  {script.sourceFileUrl && (
                     <a
-                      href={script.downloadUrl}
+                      href={script.sourceFileUrl}
                       className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground-soft hover:border-border-strong"
                     >
-                      Download source
+                      Open source file
                     </a>
                   )}
                 </div>
               </div>
             ) : (
               <p className="mt-1">
-                Full script download coming soon — this page currently provides implementation
-                guidance, safety notes, and validation steps.
+                Complete .ps1 source is not published yet. This page is an implementation guide
+                with example patterns, safety notes, and validation steps.
               </p>
             )}
           </div>

@@ -40,13 +40,13 @@ Keep that flag `false` until a Google-certified CMP integrated with IAB Europe's
 
 ## Script Library Status
 
-The `/scripts` pages currently provide implementation guidance, prerequisites, permissions, examples, validation steps, safety notes, and expected output. Full downloadable `.ps1` files are not present in this repo yet, so every script page displays the honest notice:
+The `/scripts` pages currently provide implementation guidance, prerequisites, permissions, examples, validation steps, safety notes, and expected output. Complete `.ps1` source files are not present in this repo yet, so every script page displays an honest source-status notice:
 
 ```text
-Full script download coming soon — this page currently provides implementation guidance, safety notes, and validation steps.
+Complete .ps1 source is not published yet. This page is an implementation guide with example patterns, safety notes, and validation steps.
 ```
 
-Add real GitHub or download links only after the full script source exists and has been reviewed.
+Add real GitHub or source-file links only after the complete script source exists and has been reviewed.
 
 ## Newsletter Status
 

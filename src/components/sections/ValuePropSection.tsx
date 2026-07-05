@@ -4,9 +4,9 @@ import Container from '@/components/layout/Container'
 const pillars = [
   {
     icon: Zap,
-    title: 'Signal Over Noise',
+    title: 'Operational Context First',
     description:
-      "Every article, guide, and alert is written for working IT engineers — no filler, no SEO padding. If it's here, it earned its place.",
+      'Articles, guides, and alerts are written for working IT engineers who need context, caveats, and next actions instead of generic summaries.',
   },
   {
     icon: BookOpen,
@@ -16,15 +16,15 @@ const pillars = [
   },
   {
     icon: Terminal,
-    title: 'Scripts That Actually Work',
+    title: 'Script Patterns With Guardrails',
     description:
-      'PowerShell examples written for real admin workflows. Reviewed for prerequisites, rollback risk, and clear usage before publication.',
+      'PowerShell examples and implementation notes written for admin workflows, with prerequisites, permissions, rollback risk, and usage notes called out.',
   },
   {
     icon: Wrench,
     title: 'Curated Tool Intelligence',
     description:
-      'Tool recommendations based on practical admin needs. No affiliate fluff, just clear trade-offs and use cases for busy sysadmins.',
+      'Tool notes based on practical admin needs, official documentation, commercial disclosures, and clear trade-offs for busy sysadmins.',
   },
 ]
 
