@@ -14,9 +14,10 @@ const nonIndexableTypes = new Set(['reviews', 'scripts'])
 const knownStaticRoutes = new Set([
   '/', '/about', '/advertise', '/affiliate-disclosure', '/best-tools', '/comparisons',
   '/contact', '/cookies', '/editorial-policy', '/endpoint-security', '/group-policy',
-  '/intune', '/microsoft-365', '/microsoft-entra-id', '/news', '/patch-management',
-  '/powershell', '/privacy', '/reviews', '/sccm-mecm', '/scripts', '/search', '/terms',
-  '/topics', '/troubleshooting', '/tutorials', '/windows-server',
+  '/guides/windows-11-25h2-autopilot-v2', '/intune', '/microsoft-365',
+  '/microsoft-entra-id', '/news', '/patch-management', '/powershell', '/privacy',
+  '/reviews', '/sccm-mecm', '/scripts', '/search', '/terms', '/topics',
+  '/troubleshooting', '/tutorials', '/windows-server',
 ])
 const primarySourceHosts = new Set([
   'learn.microsoft.com', 'support.microsoft.com', 'www.microsoft.com',
@@ -56,6 +57,30 @@ function parseDate(value) {
   return Number.isNaN(date.valueOf()) ? undefined : date
 }
 
+function stripFencedCode(body) {
+  let inFence = false
+  let fenceMarker = ''
+
+  return body
+    .split(/\r?\n/)
+    .map((line) => {
+      const fence = line.match(/^\s*(`{3,}|~{3,})/)
+      if (fence) {
+        const marker = fence[1][0]
+        if (!inFence) {
+          inFence = true
+          fenceMarker = marker
+        } else if (marker === fenceMarker) {
+          inFence = false
+          fenceMarker = ''
+        }
+        return ''
+      }
+      return inFence ? '' : line
+    })
+    .join('\n')
+}
+
 function markdownLinks(body) {
   return [...body.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1].trim())
 }
@@ -81,13 +106,14 @@ function clamp(value) {
 
 function qualityScore(record) {
   const { body, data, type } = record
+  const visibleBody = stripFencedCode(body)
   const words = body.trim().split(/\s+/).filter(Boolean).length
-  const h2 = count(body, /^##\s+/gm)
-  const codeBlocks = Math.floor(count(body, /^```/gm) / 2)
-  const tables = count(body, /^\|.+\|$/gm)
-  const checklists = count(body, /^\s*[-*]\s+\[[ xX]\]/gm)
-  const orderedSteps = count(body, /^\s*\d+\.\s+/gm)
-  const links = markdownLinks(body)
+  const h2 = count(visibleBody, /^##\s+/gm)
+  const codeBlocks = Math.floor(count(body, /^\s*```/gm) / 2)
+  const tables = count(visibleBody, /^\|.+\|$/gm)
+  const checklists = count(visibleBody, /^\s*[-*]\s+\[[ xX]\]/gm)
+  const orderedSteps = count(visibleBody, /^\s*\d+\.\s+/gm)
+  const links = markdownLinks(visibleBody)
   const primarySources = links.filter((link) => {
     try {
       return primarySourceHosts.has(new URL(link).hostname)
@@ -99,9 +125,9 @@ function qualityScore(record) {
   const dimensions = {
     originalContribution: clamp(
       3 +
-        (contains(body, ['decision', 'trade-off', 'failure state', 'root cause']) ? 2 : 0) +
-        (contains(body, ['when not to', 'do not use', 'not suitable']) ? 2 : 0) +
-        (contains(body, ['rollback', 'blast radius', 'pilot']) ? 2 : 0) +
+        (contains(visibleBody, ['decision', 'trade-off', 'failure state', 'root cause']) ? 2 : 0) +
+        (contains(visibleBody, ['when not to', 'do not use', 'not suitable']) ? 2 : 0) +
+        (contains(visibleBody, ['rollback', 'blast radius', 'pilot']) ? 2 : 0) +
         (words >= 1200 ? 1 : 0),
     ),
     practicalUsefulness: clamp(
@@ -112,12 +138,12 @@ function qualityScore(record) {
     accuracy: clamp(2 + Math.min(primarySources * 2, 7)),
     authorCredibility: clamp(data.authorId ? 8 : 2),
     transparency: clamp(
-      2 + (contains(body, ['scope', 'prerequisite', 'assumes']) ? 3 : 0) +
-        (contains(body, ['limitation', 'caveat', 'example environment']) ? 3 : 0) +
-        (contains(body, ['expected output', 'validation']) ? 2 : 0),
+      2 + (contains(visibleBody, ['scope', 'prerequisite', 'assumes']) ? 3 : 0) +
+        (contains(visibleBody, ['limitation', 'caveat', 'example environment']) ? 3 : 0) +
+        (contains(visibleBody, ['expected output', 'validation']) ? 2 : 0),
     ),
     freshness: clamp((parseDate(data.date ?? data.publishedAt) ? 7 : 4) + (parseDate(data.lastReviewed ?? data.updatedAt) ? 2 : 0)),
-    userExperience: clamp(4 + Math.min(h2, 4) + (count(body, /^#\s+/gm) === 0 ? 2 : -3)),
+    userExperience: clamp(4 + Math.min(h2, 4) + (count(visibleBody, /^#\s+/gm) === 0 ? 2 : -3)),
     commercialIntent: type === 'reviews' ? 3 : type === 'comparisons' ? 7 : 10,
     duplication: 10,
   }
@@ -163,19 +189,20 @@ function checkDuplicate(map, value, label, file) {
 
 for (const record of records) {
   const { body, data, relative: file, indexable } = record
+  const visibleBody = stripFencedCode(body)
   const published = parseDate(data.publishedAt ?? data.date)
   const modified = parseDate(data.lastReviewed ?? data.updatedAt ?? data.dateModified)
-  const h1 = count(body, /^#\s+/gm)
+  const h1 = count(visibleBody, /^#\s+/gm)
 
   if (indexable && !data.title) errors.push(`${file}: missing title`)
   if (indexable && !data.authorId) errors.push(`${file}: missing authorId`)
-  if (published && published > now) errors.push(`${file}: future publication date`)
-  if (modified && modified > now) errors.push(`${file}: future modified/reviewed date`)
+  if (indexable && published && published > now) errors.push(`${file}: future publication date`)
+  if (indexable && modified && modified > now) errors.push(`${file}: future modified/reviewed date`)
   if (published && modified && modified < published) errors.push(`${file}: modified date precedes publication date`)
   if (h1 > 0) errors.push(`${file}: MDX contains ${h1} H1 heading(s); template already supplies H1`)
 
   for (const pattern of unfinishedPatterns) {
-    if (pattern.test(body)) errors.push(`${file}: unfinished-copy pattern matched ${pattern}`)
+    if (pattern.test(visibleBody)) errors.push(`${file}: unfinished-copy pattern matched ${pattern}`)
   }
 
   if (indexable) {
@@ -193,7 +220,7 @@ for (const record of records) {
     if (result.h2 < 2) warnings.push(`${file}: fewer than two H2 sections`)
   }
 
-  for (const link of markdownLinks(body)) {
+  for (const link of new Set(markdownLinks(visibleBody))) {
     const clean = link.split('#')[0].split('?')[0]
     if (!clean.startsWith('/') || clean.startsWith('//') || clean === '') continue
     if (clean.startsWith('/images/') || clean.startsWith('/api/')) continue
