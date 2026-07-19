@@ -24,10 +24,29 @@ export const DRAFT_NEWS_SLUGS = new Set([
   'intune-frontline-mobile-migration',
 ])
 
-export const NOINDEX_NEWS_SLUGS = new Set<string>()
-export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set<string>()
+/**
+ * Published records held out of search while an official-source review is in
+ * progress. These routes remain addressable so old links do not become opaque,
+ * but they are excluded from listings, sitemap output, ads, and rich-result data.
+ */
+export const NOINDEX_NEWS_SLUGS = new Set<string>([
+  'april-2026-patch-tuesday-breakdown',
+])
+
+export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set<string>([
+  'april-2026-bitlocker-recovery-loop-kb5082063',
+])
+
 export const NOINDEX_COMPARISON_SLUGS = new Set<string>()
-export const NOINDEX_TUTORIAL_SLUGS = new Set<string>()
+
+export const NOINDEX_TUTORIAL_SLUGS = new Set<string>([
+  'autopilot-v2-enrollment-esp-troubleshooting',
+  'windows-11-25h2-autopilot-v2',
+])
+
+export const NOINDEX_GUIDE_SLUGS = new Set<string>([
+  'windows-11-25h2-autopilot-v2',
+])
 
 const DUPLICATE_TUTORIAL_REDIRECTS = new Map([
   ['windows-11-25h2-autopilot-v2', '/guides/windows-11-25h2-autopilot-v2'],
@@ -64,6 +83,10 @@ export function isNoindexTutorialSlug(slug: string): boolean {
   return NOINDEX_TUTORIAL_SLUGS.has(slug)
 }
 
+export function isNoindexGuideSlug(slug: string): boolean {
+  return NOINDEX_GUIDE_SLUGS.has(slug)
+}
+
 export function isNoindexContentRoute(segment: string, slug: string): boolean {
   switch (segment) {
     case 'news':
@@ -79,6 +102,8 @@ export function isNoindexContentRoute(segment: string, slug: string): boolean {
       return isNoindexComparisonSlug(slug)
     case 'tutorials':
       return isNoindexTutorialSlug(slug)
+    case 'guides':
+      return isNoindexGuideSlug(slug)
     default:
       return false
   }
