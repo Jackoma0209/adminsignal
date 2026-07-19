@@ -1,10 +1,9 @@
 import Link from 'next/link'
-import { ArrowRight, Terminal, Mail } from 'lucide-react'
+import { ArrowRight, Mail, Wrench } from 'lucide-react'
 
 export default function HeroSection() {
   return (
     <section className="relative overflow-hidden py-24 sm:py-32 lg:py-40">
-      {/* Dot grid */}
       <div
         className="pointer-events-none absolute inset-0 -z-10 opacity-[0.022]"
         aria-hidden="true"
@@ -13,7 +12,6 @@ export default function HeroSection() {
           backgroundSize: '32px 32px',
         }}
       />
-      {/* Horizontal scanlines — faint terminal feel */}
       <div
         className="pointer-events-none absolute inset-0 -z-10 opacity-[0.012]"
         aria-hidden="true"
@@ -22,7 +20,6 @@ export default function HeroSection() {
             'repeating-linear-gradient(0deg, transparent, transparent 3px, #94a3b8 3px, #94a3b8 4px)',
         }}
       />
-      {/* Diagonal stripe — subtle depth */}
       <div
         className="pointer-events-none absolute inset-0 -z-10 opacity-[0.008]"
         aria-hidden="true"
@@ -34,56 +31,50 @@ export default function HeroSection() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          {/* Eyebrow */}
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary-soft px-4 py-1.5">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" aria-hidden="true" />
             <span className="text-xs font-semibold uppercase tracking-widest text-primary">
-              Practitioner-focused IT content
+              Independent Microsoft administration guidance
             </span>
           </div>
 
-          {/* Headline */}
           <h1 className="mb-6 text-5xl font-bold leading-[1.08] tracking-tight text-foreground sm:text-6xl lg:text-7xl">
-            Intelligence for the{' '}
+            Practical guidance for the{' '}
             <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
               Modern Sysadmin
             </span>
           </h1>
 
-          {/* Subtext */}
           <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
-            In-depth guides, script implementation notes, and analysis for endpoint specialists, Windows admins,
-            and IT engineers who need signal — not noise.
+            Source-backed tutorials, troubleshooting guides, and analysis for endpoint specialists, Windows administrators, Microsoft Intune administrators, and enterprise IT engineers.
           </p>
 
-          {/* CTAs */}
           <div className="mb-16 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
-              href="/news"
+              href="/tutorials"
               className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-85"
             >
-              Browse Latest Signals
-              <ArrowRight className="h-4 w-4" />
+              Browse Tutorials
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
             <Link
-              href="/scripts"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface px-6 py-3 text-sm font-semibold text-foreground-soft transition-colors hover:border-border-strong hover:text-foreground"
+              href="/troubleshooting"
+              className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface px-6 py-3 text-sm font-semibold text-foreground-soft transition-colors hover:text-foreground"
             >
-              <Terminal className="h-4 w-4" />
-              Browse All Scripts
+              <Wrench className="h-4 w-4" aria-hidden="true" />
+              Troubleshoot an Issue
             </Link>
             <Link
               href="/#newsletter"
               className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary-soft px-6 py-3 text-sm font-semibold text-primary transition-colors hover:border-primary/50"
             >
-              <Mail className="h-4 w-4" />
-              Get Weekly Digest
+              <Mail className="h-4 w-4" aria-hidden="true" />
+              Get the Digest
             </Link>
           </div>
 
-          {/* Trust line */}
           <p className="text-sm text-muted/70">
-            Growing library of practical sysadmin guides, script patterns, and analysis for working engineers.
+            Focused on prerequisites, portal paths, commands, logs, validation evidence, rollout risk, and recovery decisions.
           </p>
         </div>
       </div>
