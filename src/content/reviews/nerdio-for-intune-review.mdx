@@ -1,79 +1,126 @@
 ---
-title: "Nerdio for Intune: Admin Buyer Notes for AVD Management"
+title: "Nerdio for Intune: Evaluation Notes for AVD Management"
 productName: "Nerdio for Intune"
 category: "Endpoint Management"
-rating: 4.5
 date: "Feb 28, 2025"
 authorId: "jack"
-lastReviewed: "July 5, 2026"
-reviewNote: "Disclosure, evaluation criteria, and purchasing caveats refreshed. Confirm current licensing, feature packaging, and support boundaries with Nerdio before buying."
 ---
 
 ## What This Page Is
 
-This is an admin evaluation guide for Nerdio for Intune, written for teams assessing Azure Virtual Desktop and Windows 365 management options. It is not a lab benchmark and does not claim measured cost savings or performance results.
+This page is a research-based evaluation aid for teams assessing Nerdio Manager alongside Azure Virtual Desktop, Windows 365, Intune, and existing Azure automation. It is not a product benchmark, a measured cost-saving study, a deployment case study, or a claim that AdminSignal has operated Nerdio in production.
 
-The aim is to help endpoint and infrastructure admins decide what to validate before adopting it.
+Use it to structure architecture review, permission review, a vendor demonstration, and a controlled pilot. Confirm the current product name, edition, licensing unit, support scope, and feature packaging directly with Nerdio before making a purchasing decision.
 
-## The Problem Nerdio Solves
+## Evidence Basis and Limitations
 
-Azure Virtual Desktop management without Nerdio involves a lot of portal-switching: Intune for policy, Azure portal for host pool scaling, Entra ID for identity, Azure Monitor for logs, and separate processes for image lifecycle. Nerdio consolidates much of that work into a management layer with automation around host pool scaling, session management, scripted actions, and image updates.
+Nerdio's current documentation describes Nerdio Manager for Enterprise as a deployment, management, and autoscaling platform for Azure Virtual Desktop and Windows 365. Its reference architecture documents an Azure-hosted application, Entra enterprise application permissions, Azure resource access, SQL, Key Vault, storage, Automation, Log Analytics, and Application Insights components.
 
-That can be valuable, but it is still another control plane. Treat it as an operational platform that needs ownership, access control, change management, and documentation.
+Those documents establish the intended architecture and documented functions. They do not prove savings, usability, support quality, performance, or fit for a particular estate. Vendor cost models and savings statements are estimates and should not be treated as measured outcomes for your organisation.
 
-## Who This Is For
+## Define the Operational Problem
 
-Nerdio is worth evaluating if you manage:
+Record the current burden before evaluating another management layer:
 
-- Multiple AVD host pools or Windows 365 Cloud PCs
-- Regular image updates, app layer changes, or host pool scaling schedules
-- Small IT teams that need a repeatable AVD workflow without building every runbook themselves
-- Environments where Intune policy state and session host health need to be visible together
+- Number and type of AVD host pools and Windows 365 Cloud PCs.
+- Frequency of image updates, host replacement, application changes, and scaling changes.
+- Existing runbooks, Azure Automation, pipelines, monitoring, and service-desk procedures.
+- Time spent on recurring administration and incident recovery.
+- Current Azure compute and storage cost, including seasonal peaks.
+- Skills and support coverage available to operate Azure, Intune, and AVD directly.
 
-It is less compelling for a very small AVD deployment with static hosts and little image churn. In that case, the Azure portal, Intune, and a few documented PowerShell runbooks may be enough.
+Without a baseline, it is difficult to distinguish a useful operating improvement from a polished demonstration.
 
-## Host Pool Scaling and Lifecycle
+## Architecture and Permissions Review
 
-The auto-scaling engine is the headline feature. Nerdio monitors active sessions and can scale host pool capacity up or down based on schedules, session thresholds, drain mode, and host availability. The value depends heavily on your existing operating model. If hosts currently run all day with little scheduling discipline, there may be meaningful Azure cost control. If you already have mature scaling automation, the gain is more about visibility and supportability.
+Nerdio's reference architecture states that the application is deployed into the customer's Azure environment and requires an Entra enterprise application plus permissions to the subscriptions or resource groups it manages. The deployment also creates or uses Azure platform components that carry cost and require monitoring.
 
-The image management workflow is also a practical reason to evaluate it. Nerdio provides a structured process for capturing base images, running scripted updates, and deploying updated images to host pools. During evaluation, check whether the workflow matches your patch windows, golden image process, application packaging model, and rollback requirements.
+Before deployment, document:
 
-## Intune Policy Integration
+1. The resource group and subscription design.
+2. The exact Entra and Microsoft Graph permissions requested.
+3. Azure role assignments for the service principal.
+4. Key Vault, SQL, storage, Automation, Log Analytics, and Application Insights ownership.
+5. Network egress, private networking, firewall, DNS, and proxy requirements.
+6. Update responsibility for the Nerdio application and supporting Azure resources.
+7. Backup, disaster recovery, and break-glass access for the management layer.
 
-The Intune integration is tighter than competing products. You can view per-session device compliance status, push policy syncs to session hosts, and see Intune-reported health data alongside AVD performance metrics in the same view.
+Do not grant broad subscription or directory access without mapping each permission to a documented function and an accountable owner.
 
-Session host provisioning from Nerdio automatically enrols new VMs in Intune via the configured Autopilot or direct enrolment profile. For environments with frequent scale-out, this removes a manual step that often gets missed.
+## Pilot Scope
 
-## What to Check Before Buying
+Choose one non-critical host pool or a small Windows 365 group. Preserve the existing Microsoft-native procedure so the team can compare and recover.
 
-Before committing, validate:
+The pilot should cover:
 
-- How licensing is counted for AVD session hosts, Windows 365 devices, and physical Intune-managed devices
-- Whether your current host pool naming, resource group structure, tags, and image process map cleanly into Nerdio
-- Which admins will have rights to scale hosts, run scripts, update images, and change schedules
-- How approvals and change records will work for image updates and scripted actions
-- Whether reporting gives you the detail needed for finance, service desk, and platform owners
-- What happens if Nerdio is unavailable during a maintenance window
+- Host creation, drain mode, session handling, scaling, and host removal.
+- Image creation, versioning, update, deployment, and rollback.
+- Application installation and failure recovery.
+- Intune policy, compliance, and device-state visibility where included.
+- Delegated helpdesk and engineering roles.
+- Audit records for scripted actions and configuration changes.
+- Service behaviour if Nerdio or a supporting Azure component is unavailable.
+- Direct operation through Azure and Intune when the management layer cannot be used.
 
-Also confirm the official support boundaries. Nerdio can orchestrate Microsoft services, but Azure, Intune, Entra ID, and AVD still have their own limits and support paths.
+Capture screenshots, timestamps, logs, Azure cost data, and operator effort during the pilot. Do not rely on recollection or a vendor demonstration alone.
 
-## Weaknesses
+## Autoscale and Cost Claims
 
-**Licensing complexity**: If you have a mix of persistent VDI, non-persistent pooled hosts, and physical Intune-managed devices, Nerdio's licensing model requires some planning. It is per-managed-endpoint, and the definition of "managed" includes AVD session hosts even when powered off.
+Autoscale can reduce unused compute when schedules and demand permit it, but savings depend on workload patterns, user behaviour, storage, reserved capacity, existing automation, and the configuration applied.
 
-**Reporting gaps**: Check the current reporting capabilities against your actual reporting requirements. Do not buy on roadmap language alone.
+Before accepting a cost model:
 
-**Documentation depth**: The official documentation is adequate for standard deployments but thinner on edge cases (custom network configurations, non-standard Intune policy architectures).
+- Compare it with at least four weeks of representative usage where possible.
+- Separate Nerdio licensing and supporting Azure resource cost from compute savings.
+- Include peak periods, patch windows, image maintenance, and disaster-recovery capacity.
+- Record whether an existing scaling plan or Azure automation already provides similar control.
+- Define a rollback threshold if availability, sign-in time, or support demand worsens.
 
-## Migration and Rollback Considerations
+Treat estimated savings as a hypothesis to validate, not a product outcome.
 
-Do not move every host pool at once. Start with a non-critical pool, document the pre-Nerdio scaling and image process, then compare how the new workflow affects maintenance, support handover, and incident response.
+## Change Control and Recovery
 
-Keep the existing Azure and Intune runbooks until the team is confident operating through Nerdio. If you need to step back, you should still know how to scale hosts, update images, and inspect session host health directly in Microsoft tooling.
+A management layer can automate high-impact Azure actions. Define who may:
 
-## Verdict
+- Create, resize, stop, start, drain, or delete session hosts.
+- Change autoscale rules and schedules.
+- Publish images and applications.
+- Run scripted actions.
+- Change permissions, integrations, and update settings.
 
-Nerdio for Intune is worth a serious look for teams that manage AVD or Windows 365 at enough scale for manual host pool and image work to become a regular burden. The strongest reason to adopt it is operational consistency, not a guaranteed saving. Validate licensing, admin delegation, reporting, and rollback before treating it as the primary control plane.
+Use least privilege and require approval for broad or destructive actions. Keep the native Azure and Intune procedures documented until the team has proved it can recover from a failed automation, bad image, incorrect scale rule, or unavailable Nerdio application.
+
+## Support and Exit Questions
+
+Ask for written answers to:
+
+- Which faults are supported by Nerdio and which remain Microsoft or customer responsibility?
+- Which editions and add-ons include the features shown during evaluation?
+- How are upgrades released, tested, delayed, rolled back, and supported?
+- What configuration and audit data can be exported?
+- What remains in Azure if licensing ends or the application is removed?
+- How are open incidents handled during subscription or tenant changes?
+
+## Evaluation Checklist
+
+- [ ] Current edition, licensing metric, minimum term, and support scope confirmed.
+- [ ] Architecture and supporting Azure resource costs documented.
+- [ ] Entra, Graph, subscription, and resource-group permissions reviewed.
+- [ ] Network and private-access requirements tested.
+- [ ] One non-critical host pool selected for the pilot.
+- [ ] Existing Azure/Intune runbooks retained as a fallback.
+- [ ] Autoscale estimates compared with representative usage data.
+- [ ] Image and application rollback tested.
+- [ ] Delegated roles and change approval tested.
+- [ ] Export, exit, and application-removal process documented.
+
+## Primary Sources
+
+- [About Nerdio Manager for Enterprise](https://nmehelp.getnerdio.com/hc/en-us/articles/26124301747213-About-Nerdio-Manager)
+- [Nerdio Manager for Enterprise reference architecture](https://nmehelp.getnerdio.com/hc/en-us/articles/26124355756941-Nerdio-Manager-for-Enterprise-reference-architecture)
+- [Preparation and prerequisites](https://nmehelp.getnerdio.com/hc/en-us/articles/28419295581709--Preparation-and-Prerequisites)
+- [Deploy Nerdio Manager for Enterprise](https://nmehelp.getnerdio.com/hc/en-us/articles/28419266386189-Deploy-Nerdio-Manager-for-Enterprise)
+- [Nerdio Manager for Enterprise scope of support](https://nmehelp.getnerdio.com/hc/en-us/articles/31651725480205-Nerdio-Manager-for-Enterprise-Scope-of-Support)
 
 ## Related Reading
 

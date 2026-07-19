@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, FileWarning } from 'lucide-react'
 import Badge from '@/components/ui/Badge'
 import { type Script } from '@/data/scripts'
 
@@ -12,7 +12,10 @@ export default function ScriptCard({ script }: ScriptCardProps) {
     <article className="group flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-card transition-colors hover:border-border-strong hover:bg-surface-elevated/40">
       <div className="flex items-start justify-between gap-3">
         <Badge variant="language">{script.language}</Badge>
-        {script.isNew && <Badge variant="new">New</Badge>}
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-400">
+          <FileWarning className="h-3.5 w-3.5" aria-hidden="true" />
+          Incomplete source
+        </span>
       </div>
 
       <div className="flex flex-1 flex-col gap-2">
@@ -21,10 +24,9 @@ export default function ScriptCard({ script }: ScriptCardProps) {
             {script.title}
           </h3>
         </Link>
-        <p className="line-clamp-3 text-sm leading-relaxed text-muted">{script.description}</p>
+        <p className="line-clamp-4 text-sm leading-relaxed text-muted">{script.description}</p>
       </div>
 
-      {/* Tags */}
       <div className="flex flex-wrap gap-1.5">
         {script.tags.slice(0, 3).map((tag) => (
           <span
@@ -36,23 +38,22 @@ export default function ScriptCard({ script }: ScriptCardProps) {
         ))}
       </div>
 
-      {/* Code preview */}
       {script.codePreview && (
-        <pre className="overflow-x-auto rounded-lg border border-border bg-background px-4 py-3 font-mono text-[11px] leading-relaxed text-muted/80" aria-hidden="true">
+        <pre className="overflow-x-auto rounded-lg border border-border bg-background px-4 py-3 font-mono text-[11px] leading-relaxed text-muted/80" aria-label="Illustrative code fragment">
           <code>{script.codePreview}</code>
         </pre>
       )}
 
       <div className="mt-auto flex items-center justify-between">
-      <span className="text-xs text-muted/60">Implementation guide</span>
-      <Link
-        href={`/scripts/${script.slug}`}
-        className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
-        aria-label={`View ${script.title} implementation guide`}
-      >
-        View guide
-        <ArrowUpRight className="h-3 w-3" />
-      </Link>
+        <span className="text-xs text-muted/60">Reference pattern · no complete file</span>
+        <Link
+          href={`/scripts/${script.slug}`}
+          className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
+          aria-label={`View ${script.title} implementation pattern`}
+        >
+          View notes
+          <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+        </Link>
       </div>
     </article>
   )

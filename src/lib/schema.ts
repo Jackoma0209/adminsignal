@@ -1,20 +1,27 @@
 /**
  * JSON-LD structured data helpers.
- * Use the native <script> tag pattern — JSON-LD is structured data, not executable code.
- * Sanitise < chars to prevent XSS injection via dangerouslySetInnerHTML.
+ * Structured data must describe visible page content and must not add claims
+ * that the page itself does not support.
  */
 
 import { toIsoDate } from './dates'
 
 const SITE_URL = 'https://www.adminsignal.com'
 const SITE_NAME = 'AdminSignal'
-const DEFAULT_LANGUAGE = 'en-US'
+const DEFAULT_LANGUAGE = 'en-GB'
+const PRIMARY_AUTHOR_URL = `${SITE_URL}/about#jack`
 
 type SchemaThing = Record<string, unknown>
 
 type ListItem = {
   name: string
   url: string
+}
+
+function cleanSchema<T extends SchemaThing>(data: T): T {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, value]) => value !== undefined),
+  ) as T
 }
 
 function organizationRef() {
@@ -26,13 +33,18 @@ function organizationRef() {
   }
 }
 
+function authorRef(name: string) {
+  return cleanSchema({
+    '@type': 'Person',
+    '@id': name === 'Jack' ? PRIMARY_AUTHOR_URL : undefined,
+    name,
+    url: name === 'Jack' ? PRIMARY_AUTHOR_URL : undefined,
+  })
+}
+
 function thingList(items?: string[]) {
   if (!items || items.length === 0) return undefined
-
-  return items.map((item) => ({
-    '@type': 'Thing',
-    name: item,
-  }))
+  return items.map((item) => ({ '@type': 'Thing', name: item }))
 }
 
 function keywordList(items?: string[]) {
@@ -40,22 +52,15 @@ function keywordList(items?: string[]) {
   return items.join(', ')
 }
 
-function cleanSchema<T extends SchemaThing>(data: T): T {
-  return Object.fromEntries(
-    Object.entries(data).filter(([, value]) => value !== undefined),
-  ) as T
-}
-
 function runtimePlatformFor(language: string): string {
   switch (language) {
     case 'PowerShell':
+    case 'Registry':
       return 'Windows'
     case 'Python':
       return 'Cross-platform'
     case 'Bash':
       return 'Linux / macOS'
-    case 'Registry':
-      return 'Windows'
     default:
       return 'Cross-platform'
   }
@@ -81,17 +86,12 @@ export function personSchema({
   return cleanSchema({
     '@context': 'https://schema.org',
     '@type': 'Person',
-    '@id': `${SITE_URL}#author`,
+    '@id': url ?? PRIMARY_AUTHOR_URL,
     name,
-    url: url ?? SITE_URL,
+    url: url ?? PRIMARY_AUTHOR_URL,
     jobTitle,
     description,
-    worksFor: {
-      '@type': 'Organization',
-      '@id': `${SITE_URL}#organization`,
-      name: SITE_NAME,
-      url: SITE_URL,
-    },
+    worksFor: organizationRef(),
     sameAs,
   })
 }
@@ -108,11 +108,7 @@ export function organizationSchema({
     name: SITE_NAME,
     url: SITE_URL,
     description,
-    founder: {
-      '@type': 'Person',
-      '@id': `${SITE_URL}#author`,
-      name: 'Jack',
-    },
+    founder: authorRef('Jack'),
   })
 }
 
@@ -219,15 +215,13 @@ export function articleSchema({
     description,
     datePublished: publishedDate,
     dateModified: modifiedDate,
-    author: authorName
-      ? { '@type': 'Person', name: authorName }
-      : organizationRef(),
+    author: authorName ? authorRef(authorName) : organizationRef(),
     publisher: organizationRef(),
     mainEntityOfPage: url
       ? {
           '@type': 'WebPage',
           '@id': `${url}#webpage`,
-      }
+        }
       : undefined,
     url,
     image: images,
@@ -269,9 +263,7 @@ export function softwareSourceCodeSchema({
     url,
     programmingLanguage,
     runtimePlatform: runtimePlatformFor(programmingLanguage),
-    author: authorName
-      ? { '@type': 'Person', name: authorName }
-      : organizationRef(),
+    author: authorName ? authorRef(authorName) : organizationRef(),
     publisher: organizationRef(),
     dateCreated: toIsoDate(dateCreated),
     dateModified: toIsoDate(dateModified),
@@ -314,6 +306,10 @@ export function breadcrumbSchema(crumbs: ListItem[]) {
   }
 }
 
+/**
+ * Retained for any future evidence-backed reviews. Do not use this helper for
+ * research notes, buyer guides, comparisons, or pages without a supportable rating.
+ */
 export function reviewSchema({
   itemName,
   itemType = 'SoftwareApplication',
@@ -340,9 +336,7 @@ export function reviewSchema({
     name: `Review of ${itemName}`,
     reviewBody,
     datePublished: toIsoDate(datePublished),
-    author: authorName
-      ? { '@type': 'Person', name: authorName }
-      : organizationRef(),
+    author: authorName ? authorRef(authorName) : organizationRef(),
     itemReviewed: {
       '@type': itemType,
       name: itemName,

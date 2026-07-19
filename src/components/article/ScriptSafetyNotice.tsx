@@ -23,8 +23,7 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
             {hasSource ? (
               <div className="mt-1 space-y-2">
                 <p>
-                  Complete source is available from the linked repository or source file location.
-                  Review the code before running it in any environment.
+                  Complete source is linked below. Review the entire file, dependencies, release history, and validation evidence before considering use.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {script.sourceUrl && (
@@ -34,7 +33,7 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
                       rel="noopener noreferrer"
                       className="rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground-soft hover:border-border-strong"
                     >
-                      View source
+                      View source repository
                     </a>
                   )}
                   {script.sourceFileUrl && (
@@ -49,8 +48,7 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
               </div>
             ) : (
               <p className="mt-1">
-                Complete .ps1 source is not published yet. This page is an implementation guide
-                with example patterns, safety notes, and validation steps.
+                Complete source is not published. This page contains design notes and example fragments only. It is not a downloadable, tested, supported, or production-ready script.
               </p>
             )}
           </div>
@@ -66,27 +64,24 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
           <div className="space-y-3 text-sm leading-relaxed text-muted">
             <div>
               <h2 id="authorised-admin-use" className="text-sm font-semibold text-foreground">
-                Authorised admin use only
+                Authorised evaluation only
               </h2>
               <p className="mt-1">
-                These scripts are intended for authorised IT administration, auditing,
-                troubleshooting, compliance, hardening, and defensive operations only. Test in a
-                lab or pilot group first. Review the code before running it in production. You are
-                responsible for validating suitability for your environment.
+                Use the notes only on systems you are authorised to administer. Rebuild any implementation from reviewed requirements, use report-only or dry-run behaviour first, and obtain change approval before altering devices, identities, policies, or security controls.
               </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="font-semibold text-foreground-soft">Supported environments</p>
+                <p className="font-semibold text-foreground-soft">Environment assumptions to validate</p>
                 <ul className="mt-1 list-disc space-y-1 pl-5">
-                  {script.supportedEnvironments.map((item) => (
+                  {script.environmentAssumptions.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
               <div>
-                <p className="font-semibold text-foreground-soft">Required permissions</p>
+                <p className="font-semibold text-foreground-soft">Potential permission requirements</p>
                 <ul className="mt-1 list-disc space-y-1 pl-5">
                   {script.requiredPermissions.map((item) => (
                     <li key={item}>{item}</li>
@@ -97,13 +92,13 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="font-semibold text-foreground-soft">Expected output</p>
-                <p className="mt-1">{script.expectedOutput}</p>
+                <p className="font-semibold text-foreground-soft">Intended output</p>
+                <p className="mt-1">{script.intendedOutput}</p>
               </div>
               <div>
-                <p className="font-semibold text-foreground-soft">Last tested and version</p>
+                <p className="font-semibold text-foreground-soft">Publication state</p>
                 <p className="mt-1">
-                  Last tested: {script.lastTested}. Version: {script.version}.
+                  Status: implementation pattern. Editorial label: {script.version}. No test date is claimed while complete source and reproducible evidence are unavailable.
                 </p>
               </div>
             </div>

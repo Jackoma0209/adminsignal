@@ -1,94 +1,145 @@
 ---
-title: "Veeam Backup for Microsoft 365: Admin Buyer Notes"
+title: "Veeam Backup for Microsoft 365: Evaluation Notes"
 productName: "Veeam Backup for Microsoft 365"
 category: "Microsoft 365"
-rating: 4.6
 date: "Feb 10, 2025"
 authorId: "jack"
-lastReviewed: "July 5, 2026"
-reviewNote: "Disclosure, evaluation criteria, and purchasing caveats refreshed. Confirm current workload coverage, licensing, and storage options with Veeam before buying."
 ---
 
 ## What This Page Is
 
-This is an admin buyer guide for Veeam Backup for Microsoft 365. It explains the operational checks to make before adopting it, rather than presenting a lab benchmark or measured performance test.
+This page is a research-based evaluation aid for administrators assessing Veeam Backup for Microsoft 365. It is not a product benchmark, a restore-performance test, a customer deployment report, or a claim that AdminSignal has operated the product in production.
 
-## The Context: Why M365 Backup Matters
+Use it to define recovery requirements, review architecture and permissions, prepare a vendor demonstration, and run a controlled restore pilot. Confirm current workload coverage, licensing, supported repositories, immutability options, service limits, and support terms against the version and edition being quoted.
 
-Microsoft's native M365 data retention is not a backup. The retention policies in the Compliance Centre are designed for legal hold and eDiscovery. They are not designed for point-in-time restore of accidentally deleted mailboxes, SharePoint sites, or Teams conversations.
+## Evidence Basis and Limitations
 
-If a user permanently deletes their mailbox contents, or if a malicious actor with admin credentials purges data, Microsoft's native capabilities may not provide recovery to the point you need. Veeam fills this gap.
+Veeam documentation describes backup and restore capabilities for Microsoft 365 workloads and documents repository, object-storage, and immutability options. Microsoft documentation describes retention, recovery, and data-resiliency features within Microsoft 365.
 
-## What Gets Backed Up
+Those sources establish documented behaviour; they do not prove that a particular design will meet an organisation's recovery-time objective, recovery-point objective, legal obligations, data-residency requirements, support capacity, or restore usability. Only a representative pilot and contractual review can establish that fit.
 
-Veeam Backup for Microsoft 365 covers the core Microsoft 365 workloads that most IT teams care about:
+Avoid treating the phrase “retention is not backup” as a complete requirements analysis. Microsoft 365 retention, deleted-item recovery, version history, recycle bins, eDiscovery, and native backup services may address some scenarios. A separate backup product should be justified by specific recovery gaps, independence requirements, retention objectives, or operational controls.
 
-- **Exchange Online**: Mailboxes, archive mailboxes, shared mailboxes, public folders
-- **SharePoint Online**: Site collections, document libraries, list items, metadata
-- **OneDrive for Business**: Full content and version history
-- **Microsoft Teams**: Channel messages, chat history, files (via SharePoint integration)
+## Define the Recovery Requirement First
 
-Teams chat history backup is the most complex. It is captured via a Graph API integration and stored separately from the Exchange conversation history. The restore experience for Teams chats is less polished than for Exchange, which is a known limitation.
+Before choosing a product, document the incidents the organisation must recover from:
 
-## Architecture and Storage
+- Accidental deletion by a user or administrator.
+- Malicious deletion or destructive account compromise.
+- Ransomware or mass-encryption of synchronised files.
+- Departed-user mailbox, OneDrive, and SharePoint recovery.
+- Legal, regulatory, or contractual retention requirements.
+- Point-in-time recovery beyond native recovery windows.
+- Recovery when the production tenant, identity plane, or privileged accounts are compromised.
 
-Veeam operates as an on-premises or Azure VM installation. You specify one or more backup repositories: local storage, Azure Blob Storage, S3-compatible storage, or a combination. For immutability, Azure Blob Storage with Object Lock or an S3 bucket with WORM policy is supported.
+For each scenario, define the acceptable recovery point, recovery time, retained metadata, target location, evidence required, and who may authorise the restore.
 
-This architecture is flexible, but it means storage design is part of the product decision. Confirm repository location, immutability, retention length, encryption, restore permissions, and who will monitor failed jobs before deployment.
+## Workload and Data-Scope Review
 
-## What to Check Before Buying
+Do not assume all Microsoft 365 data is protected identically. During evaluation, map the current product documentation to the organisation's actual workloads:
 
-Before buying or renewing, check:
+- Exchange Online mailboxes, archives, shared mailboxes, and public folders.
+- SharePoint Online sites, lists, libraries, permissions, versions, and metadata.
+- OneDrive for Business content, versions, permissions, and departed-user data.
+- Microsoft Teams channel content, chats, files, membership, and associated SharePoint data.
+- Groups, applications, and any workload that is outside the documented backup scope.
 
-- Which workloads are in scope: Exchange, SharePoint, OneDrive, Teams, shared mailboxes, archives, and departed user data
-- How long each workload must be retained, and whether that retention is legal, operational, or both
-- Where backup data will live, especially if you have data residency requirements
-- Whether immutable storage is required, and how it will be tested
-- How restore access is delegated, audited, and separated from Global Administrator access
-- How Microsoft Graph API throttling and service limits affect backup windows
-- Whether backup reports are suitable for audit evidence
+Ask the vendor to show how each required object is captured, searched, restored, exported, and audited. Record exclusions and unsupported metadata explicitly.
 
-## Restore Granularity
+## Architecture and Storage Ownership
 
-Restore options include:
+Veeam supports deployment models in which the customer or service provider owns the backup infrastructure and repositories. The selected design may use local storage or supported object storage, including capacity and archive tiers where documented.
 
-- **Individual item restore**: Single email, calendar item, contact, document, or folder
-- **Point-in-time mailbox restore**: Restore an entire mailbox to a specific date and time
-- **Cross-user restore**: Restore deleted user's data to a different mailbox
-- **Export to PST**: For compliance or data transfer scenarios
-- **SharePoint granular restore**: Individual document versions, list items, or full site collections
+Document:
 
-During evaluation, test the restore flows that matter to your business. A product can look complete on a feature list but still fail your process if the helpdesk cannot find the right item, legal cannot export what it needs, or Teams restore output is not usable for the request.
+1. Where the backup application and repositories run.
+2. Which organisation owns and pays for compute, storage, egress, and archive retrieval.
+3. Encryption, key ownership, data residency, and network access.
+4. Repository scaling and capacity alerting.
+5. Upgrade, patching, monitoring, and support responsibility.
+6. Recovery of the backup application and configuration itself.
+7. Separation between Microsoft 365 administrators and backup administrators.
 
-## Weaknesses
+A flexible architecture can be valuable, but flexibility creates design and operating responsibilities that must be assigned before purchase.
 
-**Initial storage sizing**: Without proper guidance, organisations consistently underestimate storage requirements. Teams data in particular can grow faster than anticipated due to file attachment storage. Size with a 30–40% buffer.
+## Immutability and Administrative Separation
 
-**Teams restore UX**: Restoring Teams chat messages is possible but less intuitive than Exchange restore. The granularity is there; the interface needs work.
+Veeam documents immutability options for supported object-storage repositories. Immutability is useful only when the complete design prevents an attacker or administrator from bypassing, shortening, or deleting the protected retention period.
 
-**Server management**: Unlike pure SaaS backup solutions, Veeam requires you to maintain the backup server VM. This is a non-trivial operational consideration for smaller IT teams.
+Validate:
 
-## Deployment Considerations
+- The exact repository type and immutability mode supported by the planned version.
+- Who controls storage accounts, object lock, retention, encryption keys, and deletion rights.
+- Whether the same privileged identity can delete production data and disable or remove backup protection.
+- How emergency access, break-glass use, and privileged changes are logged and reviewed.
+- What happens when retention is configured incorrectly or storage reaches capacity.
 
-Treat the first backup as a seeding project. It can take longer than expected, especially with large SharePoint sites, departed users, and Teams data. Schedule the first run away from other tenant-wide changes and make sure someone is watching job failures, repository growth, and API throttling.
+Test an authorised deletion attempt against a pilot repository and retain the evidence. Do not claim immutability from a checkbox or architecture diagram alone.
 
-Separate backup administration from everyday Microsoft 365 administration where practical. If the same compromised admin account can delete production data and remove backups, the backup platform is not giving you the separation you probably wanted.
+## Permissions and Identity Review
 
-## Questions to Ask During Evaluation
+Backup products require access to Microsoft 365 data and APIs. Review every application permission, delegated permission, service account, certificate, secret, and administrative role requested by the current product version.
 
-- Can we restore a single mailbox item, a full mailbox, a SharePoint library item, and a departed user's OneDrive?
-- How do we prove a restore worked without exposing more data than necessary?
-- Can backup operators restore data without becoming Global Administrators?
-- What alerts fire when jobs fail or repositories approach capacity?
-- How do we recover if the Veeam server itself is unavailable?
+Use least privilege where supported, document why each permission is required, and define certificate or secret rotation. Confirm whether backup operators can restore content without holding Global Administrator, and whether sensitive restores require approval from another role.
 
-## Verdict
+Include the backup platform in Conditional Access, privileged-access, alerting, and incident-response design where the product supports those controls.
 
-Veeam Backup for Microsoft 365 is a serious option for organisations that need point-in-time restore and independent retention for Microsoft 365 data. It is strongest when the team is willing to own the backup server, storage design, monitoring, and restore process. Smaller teams that want a fully managed SaaS backup may prefer a different operating model.
+## Restore Pilot
+
+A successful backup job is not proof of recoverability. Build a pilot restore matrix using non-sensitive test data and representative object types.
+
+Test at least:
+
+- One Exchange item and one mailbox-level recovery scenario.
+- One SharePoint document with versions and metadata.
+- One OneDrive item for an active user and a departed-user scenario.
+- The required Teams content and associated files where supported.
+- Restore to the original location and an alternate location where required.
+- Export and audit evidence needed by legal, security, or the service desk.
+- Recovery when the original user, group, site, or administrator no longer exists.
+
+Record elapsed time, permissions used, operator steps, errors, throttling, and the evidence that proves the recovered object is complete.
+
+## Monitoring, Capacity, and Failure Handling
+
+Define who responds to failed jobs, API throttling, repository growth, certificate expiry, application updates, and unsupported Microsoft 365 changes.
+
+The pilot should prove that alerts reach an owned queue and that operators can answer:
+
+- Which workloads and objects were protected successfully?
+- Which items failed, were excluded, or have not been protected recently?
+- How close is each repository to its capacity and retention limits?
+- What is the oldest usable recovery point for each required workload?
+- When was the last representative restore test completed?
+
+## When Not to Choose This Operating Model
+
+Pause the purchase if the team cannot own infrastructure, storage, monitoring, upgrades, permissions, restore testing, and support escalation for the selected deployment model. A fully managed backup service may be a better fit for a small team, while native Microsoft recovery and retention controls may be sufficient for narrower requirements.
+
+Do not add a separate backup platform merely because it appears on a generic checklist. Tie the decision to documented recovery gaps and a tested operating model.
+
+## Evaluation Checklist
+
+- [ ] Recovery scenarios, recovery points, recovery times, and approval owners documented.
+- [ ] Native Microsoft recovery, retention, and backup capabilities mapped first.
+- [ ] Current Veeam workload and metadata coverage confirmed.
+- [ ] Licensing metric and treatment of shared, archived, and departed-user data confirmed.
+- [ ] Architecture, storage, egress, archive, and support costs documented.
+- [ ] Application permissions, secrets, certificates, and admin roles reviewed.
+- [ ] Immutability and administrative separation tested with authorised evidence.
+- [ ] Representative Exchange, SharePoint, OneDrive, and Teams restores completed.
+- [ ] Monitoring, capacity, throttling, and failed-job procedures assigned.
+- [ ] Exit, export, repository migration, and application-recovery plans documented.
+
+## Primary Sources
+
+- [Veeam Backup for Microsoft 365 user guide](https://helpcenter.veeam.com/docs/vbo365/guide/vbo_user_guide.html)
+- [Veeam object storage repositories](https://helpcenter.veeam.com/docs/vbo365/guide/vbo_object_storage.html)
+- [Veeam immutability for backup data](https://helpcenter.veeam.com/docs/vbo365/guide/immutability.html)
+- [Microsoft 365 data resiliency and recovery guidance](https://learn.microsoft.com/en-us/compliance/assurance/assurance-data-resiliency)
+- [Microsoft Purview retention documentation](https://learn.microsoft.com/en-us/purview/retention)
 
 ## Related Reading
 
 - [Entra ID P1 vs P2: Is the Upgrade Worth It?](/comparisons/entra-id-p1-vs-p2)
 - [Conditional Access for Microsoft 365 Tenants](/tutorials/conditional-access-m365-policy-map)
-- [Microsoft service agreement: shared responsibility for cloud data](https://learn.microsoft.com/en-us/compliance/assurance/assurance-data-resiliency)
-- [Veeam Backup for Microsoft 365 documentation](https://helpcenter.veeam.com/docs/vbo365/guide/vbo_user_guide.html)

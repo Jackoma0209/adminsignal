@@ -1,23 +1,25 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
-import { mdxComponents } from '@/components/ui/MdxComponents'
 import type { Metadata } from 'next'
+import { mdxComponents } from '@/components/ui/MdxComponents'
 import { scripts } from '@/data/scripts'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { softwareSourceCodeSchema, breadcrumbSchema } from '@/lib/schema'
+import { withNoindex } from '@/lib/noindex'
+import { breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
 import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
-import AdSlot from '@/components/article/AdSlot'
 import ScriptSafetyNotice from '@/components/article/ScriptSafetyNotice'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
+
+const siteUrl = 'https://www.adminsignal.com'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -27,20 +29,23 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const script = scripts.find((s) => s.slug === slug)
+  const script = scripts.find((item) => item.slug === slug)
   if (!script) return {}
-  return buildArticleMetadata({
-    title: script.title,
-    description: script.description,
-    url: `https://www.adminsignal.com/scripts/${slug}`,
-    category: script.language,
-    tags: script.tags,
-  })
+
+  return withNoindex(
+    buildArticleMetadata({
+      title: `${script.title}: implementation pattern`,
+      description: `${script.description} Complete source is not currently published; this page is an implementation reference and is excluded from search indexing.`,
+      url: `${siteUrl}/scripts/${slug}`,
+      category: script.language,
+      tags: script.tags,
+    }),
+  )
 }
 
 export default async function ScriptDetailPage({ params }: Props) {
   const { slug } = await params
-  const script = scripts.find((s) => s.slug === slug)
+  const script = scripts.find((item) => item.slug === slug)
   if (!script) notFound()
 
   let content = ''
@@ -56,43 +61,31 @@ export default async function ScriptDetailPage({ params }: Props) {
     notFound()
   }
 
-  const authorId =
-    typeof frontmatter.authorId === 'string' ? frontmatter.authorId : undefined
+  const authorId = typeof frontmatter.authorId === 'string' ? frontmatter.authorId : undefined
   const author = authorId ? getAuthor(authorId) : undefined
-  const frontmatterTags = Array.isArray(frontmatter.tags)
-    ? frontmatter.tags.filter((tag): tag is string => typeof tag === 'string')
-    : undefined
 
   const relatedScripts = scripts
-    .filter((s) => s.id !== script.id && s.language === script.language)
+    .filter((item) => item.id !== script.id && item.language === script.language)
     .slice(0, 3)
-    .map((s) => ({
-      title: s.title,
-      href: `/scripts/${s.slug}`,
+    .map((item) => ({
+      title: item.title,
+      href: `/scripts/${item.slug}`,
       type: 'script' as const,
-      excerpt: s.description,
-      meta: `${s.language}`,
+      excerpt: item.description,
+      meta: 'Implementation pattern · complete source unavailable',
     }))
 
-  const pageUrl = `https://www.adminsignal.com/scripts/${slug}`
-
-  const jsonLd = softwareSourceCodeSchema({
-    name: script.title,
-    description: script.description,
-    url: pageUrl,
-    programmingLanguage: script.language,
-    tags: frontmatterTags ?? script.tags,
-    authorName: author?.name,
-    dateModified: script.lastTested,
-  })
-
+  const pageUrl = `${siteUrl}/scripts/${slug}`
   const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://www.adminsignal.com' },
-    { name: 'Scripts', url: 'https://www.adminsignal.com/scripts' },
+    { name: 'Home', url: siteUrl },
+    { name: 'Implementation patterns', url: `${siteUrl}/scripts` },
     { name: script.title, url: pageUrl },
   ])
 
-  const languageVariant: Record<typeof script.language, 'category' | 'difficulty' | 'language' | 'new'> = {
+  const languageVariant: Record<
+    typeof script.language,
+    'category' | 'difficulty' | 'language' | 'new'
+  > = {
     PowerShell: 'language',
     Python: 'difficulty',
     Bash: 'category',
@@ -101,7 +94,6 @@ export default async function ScriptDetailPage({ params }: Props) {
 
   return (
     <>
-      <StructuredData data={jsonLd} />
       <StructuredData data={jsonLdBreadcrumb} />
 
       <div className="border-b border-border bg-surface/10 py-4">
@@ -109,7 +101,7 @@ export default async function ScriptDetailPage({ params }: Props) {
           <Breadcrumbs
             crumbs={[
               { label: 'Home', href: '/' },
-              { label: 'Scripts', href: '/scripts' },
+              { label: 'Implementation patterns', href: '/scripts' },
               { label: script.title },
             ]}
           />
@@ -118,18 +110,18 @@ export default async function ScriptDetailPage({ params }: Props) {
 
       <Container>
         <div className="py-10 lg:py-14">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px]">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
             <article>
               <header className="mb-8">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <Badge variant={languageVariant[script.language]}>{script.language}</Badge>
-                  {script.isNew && <Badge variant="new">New</Badge>}
+                  <Badge variant="difficulty">Reference only</Badge>
                 </div>
                 <h1 className="mb-3 font-mono text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
                   {script.title}
                 </h1>
                 <p className="mb-4 text-base leading-relaxed text-muted">{script.description}</p>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   {script.tags.map((tag) => (
                     <span
                       key={tag}
@@ -138,13 +130,17 @@ export default async function ScriptDetailPage({ params }: Props) {
                       {tag}
                     </span>
                   ))}
-                  <span className="ml-auto text-xs text-muted/60">Implementation guide</span>
                 </div>
               </header>
 
-              <ScriptSafetyNotice script={script} />
+              <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm leading-relaxed text-muted">
+                <h2 className="font-semibold text-foreground">Incomplete resource — not a downloadable script</h2>
+                <p className="mt-2">
+                  This page contains implementation guidance and example fragments. It does not provide a complete .ps1 file, release package, reproducible test record, or source-history link. It is excluded from search indexing and must not be represented as production-ready automation.
+                </p>
+              </div>
 
-              <AdSlot variant="banner" className="mb-8" />
+              <ScriptSafetyNotice script={script} />
 
               <Prose>
                 <MDXRemote
@@ -168,14 +164,19 @@ export default async function ScriptDetailPage({ params }: Props) {
                     <TableOfContents headings={headings} />
                   </div>
                 )}
-                <AdSlot variant="sidebar" />
+                <div className="rounded-xl border border-border bg-surface p-5 text-xs leading-relaxed text-muted">
+                  <p className="font-semibold text-foreground">Indexing status</p>
+                  <p className="mt-2">
+                    Noindex until complete source, dependencies, parameters, error handling, validation, rollback guidance, and version history are published.
+                  </p>
+                </div>
               </div>
             </aside>
           </div>
 
           {relatedScripts.length > 0 && (
             <div className="mt-14 border-t border-border pt-12">
-              <RelatedContent items={relatedScripts} heading="More scripts" />
+              <RelatedContent items={relatedScripts} heading="Related implementation patterns" />
             </div>
           )}
         </div>

@@ -7,7 +7,12 @@ import { liveSignals, signals } from '@/data/signals'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { isNoindexNewsSlug, withNoindex } from '@/lib/noindex'
+import {
+  isDraftNewsSlug,
+  isEditorialReviewNewsSlug,
+  isNoindexNewsSlug,
+  withNoindex,
+} from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -16,6 +21,7 @@ import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
+import EditorialReviewNotice from '@/components/article/EditorialReviewNotice'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
@@ -34,7 +40,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const signal = signals.find((s) => s.slug === slug)
+  const signal = signals.find((item) => item.slug === slug)
   if (!signal) return {}
   const author = signal.authorId ? getAuthor(signal.authorId) : undefined
   let frontmatter: Record<string, unknown> = {}
@@ -107,8 +113,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewsArticlePage({ params }: Props) {
   const { slug } = await params
-  const signal = signals.find((s) => s.slug === slug)
+  const signal = signals.find((item) => item.slug === slug)
   if (!signal) notFound()
+  const underReview = isNoindexNewsSlug(slug)
+  const draft = isDraftNewsSlug(slug)
+  const sourceConflict = isEditorialReviewNewsSlug(slug)
 
   let content = ''
   let headings: { id: string; text: string; level: number }[] = []
@@ -129,7 +138,6 @@ export default async function NewsArticlePage({ params }: Props) {
 
   const author = signal.authorId ? getAuthor(signal.authorId) : undefined
 
-  // Prefer image from signals.ts; fall back to MDX frontmatter for legacy content
   const featuredImage =
     signal.image ??
     (typeof frontmatter.image === 'string' ? frontmatter.image : undefined) ??
@@ -145,14 +153,19 @@ export default async function NewsArticlePage({ params }: Props) {
     : undefined
 
   const relatedSignals = signals
-    .filter((s) => s.id !== signal.id && s.category === signal.category)
+    .filter(
+      (item) =>
+        item.id !== signal.id &&
+        item.category === signal.category &&
+        !isNoindexNewsSlug(item.slug),
+    )
     .slice(0, 3)
-    .map((s) => ({
-      title: s.title,
-      href: `/news/${s.slug}`,
+    .map((item) => ({
+      title: item.title,
+      href: `/news/${item.slug}`,
       type: 'news' as const,
-      excerpt: s.excerpt,
-      meta: s.date,
+      excerpt: item.excerpt,
+      meta: item.date,
     }))
 
   const pageUrl =
@@ -187,10 +200,16 @@ export default async function NewsArticlePage({ params }: Props) {
     { name: signal.title, url: pageUrl },
   ])
 
+  const reviewReason = sourceConflict
+    ? "The current version cites an update identifier and deployment claims that do not match Microsoft's April 2026 Windows release record. It is being rebuilt from the official KB and Security Update Guide before republication."
+    : draft
+      ? 'This draft has not completed primary-source verification and editorial review. Its article body has been withdrawn until those checks are complete.'
+      : undefined
+
   return (
     <>
-      <StructuredData data={jsonLdArticle} />
-      <StructuredData data={jsonLdBreadcrumb} />
+      {!underReview && <StructuredData data={jsonLdArticle} />}
+      {!underReview && <StructuredData data={jsonLdBreadcrumb} />}
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
@@ -206,8 +225,10 @@ export default async function NewsArticlePage({ params }: Props) {
 
       <Container>
         <div className="py-10 lg:py-14">
-          {lastReviewed && (
-            <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
+          {underReview ? (
+            <EditorialReviewNotice reason={reviewReason} />
+          ) : (
+            lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
           )}
 
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_280px]">
@@ -250,8 +271,7 @@ export default async function NewsArticlePage({ params }: Props) {
                 </div>
               </header>
 
-              {/* ── Featured image ──────────────────────────────────────── */}
-              {featuredImage && (
+              {!underReview && featuredImage && (
                 <div className="relative mb-8 aspect-video w-full overflow-hidden rounded-xl bg-surface">
                   <Image
                     src={featuredImage}
@@ -261,7 +281,6 @@ export default async function NewsArticlePage({ params }: Props) {
                     sizes="(max-width: 1024px) 100vw, 700px"
                     priority
                   />
-                  {/* Subtle gradient keeps bottom legible against any image */}
                   <div
                     className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 to-transparent"
                     aria-hidden="true"
@@ -269,32 +288,36 @@ export default async function NewsArticlePage({ params }: Props) {
                 </div>
               )}
 
-              <AdSlot variant="banner" className="mb-8" />
+              {!underReview && <AdSlot variant="banner" className="mb-8" />}
 
-              <Prose>
-                <MDXRemote source={content} components={mdxComponents} />
-              </Prose>
+              {!underReview && (
+                <Prose>
+                  <MDXRemote source={content} components={mdxComponents} />
+                </Prose>
+              )}
 
-              {author && (
+              {author && !underReview && (
                 <div className="mt-12">
                   <AuthorBox author={author} />
                 </div>
               )}
             </article>
 
-            <aside>
-              <div className="sticky top-20">
-                {headings.length >= 2 && (
-                  <div className="mb-6 rounded-xl border border-border bg-surface p-5">
-                    <TableOfContents headings={headings} />
-                  </div>
-                )}
-                <AdSlot variant="sidebar" />
-              </div>
-            </aside>
+            {!underReview && (
+              <aside>
+                <div className="sticky top-20">
+                  {headings.length >= 2 && (
+                    <div className="mb-6 rounded-xl border border-border bg-surface p-5">
+                      <TableOfContents headings={headings} />
+                    </div>
+                  )}
+                  <AdSlot variant="sidebar" />
+                </div>
+              </aside>
+            )}
           </div>
 
-          {relatedSignals.length > 0 && (
+          {relatedSignals.length > 0 && !underReview && (
             <div className="mt-14 border-t border-border pt-12">
               <RelatedContent items={relatedSignals} heading="More from this category" />
             </div>

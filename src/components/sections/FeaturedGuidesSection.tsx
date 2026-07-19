@@ -6,6 +6,7 @@ import SectionHeader from '@/components/ui/SectionHeader'
 import GuideCard from '@/components/cards/GuideCard'
 import Badge from '@/components/ui/Badge'
 import { guides } from '@/data/guides'
+import { isNoindexHref } from '@/lib/noindex'
 
 const categoryGradients: Record<string, string> = {
   'Microsoft Intune': 'from-cyan-950 via-slate-900 to-slate-950',
@@ -17,7 +18,12 @@ const categoryGradients: Record<string, string> = {
 }
 
 export default function FeaturedGuidesSection() {
-  const featured = guides.filter((g) => g.isFeatured).slice(0, 4)
+  const featured = guides
+    .filter((guide) => {
+      const href = guide.href ?? `/tutorials/${guide.slug}`
+      return guide.isFeatured && !isNoindexHref(href)
+    })
+    .slice(0, 4)
   const hero = featured[0]
   const rest = featured.slice(1, 4)
 
@@ -48,10 +54,8 @@ export default function FeaturedGuidesSection() {
           }
         />
 
-        {/* ── Hero featured guide ───────────────────────────────────────── */}
         <article className="group mb-5 overflow-hidden rounded-xl border border-border bg-surface shadow-card transition-colors hover:border-border-strong hover:bg-surface-elevated/40">
           <div className={`relative bg-linear-to-br ${heroGradient}`}>
-            {/* dot grid */}
             <div
               className="absolute inset-0 opacity-[0.055]"
               aria-hidden="true"
@@ -60,7 +64,6 @@ export default function FeaturedGuidesSection() {
                 backgroundSize: '20px 20px',
               }}
             />
-            {/* cyan glow */}
             <div
               className="pointer-events-none absolute -top-24 right-0 h-64 w-96 opacity-[0.12]"
               aria-hidden="true"
@@ -70,7 +73,6 @@ export default function FeaturedGuidesSection() {
             />
 
             <div className="relative px-7 py-8 sm:px-10 sm:py-10 lg:flex lg:items-center lg:gap-12">
-              {/* Left: text */}
               <div className="flex-1">
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <Badge variant="category">{hero.category}</Badge>
@@ -106,10 +108,7 @@ export default function FeaturedGuidesSection() {
                 </div>
               </div>
 
-              {/* Right: guide preview art with the previous terminal block as fallback */}
-              <div
-                className="mt-8 hidden shrink-0 lg:mt-0 lg:block lg:w-72"
-              >
+              <div className="mt-8 hidden shrink-0 lg:mt-0 lg:block lg:w-72">
                 {hero.coverImage ? (
                   <div className="relative aspect-video overflow-hidden rounded-lg border border-border/50 bg-black/40 shadow-card">
                     <Image
@@ -133,18 +132,13 @@ export default function FeaturedGuidesSection() {
                       <span className="ml-2 text-muted/40">preflight.ps1</span>
                     </div>
                     <div className="space-y-0.5 text-[11px]">
-                      <p><span className="text-cyan-400">function</span> <span className="text-yellow-300">Test-AutopilotReadiness</span> {'{'}</p>
-                      <p className="pl-3 text-muted/50">  # TPM + SecureBoot + OS build</p>
-                      <p className="pl-3"><span className="text-green-400">$tpm</span> = Get-Tpm</p>
-                      <p className="pl-3"><span className="text-green-400">$sb</span>  = Confirm-SecureBootUEFI</p>
-                      <p className="pl-3"><span className="text-green-400">$os</span>  = Get-CimInstance Win32_OS</p>
-                      <p className="pl-3 text-muted/50">  # Network reachability check</p>
+                      <p><span className="text-cyan-400">function</span> <span className="text-yellow-300">Test-Readiness</span> {'{'}</p>
+                      <p className="pl-3 text-muted/50">  # Validate prerequisites</p>
+                      <p className="pl-3"><span className="text-green-400">$state</span> = Get-ComputerInfo</p>
                       <p className="pl-3">Test-NetConnection -Port 443</p>
                       <p>{'}'}</p>
-                      <p className="pt-1 text-green-400">✓ TPM Present · PASS</p>
-                      <p className="text-green-400">✓ Secure Boot  · PASS</p>
-                      <p className="text-green-400">✓ Build 26100  · PASS</p>
-                      <p className="text-green-400">✓ Intune reachable · PASS</p>
+                      <p className="pt-1 text-green-400">✓ Prerequisites · PASS</p>
+                      <p className="text-green-400">✓ Connectivity · PASS</p>
                     </div>
                   </div>
                 )}
@@ -153,7 +147,6 @@ export default function FeaturedGuidesSection() {
           </div>
         </article>
 
-        {/* ── Supporting guide cards ────────────────────────────────────── */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {rest.map((guide) => (
             <GuideCard key={guide.id} guide={guide} />

@@ -5,6 +5,7 @@ import CategoryPageTemplate from '@/components/templates/CategoryPageTemplate'
 import StructuredData from '@/components/StructuredData'
 import { buildCategoryMetadata } from '@/lib/metadata'
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+import { isNoindexHref } from '@/lib/noindex'
 
 const pageTitle = 'Tutorials & Deep-Dive Guides'
 const pageDescription =
@@ -17,7 +18,10 @@ export const metadata: Metadata = buildCategoryMetadata({
   path: pagePath,
 })
 
-const categories = [...new Set(guides.map((g) => g.category))]
+const publicGuides = guides.filter(
+  (guide) => !isNoindexHref(guide.href ?? `/tutorials/${guide.slug}`),
+)
+const categories = [...new Set(publicGuides.map((guide) => guide.category))]
 
 export default async function TutorialsPage({
   searchParams,
@@ -25,9 +29,9 @@ export default async function TutorialsPage({
   searchParams: Promise<{ category?: string; difficulty?: string }>
 }) {
   const { category, difficulty } = await searchParams
-  let filtered = guides
-  if (category) filtered = filtered.filter((g) => g.category === category)
-  if (difficulty) filtered = filtered.filter((g) => g.difficulty === difficulty)
+  let filtered = publicGuides
+  if (category) filtered = filtered.filter((guide) => guide.category === category)
+  if (difficulty) filtered = filtered.filter((guide) => guide.difficulty === difficulty)
 
   const pageUrl = category
     ? `https://www.adminsignal.com/tutorials?category=${encodeURIComponent(category)}`
@@ -39,7 +43,7 @@ export default async function TutorialsPage({
     url: pageUrl,
     items: filtered.map((guide) => ({
       name: guide.title,
-      url: `https://www.adminsignal.com/tutorials/${guide.slug}`,
+      url: `https://www.adminsignal.com${guide.href ?? `/tutorials/${guide.slug}`}`,
     })),
   })
 
@@ -57,7 +61,7 @@ export default async function TutorialsPage({
         eyebrow="Tutorials"
         title={pageTitle}
         description="Technical guides for the operational details that official quickstarts often skip: prerequisites, permissions, validation, rollback, and support handover."
-        itemCount={guides.length}
+        itemCount={publicGuides.length}
         categories={categories}
         activeCategory={category}
         basePath="/tutorials"

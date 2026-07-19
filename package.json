@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:adsense": "node scripts/check-adsense-readiness.mjs"
+    "check:adsense": "node scripts/check-adsense-readiness.mjs",
+    "check:quality": "node scripts/check-content-quality.mjs",
+    "check:quality:strict": "QUALITY_STRICT=true node scripts/check-content-quality.mjs",
+    "check:rendered": "node scripts/audit-rendered-site.mjs",
+    "check:release": "npm run lint && npm run check:adsense && npm run check:quality && npm run build"
   },
   "dependencies": {
     "@mdx-js/loader": "^3.1.1",

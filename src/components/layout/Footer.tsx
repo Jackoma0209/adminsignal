@@ -11,9 +11,7 @@ const footerLinks = [
       { label: 'News', href: '/news' },
       { label: 'Tutorials', href: '/tutorials' },
       { label: 'Troubleshooting', href: '/troubleshooting' },
-      { label: 'Scripts', href: '/scripts' },
       { label: 'Comparisons', href: '/comparisons' },
-      { label: 'Reviews', href: '/reviews' },
     ],
   },
   {
@@ -28,20 +26,19 @@ const footerLinks = [
     ],
   },
   {
-    heading: 'Resources',
+    heading: 'Administration',
     links: [
-      { label: 'Script Library', href: '/scripts' },
-      { label: 'Comparisons', href: '/comparisons' },
-      { label: 'Reviews', href: '/reviews' },
+      { label: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
+      { label: 'Patch Management', href: '/patch-management' },
+      { label: 'Group Policy', href: '/group-policy' },
       { label: 'SCCM / MECM', href: '/sccm-mecm' },
     ],
   },
   {
-    heading: 'Company',
+    heading: 'About',
     links: [
-      { label: 'About', href: '/about' },
+      { label: 'About the Author', href: '/about' },
       { label: 'Contact', href: '/contact' },
-      { label: 'Advertise', href: '/advertise' },
       { label: 'Editorial Policy', href: '/editorial-policy' },
       { label: 'Affiliate Disclosure', href: '/affiliate-disclosure' },
       { label: 'Privacy Policy', href: '/privacy' },
@@ -55,9 +52,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-border bg-background">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        {/* Top row */}
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-5">
-          {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="group mb-4 flex items-center gap-2.5">
               <Image
@@ -72,38 +67,26 @@ export default function Footer() {
               </span>
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              Practitioner-focused guides, script patterns, and analysis for enterprise sysadmins and endpoint engineers.
+              Independent technical guidance for endpoint specialists, Windows administrators, and Microsoft cloud administrators.
             </p>
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-border bg-surface/60 p-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-primary/70" aria-hidden="true" />
               <p className="text-xs leading-relaxed text-muted/80">
-                Written from practical Microsoft admin experience, with guidance reviewed for operational risk, source accuracy, and real-world usefulness before publication.
+                Articles identify prerequisites, source material, validation evidence, and operational risk where those details matter.
               </p>
-            </div>
-            <div className="mt-4 flex flex-col gap-1.5">
-              <Link href="/about" className="text-xs text-muted/60 hover:text-foreground-soft transition-colors">
-                About the author →
-              </Link>
-              <Link href="/editorial-policy" className="text-xs text-muted/60 hover:text-foreground-soft transition-colors">
-                Editorial policy →
-              </Link>
             </div>
           </div>
 
-          {/* Link columns */}
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-4">
-            {footerLinks.map((col) => (
-              <div key={col.heading}>
+            {footerLinks.map((column) => (
+              <div key={column.heading}>
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted/60">
-                  {col.heading}
+                  {column.heading}
                 </p>
                 <ul className="space-y-2.5">
-                  {col.links.map((link) => (
+                  {column.links.map((link) => (
                     <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-muted hover:text-foreground"
-                      >
+                      <Link href={link.href} className="text-sm text-muted hover:text-foreground">
                         {link.label}
                       </Link>
                     </li>
@@ -114,7 +97,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-4">
             <p className="text-sm text-muted/60">
@@ -123,28 +105,17 @@ export default function Footer() {
             <a
               href="/rss.xml"
               className="flex items-center gap-1.5 text-xs text-muted/50 transition-colors hover:text-primary"
-              aria-label="RSS Feed"
+              aria-label="RSS feed"
             >
               <Rss className="h-3.5 w-3.5" aria-hidden="true" />
               RSS
             </a>
           </div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 sm:justify-end">
-            <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Privacy
-            </Link>
-            <Link href="/cookies" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Cookies
-            </Link>
-            <Link href="/terms" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Terms
-            </Link>
-            <Link href="/editorial-policy" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Editorial Policy
-            </Link>
-            <Link href="/affiliate-disclosure" className="text-sm text-muted/60 hover:text-foreground-soft">
-              Affiliate Disclosure
-            </Link>
+            <Link href="/privacy" className="text-sm text-muted/60 hover:text-foreground-soft">Privacy</Link>
+            <Link href="/cookies" className="text-sm text-muted/60 hover:text-foreground-soft">Cookies</Link>
+            <Link href="/terms" className="text-sm text-muted/60 hover:text-foreground-soft">Terms</Link>
+            <Link href="/editorial-policy" className="text-sm text-muted/60 hover:text-foreground-soft">Editorial Policy</Link>
             <PrivacySettingsButton />
           </div>
         </div>

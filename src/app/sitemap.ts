@@ -4,7 +4,6 @@ import {
   getDuplicateTutorialRedirect,
   isNoindexContentRoute,
   isNoindexNewsSlug,
-  isNoindexPath,
 } from '@/lib/noindex'
 import { liveSignals } from '@/data/signals'
 import { guides } from '@/data/guides'
@@ -12,18 +11,13 @@ import { guides } from '@/data/guides'
 const BASE = 'https://www.adminsignal.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const staticRoutes: MetadataRoute.Sitemap = [
-    { url: BASE, priority: 1.0, changeFrequency: 'daily' },
-
-    // Content listing pages
-    { url: `${BASE}/news`, priority: 0.9, changeFrequency: 'daily' },
+  const editorialRoutes: MetadataRoute.Sitemap = [
+    { url: BASE, priority: 1, changeFrequency: 'weekly' },
+    { url: `${BASE}/news`, priority: 0.8, changeFrequency: 'daily' },
     { url: `${BASE}/tutorials`, priority: 0.9, changeFrequency: 'weekly' },
     { url: `${BASE}/troubleshooting`, priority: 0.9, changeFrequency: 'weekly' },
-    { url: `${BASE}/scripts`, priority: 0.9, changeFrequency: 'weekly' },
-    { url: `${BASE}/reviews`, priority: 0.9, changeFrequency: 'weekly' },
-    { url: `${BASE}/comparisons`, priority: 0.9, changeFrequency: 'weekly' },
-
-    // Topic hubs
+    { url: `${BASE}/comparisons`, priority: 0.7, changeFrequency: 'monthly' },
+    { url: `${BASE}/topics`, priority: 0.7, changeFrequency: 'monthly' },
     { url: `${BASE}/intune`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/powershell`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/windows-server`, priority: 0.8, changeFrequency: 'weekly' },
@@ -33,29 +27,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/patch-management`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/group-policy`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/sccm-mecm`, priority: 0.8, changeFrequency: 'weekly' },
-    { url: `${BASE}/best-tools`, priority: 0.8, changeFrequency: 'weekly' },
-    { url: `${BASE}/topics`, priority: 0.7, changeFrequency: 'weekly' },
-
-    // Site / trust pages
     { url: `${BASE}/about`, priority: 0.5, changeFrequency: 'monthly' },
-    { url: `${BASE}/contact`, priority: 0.5, changeFrequency: 'monthly' },
-    { url: `${BASE}/advertise`, priority: 0.5, changeFrequency: 'monthly' },
     { url: `${BASE}/editorial-policy`, priority: 0.4, changeFrequency: 'yearly' },
-    { url: `${BASE}/affiliate-disclosure`, priority: 0.3, changeFrequency: 'yearly' },
-    { url: `${BASE}/privacy`, priority: 0.3, changeFrequency: 'yearly' },
-    { url: `${BASE}/cookies`, priority: 0.3, changeFrequency: 'yearly' },
-    { url: `${BASE}/terms`, priority: 0.3, changeFrequency: 'yearly' },
   ]
 
-  const nonNewsTypes = [
+  const articleTypes = [
     { type: 'tutorials', segment: 'tutorials', priority: 0.8 },
     { type: 'troubleshooting', segment: 'troubleshooting', priority: 0.8 },
-    { type: 'scripts', segment: 'scripts', priority: 0.7 },
-    { type: 'reviews', segment: 'reviews', priority: 0.7 },
-    { type: 'comparisons', segment: 'comparisons', priority: 0.7 },
+    { type: 'comparisons', segment: 'comparisons', priority: 0.6 },
   ] as const
 
-  const nonNewsRoutes: MetadataRoute.Sitemap = nonNewsTypes.flatMap(
+  const articleRoutes: MetadataRoute.Sitemap = articleTypes.flatMap(
     ({ type, segment, priority }) =>
       getContentSlugs(type)
         .filter((slug) => !isNoindexContentRoute(segment, slug))
@@ -64,34 +46,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
           url: `${BASE}/${segment}/${slug}`,
           priority,
           changeFrequency: 'monthly' as const,
-        }))
+        })),
   )
 
-  // Only index live (non-demo) news articles
   const newsRoutes: MetadataRoute.Sitemap = liveSignals
     .filter((signal) => !isNoindexNewsSlug(signal.slug))
     .map((signal) => ({
       url: `${BASE}/news/${signal.slug}`,
-      priority: 0.8,
+      priority: 0.7,
       changeFrequency: 'monthly' as const,
       lastModified: signal.publishedAt,
     }))
 
-  // Flagship guides that have a dedicated /guides/{slug} page (href override set).
-  // These are NOT under /tutorials so they are not caught by getContentSlugs('tutorials').
   const flagshipGuideRoutes: MetadataRoute.Sitemap = guides
-    .filter((g) => g.href && g.href.startsWith('/guides/'))
-    .map((g) => ({
-      url: `${BASE}${g.href}`,
+    .filter((guide) => guide.href?.startsWith('/guides/'))
+    .filter((guide) => !isNoindexContentRoute('guides', guide.slug))
+    .map((guide) => ({
+      url: `${BASE}${guide.href}`,
       priority: 0.9,
       changeFrequency: 'monthly' as const,
-      lastModified: g.publishedAt,
+      lastModified: guide.publishedAt,
     }))
 
-  return [
-    ...staticRoutes.filter((route) => !isNoindexPath(new URL(route.url).pathname)),
-    ...nonNewsRoutes,
-    ...newsRoutes,
-    ...flagshipGuideRoutes,
-  ]
+  return [...editorialRoutes, ...articleRoutes, ...newsRoutes, ...flagshipGuideRoutes]
 }

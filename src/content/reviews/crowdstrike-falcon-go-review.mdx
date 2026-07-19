@@ -1,68 +1,113 @@
 ---
-title: "CrowdStrike Falcon Go: Admin Buyer Notes for SMB Endpoint Protection"
+title: "CrowdStrike Falcon Go: Evaluation Notes for SMB Endpoint Protection"
 productName: "CrowdStrike Falcon Go"
 category: "Endpoint Security"
-rating: 4.2
 date: "Mar 18, 2025"
 authorId: "jack"
-lastReviewed: "July 5, 2026"
-reviewNote: "Disclosure, evaluation criteria, and purchasing caveats refreshed. Confirm current tier packaging, support terms, and pricing with CrowdStrike before buying."
 ---
 
 ## What This Page Is
 
-This is an admin evaluation guide for CrowdStrike Falcon Go. It does not claim independent malware testing, benchmark results, or measured support response times. Use it to frame the questions an IT team should ask before adopting Falcon Go as an endpoint protection product.
+This is a research-based evaluation aid for administrators considering CrowdStrike Falcon Go. It is not an independent malware test, a product benchmark, a support-response test, a customer deployment report, or a claim that AdminSignal has operated the product in production.
 
-## Who This Is For
+Use it to prepare a vendor demonstration and a controlled pilot. Product packaging, support, retention, investigation features, update controls, and commercial terms must be confirmed against the current quotation and tenant documentation.
 
-Falcon Go is aimed at smaller organisations that want managed prevention and basic endpoint visibility without buying the higher Falcon tiers. It can make sense where the team wants a dedicated security console and does not need full threat hunting, custom detection engineering, or a mature SOC workflow.
+## Evidence Basis and Limitations
 
-It is not the right fit if you need deep incident response tooling, custom IOA rules, long-term hunt queries, or detailed process-tree investigation across complex incidents. Those requirements usually point to a higher Falcon tier or a different operating model.
+The notes use public CrowdStrike product material and technical documentation about the Falcon sensor, deployment tooling, policies, and sensor-update controls. Public documentation can show that a capability exists, but it does not prove that the capability is included in the exact Falcon Go package offered to an organisation.
 
-## Deployment and Sensor
+Do not infer security efficacy, usability, support quality, or incident-response performance from this page. Those points require independent testing, contractual review, and evidence from a pilot that reflects the organisation's devices and operating model.
 
-Installation uses the Falcon sensor, commonly deployed through an MSI with command-line switches or through Intune as a Win32 app. Before rollout, test install, upgrade, and uninstall behaviour on your standard endpoint builds.
+## Decision Frame
 
-Sensor update control is a key evaluation point after the July 2024 CrowdStrike incident. Confirm which update ring options are available in the tier you are buying, who can change them, and how you will stage updates across pilot and production devices.
+Start with the operating requirement rather than the product name:
 
-## Detection and Investigation Trade-Offs
+- Which Windows, macOS, Linux, server, and virtual desktop platforms must be protected?
+- Is the requirement prevention and basic alert handling, or does the team need threat hunting, detailed process investigation, managed response, or custom detections?
+- Who will own alert triage, policy changes, exclusions, sensor deployment, sensor updates, and incident escalation?
+- What Microsoft Defender capabilities are already licensed and operational?
+- Which data residency, retention, integration, and support obligations apply?
 
-Falcon Go should be assessed as prevention plus basic investigation, not as a full SOC platform. The important question is not only whether an alert is generated, but what your team can do with that alert afterwards.
+A dedicated endpoint-protection platform can add value, but it also creates another control plane, sensor lifecycle, permission model, and incident workflow that must be owned.
 
-What you lose compared to Enterprise is not detection breadth but **depth of investigation**. The threat graph in Falcon Go is limited to event-level detail. You cannot pivot through the full process tree or run threat hunting queries. For a security team that primarily needs alerts and basic investigation, this is sufficient. For a SOC running hunts, it is not.
+## Deployment and Sensor Pilot
 
-## Console and Management
+CrowdStrike publishes tooling and API documentation for installing and removing Falcon sensors and for working with sensor-update policies. A pilot should prove the complete lifecycle rather than only a successful installation.
 
-The Falcon console is structured around dashboards, alerts, policies, and devices. During evaluation, check how much context a generalist admin gets from an alert without escalating to a security specialist.
+Record evidence for:
 
-Also check the exception workflow. Endpoint protection tools often become noisy when line-of-business applications, scripts, or management tools are misclassified. A good rollout plan includes who can approve exclusions, how exclusions expire, and how risky exclusions are reviewed.
+1. Package acquisition and integrity checks.
+2. Installation on each supported operating-system build.
+3. Registration into the correct customer and host groups.
+4. Proxy, firewall, VPN, and remote-user behaviour.
+5. Policy assignment and precedence.
+6. Sensor update, rollback, and uninstall workflows.
+7. Coexistence or migration behaviour with Microsoft Defender and other security agents.
+8. Helpdesk recovery when a device is offline, isolated, or unable to update.
 
-## Where Falcon Go Falls Short
+Keep the pilot group small enough that a bad sensor or policy change cannot affect a business-critical fleet.
 
-**Custom detection rules**: IOA (Indicator of Attack) custom rules are an Enterprise feature. If you want to write your own detections based on behavioural patterns specific to your environment, you need a higher tier.
+## Update Control Questions
 
-**Threat graph investigation**: The event search and threat graph are read-only and limited in depth. Post-incident investigations that require pivoting through a full process tree require an upgrade.
+CrowdStrike's technical documentation exposes sensor-update policies, builds, schedules, policy precedence, and uninstall-protection settings. Confirm what the purchased package and assigned roles allow administrators to do in the console.
 
-**Support and response**: Check the support terms for the exact package you are buying. Do not assume Enterprise response times or services are included in Falcon Go.
+Ask the vendor to demonstrate:
 
-## What to Check Before Buying
+- How pilot, broad, and exception groups receive different sensor versions.
+- How an update is paused, pinned, rolled back, or moved between policies.
+- Which administrators can change policy precedence or uninstall protection.
+- How update failures and devices on unsupported builds are reported.
+- What recovery process applies if a sensor update disrupts startup, networking, or a line-of-business application.
 
-- Which features are included in Falcon Go versus Falcon Pro, Enterprise, or Complete
-- Whether your team can investigate and close alerts with the data exposed at this tier
-- How sensor updates are staged and paused
-- Whether your deployment tool can install the sensor reliably on all supported platforms
-- How exclusions are approved, documented, and reviewed
-- What happens when a device is offline, isolated, or repeatedly failing sensor updates
-- Whether Defender for Endpoint is already licensed through Microsoft 365 and good enough for your risk profile
+## Investigation and Response Questions
 
-## Verdict
+Do not evaluate only whether an alert appears. Test what the team can do after the alert:
 
-Falcon Go is a credible option for smaller organisations that want a dedicated endpoint protection product and can live with limited investigation depth. The main trade-off is not daily prevention management, it is what happens when an alert needs deeper analysis.
+- Is the process tree and event context sufficient for the expected incident workflow?
+- Can analysts search across affected hosts and retain evidence for the required period?
+- Which containment, isolation, remote-response, and managed-response functions are included?
+- Which actions require a higher package, additional service, or different role?
+- What is the escalation path when internal staff cannot complete the investigation?
 
-If your primary need is manageable prevention and alerting, it belongs on the shortlist. If you need threat hunting and detailed incident response workflows, evaluate a higher tier before committing.
+Use a harmless vendor-supported test method and document the expected alert, investigation fields, notification path, and closure evidence before the pilot begins.
+
+## Exclusions and Change Control
+
+Endpoint exclusions can reduce protection and should not become a permanent workaround for noisy applications. During the pilot, document:
+
+- Who may request and approve an exclusion.
+- The narrowest path, process, certificate, or indicator scope available.
+- An expiry or review date.
+- The evidence used to show the exclusion is still required.
+- The rollback process if the exclusion creates unacceptable exposure.
+
+## When Not to Choose This Operating Model
+
+Pause or reject the purchase if the team cannot establish ownership for sensor updates, alert triage, incident escalation, exclusions, and policy recovery. A product can be technically capable while still being a poor fit for an organisation that lacks time, permissions, support coverage, or a tested incident process.
+
+Also compare the proposed package with capabilities already licensed through Microsoft. Replacing one incomplete operating model with another is not an improvement.
+
+## Evaluation Checklist
+
+- [ ] Exact package name and current feature matrix obtained in writing.
+- [ ] Supported operating systems and server workloads confirmed.
+- [ ] Data location, retention, sub-processors, and contractual terms reviewed.
+- [ ] Pilot, update, rollback, and uninstall workflows demonstrated.
+- [ ] Investigation depth and response actions tested with safe evidence.
+- [ ] Roles, least privilege, and approval boundaries documented.
+- [ ] Exclusion governance and expiry process agreed.
+- [ ] Microsoft Defender licensing and migration/coexistence plan compared.
+- [ ] Support route, service hours, and escalation commitments confirmed.
+- [ ] Exit plan and sensor removal process tested before broad deployment.
+
+## Primary Sources
+
+- [CrowdStrike Falcon deployment scripts](https://developer.crowdstrike.com/falcon-sensor/scripts/overview/)
+- [CrowdStrike PowerShell sensor install and uninstall guidance](https://developer.crowdstrike.com/falcon-sensor/scripts/powershell/install/)
+- [CrowdStrike sensor update policy API reference](https://developer.crowdstrike.com/api-reference/collections/sensor-update-policy/)
+- [CrowdStrike policy management documentation](https://developer.crowdstrike.com/falcon-mcp/modules/policies/)
 
 ## Related Reading
 
 - [Windows Defender vs. CrowdStrike Falcon: Enterprise Comparison](/comparisons/windows-defender-vs-crowdstrike-falcon)
 - [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
-- [CrowdStrike Falcon documentation](https://www.crowdstrike.com/resources/guides/)

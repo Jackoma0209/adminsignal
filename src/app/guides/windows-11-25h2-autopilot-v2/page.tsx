@@ -1,288 +1,115 @@
-import { MDXRemote } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
-import { mdxComponents } from '@/components/ui/MdxComponents'
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Clock, CalendarDays, ShieldCheck, ChevronRight } from 'lucide-react'
-import { guides } from '@/data/guides'
-import { getAuthor } from '@/data/authors'
-import { getContentItem } from '@/lib/content'
+import { ExternalLink } from 'lucide-react'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { articleSchema, breadcrumbSchema } from '@/lib/schema'
+import { withNoindex } from '@/lib/noindex'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
-import TableOfContents from '@/components/article/TableOfContents'
-import AuthorBox from '@/components/article/AuthorBox'
-import RelatedContent from '@/components/article/RelatedContent'
-import AdSlot from '@/components/article/AdSlot'
-import TrustBanner from '@/components/article/TrustBanner'
-import AffiliateBlock from '@/components/article/AffiliateBlock'
-import Prose from '@/components/ui/Prose'
-import Badge from '@/components/ui/Badge'
-import StructuredData from '@/components/StructuredData'
-import NewsletterSection from '@/components/sections/NewsletterSection'
+import EditorialReviewNotice from '@/components/article/EditorialReviewNotice'
 
-const SLUG = 'windows-11-25h2-autopilot-v2'
 const PAGE_URL = 'https://www.adminsignal.com/guides/windows-11-25h2-autopilot-v2'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const guide = guides.find((g) => g.slug === SLUG)
-  if (!guide) return {}
-  const author = guide.authorId ? getAuthor(guide.authorId) : undefined
-  return buildArticleMetadata({
-    title: guide.title,
-    description: guide.excerpt,
+export const metadata: Metadata = withNoindex(
+  buildArticleMetadata({
+    title: 'Windows Autopilot Device Preparation Guide — Under Editorial Review',
+    description:
+      'This AdminSignal guide is temporarily unavailable while its Autopilot device preparation instructions are rewritten against current Microsoft documentation.',
     url: PAGE_URL,
-    category: guide.category,
-    publishedTime: guide.publishedAt,
-    tags: guide.tags,
-    authorName: author?.name,
-  })
-}
+    category: 'Microsoft Intune',
+    publishedTime: '2026-04-10',
+    tags: ['Windows Autopilot', 'Device Preparation', 'Microsoft Intune'],
+    authorName: 'Jack Hadcroft',
+  }),
+)
 
-export default async function Windows1125H2AutopilotV2Page() {
-  const guide = guides.find((g) => g.slug === SLUG)!
-  const author = guide.authorId ? getAuthor(guide.authorId) : undefined
+const officialSources = [
+  {
+    title: 'Windows Autopilot device preparation FAQ',
+    href: 'https://learn.microsoft.com/en-us/autopilot/device-preparation/faq',
+    detail:
+      'Microsoft’s current answers on supported join types, assignment, registration, ESP, and deployment modes.',
+  },
+  {
+    title: 'Compare device preparation and Windows Autopilot',
+    href: 'https://learn.microsoft.com/en-us/autopilot/device-preparation/compare',
+    detail:
+      'A feature-by-feature comparison of device preparation and the legacy Windows Autopilot workflows.',
+  },
+  {
+    title: 'Create a device preparation policy',
+    href: 'https://learn.microsoft.com/en-us/autopilot/device-preparation/tutorial/user-driven/entra-join-autopilot-policy',
+    detail:
+      'Microsoft’s supported user-driven Microsoft Entra join policy workflow and assignment model.',
+  },
+]
 
-  const { content, headings, frontmatter } = getContentItem('tutorials', SLUG)
-  const lastReviewed = frontmatter.lastReviewed as string | undefined
-  const reviewNote = frontmatter.reviewNote as string | undefined
-
-  const relatedItems = [
-    {
-      title: 'Understanding Autopilot v2: Enrollment Profiles, ESP, and Common Failure Modes',
-      href: '/tutorials/autopilot-v2-enrollment-esp-troubleshooting',
-      type: 'tutorial' as const,
-      excerpt:
-        'Windows Autopilot v2 changes how enrollment profiles work. Covers device preparation, the Enrollment Status Page, and a decision tree for diagnosing the most common deployment failures.',
-      meta: '16 min read · Intermediate',
-    },
-    {
-      title: 'Deploying Windows LAPS with Microsoft Intune: A Complete Walkthrough',
-      href: '/tutorials/deploy-windows-laps-intune',
-      type: 'tutorial' as const,
-      excerpt:
-        'Step-by-step guide to rolling out Windows Local Administrator Password Solution across your Intune-managed fleet — the essential companion to any zero-touch deployment.',
-      meta: '14 min read · Intermediate',
-    },
-    {
-      title: 'Hardening Windows 11 Endpoints with CIS Benchmark Level 1',
-      href: '/tutorials/hardening-windows-11-cis-benchmark',
-      type: 'tutorial' as const,
-      excerpt:
-        'Apply CIS Level 1 controls to Windows 11 25H2 using Intune profiles and a validation script that reports compliance gaps. Run this after Autopilot provisioning.',
-      meta: '20 min read · Advanced',
-    },
-  ]
-
-  const jsonLd = articleSchema({
-    title: guide.title,
-    description: guide.excerpt,
-    publishedTime: guide.publishedAt,
-    modifiedTime: lastReviewed,
-    authorName: author?.name,
-    url: PAGE_URL,
-    tags: guide.tags,
-  })
-
-  const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://www.adminsignal.com' },
-    { name: 'Guides', url: 'https://www.adminsignal.com/tutorials' },
-    { name: guide.title, url: PAGE_URL },
-  ])
-
+export default function Windows1125H2AutopilotV2Page() {
   return (
     <>
-      <StructuredData data={jsonLd} />
-      <StructuredData data={jsonLdBreadcrumb} />
-
-      {/* ── Breadcrumbs ─────────────────────────────────────────────────── */}
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
           <Breadcrumbs
             crumbs={[
               { label: 'Home', href: '/' },
               { label: 'Tutorials', href: '/tutorials' },
-              { label: guide.title },
+              { label: 'Autopilot guide under editorial review' },
             ]}
           />
         </Container>
       </div>
 
-      {/* ── Hero header ─────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden border-b border-border bg-surface/30">
-        {/* Dot grid */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          aria-hidden="true"
-          style={{
-            backgroundImage: 'radial-gradient(circle, #94a3b8 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-          }}
-        />
-        {/* Cyan radial glow */}
-        <div
-          className="pointer-events-none absolute -top-40 left-1/2 h-125 w-225 -translate-x-1/2 opacity-[0.07]"
-          aria-hidden="true"
-          style={{
-            background: 'radial-gradient(ellipse, rgba(34,211,238,1) 0%, transparent 70%)',
-          }}
-        />
+      <Container>
+        <main className="mx-auto max-w-3xl py-12 lg:py-16">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
+            Microsoft Intune
+          </p>
+          <h1 className="mb-5 text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl">
+            Windows Autopilot device preparation guide under editorial review
+          </h1>
+          <p className="mb-8 text-base leading-relaxed text-muted sm:text-lg">
+            The previous version mixed concepts from legacy Windows Autopilot with the newer Windows
+            Autopilot device preparation workflow. It has been withdrawn from the normal publication
+            surface rather than left online as deployment guidance.
+          </p>
 
-        <Container>
-          <div className="relative py-12 lg:py-16">
-            {/* Category + difficulty badges */}
-            <div className="mb-5 flex flex-wrap items-center gap-2">
-              <Badge variant="category">{guide.category}</Badge>
-              <Badge variant="language">{guide.difficulty}</Badge>
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/8 px-3 py-1 text-xs font-medium text-emerald-400">
-                <ShieldCheck className="h-3 w-3" />
-                Updated April 2026
-              </span>
-            </div>
+          <EditorialReviewNotice reason="Microsoft's current documentation distinguishes device preparation from legacy Autopilot in its use of assigned device groups, user-group policy assignment, Microsoft Entra join support, registration requirements, and the absence of Enrollment Status Page processing." />
 
-            {/* Title */}
-            <h1 className="mb-5 max-w-3xl text-3xl font-bold leading-tight tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-              {guide.title}
-            </h1>
-
-            {/* Excerpt / deck */}
-            <p className="mb-7 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
-              {guide.excerpt}
-            </p>
-
-            {/* Meta row */}
-            <div className="flex flex-wrap items-center gap-5 text-sm text-muted">
-              {author && (
-                <span className="flex items-center gap-2">
-                  <span
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-primary"
-                    aria-hidden="true"
-                  >
-                    {author.initials}
-                  </span>
-                  {author.name}
-                </span>
-              )}
-              <span className="flex items-center gap-1.5">
-                <CalendarDays className="h-4 w-4 text-muted/50" aria-hidden="true" />
-                <time dateTime={guide.publishedAt}>{guide.date}</time>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4 text-muted/50" aria-hidden="true" />
-                {guide.readTime}
-              </span>
-            </div>
-
-            {/* Quick navigation shortcuts */}
-            <nav
-              aria-label="Jump to section"
-              className="mt-8 flex flex-wrap gap-2"
-            >
-              {[
-                { label: 'Tenant readiness', href: '#tenant-readiness-checklist' },
-                { label: 'Device prep policy', href: '#configuring-the-autopilot-v2-device-preparation-policy' },
-                { label: 'App strategy', href: '#app-deployment-strategy-during-autopilot' },
-                { label: 'Rollout sequence', href: '#production-rollout-sequence' },
-                { label: 'Troubleshooting', href: '#troubleshooting-common-failure-points' },
-              ].map(({ label, href }) => (
+          <section className="mt-10" aria-labelledby="official-sources-heading">
+            <h2 id="official-sources-heading" className="mb-4 text-xl font-semibold text-foreground">
+              Use these Microsoft sources meanwhile
+            </h2>
+            <div className="space-y-3">
+              {officialSources.map((source) => (
                 <a
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-1 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
+                  key={source.href}
+                  href={source.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block rounded-xl border border-border bg-surface p-5 transition-colors hover:border-border-strong hover:bg-surface-elevated/40"
                 >
-                  {label}
-                  <ChevronRight className="h-3 w-3 text-muted/50" aria-hidden="true" />
+                  <span className="flex items-center gap-2 font-semibold text-foreground group-hover:text-primary">
+                    {source.title}
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                  <span className="mt-2 block text-sm leading-relaxed text-muted">{source.detail}</span>
                 </a>
               ))}
-            </nav>
+            </div>
+          </section>
+
+          <div className="mt-10 rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            Continue with the{' '}
+            <Link href="/tutorials" className="font-medium text-primary hover:underline">
+              verified tutorial index
+            </Link>{' '}
+            or the{' '}
+            <Link href="/intune" className="font-medium text-primary hover:underline">
+              Microsoft Intune topic hub
+            </Link>
+            .
           </div>
-        </Container>
-      </div>
-
-      {/* ── Main content ────────────────────────────────────────────────── */}
-      <Container>
-        <div className="py-10 lg:py-14">
-          {lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />}
-
-          <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
-            {/* ── Article body ──────────────────────────────────────────── */}
-            <article className="min-w-0">
-              <AdSlot variant="banner" className="mb-8" />
-
-              <Prose>
-                <MDXRemote
-                  source={content}
-                  options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
-                  components={mdxComponents}
-                />
-              </Prose>
-
-              {/* ── Affiliate block ─────────────────────────────────────── */}
-              <AffiliateBlock
-                toolName="Microsoft Intune"
-                tagline="Manage, secure, and report on all your endpoints from a single cloud-native console. The platform this entire guide is built around."
-                href="https://intune.microsoft.com"
-                badge="Recommended"
-                external
-              />
-
-              {/* ── Author box ──────────────────────────────────────────── */}
-              {author && (
-                <div className="mt-12">
-                  <AuthorBox author={author} />
-                </div>
-              )}
-
-              {/* ── Internal linking section ────────────────────────────── */}
-              <div className="mt-10 rounded-xl border border-border bg-surface p-6">
-                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted">
-                  Explore the full Intune toolkit
-                </p>
-                <ul className="space-y-2.5">
-                  {[
-                    { label: 'All Intune guides and news', href: '/intune' },
-                    { label: 'Autopilot troubleshooting index', href: '/troubleshooting' },
-                    { label: 'PowerShell script library', href: '/scripts' },
-                    { label: 'Windows Server topic hub', href: '/windows-server' },
-                    { label: 'Browse all tutorials', href: '/tutorials' },
-                  ].map(({ label, href }) => (
-                    <li key={href}>
-                      <Link
-                        href={href}
-                        className="flex items-center gap-2 text-sm text-muted transition-colors hover:text-primary"
-                      >
-                        <ChevronRight className="h-3.5 w-3.5 text-primary/50" aria-hidden="true" />
-                        {label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </article>
-
-            {/* ── Sidebar ───────────────────────────────────────────────── */}
-            <aside className="min-w-0">
-              <div className="sticky top-20 space-y-6">
-                {headings.length >= 2 && (
-                  <div className="rounded-xl border border-border bg-surface p-5">
-                    <TableOfContents headings={headings} />
-                  </div>
-                )}
-                <AdSlot variant="sidebar" />
-              </div>
-            </aside>
-          </div>
-
-          {/* ── Related tutorials ────────────────────────────────────── */}
-          <div className="mt-14 border-t border-border pt-12">
-            <RelatedContent items={relatedItems} heading="Related tutorials" />
-          </div>
-        </div>
+        </main>
       </Container>
-
-      {/* ── Newsletter CTA ──────────────────────────────────────────────── */}
-      <NewsletterSection />
     </>
   )
 }

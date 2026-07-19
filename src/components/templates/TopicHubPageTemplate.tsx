@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
+import { isNoindexHref } from '@/lib/noindex'
 
-interface ContentItem {
+export interface TopicContentItem {
   title: string
   href: string
   excerpt: string
@@ -15,18 +16,29 @@ interface TopicHubPageTemplateProps {
   topicName: string
   description: string
   eyebrow?: string
-  news: ContentItem[]
-  tutorials: ContentItem[]
-  scripts: ContentItem[]
+  news: TopicContentItem[]
+  tutorials: TopicContentItem[]
+  troubleshooting?: TopicContentItem[]
+  /**
+   * Legacy compatibility only. Incomplete script resources are deliberately not
+   * rendered, even if an older topic page still supplies this property.
+   */
+  scripts?: TopicContentItem[]
   relatedTopics: { name: string; href: string }[]
 }
 
-function HubContentRow({ items, sectionTitle, viewAllHref }: {
-  items: ContentItem[]
+function HubContentRow({
+  items,
+  sectionTitle,
+  viewAllHref,
+}: {
+  items: TopicContentItem[]
   sectionTitle: string
   viewAllHref: string
 }) {
-  if (items.length === 0) return null
+  const publicItems = items.filter((item) => !isNoindexHref(item.href))
+  if (publicItems.length === 0) return null
+
   return (
     <div className="border-t border-border py-12">
       <Container>
@@ -37,12 +49,12 @@ function HubContentRow({ items, sectionTitle, viewAllHref }: {
               href={viewAllHref}
               className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
             >
-              View all <ArrowRight className="h-4 w-4" />
+              View all <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           }
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
+          {publicItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -72,12 +84,11 @@ export default function TopicHubPageTemplate({
   eyebrow = 'Topic Hub',
   news,
   tutorials,
-  scripts,
+  troubleshooting = [],
   relatedTopics,
 }: TopicHubPageTemplateProps) {
   return (
     <>
-      {/* Hero */}
       <div className="border-b border-border bg-surface/20 py-14">
         <Container>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
@@ -87,16 +98,20 @@ export default function TopicHubPageTemplate({
             {topicName}
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
-          <p className="mt-4 text-xs text-muted/60">Guides, scripts and analysis</p>
+          <p className="mt-4 text-xs text-muted/60">
+            Verified tutorials, troubleshooting guides, news, and analysis
+          </p>
         </Container>
       </div>
 
-      {/* Content rows */}
       <HubContentRow items={news} sectionTitle="Latest News" viewAllHref="/news" />
       <HubContentRow items={tutorials} sectionTitle="Deep-Dive Tutorials" viewAllHref="/tutorials" />
-      <HubContentRow items={scripts} sectionTitle="Scripts & Automation" viewAllHref="/scripts" />
+      <HubContentRow
+        items={troubleshooting}
+        sectionTitle="Troubleshooting Guides"
+        viewAllHref="/troubleshooting"
+      />
 
-      {/* Related topics */}
       {relatedTopics.length > 0 && (
         <div className="border-t border-border py-12">
           <Container>
@@ -104,13 +119,13 @@ export default function TopicHubPageTemplate({
               Related topics
             </p>
             <div className="flex flex-wrap gap-2">
-              {relatedTopics.map((t) => (
+              {relatedTopics.map((topic) => (
                 <Link
-                  key={t.href}
-                  href={t.href}
+                  key={topic.href}
+                  href={topic.href}
                   className="rounded-full border border-border px-4 py-1.5 text-sm text-muted transition-colors hover:border-border-strong hover:text-foreground-soft"
                 >
-                  {t.name}
+                  {topic.name}
                 </Link>
               ))}
             </div>
