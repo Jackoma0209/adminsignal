@@ -13,6 +13,11 @@ export interface Review {
   readTime: string
   authorId: string
   isFeatured?: boolean
+  /**
+   * Legacy compatibility only. Numerical review scores are intentionally not
+   * populated while these research notes remain noindex and evidence-limited.
+   */
+  rating?: number
 }
 
 /**
@@ -21,6 +26,8 @@ export interface Review {
  * These records deliberately contain no numerical ratings, awards, deployment
  * claims, benchmark claims, or implied firsthand-use claims. The associated
  * routes remain noindex until stronger evidence and source coverage are added.
+ * A neutral category keeps legacy topic templates from promoting them as
+ * scored product reviews.
  */
 export const reviews: Review[] = [
   {
@@ -28,7 +35,7 @@ export const reviews: Review[] = [
     title: 'CrowdStrike Falcon Go: Evaluation Notes for SMB Endpoint Protection',
     slug: 'crowdstrike-falcon-go-review',
     productName: 'CrowdStrike Falcon Go',
-    category: 'Endpoint Security',
+    category: 'Product Evaluation',
     excerpt:
       'Research notes for evaluating Falcon Go, focused on tier boundaries, deployment planning, investigation requirements, update control, support terms, and comparison with existing Microsoft licensing.',
     documentedStrengths: [
@@ -54,7 +61,7 @@ export const reviews: Review[] = [
     title: 'Nerdio for Intune: Evaluation Notes for AVD Management',
     slug: 'nerdio-for-intune-review',
     productName: 'Nerdio for Intune',
-    category: 'Endpoint Management',
+    category: 'Product Evaluation',
     excerpt:
       'A source-backed planning guide for evaluating Nerdio alongside Azure Virtual Desktop, Windows 365, Intune, image management, delegated administration, licensing, and rollback requirements.',
     documentedStrengths: [
@@ -80,7 +87,7 @@ export const reviews: Review[] = [
     title: 'Veeam Backup for Microsoft 365: Evaluation Notes',
     slug: 'veeam-backup-m365-review',
     productName: 'Veeam Backup for Microsoft 365',
-    category: 'Microsoft 365',
+    category: 'Product Evaluation',
     excerpt:
       'Research notes for evaluating Microsoft 365 backup requirements, Veeam deployment models, storage ownership, permissions, restore testing, monitoring, and operational responsibility.',
     documentedStrengths: [
