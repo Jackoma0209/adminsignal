@@ -1,6 +1,6 @@
 import { liveSignals } from '@/data/signals'
 import { guides } from '@/data/guides'
-import { scripts } from '@/data/scripts'
+import { isNoindexHref, isNoindexNewsSlug } from '@/lib/noindex'
 
 export const dynamic = 'force-static'
 
@@ -8,7 +8,7 @@ const BASE = 'https://www.adminsignal.com'
 const FEED_URL = `${BASE}/rss.xml`
 const SITE_TITLE = 'AdminSignal'
 const SITE_DESCRIPTION =
-  'Practical guides, PowerShell implementation notes, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets and Intune tenants.'
+  'Source-backed guides and analysis for endpoint specialists, Windows administrators, Microsoft Intune administrators, PowerShell users, and enterprise IT engineers.'
 
 function escapeXml(str: string): string {
   return str
@@ -35,47 +35,32 @@ interface FeedItem {
 function buildItems(): FeedItem[] {
   const items: FeedItem[] = []
 
-  // News signals
-  for (const s of liveSignals) {
+  for (const signal of liveSignals.filter((item) => !isNoindexNewsSlug(item.slug))) {
     items.push({
-      title: s.title,
-      link: `${BASE}/news/${s.slug}`,
-      description: s.excerpt,
-      pubDate: s.publishedAt,
-      category: s.category,
-      guid: `${BASE}/news/${s.slug}`,
+      title: signal.title,
+      link: `${BASE}/news/${signal.slug}`,
+      description: signal.excerpt,
+      pubDate: signal.publishedAt,
+      category: signal.category,
+      guid: `${BASE}/news/${signal.slug}`,
     })
   }
 
-  // Tutorials / guides (MDX-backed)
-  for (const g of guides) {
-    const href = g.href ?? `/tutorials/${g.slug}`
+  for (const guide of guides) {
+    const href = guide.href ?? `/tutorials/${guide.slug}`
+    if (isNoindexHref(href)) continue
+
     items.push({
-      title: g.title,
+      title: guide.title,
       link: `${BASE}${href}`,
-      description: g.excerpt,
-      pubDate: g.publishedAt,
-      category: g.category,
+      description: guide.excerpt,
+      pubDate: guide.publishedAt,
+      category: guide.category,
       guid: `${BASE}${href}`,
     })
   }
 
-  // Scripts — no publishedAt on the Script type, use a stable fallback so
-  // they appear at the bottom of a sorted feed without claiming a false date.
-  for (const sc of scripts) {
-    items.push({
-      title: `Script: ${sc.title}`,
-      link: `${BASE}/scripts/${sc.slug}`,
-      description: sc.description,
-      pubDate: '2026-01-01',
-      category: sc.language,
-      guid: `${BASE}/scripts/${sc.slug}`,
-    })
-  }
-
-  // Sort newest-first
   items.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
-
   return items
 }
 
@@ -103,10 +88,8 @@ export function GET() {
     <title>${escapeXml(SITE_TITLE)}</title>
     <link>${BASE}</link>
     <description>${escapeXml(SITE_DESCRIPTION)}</description>
-    <language>en-us</language>
+    <language>en-gb</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
-    <managingEditor>jack@adminsignal.com (Jack)</managingEditor>
-    <webMaster>jack@adminsignal.com (Jack)</webMaster>
     <image>
       <url>${BASE}/og-default.png</url>
       <title>${escapeXml(SITE_TITLE)}</title>
@@ -120,7 +103,6 @@ export function GET() {
   return new Response(xml, {
     headers: {
       'Content-Type': 'application/rss+xml; charset=utf-8',
-      // Cache for 1 hour on CDN edge; revalidate in background
       'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
     },
   })
