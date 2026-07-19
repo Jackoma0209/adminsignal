@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Mail, Wrench } from 'lucide-react'
+import { ArrowRight, Wrench } from 'lucide-react'
 
 export default function HeroSection() {
   return (
@@ -63,13 +63,6 @@ export default function HeroSection() {
             >
               <Wrench className="h-4 w-4" aria-hidden="true" />
               Troubleshoot an Issue
-            </Link>
-            <Link
-              href="/#newsletter"
-              className="inline-flex items-center justify-center gap-2 rounded-lg border border-primary/30 bg-primary-soft px-6 py-3 text-sm font-semibold text-primary transition-colors hover:border-primary/50"
-            >
-              <Mail className="h-4 w-4" aria-hidden="true" />
-              Get the Digest
             </Link>
           </div>
 
