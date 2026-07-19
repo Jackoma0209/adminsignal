@@ -9,7 +9,7 @@ export interface Author {
   linkedIn?: string
   twitter?: string
   github?: string
-  /** Display label for certifications, e.g. "Microsoft Certified: Modern Desktop" */
+  /** Only publish credentials that the author has explicitly verified. */
   certifications?: string[]
 }
 
@@ -17,16 +17,12 @@ export interface Author {
 export const primaryAuthor: Author = {
   id: 'jack',
   name: 'Jack',
-  role: 'Microsoft Admin Practitioner and AdminSignal Author',
-  bio: 'I write from practical experience managing Windows, Intune, and Active Directory environments, with a focus on source-backed guidance, operational risk, and clear admin workflows. AdminSignal exists because I wanted documentation that goes beyond "click Apply" without pretending every environment is the same.',
+  role: 'Endpoint Specialist and AdminSignal Author',
+  bio: 'I publish independent, source-backed guidance for Windows endpoint management, Microsoft Intune, Active Directory, PowerShell, and related Microsoft administration work. Articles focus on prerequisites, validation, operational risk, and safe rollout decisions, with examples and limitations labelled clearly.',
   initials: 'J',
   avatarUrl: '/images/authors/jack.jpg',
   linkedIn: 'https://www.linkedin.com/in/jackoma0209',
   github: 'https://github.com/Jackoma0209',
-  certifications: [
-    'Microsoft Certified: Modern Desktop Administrator Associate',
-    'Microsoft Certified: Endpoint Administrator Associate',
-  ],
 }
 
 export const authors: Author[] = [primaryAuthor]
