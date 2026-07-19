@@ -5,12 +5,11 @@ import matter from 'gray-matter'
 const root = process.cwd()
 const contentRoot = path.join(root, 'src', 'content')
 const threshold = Number.parseInt(process.env.EDITORIAL_QUALITY_THRESHOLD ?? '60', 10)
-const strictThreshold = process.env.QUALITY_STRICT === 'true'
+const strictThreshold = process.env.QUALITY_STRICT !== 'false'
 const now = new Date()
 const errors = []
 const warnings = []
 
-const nonIndexableTypes = new Set(['reviews', 'scripts'])
 const knownStaticRoutes = new Set([
   '/', '/about', '/advertise', '/affiliate-disclosure', '/best-tools', '/comparisons',
   '/contact', '/cookies', '/editorial-policy', '/endpoint-security', '/group-policy',
@@ -85,10 +84,28 @@ function markdownLinks(body) {
   return [...body.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)].map((match) => match[1].trim())
 }
 
-function extractDraftNewsSlugs() {
-  const source = read(path.join(root, 'src', 'lib', 'noindex.ts'))
-  const block = source.match(/DRAFT_NEWS_SLUGS\s*=\s*new Set\(\[([\s\S]*?)\]\)/)?.[1] ?? ''
+function extractSetSlugs(source, setName) {
+  const escaped = setName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const block = source.match(
+    new RegExp(`${escaped}\\s*=\\s*new Set(?:<[^>]+>)?\\(\\[([\\s\\S]*?)\\]\\)`),
+  )?.[1] ?? ''
   return new Set([...block.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1]))
+}
+
+function extractMapKeys(source, mapName) {
+  const start = source.indexOf(mapName)
+  if (start < 0) return new Set()
+  const end = source.indexOf('])', start)
+  const block = end >= 0 ? source.slice(start, end + 2) : source.slice(start)
+  return new Set([...block.matchAll(/\[\s*['"]([^'"]+)['"]\s*,/g)].map((match) => match[1]))
+}
+
+function extractLiveNewsSlugs(source) {
+  const start = source.indexOf('export const liveSignals')
+  const end = source.indexOf('export const draftSignals')
+  if (start < 0 || end < 0 || end <= start) return new Set()
+  const block = source.slice(start, end)
+  return new Set([...block.matchAll(/\bslug:\s*['"]([^'"]+)['"]/g)].map((match) => match[1]))
 }
 
 function contains(body, terms) {
@@ -158,7 +175,39 @@ function qualityScore(record) {
   }
 }
 
-const draftNews = extractDraftNewsSlugs()
+const noindexSource = read(path.join(root, 'src', 'lib', 'noindex.ts'))
+const signalsSource = read(path.join(root, 'src', 'data', 'signals.ts'))
+const liveNewsSlugs = extractLiveNewsSlugs(signalsSource)
+const draftNewsSlugs = extractSetSlugs(noindexSource, 'DRAFT_NEWS_SLUGS')
+const noindexNewsSlugs = extractSetSlugs(noindexSource, 'NOINDEX_NEWS_SLUGS')
+const noindexTroubleshootingSlugs = extractSetSlugs(noindexSource, 'NOINDEX_TROUBLESHOOTING_SLUGS')
+const noindexComparisonSlugs = extractSetSlugs(noindexSource, 'NOINDEX_COMPARISON_SLUGS')
+const noindexTutorialSlugs = extractSetSlugs(noindexSource, 'NOINDEX_TUTORIAL_SLUGS')
+const duplicateTutorialSlugs = extractMapKeys(noindexSource, 'DUPLICATE_TUTORIAL_REDIRECTS')
+
+function isIndexableRecord(type, slug) {
+  switch (type) {
+    case 'reviews':
+    case 'scripts':
+      return false
+    case 'news':
+      return liveNewsSlugs.has(slug) && !draftNewsSlugs.has(slug) && !noindexNewsSlugs.has(slug)
+    case 'troubleshooting':
+      return !noindexTroubleshootingSlugs.has(slug)
+    case 'comparisons':
+      return !noindexComparisonSlugs.has(slug)
+    case 'tutorials':
+      return !noindexTutorialSlugs.has(slug) && !duplicateTutorialSlugs.has(slug)
+    default:
+      return true
+  }
+}
+
+function isAddressableRecord(type, slug) {
+  if (type === 'news') return liveNewsSlugs.has(slug)
+  return true
+}
+
 const records = walk(contentRoot).map((file) => {
   const source = read(file)
   const parsed = matter(source)
@@ -172,10 +221,14 @@ const records = walk(contentRoot).map((file) => {
     type,
     slug,
     route: `/${type}/${slug}`,
-    indexable: !nonIndexableTypes.has(type) && !(type === 'news' && draftNews.has(slug)),
+    indexable: isIndexableRecord(type, slug),
+    addressable: isAddressableRecord(type, slug),
   }
 })
-const knownRoutes = new Set([...knownStaticRoutes, ...records.map((record) => record.route)])
+const knownRoutes = new Set([
+  ...knownStaticRoutes,
+  ...records.filter((record) => record.addressable).map((record) => record.route),
+])
 const titles = new Map()
 const descriptions = new Map()
 
@@ -228,19 +281,25 @@ for (const record of records) {
   }
 }
 
-const noindexSource = read(path.join(root, 'src', 'lib', 'noindex.ts'))
 const sitemapSource = read(path.join(root, 'src', 'app', 'sitemap.ts'))
 const authorsSource = read(path.join(root, 'src', 'data', 'authors.ts'))
 const reviewsSource = read(path.join(root, 'src', 'data', 'reviews.ts'))
 const reviewPageSource = read(path.join(root, 'src', 'app', 'reviews', '[slug]', 'page.tsx'))
 const scriptPageSource = read(path.join(root, 'src', 'app', 'scripts', '[slug]', 'page.tsx'))
 const homepageSource = read(path.join(root, 'src', 'app', 'page.tsx'))
+const guideReviewPageSource = read(path.join(root, 'src', 'app', 'guides', 'windows-11-25h2-autopilot-v2', 'page.tsx'))
 
 for (const route of ["'/scripts'", "'/reviews'"]) {
   if (!noindexSource.includes(route)) errors.push(`src/lib/noindex.ts: missing ${route} rule`)
 }
+if (!/DRAFT_NEWS_SLUGS\.has\(slug\)\s*\|\|\s*NOINDEX_NEWS_SLUGS\.has\(slug\)/.test(noindexSource)) {
+  errors.push('src/lib/noindex.ts: draft news is not enforced by isNoindexNewsSlug')
+}
 if (/\$\{BASE\}\/scripts|\$\{BASE\}\/reviews/.test(sitemapSource)) {
   errors.push('src/app/sitemap.ts: noindex archive included in sitemap')
+}
+if (!/isNoindexContentRoute\('guides', guide\.slug\)/.test(sitemapSource)) {
+  errors.push('src/app/sitemap.ts: flagship guide routes are not filtered for noindex')
 }
 if (/\brating\s*:|ratingValue|reviewSchema\s*\(/.test(reviewsSource + reviewPageSource)) {
   errors.push('Product evaluation pages contain a numerical rating or Review schema')
@@ -254,9 +313,26 @@ for (const claim of [/Microsoft Certified:/i, /senior enterprise sysadmin/i, /mo
 if (/Last site-wide review|toLocaleDateString\([^)]*month/.test(homepageSource)) {
   errors.push('src/app/page.tsx: automatic site-wide review date detected')
 }
+if (!/withNoindex/.test(guideReviewPageSource) || /MDXRemote|articleSchema|AdSlot|AffiliateBlock/.test(guideReviewPageSource)) {
+  errors.push('Flagship Autopilot guide is not safely reduced to a noindex editorial-review page')
+}
 
-const scored = records.filter((record) => record.indexable && record.quality).sort((a, b) => a.quality.score - b.quality.score)
-console.log(`Content inventory: ${records.length} MDX files; ${scored.length} indexable.`)
+const requiredQuarantines = [
+  [noindexNewsSlugs, 'april-2026-patch-tuesday-breakdown', 'news'],
+  [noindexTroubleshootingSlugs, 'april-2026-bitlocker-recovery-loop-kb5082063', 'troubleshooting'],
+  [noindexTutorialSlugs, 'autopilot-v2-enrollment-esp-troubleshooting', 'tutorial'],
+  [noindexTutorialSlugs, 'windows-11-25h2-autopilot-v2', 'tutorial'],
+]
+for (const [set, slug, type] of requiredQuarantines) {
+  if (!set.has(slug)) errors.push(`Required ${type} quarantine is missing: ${slug}`)
+}
+
+const scored = records
+  .filter((record) => record.indexable && record.quality)
+  .sort((a, b) => a.quality.score - b.quality.score)
+console.log(
+  `Content inventory: ${records.length} MDX files; ${scored.length} indexable; ${liveNewsSlugs.size} live news records.`,
+)
 console.log(`Editorial threshold: ${threshold}/100${strictThreshold ? ' (strict)' : ' (warning only)'}.`)
 console.log('\nLowest-scoring indexable articles:')
 for (const record of scored.slice(0, 15)) {
