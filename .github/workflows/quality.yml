@@ -33,10 +33,22 @@ jobs:
         run: npm run check:adsense
 
       - name: Audit content quality and indexation
+        id: quality
         shell: bash
         run: |
-          set -o pipefail
-          npm run check:quality 2>&1 | tail -n 160
+          set +e
+          npm run check:quality > /tmp/content-quality.log 2>&1
+          STATUS=$?
+          tail -n 160 /tmp/content-quality.log
+          exit $STATUS
+
+      - name: Preserve content audit output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-quality-output
+          path: /tmp/content-quality.log
+          if-no-files-found: error
 
       - name: Production build
         run: npm run build
