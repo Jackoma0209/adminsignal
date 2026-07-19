@@ -10,10 +10,9 @@ const nav = [
   { label: 'News', href: '/news' },
   { label: 'Tutorials', href: '/tutorials' },
   { label: 'Troubleshooting', href: '/troubleshooting' },
-  { label: 'Scripts', href: '/scripts' },
   { label: 'Comparisons', href: '/comparisons' },
-  { label: 'Reviews', href: '/reviews' },
   { label: 'Topics', href: '/topics' },
+  { label: 'About', href: '/about' },
 ]
 
 function useTheme() {
@@ -68,7 +67,6 @@ export default function Header() {
   }
 
   function handleDesktopBlur() {
-    // Small delay so a keyboard Enter fires submitSearch before blur clears state
     setTimeout(() => {
       setSearchOpen(false)
       setQuery('')
@@ -77,8 +75,8 @@ export default function Header() {
 
   function handleMobileSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const val = mobileSearchRef.current?.value ?? ''
-    submitSearch(val)
+    const value = mobileSearchRef.current?.value ?? ''
+    submitSearch(value)
     setMobileOpen(false)
   }
 
@@ -86,7 +84,6 @@ export default function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
-          {/* Logo */}
           <Link href="/" className="group flex shrink-0 items-center gap-2.5">
             <Image
               src="/logo.svg"
@@ -101,8 +98,7 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden items-center gap-0.5 lg:flex">
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary navigation">
             {nav.map((item) => (
               <Link
                 key={item.href}
@@ -114,16 +110,14 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* Desktop right controls */}
           <div className="hidden items-center gap-2 lg:flex">
-            {/* Expandable search */}
             <div className="relative flex items-center">
               {searchOpen ? (
                 <input
                   ref={searchRef}
                   type="search"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(event) => setQuery(event.target.value)}
                   onKeyDown={handleDesktopKeyDown}
                   onBlur={handleDesktopBlur}
                   placeholder="Search AdminSignal…"
@@ -132,31 +126,31 @@ export default function Header() {
                 />
               ) : (
                 <button
+                  type="button"
                   onClick={() => setSearchOpen(true)}
                   className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
                   aria-label="Search"
                 >
-                  <Search className="h-4 w-4" />
+                  <Search className="h-4 w-4" aria-hidden="true" />
                 </button>
               )}
             </div>
 
-            {/* RSS feed */}
             <a
               href="/rss.xml"
               className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-primary"
-              aria-label="RSS Feed"
+              aria-label="RSS feed"
             >
               <Rss className="h-4 w-4" aria-hidden="true" />
             </a>
 
-            {/* Theme toggle */}
             <button
+              type="button"
               onClick={toggleTheme}
               className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
             </button>
 
             <Link
@@ -167,23 +161,21 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Mobile toggle */}
           <button
+            type="button"
             className="rounded-md p-2 text-muted transition-colors hover:bg-surface-elevated hover:text-foreground lg:hidden"
-            onClick={() => setMobileOpen((v) => !v)}
+            onClick={() => setMobileOpen((open) => !open)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile menu */}
       {mobileOpen && (
         <div className="border-t border-border bg-background lg:hidden">
-          <nav className="flex flex-col gap-1 px-4 py-4">
-            {/* Mobile search */}
+          <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Mobile navigation">
             <form onSubmit={handleMobileSubmit} className="mb-3">
               <div className="flex items-center gap-2 rounded-md border border-border-strong bg-surface px-3 py-2.5">
                 <Search className="h-4 w-4 shrink-0 text-muted/60" aria-hidden="true" />
@@ -217,11 +209,12 @@ export default function Header() {
                 Get the Newsletter
               </Link>
               <button
+                type="button"
                 onClick={toggleTheme}
                 className="rounded-md border border-border p-2.5 text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
                 aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
               </button>
             </div>
           </nav>
