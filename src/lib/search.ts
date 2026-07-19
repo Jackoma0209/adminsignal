@@ -1,21 +1,18 @@
 import { signals } from '@/data/signals'
 import { guides } from '@/data/guides'
-import { scripts } from '@/data/scripts'
 import { comparisons } from '@/data/comparisons'
 import { topics } from '@/data/topics'
 import { troubleshootingArticles } from '@/data/troubleshooting'
 import {
   isNoindexComparisonSlug,
+  isNoindexHref,
   isNoindexNewsSlug,
   isNoindexTroubleshootingSlug,
-  isNoindexTutorialSlug,
 } from '@/lib/noindex'
 
 export type ContentType =
   | 'news'
   | 'tutorial'
-  | 'script'
-  | 'review'
   | 'comparison'
   | 'troubleshooting'
   | 'topic'
@@ -23,8 +20,6 @@ export type ContentType =
 export const TYPE_LABELS: Record<ContentType, string> = {
   news: 'News',
   tutorial: 'Tutorial',
-  script: 'Script',
-  review: 'Review',
   comparison: 'Comparison',
   troubleshooting: 'Troubleshooting',
   topic: 'Topic',
@@ -48,96 +43,103 @@ interface IndexItem extends SearchResult {
 function buildIndex(): IndexItem[] {
   const items: IndexItem[] = []
 
-  for (const s of signals) {
-    if (isNoindexNewsSlug(s.slug)) continue
-
-    const text = [s.title, s.slug, s.excerpt, s.category, s.source ?? '', ...(s.tags ?? [])].join(' ')
-    items.push({
-      title: s.title,
-      excerpt: s.excerpt,
-      href: `/news/${s.slug}`,
-      type: 'news',
-      meta: s.date,
-      titleLower: s.title.toLowerCase(),
-      blob: text.toLowerCase(),
-    })
-  }
-
-  for (const g of guides) {
-    if (isNoindexTutorialSlug(g.slug)) continue
-
-    const text = [g.title, g.slug, g.excerpt, g.category, ...(g.tags ?? [])].join(' ')
-    items.push({
-      title: g.title,
-      excerpt: g.excerpt,
-      href: g.href ?? `/tutorials/${g.slug}`,
-      type: 'tutorial',
-      meta: `${g.readTime} · ${g.difficulty}`,
-      titleLower: g.title.toLowerCase(),
-      blob: text.toLowerCase(),
-    })
-  }
-
-  for (const s of scripts) {
-    const text = [s.title, s.slug, s.description, s.language, ...s.tags].join(' ')
-    items.push({
-      title: s.title,
-      excerpt: s.description,
-      href: `/scripts/${s.slug}`,
-      type: 'script',
-      meta: s.language,
-      titleLower: s.title.toLowerCase(),
-      blob: text.toLowerCase(),
-    })
-  }
-
-  for (const c of comparisons) {
-    if (isNoindexComparisonSlug(c.slug)) continue
+  for (const signal of signals) {
+    if (isNoindexNewsSlug(signal.slug)) continue
 
     const text = [
-      c.title,
-      c.slug,
-      c.excerpt,
-      c.productA,
-      c.productB,
-      c.category,
-      c.verdict,
-      ...(c.tags ?? []),
+      signal.title,
+      signal.slug,
+      signal.excerpt,
+      signal.category,
+      signal.source ?? '',
+      ...(signal.tags ?? []),
     ].join(' ')
     items.push({
-      title: c.title,
-      excerpt: c.excerpt,
-      href: `/comparisons/${c.slug}`,
+      title: signal.title,
+      excerpt: signal.excerpt,
+      href: `/news/${signal.slug}`,
+      type: 'news',
+      meta: signal.date,
+      titleLower: signal.title.toLowerCase(),
+      blob: text.toLowerCase(),
+    })
+  }
+
+  for (const guide of guides) {
+    const href = guide.href ?? `/tutorials/${guide.slug}`
+    if (isNoindexHref(href)) continue
+
+    const text = [
+      guide.title,
+      guide.slug,
+      guide.excerpt,
+      guide.category,
+      ...(guide.tags ?? []),
+    ].join(' ')
+    items.push({
+      title: guide.title,
+      excerpt: guide.excerpt,
+      href,
+      type: 'tutorial',
+      meta: `${guide.readTime} · ${guide.difficulty}`,
+      titleLower: guide.title.toLowerCase(),
+      blob: text.toLowerCase(),
+    })
+  }
+
+  for (const comparison of comparisons) {
+    if (isNoindexComparisonSlug(comparison.slug)) continue
+
+    const text = [
+      comparison.title,
+      comparison.slug,
+      comparison.excerpt,
+      comparison.productA,
+      comparison.productB,
+      comparison.category,
+      comparison.verdict,
+      ...(comparison.tags ?? []),
+    ].join(' ')
+    items.push({
+      title: comparison.title,
+      excerpt: comparison.excerpt,
+      href: `/comparisons/${comparison.slug}`,
       type: 'comparison',
-      meta: `${c.readTime} · ${c.productA} vs ${c.productB}`,
-      titleLower: c.title.toLowerCase(),
+      meta: `${comparison.readTime} · ${comparison.productA} vs ${comparison.productB}`,
+      titleLower: comparison.title.toLowerCase(),
       blob: text.toLowerCase(),
     })
   }
 
-  for (const a of troubleshootingArticles) {
-    if (isNoindexTroubleshootingSlug(a.slug)) continue
+  for (const article of troubleshootingArticles) {
+    if (isNoindexTroubleshootingSlug(article.slug)) continue
 
-    const text = [a.title, a.slug, a.excerpt, a.category, ...a.affectedProducts].join(' ')
+    const text = [
+      article.title,
+      article.slug,
+      article.excerpt,
+      article.category,
+      ...article.affectedProducts,
+    ].join(' ')
     items.push({
-      title: a.title,
-      excerpt: a.excerpt,
-      href: `/troubleshooting/${a.slug}`,
+      title: article.title,
+      excerpt: article.excerpt,
+      href: `/troubleshooting/${article.slug}`,
       type: 'troubleshooting',
-      meta: `${a.readTime} · ${a.difficulty}`,
-      titleLower: a.title.toLowerCase(),
+      meta: `${article.readTime} · ${article.difficulty}`,
+      titleLower: article.title.toLowerCase(),
       blob: text.toLowerCase(),
     })
   }
 
-  for (const t of topics) {
-    const text = [t.name, t.description].join(' ')
+  for (const topic of topics) {
+    const text = [topic.name, topic.description].join(' ')
     items.push({
-      title: t.name,
-      excerpt: t.description,
-      href: `/${t.slug}`,
+      title: topic.name,
+      excerpt: topic.description,
+      href: `/${topic.slug}`,
       type: 'topic',
-      titleLower: t.name.toLowerCase(),
+      titleLower: topic.name.toLowerCase(),
       blob: text.toLowerCase(),
     })
   }
@@ -145,13 +147,12 @@ function buildIndex(): IndexItem[] {
   return items
 }
 
-// Built once at module load — all source data is static
+// Built once at module load — all source data is static.
 const INDEX: IndexItem[] = buildIndex()
 
 function scoreItem(item: IndexItem, terms: string[], phrase: string): number {
   let score = 0
 
-  // Exact phrase bonus (highest weight)
   if (phrase.length > 2 && item.titleLower.includes(phrase)) score += 8
   if (phrase.length > 2 && item.blob.includes(phrase)) score += 3
 
@@ -167,8 +168,7 @@ export function search(query: string, limit = 30): SearchResult[] {
   const raw = query.trim().toLowerCase()
   if (raw.length < 2) return []
 
-  // Filter stop words below 2 chars
-  const terms = raw.split(/\s+/).filter((t) => t.length >= 2)
+  const terms = raw.split(/\s+/).filter((term) => term.length >= 2)
   if (terms.length === 0) return []
 
   const phrase = terms.join(' ')
