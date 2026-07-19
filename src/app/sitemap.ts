@@ -60,6 +60,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const flagshipGuideRoutes: MetadataRoute.Sitemap = guides
     .filter((guide) => guide.href?.startsWith('/guides/'))
+    .filter((guide) => !isNoindexContentRoute('guides', guide.slug))
     .map((guide) => ({
       url: `${BASE}${guide.href}`,
       priority: 0.9,
