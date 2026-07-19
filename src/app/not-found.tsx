@@ -21,10 +21,10 @@ export default function NotFound() {
               — step-by-step guides for Microsoft environments
             </li>
             <li>
-              <Link href="/scripts" className="text-primary hover:underline">
-                Script Library
+              <Link href="/troubleshooting" className="text-primary hover:underline">
+                Troubleshooting
               </Link>{' '}
-              — PowerShell implementation guides and safety notes
+              — evidence-led diagnosis and remediation guides
             </li>
             <li>
               <Link href="/news" className="text-primary hover:underline">
