@@ -7,6 +7,10 @@ import { troubleshootingArticles } from '@/data/troubleshooting'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
+import {
+  isNoindexTroubleshootingSlug,
+  withNoindex,
+} from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -15,6 +19,7 @@ import AuthorBox from '@/components/article/AuthorBox'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
+import EditorialReviewNotice from '@/components/article/EditorialReviewNotice'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
@@ -27,10 +32,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const article = troubleshootingArticles.find((a) => a.slug === slug)
+  const article = troubleshootingArticles.find((item) => item.slug === slug)
   if (!article) return {}
   const author = getAuthor(article.authorId)
-  return buildArticleMetadata({
+  const metadata = buildArticleMetadata({
     title: article.title,
     description: article.excerpt,
     url: `https://www.adminsignal.com/troubleshooting/${slug}`,
@@ -39,12 +44,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     tags: article.affectedProducts,
     authorName: author?.name,
   })
+
+  return isNoindexTroubleshootingSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function TroubleshootingArticlePage({ params }: Props) {
   const { slug } = await params
-  const article = troubleshootingArticles.find((a) => a.slug === slug)
+  const article = troubleshootingArticles.find((item) => item.slug === slug)
   if (!article) notFound()
+  const underReview = isNoindexTroubleshootingSlug(slug)
 
   let content = ''
   let headings: { id: string; text: string; level: number }[] = []
@@ -64,14 +72,19 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
   const author = getAuthor(article.authorId)
 
   const relatedArticles = troubleshootingArticles
-    .filter((a) => a.id !== article.id && a.category === article.category)
+    .filter(
+      (item) =>
+        item.id !== article.id &&
+        item.category === article.category &&
+        !isNoindexTroubleshootingSlug(item.slug),
+    )
     .slice(0, 3)
-    .map((a) => ({
-      title: a.title,
-      href: `/troubleshooting/${a.slug}`,
+    .map((item) => ({
+      title: item.title,
+      href: `/troubleshooting/${item.slug}`,
       type: 'troubleshooting' as const,
-      excerpt: a.excerpt,
-      meta: `${a.readTime} · ${a.difficulty}`,
+      excerpt: item.excerpt,
+      meta: `${item.readTime} · ${item.difficulty}`,
     }))
 
   const pageUrl = `https://www.adminsignal.com/troubleshooting/${slug}`
@@ -100,8 +113,8 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
 
   return (
     <>
-      <StructuredData data={jsonLd} />
-      <StructuredData data={jsonLdBreadcrumb} />
+      {!underReview && <StructuredData data={jsonLd} />}
+      {!underReview && <StructuredData data={jsonLdBreadcrumb} />}
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
@@ -117,7 +130,11 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
 
       <Container>
         <div className="py-10 lg:py-14">
-          {lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />}
+          {underReview ? (
+            <EditorialReviewNotice reason="The current version describes a broader Windows endpoint recovery-loop scenario than Microsoft documents for the cited update. It requires a source-led rewrite before republication." />
+          ) : (
+            lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
+          )}
 
           <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
             <article className="min-w-0">
@@ -148,7 +165,7 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
                 </div>
               </header>
 
-              <AdSlot variant="banner" className="mb-8" />
+              {!underReview && <AdSlot variant="banner" className="mb-8" />}
 
               <Prose>
                 <MDXRemote
@@ -158,7 +175,7 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
                 />
               </Prose>
 
-              {author && (
+              {author && !underReview && (
                 <div className="mt-12">
                   <AuthorBox author={author} />
                 </div>
@@ -172,12 +189,12 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
                     <TableOfContents headings={headings} />
                   </div>
                 )}
-                <AdSlot variant="sidebar" />
+                {!underReview && <AdSlot variant="sidebar" />}
               </div>
             </aside>
           </div>
 
-          {relatedArticles.length > 0 && (
+          {relatedArticles.length > 0 && !underReview && (
             <div className="mt-14 border-t border-border pt-12">
               <RelatedContent items={relatedArticles} heading="More troubleshooting guides" />
             </div>
