@@ -152,13 +152,6 @@ export default function Header() {
             >
               {dark ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
             </button>
-
-            <Link
-              href="/#newsletter"
-              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
-            >
-              Get the Newsletter
-            </Link>
           </div>
 
           <button
@@ -200,14 +193,15 @@ export default function Header() {
               </Link>
             ))}
 
-            <div className="mt-2 flex items-center gap-2 border-t border-border pt-3">
-              <Link
-                href="/#newsletter"
-                className="flex-1 rounded-md bg-primary px-4 py-2.5 text-center text-sm font-semibold text-white transition-opacity hover:opacity-85"
-                onClick={() => setMobileOpen(false)}
+            <div className="mt-2 flex items-center justify-end gap-2 border-t border-border pt-3">
+              <a
+                href="/rss.xml"
+                className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2.5 text-sm text-muted transition-colors hover:bg-surface-elevated hover:text-primary"
+                aria-label="RSS feed"
               >
-                Get the Newsletter
-              </Link>
+                <Rss className="h-4 w-4" aria-hidden="true" />
+                RSS
+              </a>
               <button
                 type="button"
                 onClick={toggleTheme}
