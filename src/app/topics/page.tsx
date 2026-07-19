@@ -8,7 +8,7 @@ import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const pageTitle = 'Topic Hubs'
 const pageDescription =
-  'Browse all AdminSignal topic hubs — focused collections of guides, scripts, and news for every discipline in your stack.'
+  'Browse AdminSignal topic hubs with verified tutorials, troubleshooting guides, news, comparisons, and analysis for Microsoft-centred administration.'
 
 export const metadata: Metadata = buildCategoryMetadata({
   title: pageTitle,
@@ -46,9 +46,8 @@ export default function TopicsPage() {
             Browse by discipline
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">
-            Focused hubs for each discipline in a Microsoft-centred admin stack: news signals,
-            operational guides, troubleshooting notes, comparisons, and script implementation
-            patterns gathered by topic.
+            Focused collections for each discipline in a Microsoft-centred admin stack: verified
+            news, operational tutorials, troubleshooting guidance, comparisons, and analysis.
           </p>
           <p className="mt-4 text-xs text-muted/60">
             Practical coverage across {topics.length} topic hubs
@@ -59,23 +58,24 @@ export default function TopicsPage() {
               <h2 className="mb-2 text-sm font-semibold text-foreground">Use hubs for planning</h2>
               <p>
                 Start with the hub that matches the platform you own, then move from overview
-                guidance into troubleshooting, scripts, and related comparisons as the work becomes
-                more specific.
+                coverage into tutorials, troubleshooting, and related comparisons as the work
+                becomes more specific.
               </p>
             </section>
             <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
               <h2 className="mb-2 text-sm font-semibold text-foreground">Admin decision paths</h2>
               <p>
                 Intune, PowerShell, endpoint security, patching, and Microsoft 365 topics are
-                organised around real operational questions: rollout readiness, validation,
-                reporting, rollback, and support handover.
+                organised around rollout readiness, validation, reporting, rollback, and support
+                handover.
               </p>
             </section>
             <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-              <h2 className="mb-2 text-sm font-semibold text-foreground">No empty sections</h2>
+              <h2 className="mb-2 text-sm font-semibold text-foreground">No hidden drafts</h2>
               <p>
-                Hubs point to published material only. Draft news and unfinished content stay out
-                of public navigation until they have enough detail to help an administrator act.
+                Hubs point to public, reviewed material only. Drafts, incomplete resources, and
+                pages under source review stay out of navigation until they are ready to help an
+                administrator act safely.
               </p>
             </section>
           </div>
