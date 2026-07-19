@@ -79,7 +79,7 @@ export function isEditorialReviewNewsSlug(slug: string): boolean {
 }
 
 export function isNoindexNewsSlug(slug: string): boolean {
-  return isDraftNewsSlug(slug) || isEditorialReviewNewsSlug(slug)
+  return DRAFT_NEWS_SLUGS.has(slug) || NOINDEX_NEWS_SLUGS.has(slug)
 }
 
 export function isNoindexTroubleshootingSlug(slug: string): boolean {
