@@ -4,9 +4,12 @@ import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
 import SignalCard from '@/components/cards/SignalCard'
 import { signals } from '@/data/signals'
+import { isNoindexNewsSlug } from '@/lib/noindex'
 
 export default function FeaturedSignalsSection() {
-  const featured = signals.filter((s) => s.isFeatured).slice(0, 3)
+  const featured = signals
+    .filter((signal) => signal.isFeatured && !isNoindexNewsSlug(signal.slug))
+    .slice(0, 3)
 
   return (
     <section className="border-b border-border py-20">
