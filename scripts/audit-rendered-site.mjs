@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 const baseUrl = (process.env.SITE_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '')
+const productionUrl = 'https://www.adminsignal.com'
 const errors = []
 const warnings = []
 
@@ -240,6 +241,23 @@ const robots = await get('/robots.txt')
 if (robots.response.status !== 200) errors.push(`/robots.txt: expected 200, received ${robots.response.status}`)
 if (!robots.body.includes('Sitemap: https://www.adminsignal.com/sitemap.xml')) errors.push('/robots.txt: production sitemap declaration missing')
 
+const rss = await get('/rss.xml')
+if (rss.response.status !== 200) errors.push(`/rss.xml: expected 200, received ${rss.response.status}`)
+if (!(rss.response.headers.get('content-type') ?? '').startsWith('application/rss+xml')) {
+  errors.push('/rss.xml: content-type is not application/rss+xml')
+}
+const rssItemCount = (rss.body.match(/<item>/g) ?? []).length
+if (rssItemCount === 0) errors.push('/rss.xml: no feed items found')
+if (/12\+\s*years|managing Windows fleets and Intune tenants/i.test(rss.body)) {
+  errors.push('/rss.xml: unsupported experience claim detected')
+}
+if (/<title>Script:/i.test(rss.body)) errors.push('/rss.xml: incomplete script item detected')
+for (const hiddenPath of hiddenFromDiscoveryPaths) {
+  if (rss.body.includes(`${productionUrl}${hiddenPath}`)) {
+    errors.push(`/rss.xml: contains hidden or under-review route ${hiddenPath}`)
+  }
+}
+
 const missing = await get('/this-route-must-not-exist-adsense-audit')
 if (missing.response.status !== 404) errors.push(`Unknown route: expected 404, received ${missing.response.status}`)
 
@@ -260,7 +278,7 @@ for (const pathname of ['/news', '/tutorials', '/troubleshooting', '/comparisons
 }
 
 console.log(
-  `Rendered audit checked ${sitemapUrls.length} sitemap URLs, ${noindexPaths.length} noindex routes, ${discoveryPages.length} discovery pages, and ${checkedLinks.size} internal-link targets.`,
+  `Rendered audit checked ${sitemapUrls.length} sitemap URLs, ${noindexPaths.length} noindex routes, ${discoveryPages.length} discovery pages, ${rssItemCount} RSS items, and ${checkedLinks.size} internal-link targets.`,
 )
 if (warnings.length) {
   console.warn(`Warnings (${warnings.length}):`)
