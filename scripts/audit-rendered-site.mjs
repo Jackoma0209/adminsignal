@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 const baseUrl = (process.env.SITE_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '')
@@ -14,6 +14,14 @@ function slugs(type) {
   } catch {
     return []
   }
+}
+
+function setSlugs(source, setName) {
+  const escaped = setName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const block = source.match(
+    new RegExp(`${escaped}\\s*=\\s*new Set(?:<[^>]+>)?\\(\\[([\\s\\S]*?)\\]\\)`),
+  )?.[1] ?? ''
+  return [...block.matchAll(/['"]([^'"]+)['"]/g)].map((match) => match[1])
 }
 
 async function get(pathname, options = {}) {
@@ -59,6 +67,10 @@ function h1Count(html) {
   return (html.match(/<h1\b/gi) ?? []).length
 }
 
+function jsonLdCount(html) {
+  return (html.match(/<script[^>]+type=["']application\/ld\+json["']/gi) ?? []).length
+}
+
 function parseJsonLd(html, pathname) {
   const blocks = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
   for (const [, raw] of blocks) {
@@ -72,7 +84,7 @@ function parseJsonLd(html, pathname) {
 
 function internalLinks(html) {
   return [...html.matchAll(/<a[^>]+href=["']([^"']+)["']/gi)]
-    .map((match) => decode(match[1]))
+    .map((linkMatch) => decode(linkMatch[1]))
     .filter((href) => href.startsWith('/') && !href.startsWith('//'))
     .map((href) => href.split('#')[0])
     .filter(Boolean)
@@ -91,11 +103,47 @@ async function waitForServer() {
   throw new Error(`Server did not become ready at ${baseUrl}`)
 }
 
+const noindexSource = readFileSync(path.join(process.cwd(), 'src', 'lib', 'noindex.ts'), 'utf8')
+const draftNewsPaths = setSlugs(noindexSource, 'DRAFT_NEWS_SLUGS').map((slug) => `/news/${slug}`)
+const reviewNewsPaths = setSlugs(noindexSource, 'NOINDEX_NEWS_SLUGS').map((slug) => `/news/${slug}`)
+const reviewTroubleshootingPaths = setSlugs(noindexSource, 'NOINDEX_TROUBLESHOOTING_SLUGS')
+  .map((slug) => `/troubleshooting/${slug}`)
+const reviewTutorialPaths = setSlugs(noindexSource, 'NOINDEX_TUTORIAL_SLUGS')
+  .map((slug) => `/tutorials/${slug}`)
+const reviewGuidePaths = setSlugs(noindexSource, 'NOINDEX_GUIDE_SLUGS')
+  .map((slug) => `/guides/${slug}`)
+
+const quarantinePaths = new Set([
+  ...draftNewsPaths,
+  ...reviewNewsPaths,
+  ...reviewTroubleshootingPaths,
+  ...reviewTutorialPaths,
+  ...reviewGuidePaths,
+])
+
+const noindexPaths = [
+  '/scripts',
+  ...slugs('scripts').map((slug) => `/scripts/${slug}`),
+  '/reviews',
+  ...slugs('reviews').map((slug) => `/reviews/${slug}`),
+  '/best-tools',
+  '/search?q=intune',
+  ...quarantinePaths,
+]
+
+const hiddenFromDiscoveryPaths = new Set([
+  '/scripts',
+  ...slugs('scripts').map((slug) => `/scripts/${slug}`),
+  '/reviews',
+  ...slugs('reviews').map((slug) => `/reviews/${slug}`),
+  ...quarantinePaths,
+])
+
 await waitForServer()
 
 const sitemapResult = await get('/sitemap.xml')
 if (sitemapResult.response.status !== 200) errors.push(`/sitemap.xml: expected 200, received ${sitemapResult.response.status}`)
-const sitemapUrls = [...sitemapResult.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => decode(match[1]))
+const sitemapUrls = [...sitemapResult.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((urlMatch) => decode(urlMatch[1]))
 const sitemapPaths = new Set(sitemapUrls.map((url) => new URL(url).pathname))
 if (sitemapUrls.length === 0) errors.push('/sitemap.xml: no URLs found')
 
@@ -141,15 +189,6 @@ for (const url of sitemapUrls) {
   for (const href of internalLinks(body)) discoveredLinks.add(href)
 }
 
-const noindexPaths = [
-  '/scripts',
-  ...slugs('scripts').map((slug) => `/scripts/${slug}`),
-  '/reviews',
-  ...slugs('reviews').map((slug) => `/reviews/${slug}`),
-  '/best-tools',
-  '/search?q=intune',
-]
-
 for (const pathname of noindexPaths) {
   const cleanPath = pathname.split('?')[0]
   const { response, body } = await get(pathname)
@@ -162,6 +201,33 @@ for (const pathname of noindexPaths) {
   if (sitemapPaths.has(cleanPath)) errors.push(`${pathname}: noindex route appears in sitemap`)
   if (h1Count(body) !== 1) errors.push(`${pathname}: expected one H1`)
   parseJsonLd(body, pathname)
+
+  if (quarantinePaths.has(cleanPath)) {
+    if (!body.includes('Editorial review in progress')) {
+      errors.push(`${pathname}: quarantined route is missing the editorial-review warning`)
+    }
+    if (jsonLdCount(body) > 0) {
+      errors.push(`${pathname}: quarantined route must not emit JSON-LD`)
+    }
+  }
+}
+
+const discoveryPages = [
+  '/', '/news', '/tutorials', '/troubleshooting', '/comparisons', '/topics',
+  '/intune', '/powershell', '/windows-server', '/endpoint-security',
+  '/microsoft-365', '/microsoft-entra-id', '/patch-management', '/group-policy',
+  '/sccm-mecm',
+]
+for (const pathname of discoveryPages) {
+  const { response, body } = await get(pathname)
+  if (response.status !== 200) {
+    errors.push(`${pathname}: discovery page returned ${response.status}`)
+    continue
+  }
+  const links = new Set(internalLinks(body).map((href) => href.split('?')[0]))
+  for (const hiddenPath of hiddenFromDiscoveryPaths) {
+    if (links.has(hiddenPath)) errors.push(`${pathname}: promotes hidden or under-review route ${hiddenPath}`)
+  }
 }
 
 const ads = await get('/ads.txt')
@@ -193,7 +259,9 @@ for (const pathname of ['/news', '/tutorials', '/troubleshooting', '/comparisons
   if (articleCards === 0) warnings.push(`${pathname}: no <article> cards detected; verify archive is not empty`)
 }
 
-console.log(`Rendered audit checked ${sitemapUrls.length} sitemap URLs, ${noindexPaths.length} noindex routes, and ${checkedLinks.size} internal-link targets.`)
+console.log(
+  `Rendered audit checked ${sitemapUrls.length} sitemap URLs, ${noindexPaths.length} noindex routes, ${discoveryPages.length} discovery pages, and ${checkedLinks.size} internal-link targets.`,
+)
 if (warnings.length) {
   console.warn(`Warnings (${warnings.length}):`)
   for (const warning of warnings) console.warn(`- ${warning}`)
