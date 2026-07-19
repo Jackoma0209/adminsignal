@@ -5,41 +5,44 @@ export interface Review {
   productName: string
   category: string
   excerpt: string
-  rating: number
-  pros: string[]
-  cons: string[]
-  verdict: string
+  documentedStrengths: string[]
+  validationQuestions: string[]
+  summary: string
   date: string
   publishedAt: string
   readTime: string
   authorId: string
-  badge?: 'Editors Choice' | 'Best Value' | 'Recommended'
   isFeatured?: boolean
 }
 
+/**
+ * Research-based product evaluation notes.
+ *
+ * These records deliberately contain no numerical ratings, awards, deployment
+ * claims, benchmark claims, or implied firsthand-use claims. The associated
+ * routes remain noindex until stronger evidence and source coverage are added.
+ */
 export const reviews: Review[] = [
   {
     id: '1',
-    title: 'CrowdStrike Falcon Go: Admin Buyer Notes for SMB Endpoint Protection',
+    title: 'CrowdStrike Falcon Go: Evaluation Notes for SMB Endpoint Protection',
     slug: 'crowdstrike-falcon-go-review',
     productName: 'CrowdStrike Falcon Go',
     category: 'Endpoint Security',
     excerpt:
-      'Admin buyer notes for Falcon Go: where the lower tier can fit, where investigation depth is limited, and what to check before replacing or supplementing Defender.',
-    rating: 4.2,
-    pros: [
-      'Dedicated endpoint protection console for smaller teams',
-      'Falcon platform upgrade path if needs grow',
-      'Policy and exclusion model is familiar across Falcon tiers',
-      'Strong integration with the broader Falcon platform',
+      'Research notes for evaluating Falcon Go, focused on tier boundaries, deployment planning, investigation requirements, update control, support terms, and comparison with existing Microsoft licensing.',
+    documentedStrengths: [
+      'A dedicated endpoint-protection console aimed at smaller organisations',
+      'An upgrade path within the broader Falcon platform',
+      'Central policy, device, alert, and exclusion workflows described in vendor documentation',
     ],
-    cons: [
-      'Limited custom detection rules compared to Enterprise tier',
-      'Threat graph analysis is read-only at this tier',
-      'Support terms vary by package and need checking before purchase',
+    validationQuestions: [
+      'Which investigation and threat-hunting capabilities are included in the exact package being quoted?',
+      'What sensor update controls, support terms, retention limits, and response services are included?',
+      'Does existing Microsoft 365 licensing already cover the required Defender capabilities?',
     ],
-    verdict:
-      'Falcon Go is a credible option for smaller organisations that want dedicated endpoint protection, but the tier needs careful checking for investigation, support, update control, and exclusion workflow limits.',
+    summary:
+      'Falcon Go may belong on a shortlist for smaller teams seeking a dedicated endpoint-protection product, but package boundaries, investigation depth, update control, support, and coexistence with Microsoft Defender must be verified before purchase.',
     date: 'Mar 18, 2025',
     publishedAt: '2025-03-18',
     readTime: '8 min read',
@@ -48,25 +51,24 @@ export const reviews: Review[] = [
   },
   {
     id: '2',
-    title: 'Nerdio for Intune: Admin Buyer Notes for AVD Management',
+    title: 'Nerdio for Intune: Evaluation Notes for AVD Management',
     slug: 'nerdio-for-intune-review',
     productName: 'Nerdio for Intune',
     category: 'Endpoint Management',
     excerpt:
-      'A practical evaluation guide for Nerdio for Intune, covering AVD host pool management, image lifecycle, licensing, admin delegation, and rollback planning.',
-    rating: 4.5,
-    pros: [
-      'Centralises common AVD and Windows 365 administration tasks',
-      'Can make host pool scaling and image lifecycle more repeatable',
-      'Useful operational view across AVD, Intune, and session hosts',
-      'Good fit where manual AVD runbooks are becoming hard to maintain',
+      'A source-backed planning guide for evaluating Nerdio alongside Azure Virtual Desktop, Windows 365, Intune, image management, delegated administration, licensing, and rollback requirements.',
+    documentedStrengths: [
+      'A management layer designed to bring common AVD, Windows 365, and endpoint workflows together',
+      'Automation features intended to reduce repetitive host-pool and image-lifecycle administration',
+      'Delegation and operational views that may help teams managing multiple environments',
     ],
-    cons: [
-      'Licensing model can be complex for mixed AVD/physical device environments',
-      'Reporting depth should be validated against actual requirements',
+    validationQuestions: [
+      'How does the quoted licensing model apply to physical devices, AVD hosts, Windows 365, and mixed estates?',
+      'Which tasks remain dependent on Azure, Intune, or custom runbooks outside Nerdio?',
+      'Can the team export configuration, recover from automation failure, and operate temporarily without the management layer?',
     ],
-    verdict:
-      'Nerdio is worth evaluating when AVD or Windows 365 administration has become a regular operational burden. Validate licensing, delegation, reporting, and fallback processes before making it the main control plane.',
+    summary:
+      'Nerdio is worth structured evaluation where AVD or Windows 365 administration creates sustained operational overhead. Licensing, delegated access, reporting, change control, and fallback processes need tenant-specific validation.',
     date: 'Feb 28, 2025',
     publishedAt: '2025-02-28',
     readTime: '10 min read',
@@ -75,25 +77,24 @@ export const reviews: Review[] = [
   },
   {
     id: '3',
-    title: 'Veeam Backup for Microsoft 365: Admin Buyer Notes',
+    title: 'Veeam Backup for Microsoft 365: Evaluation Notes',
     slug: 'veeam-backup-m365-review',
     productName: 'Veeam Backup for Microsoft 365',
     category: 'Microsoft 365',
     excerpt:
-      "Microsoft's native M365 retention is not the same as backup. These admin notes cover Veeam's fit, storage design, restore testing, permissions, and operating model.",
-    rating: 4.6,
-    pros: [
-      'Granular restore for Exchange, SharePoint, Teams, and OneDrive',
-      'Flexible storage targets including immutable object storage',
-      'Supports immutable object storage designs',
-      'Restore workflows cover common mailbox and content recovery needs',
+      'Research notes for evaluating Microsoft 365 backup requirements, Veeam deployment models, storage ownership, permissions, restore testing, monitoring, and operational responsibility.',
+    documentedStrengths: [
+      'Workload-level backup and restore coverage described for Exchange, SharePoint, OneDrive, and Teams data',
+      'Deployment options that allow organisations to choose and manage supported storage targets',
+      'Restore workflows intended for granular content recovery rather than retention policy alone',
     ],
-    cons: [
-      'Initial storage sizing can be underestimated without guidance',
-      'UI for Teams data restore is less intuitive than Exchange restore',
+    validationQuestions: [
+      'Who owns storage sizing, immutability, monitoring, upgrades, and restore testing?',
+      'Which Microsoft 365 data types, metadata, and Teams components are included in the current version?',
+      'Would a managed SaaS backup model better match the organisation’s support capacity?',
     ],
-    verdict:
-      'Veeam is a serious option for Microsoft 365 backup when the team is ready to own storage, monitoring, restore testing, and backup-server operations. Teams wanting fully managed SaaS backup should compare operating models carefully.',
+    summary:
+      'Veeam can be evaluated where the organisation wants a Microsoft 365 backup platform and is prepared to own the selected operating model. Storage, permissions, recovery objectives, restore testing, and ongoing administration require explicit design decisions.',
     date: 'Feb 10, 2025',
     publishedAt: '2025-02-10',
     readTime: '9 min read',
