@@ -5,6 +5,7 @@ import CategoryPageTemplate from '@/components/templates/CategoryPageTemplate'
 import StructuredData from '@/components/StructuredData'
 import { buildCategoryMetadata } from '@/lib/metadata'
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+import { isNoindexTroubleshootingSlug } from '@/lib/noindex'
 
 const pageTitle = 'Troubleshooting Guides'
 const pageDescription =
@@ -17,7 +18,10 @@ export const metadata: Metadata = buildCategoryMetadata({
   path: pagePath,
 })
 
-const categories = [...new Set(troubleshootingArticles.map((a) => a.category))]
+const publicArticles = troubleshootingArticles.filter(
+  (article) => !isNoindexTroubleshootingSlug(article.slug),
+)
+const categories = [...new Set(publicArticles.map((article) => article.category))]
 
 export default async function TroubleshootingPage({
   searchParams,
@@ -26,8 +30,8 @@ export default async function TroubleshootingPage({
 }) {
   const { category } = await searchParams
   const filtered = category
-    ? troubleshootingArticles.filter((a) => a.category === category)
-    : troubleshootingArticles
+    ? publicArticles.filter((article) => article.category === category)
+    : publicArticles
 
   const pageUrl = category
     ? `https://www.adminsignal.com/troubleshooting?category=${encodeURIComponent(category)}`
@@ -57,7 +61,7 @@ export default async function TroubleshootingPage({
         eyebrow="Troubleshooting"
         title={pageTitle}
         description="Systematic diagnosis guides for Intune, Windows, Group Policy, and Entra ID, with decision trees, log locations, validation steps, and practical fixes."
-        itemCount={troubleshootingArticles.length}
+        itemCount={publicArticles.length}
         categories={categories}
         activeCategory={category}
         basePath="/troubleshooting"
