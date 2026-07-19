@@ -70,8 +70,16 @@ export function isNoindexPath(path: string): boolean {
   return NOINDEX_STATIC_PATHS.has(path)
 }
 
+export function isDraftNewsSlug(slug: string): boolean {
+  return DRAFT_NEWS_SLUGS.has(slug)
+}
+
+export function isEditorialReviewNewsSlug(slug: string): boolean {
+  return NOINDEX_NEWS_SLUGS.has(slug)
+}
+
 export function isNoindexNewsSlug(slug: string): boolean {
-  return DRAFT_NEWS_SLUGS.has(slug) || NOINDEX_NEWS_SLUGS.has(slug)
+  return isDraftNewsSlug(slug) || isEditorialReviewNewsSlug(slug)
 }
 
 export function isNoindexTroubleshootingSlug(slug: string): boolean {
