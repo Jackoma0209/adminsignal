@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     title: query ? `"${query}" — Search AdminSignal` : 'Search — AdminSignal',
     description: query
       ? `AdminSignal search results for "${query}"`
-      : 'Search guides, scripts, news, comparisons, and more on AdminSignal.',
+      : 'Search verified guides, news, comparisons, troubleshooting articles, and topic hubs on AdminSignal.',
     robots: { index: false, follow: true },
   }
 }
@@ -20,8 +20,6 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 const TYPE_PILL: Record<ContentType, string> = {
   news: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   tutorial: 'bg-primary/10 text-primary border-primary/20',
-  script: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-  review: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   comparison: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
   troubleshooting: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
   topic: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -55,8 +53,8 @@ export default async function SearchPage({ searchParams }: Props) {
 
           {!hasQuery && (
             <p className="text-base leading-relaxed text-muted">
-              Use the search box in the header to find guides, tutorials, scripts, news,
-              comparisons, and troubleshooting articles across the entire AdminSignal library.
+              Use the search box in the header to find verified guides, news, comparisons,
+              troubleshooting articles, and topic hubs across AdminSignal.
             </p>
           )}
 
@@ -77,8 +75,8 @@ export default async function SearchPage({ searchParams }: Props) {
                   Tutorials
                 </Link>
                 {' · '}
-                <Link href="/scripts" className="text-primary underline underline-offset-2">
-                  Scripts
+                <Link href="/troubleshooting" className="text-primary underline underline-offset-2">
+                  Troubleshooting
                 </Link>
                 {' · '}
                 <Link href="/news" className="text-primary underline underline-offset-2">
