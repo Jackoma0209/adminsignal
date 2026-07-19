@@ -17,16 +17,25 @@ interface TopicHubPageTemplateProps {
   eyebrow?: string
   news: ContentItem[]
   tutorials: ContentItem[]
+  /**
+   * Retained for compatibility with existing topic data. Script implementation
+   * patterns are intentionally not promoted while their complete source is absent.
+   */
   scripts: ContentItem[]
   relatedTopics: { name: string; href: string }[]
 }
 
-function HubContentRow({ items, sectionTitle, viewAllHref }: {
+function HubContentRow({
+  items,
+  sectionTitle,
+  viewAllHref,
+}: {
   items: ContentItem[]
   sectionTitle: string
   viewAllHref: string
 }) {
   if (items.length === 0) return null
+
   return (
     <div className="border-t border-border py-12">
       <Container>
@@ -37,7 +46,7 @@ function HubContentRow({ items, sectionTitle, viewAllHref }: {
               href={viewAllHref}
               className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
             >
-              View all <ArrowRight className="h-4 w-4" />
+              View all <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           }
         />
@@ -72,12 +81,11 @@ export default function TopicHubPageTemplate({
   eyebrow = 'Topic Hub',
   news,
   tutorials,
-  scripts,
+  scripts: _scripts,
   relatedTopics,
 }: TopicHubPageTemplateProps) {
   return (
     <>
-      {/* Hero */}
       <div className="border-b border-border bg-surface/20 py-14">
         <Container>
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
@@ -87,16 +95,13 @@ export default function TopicHubPageTemplate({
             {topicName}
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
-          <p className="mt-4 text-xs text-muted/60">Guides, scripts and analysis</p>
+          <p className="mt-4 text-xs text-muted/60">Tutorials, troubleshooting, news, and analysis</p>
         </Container>
       </div>
 
-      {/* Content rows */}
       <HubContentRow items={news} sectionTitle="Latest News" viewAllHref="/news" />
       <HubContentRow items={tutorials} sectionTitle="Deep-Dive Tutorials" viewAllHref="/tutorials" />
-      <HubContentRow items={scripts} sectionTitle="Scripts & Automation" viewAllHref="/scripts" />
 
-      {/* Related topics */}
       {relatedTopics.length > 0 && (
         <div className="border-t border-border py-12">
           <Container>
@@ -104,13 +109,13 @@ export default function TopicHubPageTemplate({
               Related topics
             </p>
             <div className="flex flex-wrap gap-2">
-              {relatedTopics.map((t) => (
+              {relatedTopics.map((topic) => (
                 <Link
-                  key={t.href}
-                  href={t.href}
+                  key={topic.href}
+                  href={topic.href}
                   className="rounded-full border border-border px-4 py-1.5 text-sm text-muted transition-colors hover:border-border-strong hover:text-foreground-soft"
                 >
-                  {t.name}
+                  {topic.name}
                 </Link>
               ))}
             </div>
