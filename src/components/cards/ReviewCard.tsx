@@ -1,39 +1,9 @@
 import Link from 'next/link'
-import { Star, ArrowUpRight } from 'lucide-react'
-import Badge from '@/components/ui/Badge'
+import { ArrowUpRight, ClipboardCheck } from 'lucide-react'
 import { type Review } from '@/data/reviews'
 
 interface ReviewCardProps {
   review: Review
-}
-
-function RatingStars({ rating }: { rating: number }) {
-  const full = Math.floor(rating)
-  const hasHalf = rating % 1 >= 0.5
-  return (
-    <div className="flex items-center gap-1" aria-label={`Rating: ${rating} out of 5`}>
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star
-          key={i}
-          className={[
-            'h-3 w-3',
-            i < full
-              ? 'fill-amber-400 text-amber-400'
-              : i === full && hasHalf
-                ? 'fill-amber-400/50 text-amber-400'
-                : 'fill-none text-muted/40',
-          ].join(' ')}
-        />
-      ))}
-      <span className="ml-1 text-xs font-medium text-foreground-soft">{rating}</span>
-    </div>
-  )
-}
-
-const badgeVariant: Record<NonNullable<Review['badge']>, 'new' | 'category' | 'difficulty'> = {
-  'Editors Choice': 'new',
-  'Best Value': 'difficulty',
-  Recommended: 'category',
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
@@ -48,24 +18,24 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             <Link href={`/reviews/${review.slug}`}>{review.title}</Link>
           </h3>
         </div>
-        {review.badge && (
-          <Badge variant={badgeVariant[review.badge]}>{review.badge}</Badge>
-        )}
+        <ClipboardCheck className="h-5 w-5 shrink-0 text-primary/70" aria-hidden="true" />
       </div>
 
-      <RatingStars rating={review.rating} />
+      <p className="text-xs font-medium uppercase tracking-wider text-primary/80">
+        Research-based evaluation guide
+      </p>
 
-      <p className="line-clamp-3 flex-1 text-sm leading-relaxed text-muted">{review.excerpt}</p>
+      <p className="line-clamp-4 flex-1 text-sm leading-relaxed text-muted">{review.excerpt}</p>
 
       <div className="mt-auto flex items-center justify-between">
         <span className="text-xs text-muted/60">{review.date}</span>
         <Link
           href={`/reviews/${review.slug}`}
           className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
-          aria-label={`Read review of ${review.productName}`}
+          aria-label={`Read evaluation notes for ${review.productName}`}
         >
-          Read review
-          <ArrowUpRight className="h-3 w-3" />
+          Read evaluation
+          <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
         </Link>
       </div>
     </article>
