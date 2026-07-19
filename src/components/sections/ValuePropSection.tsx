@@ -1,30 +1,30 @@
-import { BookOpen, Terminal, Wrench, Zap } from 'lucide-react'
+import { BookOpen, FileSearch, ShieldCheck, Wrench } from 'lucide-react'
 import Container from '@/components/layout/Container'
 
 const pillars = [
   {
-    icon: Zap,
-    title: 'Operational Context First',
+    icon: Wrench,
+    title: 'Task and Failure State First',
     description:
-      'Articles, guides, and alerts are written for working IT engineers who need context, caveats, and next actions instead of generic summaries.',
+      'Guides start with the administrative outcome or symptom, then identify prerequisites, scope, evidence, and the next safe check.',
   },
   {
     icon: BookOpen,
-    title: 'Deep Technical Depth',
+    title: 'Primary Sources',
     description:
-      'Step-by-step guides that go beyond surface documentation. From Group Policy internals to Intune Graph API calls, we go where the manuals stop.',
+      'Technical and licensing claims are checked against Microsoft Learn, security advisories, release notes, and current vendor documentation where available.',
   },
   {
-    icon: Terminal,
-    title: 'Script Patterns With Guardrails',
+    icon: FileSearch,
+    title: 'Validation Evidence',
     description:
-      'PowerShell examples and implementation notes written for admin workflows, with prerequisites, permissions, rollback risk, and usage notes called out.',
+      'Portal paths, commands, expected output, event logs, registry locations, and reporting checks are included when they help prove what happened.',
   },
   {
-    icon: Wrench,
-    title: 'Curated Tool Intelligence',
+    icon: ShieldCheck,
+    title: 'Operational Risk',
     description:
-      'Tool notes based on practical admin needs, official documentation, commercial disclosures, and clear trade-offs for busy sysadmins.',
+      'Rollout sequencing, pilot scope, permissions, blast radius, rollback criteria, and situations where a change should not be used are called out clearly.',
   },
 ]
 
@@ -34,10 +34,10 @@ export default function ValuePropSection() {
       <Container>
         <div className="mb-12 text-center">
           <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-primary">
-            Why AdminSignal
+            Editorial approach
           </p>
           <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-            Built for engineers who&rsquo;ve been burned by bad docs
+            Useful evidence instead of generic administration summaries
           </h2>
         </div>
 
@@ -48,7 +48,7 @@ export default function ValuePropSection() {
               className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-card"
             >
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft">
-                <pillar.icon className="h-4 w-4 text-primary" strokeWidth={1.75} />
+                <pillar.icon className="h-4 w-4 text-primary" strokeWidth={1.75} aria-hidden="true" />
               </div>
               <div>
                 <h3 className="mb-2 text-sm font-semibold text-foreground">{pillar.title}</h3>
