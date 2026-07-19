@@ -15,7 +15,10 @@ export const NOINDEX_STATIC_PATHS = new Set<string>([
   '/scripts',
 ])
 
-/** Draft news kept offline until expanded — URLs return 404 if not in liveSignals. */
+/**
+ * News records retained for editorial development but excluded from listings,
+ * sitemap output, advertising, structured data, and search indexing.
+ */
 export const DRAFT_NEWS_SLUGS = new Set([
   'windows-driver-cross-signed-trust-removal',
   'windows-app-rd-client-deprecation-2026',
@@ -68,7 +71,7 @@ export function isNoindexPath(path: string): boolean {
 }
 
 export function isNoindexNewsSlug(slug: string): boolean {
-  return NOINDEX_NEWS_SLUGS.has(slug)
+  return DRAFT_NEWS_SLUGS.has(slug) || NOINDEX_NEWS_SLUGS.has(slug)
 }
 
 export function isNoindexTroubleshootingSlug(slug: string): boolean {
