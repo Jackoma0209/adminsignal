@@ -81,7 +81,6 @@ export default function TopicHubPageTemplate({
   eyebrow = 'Topic Hub',
   news,
   tutorials,
-  scripts: _scripts,
   relatedTopics,
 }: TopicHubPageTemplateProps) {
   return (
