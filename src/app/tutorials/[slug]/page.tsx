@@ -9,6 +9,8 @@ import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
 import {
   getDuplicateTutorialRedirect,
+  isNoindexHref,
+  isNoindexTutorialSlug,
   withNoindex,
 } from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
@@ -20,6 +22,7 @@ import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
 import AffiliateBlock from '@/components/article/AffiliateBlock'
+import EditorialReviewNotice from '@/components/article/EditorialReviewNotice'
 import Prose from '@/components/ui/Prose'
 import Badge from '@/components/ui/Badge'
 import StructuredData from '@/components/StructuredData'
@@ -32,7 +35,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const guide = guides.find((g) => g.slug === slug)
+  const guide = guides.find((item) => item.slug === slug)
   if (!guide) return {}
   const author = guide.authorId ? getAuthor(guide.authorId) : undefined
   const duplicateRedirect = getDuplicateTutorialRedirect(slug)
@@ -47,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     authorName: author?.name,
   })
 
-  return duplicateRedirect ? withNoindex(metadata) : metadata
+  return duplicateRedirect || isNoindexTutorialSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function TutorialPage({ params }: Props) {
@@ -55,8 +58,9 @@ export default async function TutorialPage({ params }: Props) {
   const duplicateRedirect = getDuplicateTutorialRedirect(slug)
   if (duplicateRedirect) permanentRedirect(duplicateRedirect)
 
-  const guide = guides.find((g) => g.slug === slug)
+  const guide = guides.find((item) => item.slug === slug)
   if (!guide) notFound()
+  const underReview = isNoindexTutorialSlug(slug)
 
   let content = ''
   let headings: { id: string; text: string; level: number }[] = []
@@ -76,14 +80,17 @@ export default async function TutorialPage({ params }: Props) {
   const author = guide.authorId ? getAuthor(guide.authorId) : undefined
 
   const relatedGuides = guides
-    .filter((g) => g.id !== guide.id && g.category === guide.category)
+    .filter((item) => {
+      const href = item.href ?? `/tutorials/${item.slug}`
+      return item.id !== guide.id && item.category === guide.category && !isNoindexHref(href)
+    })
     .slice(0, 3)
-    .map((g) => ({
-      title: g.title,
-      href: g.href ?? `/tutorials/${g.slug}`,
+    .map((item) => ({
+      title: item.title,
+      href: item.href ?? `/tutorials/${item.slug}`,
       type: 'tutorial' as const,
-      excerpt: g.excerpt,
-      meta: `${g.readTime} · ${g.difficulty}`,
+      excerpt: item.excerpt,
+      meta: `${item.readTime} · ${item.difficulty}`,
     }))
 
   const pageUrl = `https://www.adminsignal.com/tutorials/${slug}`
@@ -112,8 +119,8 @@ export default async function TutorialPage({ params }: Props) {
 
   return (
     <>
-      <StructuredData data={jsonLd} />
-      <StructuredData data={jsonLdBreadcrumb} />
+      {!underReview && <StructuredData data={jsonLd} />}
+      {!underReview && <StructuredData data={jsonLdBreadcrumb} />}
 
       <div className="border-b border-border bg-surface/10 py-4">
         <Container>
@@ -129,7 +136,11 @@ export default async function TutorialPage({ params }: Props) {
 
       <Container>
         <div className="py-10 lg:py-14">
-          {lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />}
+          {underReview ? (
+            <EditorialReviewNotice reason="The current draft mixes legacy Windows Autopilot concepts with Windows Autopilot device preparation. It is being rewritten against Microsoft's current device-preparation workflow before republication." />
+          ) : (
+            lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
+          )}
 
           <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
             <article className="min-w-0">
@@ -150,7 +161,7 @@ export default async function TutorialPage({ params }: Props) {
                 </div>
               </header>
 
-              <AdSlot variant="banner" className="mb-8" />
+              {!underReview && <AdSlot variant="banner" className="mb-8" />}
 
               <Prose>
                 <MDXRemote
@@ -160,15 +171,17 @@ export default async function TutorialPage({ params }: Props) {
                 />
               </Prose>
 
-              <AffiliateBlock
-                toolName="Microsoft Intune"
-                tagline="Manage, secure, and report on all your endpoints from a single cloud-native console."
-                href="https://intune.microsoft.com"
-                badge="Recommended"
-                external
-              />
+              {!underReview && (
+                <AffiliateBlock
+                  toolName="Microsoft Intune"
+                  tagline="Manage, secure, and report on all your endpoints from a single cloud-native console."
+                  href="https://intune.microsoft.com"
+                  badge="Recommended"
+                  external
+                />
+              )}
 
-              {author && (
+              {author && !underReview && (
                 <div className="mt-12">
                   <AuthorBox author={author} />
                 </div>
@@ -182,12 +195,12 @@ export default async function TutorialPage({ params }: Props) {
                     <TableOfContents headings={headings} />
                   </div>
                 )}
-                <AdSlot variant="sidebar" />
+                {!underReview && <AdSlot variant="sidebar" />}
               </div>
             </aside>
           </div>
 
-          {relatedGuides.length > 0 && (
+          {relatedGuides.length > 0 && !underReview && (
             <div className="mt-14 border-t border-border pt-12">
               <RelatedContent items={relatedGuides} heading="Related tutorials" />
             </div>
