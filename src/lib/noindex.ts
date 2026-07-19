@@ -5,7 +5,15 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
   follow: true,
 }
 
-export const NOINDEX_STATIC_PATHS = new Set<string>(['/best-tools'])
+/**
+ * Accessible sections that are intentionally excluded from search while they are
+ * incomplete, commercially weak, or not a useful standalone search result.
+ */
+export const NOINDEX_STATIC_PATHS = new Set<string>([
+  '/best-tools',
+  '/reviews',
+  '/scripts',
+])
 
 /** Draft news kept offline until expanded — URLs return 404 if not in liveSignals. */
 export const DRAFT_NEWS_SLUGS = new Set([
@@ -17,11 +25,8 @@ export const DRAFT_NEWS_SLUGS = new Set([
 ])
 
 export const NOINDEX_NEWS_SLUGS = new Set<string>()
-
 export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set<string>()
-
 export const NOINDEX_COMPARISON_SLUGS = new Set<string>()
-
 export const NOINDEX_TUTORIAL_SLUGS = new Set<string>()
 
 const DUPLICATE_TUTORIAL_REDIRECTS = new Map([
@@ -64,7 +69,10 @@ export function isNoindexContentRoute(segment: string, slug: string): boolean {
     case 'news':
       return isNoindexNewsSlug(slug)
     case 'reviews':
-      return false
+    case 'scripts':
+      // These archives remain available to readers but are not eligible for
+      // indexing until the resources meet their stated editorial standard.
+      return true
     case 'troubleshooting':
       return isNoindexTroubleshootingSlug(slug)
     case 'comparisons':
