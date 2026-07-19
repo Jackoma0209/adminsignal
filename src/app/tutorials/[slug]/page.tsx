@@ -137,7 +137,7 @@ export default async function TutorialPage({ params }: Props) {
       <Container>
         <div className="py-10 lg:py-14">
           {underReview ? (
-            <EditorialReviewNotice reason="The current draft mixes legacy Windows Autopilot concepts with Windows Autopilot device preparation. It is being rewritten against Microsoft's current device-preparation workflow before republication." />
+            <EditorialReviewNotice reason="The current draft mixes legacy Windows Autopilot concepts with Windows Autopilot device preparation. Its technical body has been withdrawn while it is rewritten against Microsoft's current device-preparation workflow." />
           ) : (
             lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
           )}
@@ -163,13 +163,15 @@ export default async function TutorialPage({ params }: Props) {
 
               {!underReview && <AdSlot variant="banner" className="mb-8" />}
 
-              <Prose>
-                <MDXRemote
-                  source={content}
-                  options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
-                  components={mdxComponents}
-                />
-              </Prose>
+              {!underReview && (
+                <Prose>
+                  <MDXRemote
+                    source={content}
+                    options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                    components={mdxComponents}
+                  />
+                </Prose>
+              )}
 
               {!underReview && (
                 <AffiliateBlock
@@ -188,16 +190,18 @@ export default async function TutorialPage({ params }: Props) {
               )}
             </article>
 
-            <aside className="min-w-0">
-              <div className="sticky top-20">
-                {headings.length >= 2 && (
-                  <div className="mb-6 rounded-xl border border-border bg-surface p-5">
-                    <TableOfContents headings={headings} />
-                  </div>
-                )}
-                {!underReview && <AdSlot variant="sidebar" />}
-              </div>
-            </aside>
+            {!underReview && (
+              <aside className="min-w-0">
+                <div className="sticky top-20">
+                  {headings.length >= 2 && (
+                    <div className="mb-6 rounded-xl border border-border bg-surface p-5">
+                      <TableOfContents headings={headings} />
+                    </div>
+                  )}
+                  <AdSlot variant="sidebar" />
+                </div>
+              </aside>
+            )}
           </div>
 
           {relatedGuides.length > 0 && !underReview && (
