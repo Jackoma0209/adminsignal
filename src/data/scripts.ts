@@ -7,17 +7,21 @@ export interface Script {
   tags: string[]
   codePreview?: string
   status: 'implementation-guide' | 'full-script-available'
-  lastTested: string
   version: string
-  supportedEnvironments: string[]
+  environmentAssumptions: string[]
   requiredPermissions: string[]
-  expectedOutput: string
+  intendedOutput: string
   sourceUrl?: string
   sourceFileUrl?: string
   isNew?: boolean
   isFeatured?: boolean
 }
 
+/**
+ * Incomplete implementation patterns. None of the entries below should be
+ * described as tested, supported, downloadable, or production-ready until a
+ * complete source file and reproducible validation record are published.
+ */
 export const scripts: Script[] = [
   {
     id: '1',
@@ -25,27 +29,26 @@ export const scripts: Script[] = [
     slug: 'get-stale-devices',
     language: 'PowerShell',
     description:
-      'Identifies devices inactive for a configurable threshold across Intune, Entra ID, and on-premises Active Directory. Outputs CSV and HTML reports with remediation actions.',
+      'Design notes for building a review-first report of inactive device records across Intune, Microsoft Entra ID, and optional on-premises Active Directory sources.',
     tags: ['Intune', 'Entra ID', 'Active Directory', 'Reporting'],
     status: 'implementation-guide',
-    lastTested: 'Apr 27, 2026',
     version: 'Guide v0.2',
-    supportedEnvironments: [
-      'Windows 10/11 admin workstation',
-      'Microsoft Graph PowerShell SDK 2.x',
-      'Microsoft Intune and Microsoft Entra ID tenants',
-      'Optional on-premises Active Directory with RSAT tools',
+    environmentAssumptions: [
+      'An authorised Windows admin workstation',
+      'A current Microsoft Graph PowerShell SDK installation',
+      'Access to the relevant Microsoft Intune and Entra ID tenant',
+      'Optional Active Directory access through approved RSAT tooling',
     ],
     requiredPermissions: [
-      'Device.Read.All',
-      'DeviceManagementManagedDevices.Read.All',
-      'Read access to Active Directory when using the AD source',
+      'Device.Read.All for Entra device records',
+      'DeviceManagementManagedDevices.Read.All for Intune managed-device records',
+      'Directory read access when an on-premises Active Directory source is included',
     ],
-    expectedOutput:
-      'CSV and HTML reports listing stale Intune, Entra ID, and Active Directory device records with review-first remediation recommendations.',
-    codePreview: `$DaysThreshold = 90
-$Devices = Get-MgDeviceManagementManagedDevice
-$Stale = $Devices | Where-Object { $_.LastSyncDateTime -lt (Get-Date).AddDays(-$DaysThreshold) }`,
+    intendedOutput:
+      'A review queue or report that identifies potentially stale records, records the evidence used, and avoids deleting any object automatically.',
+    codePreview: `$Cutoff = (Get-Date).AddDays(-90)
+# Query the authorised source and review records older than $Cutoff
+# Do not delete objects automatically from an example fragment.`,
     isFeatured: true,
   },
   {
@@ -54,29 +57,27 @@ $Stale = $Devices | Where-Object { $_.LastSyncDateTime -lt (Get-Date).AddDays(-$
     slug: 'invoke-windows-hardening',
     language: 'PowerShell',
     description:
-      'Applies a configurable subset of CIS Level 1 and Level 2 controls to Windows 10/11 endpoints. Runs locally or via Intune remediation script. Generates a pre/post compliance delta report.',
+      'Design notes for a report-first Windows hardening workflow that maps approved controls to devices, records current state, and separates audit from remediation.',
     tags: ['CIS', 'Hardening', 'Security', 'Compliance'],
     status: 'implementation-guide',
-    lastTested: 'Apr 27, 2026',
     version: 'Guide v0.2',
-    supportedEnvironments: [
-      'Windows 10 22H2 and Windows 11 22H2 or later',
-      'PowerShell 5.1 or PowerShell 7.4',
-      'Local Administrator or Intune SYSTEM execution context',
-      'CIS Windows 11 Benchmark aligned pilot devices',
+    environmentAssumptions: [
+      'A disposable lab or approved pilot device matching the target Windows build',
+      'An organisation-approved hardening baseline and change record',
+      'A tested recovery path for registry, security policy, Defender, firewall, and BitLocker changes',
+      'Separate audit and remediation execution modes',
     ],
     requiredPermissions: [
-      'Local Administrator or SYSTEM on target devices',
-      'Permission to deploy Intune remediation scripts when used through Intune',
-      'Change approval for registry, security policy, Defender, firewall, and BitLocker settings',
+      'Local Administrator or an approved device-management execution context',
+      'Permission to deploy remediation scripts when Intune is used',
+      'Change approval for every control that alters device security or availability',
     ],
-    expectedOutput:
-      'Pre/post HTML compliance report showing audited, applied, skipped, and failed controls with enough detail for rollback review.',
-    codePreview: `$Controls = Import-Csv -Path .\\cis-controls.csv
-foreach ($ctrl in $Controls) {
-    Set-ItemProperty -Path $ctrl.RegPath -Name $ctrl.Name -Value $ctrl.Value
+    intendedOutput:
+      'An audit report that records each evaluated control as compliant, non-compliant, not applicable, skipped, or failed before any approved remediation is attempted.',
+    codePreview: `# Example structure only
+foreach ($Control in $ApprovedControls) {
+    # Test current state and record evidence before remediation
 }`,
-    isNew: true,
     isFeatured: true,
   },
   {
@@ -85,27 +86,26 @@ foreach ($ctrl in $Controls) {
     slug: 'get-patch-compliance-report',
     language: 'PowerShell',
     description:
-      'Queries WSUS or Windows Update for Business status via WMI and Graph API. Produces a per-device patch lag report with severity breakdown and exportable HTML dashboard.',
+      'Design notes for combining approved Windows update data sources into a device-level patch review report with explicit source and freshness limitations.',
     tags: ['Patch Management', 'WSUS', 'WUfB', 'Reporting'],
     status: 'implementation-guide',
-    lastTested: 'Apr 27, 2026',
     version: 'Guide v0.2',
-    supportedEnvironments: [
-      'Windows Server 2022 WSUS',
-      'Windows 10/11 clients',
-      'Windows Update for Business reporting through Microsoft Graph',
-      'Microsoft Graph PowerShell SDK 2.x',
+    environmentAssumptions: [
+      'A documented choice of WSUS, Windows Update for Business reporting, or another authoritative source',
+      'Representative pilot devices with known update state',
+      'A reporting definition for compliant, overdue, unknown, and excluded devices',
+      'Awareness that local update search results and cloud reporting can differ in freshness and scope',
     ],
     requiredPermissions: [
-      'WSUS Reporters role or higher for WSUS mode',
-      'DeviceManagementManagedDevices.Read.All',
-      'WindowsUpdates.ReadWrite.All',
+      'Read-only access to the selected update-reporting source',
+      'Approved Microsoft Graph permissions if cloud update data is queried',
+      'No remediation permissions for a report-only implementation',
     ],
-    expectedOutput:
-      'CSV and HTML patch compliance dashboard with device lag, missing update counts, severity breakdowns, and validation checks.',
-    codePreview: `$Session = New-Object -ComObject Microsoft.Update.Session
-$Searcher = $Session.CreateUpdateSearcher()
-$Missing = $Searcher.Search("IsInstalled=0 and IsHidden=0")`,
+    intendedOutput:
+      'A timestamped report that shows the source, last-seen evidence, update state, exclusions, unknown devices, and the limitations of the collected data.',
+    codePreview: `# Example local evidence query only
+$Session = New-Object -ComObject Microsoft.Update.Session
+$Searcher = $Session.CreateUpdateSearcher()`,
     isFeatured: true,
   },
   {
@@ -114,26 +114,26 @@ $Missing = $Searcher.Search("IsInstalled=0 and IsHidden=0")`,
     slug: 'new-admin-lab-vm',
     language: 'PowerShell',
     description:
-      'Provisions a clean Windows 11 test VM on Hyper-V using an unattend.xml answer file. Configures networking, WinRM, and optional domain join for a repeatable lab baseline.',
+      'Design notes for creating an isolated Hyper-V test virtual machine with explicit media, networking, storage, security, and optional domain-join checks.',
     tags: ['Hyper-V', 'Lab', 'Automation', 'Windows 11'],
     status: 'implementation-guide',
-    lastTested: 'Apr 27, 2026',
     version: 'Guide v0.2',
-    supportedEnvironments: [
-      'Windows 11 24H2 Hyper-V host',
-      'Windows 11 Enterprise or Pro ISO',
-      'PowerShell 5.1 or PowerShell 7.4',
-      'Isolated lab or pilot network',
+    environmentAssumptions: [
+      'An authorised Hyper-V host with sufficient storage and memory',
+      'Valid Windows installation media and licensing',
+      'An isolated or controlled virtual network',
+      'A disposable lab workflow rather than an unattended production provisioning process',
     ],
     requiredPermissions: [
       'Local Administrator on the Hyper-V host',
-      'Permission to create VMs, VHDX files, and virtual network attachments',
-      'Domain join rights only when -DomainJoin is used',
+      'Permission to create VMs, virtual disks, switches, and media attachments',
+      'Separately approved domain-join rights only when that optional step is used',
     ],
-    expectedOutput:
-      'Generation 2 Hyper-V lab VM with attached Windows ISO, dynamically expanding VHDX, optional domain join, and WinRM validation steps.',
-    codePreview: `New-VM -Name "AdminLab-01" -MemoryStartupBytes 4GB -Generation 2
-Add-VMDvdDrive -VMName "AdminLab-01" -Path .\\Win11.iso`,
+    intendedOutput:
+      'A documented lab VM definition and validation checklist; the example fragments do not constitute a complete provisioning script or answer-file generator.',
+    codePreview: `# Example fragment only
+New-VM -Name 'AdminLab-01' -MemoryStartupBytes 4GB -Generation 2
+# Validate paths, networking and media before continuing.`,
   },
   {
     id: '5',
@@ -141,27 +141,24 @@ Add-VMDvdDrive -VMName "AdminLab-01" -Path .\\Win11.iso`,
     slug: 'export-intune-device-report',
     language: 'PowerShell',
     description:
-      'Uses the Microsoft Graph API to export a full Intune device inventory including compliance state, OS version, last check-in, and primary user to CSV or JSON.',
+      'Design notes for a read-only Microsoft Graph inventory export with explicit field selection, paging, null handling, permission review, and data-protection controls.',
     tags: ['Intune', 'Graph API', 'Reporting', 'Inventory'],
     status: 'implementation-guide',
-    lastTested: 'Apr 27, 2026',
     version: 'Guide v0.2',
-    supportedEnvironments: [
-      'Windows 11 24H2 admin workstation',
-      'Microsoft Graph PowerShell SDK 2.x',
-      'Microsoft Intune tenant',
-      'CSV or JSON reporting workflow',
+    environmentAssumptions: [
+      'An authorised admin workstation with a current Microsoft Graph PowerShell SDK',
+      'A Microsoft Intune tenant containing representative test records',
+      'A defined data-minimisation and retention policy for exported device and user data',
+      'Validation against portal records and Graph paging behaviour',
     ],
     requiredPermissions: [
-      'DeviceManagementManagedDevices.Read.All',
-      'DeviceManagementConfiguration.Read.All when using -IncludeCompliance',
-      'Directory.Read.All for primary user resolution',
+      'DeviceManagementManagedDevices.Read.All for managed-device inventory',
+      'Additional read scopes only when the selected report fields require them',
+      'Approved access to any exported personal or device-identifying information',
     ],
-    expectedOutput:
-      'CSV and/or JSON Intune inventory export with device name, OS, compliance state, last check-in, primary user, and optional compliance policy results.',
-    codePreview: `Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
-$Devices = Get-MgDeviceManagementManagedDevice -All
-$Devices | Select Id,DeviceName,ComplianceState | Export-Csv inventory.csv`,
-    isNew: true,
+    intendedOutput:
+      'A read-only CSV or JSON export containing only approved fields, with collection time, query scope, paging status, null values, and any failed lookups recorded.',
+    codePreview: `Connect-MgGraph -Scopes 'DeviceManagementManagedDevices.Read.All'
+# Select only approved fields and handle paging and null values explicitly.`,
   },
 ]
