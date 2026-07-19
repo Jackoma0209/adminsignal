@@ -6,6 +6,7 @@ import Container from '@/components/layout/Container'
 import StructuredData from '@/components/StructuredData'
 import { buildCategoryMetadata } from '@/lib/metadata'
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
+import { isNoindexNewsSlug } from '@/lib/noindex'
 
 const pageTitle = 'IT News & Security Alerts'
 const pageDescription =
@@ -18,7 +19,8 @@ export const metadata: Metadata = buildCategoryMetadata({
   path: pagePath,
 })
 
-const categories = [...new Set(signals.map((s) => s.category))]
+const publicSignals = signals.filter((signal) => !isNoindexNewsSlug(signal.slug))
+const categories = [...new Set(publicSignals.map((signal) => signal.category))]
 
 export default async function NewsPage({
   searchParams,
@@ -26,8 +28,10 @@ export default async function NewsPage({
   searchParams: Promise<{ category?: string }>
 }) {
   const { category } = await searchParams
-  const filtered = category ? signals.filter((s) => s.category === category) : signals
-  const allDemo = filtered.length > 0 && filtered.every((s) => s.isDemo)
+  const filtered = category
+    ? publicSignals.filter((signal) => signal.category === category)
+    : publicSignals
+  const allDemo = filtered.length > 0 && filtered.every((signal) => signal.isDemo)
   const pageUrl = category
     ? `https://www.adminsignal.com/news?category=${encodeURIComponent(category)}`
     : 'https://www.adminsignal.com/news'
@@ -65,7 +69,7 @@ export default async function NewsPage({
         eyebrow="News & Alerts"
         title={pageTitle}
         description="Current signals from the Microsoft ecosystem: Patch Tuesday analysis, vulnerability alerts, Intune feature releases, and actionable enterprise IT news."
-        itemCount={signals.length}
+        itemCount={publicSignals.length}
         categories={categories}
         activeCategory={category}
         basePath="/news"
