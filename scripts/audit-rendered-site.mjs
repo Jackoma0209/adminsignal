@@ -91,6 +91,15 @@ function internalLinks(html) {
     .filter(Boolean)
 }
 
+function checkHiddenLinks(body, pathname, hiddenPaths) {
+  const links = new Set(internalLinks(body).map((href) => href.split('?')[0]))
+  for (const hiddenPath of hiddenPaths) {
+    if (links.has(hiddenPath)) {
+      errors.push(`${pathname}: promotes hidden or under-review route ${hiddenPath}`)
+    }
+  }
+}
+
 async function waitForServer() {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     try {
@@ -174,6 +183,9 @@ for (const url of sitemapUrls) {
   }
   if (robots.includes('noindex')) errors.push(`${pathname}: sitemap URL is noindex`)
   if (h1 !== 1) errors.push(`${pathname}: expected one H1, found ${h1}`)
+  if (/href=["']\/#newsletter["']/i.test(body)) {
+    errors.push(`${pathname}: links to a missing newsletter anchor`)
+  }
 
   if (title) {
     const owner = titles.get(title)
@@ -225,9 +237,9 @@ for (const pathname of discoveryPages) {
     errors.push(`${pathname}: discovery page returned ${response.status}`)
     continue
   }
-  const links = new Set(internalLinks(body).map((href) => href.split('?')[0]))
-  for (const hiddenPath of hiddenFromDiscoveryPaths) {
-    if (links.has(hiddenPath)) errors.push(`${pathname}: promotes hidden or under-review route ${hiddenPath}`)
+  checkHiddenLinks(body, pathname, hiddenFromDiscoveryPaths)
+  if (/href=["']\/#newsletter["']/i.test(body)) {
+    errors.push(`${pathname}: links to a missing newsletter anchor`)
   }
 }
 
@@ -258,8 +270,13 @@ for (const hiddenPath of hiddenFromDiscoveryPaths) {
   }
 }
 
-const missing = await get('/this-route-must-not-exist-adsense-audit')
+const missingPath = '/this-route-must-not-exist-adsense-audit'
+const missing = await get(missingPath)
 if (missing.response.status !== 404) errors.push(`Unknown route: expected 404, received ${missing.response.status}`)
+checkHiddenLinks(missing.body, missingPath, hiddenFromDiscoveryPaths)
+if (/href=["']\/#newsletter["']/i.test(missing.body)) {
+  errors.push(`${missingPath}: links to a missing newsletter anchor`)
+}
 
 const checkedLinks = new Set()
 for (const href of [...discoveredLinks].slice(0, 500)) {
