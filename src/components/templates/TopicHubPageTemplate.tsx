@@ -2,8 +2,9 @@ import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
+import { isNoindexHref } from '@/lib/noindex'
 
-interface ContentItem {
+export interface TopicContentItem {
   title: string
   href: string
   excerpt: string
@@ -15,13 +16,14 @@ interface TopicHubPageTemplateProps {
   topicName: string
   description: string
   eyebrow?: string
-  news: ContentItem[]
-  tutorials: ContentItem[]
+  news: TopicContentItem[]
+  tutorials: TopicContentItem[]
+  troubleshooting?: TopicContentItem[]
   /**
-   * Retained for compatibility with existing topic data. Script implementation
-   * patterns are intentionally not promoted while their complete source is absent.
+   * Legacy compatibility only. Incomplete script resources are deliberately not
+   * rendered, even if an older topic page still supplies this property.
    */
-  scripts: ContentItem[]
+  scripts?: TopicContentItem[]
   relatedTopics: { name: string; href: string }[]
 }
 
@@ -30,11 +32,12 @@ function HubContentRow({
   sectionTitle,
   viewAllHref,
 }: {
-  items: ContentItem[]
+  items: TopicContentItem[]
   sectionTitle: string
   viewAllHref: string
 }) {
-  if (items.length === 0) return null
+  const publicItems = items.filter((item) => !isNoindexHref(item.href))
+  if (publicItems.length === 0) return null
 
   return (
     <div className="border-t border-border py-12">
@@ -51,7 +54,7 @@ function HubContentRow({
           }
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
+          {publicItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -81,6 +84,7 @@ export default function TopicHubPageTemplate({
   eyebrow = 'Topic Hub',
   news,
   tutorials,
+  troubleshooting = [],
   relatedTopics,
 }: TopicHubPageTemplateProps) {
   return (
@@ -94,12 +98,19 @@ export default function TopicHubPageTemplate({
             {topicName}
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
-          <p className="mt-4 text-xs text-muted/60">Tutorials, troubleshooting, news, and analysis</p>
+          <p className="mt-4 text-xs text-muted/60">
+            Verified tutorials, troubleshooting guides, news, and analysis
+          </p>
         </Container>
       </div>
 
       <HubContentRow items={news} sectionTitle="Latest News" viewAllHref="/news" />
       <HubContentRow items={tutorials} sectionTitle="Deep-Dive Tutorials" viewAllHref="/tutorials" />
+      <HubContentRow
+        items={troubleshooting}
+        sectionTitle="Troubleshooting Guides"
+        viewAllHref="/troubleshooting"
+      />
 
       {relatedTopics.length > 0 && (
         <div className="border-t border-border py-12">
