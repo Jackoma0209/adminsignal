@@ -7,7 +7,12 @@ import { liveSignals, signals } from '@/data/signals'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { buildArticleMetadata } from '@/lib/metadata'
-import { isNoindexNewsSlug, withNoindex } from '@/lib/noindex'
+import {
+  isDraftNewsSlug,
+  isEditorialReviewNewsSlug,
+  isNoindexNewsSlug,
+  withNoindex,
+} from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -111,6 +116,8 @@ export default async function NewsArticlePage({ params }: Props) {
   const signal = signals.find((item) => item.slug === slug)
   if (!signal) notFound()
   const underReview = isNoindexNewsSlug(slug)
+  const draft = isDraftNewsSlug(slug)
+  const sourceConflict = isEditorialReviewNewsSlug(slug)
 
   let content = ''
   let headings: { id: string; text: string; level: number }[] = []
@@ -193,6 +200,12 @@ export default async function NewsArticlePage({ params }: Props) {
     { name: signal.title, url: pageUrl },
   ])
 
+  const reviewReason = sourceConflict
+    ? "The current version cites an update identifier and deployment claims that do not match Microsoft's April 2026 Windows release record. It is being rebuilt from the official KB and Security Update Guide before republication."
+    : draft
+      ? 'This draft has not completed primary-source verification and editorial review. Its article body has been withdrawn until those checks are complete.'
+      : undefined
+
   return (
     <>
       {!underReview && <StructuredData data={jsonLdArticle} />}
@@ -213,7 +226,7 @@ export default async function NewsArticlePage({ params }: Props) {
       <Container>
         <div className="py-10 lg:py-14">
           {underReview ? (
-            <EditorialReviewNotice reason="The current version cites an update identifier and deployment claims that do not match Microsoft's April 2026 Windows release record. It is being rebuilt from the official KB and Security Update Guide before republication." />
+            <EditorialReviewNotice reason={reviewReason} />
           ) : (
             lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
           )}
@@ -258,7 +271,7 @@ export default async function NewsArticlePage({ params }: Props) {
                 </div>
               </header>
 
-              {featuredImage && (
+              {!underReview && featuredImage && (
                 <div className="relative mb-8 aspect-video w-full overflow-hidden rounded-xl bg-surface">
                   <Image
                     src={featuredImage}
@@ -277,9 +290,11 @@ export default async function NewsArticlePage({ params }: Props) {
 
               {!underReview && <AdSlot variant="banner" className="mb-8" />}
 
-              <Prose>
-                <MDXRemote source={content} components={mdxComponents} />
-              </Prose>
+              {!underReview && (
+                <Prose>
+                  <MDXRemote source={content} components={mdxComponents} />
+                </Prose>
+              )}
 
               {author && !underReview && (
                 <div className="mt-12">
@@ -288,16 +303,18 @@ export default async function NewsArticlePage({ params }: Props) {
               )}
             </article>
 
-            <aside>
-              <div className="sticky top-20">
-                {headings.length >= 2 && (
-                  <div className="mb-6 rounded-xl border border-border bg-surface p-5">
-                    <TableOfContents headings={headings} />
-                  </div>
-                )}
-                {!underReview && <AdSlot variant="sidebar" />}
-              </div>
-            </aside>
+            {!underReview && (
+              <aside>
+                <div className="sticky top-20">
+                  {headings.length >= 2 && (
+                    <div className="mb-6 rounded-xl border border-border bg-surface p-5">
+                      <TableOfContents headings={headings} />
+                    </div>
+                  )}
+                  <AdSlot variant="sidebar" />
+                </div>
+              </aside>
+            )}
           </div>
 
           {relatedSignals.length > 0 && !underReview && (
