@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Mail, Shield } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import NewsletterSignupForm from '@/components/sections/NewsletterSignupForm'
@@ -6,6 +7,44 @@ export default function NewsletterSection() {
   const newsletterEnabled = Boolean(
     process.env.MAILERLITE_API_TOKEN && process.env.MAILERLITE_GROUP_ID
   )
+
+  // Do not render an inactive newsletter CTA during AdSense review. An unfinished
+  // signup form is a common low-value signal; show a complete form only when live.
+  if (!newsletterEnabled) {
+    return (
+      <section className="border-y border-border bg-surface/20 py-16">
+        <Container>
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
+              Stay in the loop
+            </p>
+            <h2 className="mb-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              Corrections, tips, and topic requests welcome
+            </h2>
+            <p className="mb-6 text-base leading-relaxed text-muted">
+              Prefer email over forms? Use the contact addresses for editorial corrections,
+              guide requests, or privacy questions. New guides are published on the site and
+              in the RSS feed.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/contact"
+                className="rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Contact AdminSignal
+              </Link>
+              <a
+                href="/rss.xml"
+                className="rounded-md border border-border px-5 py-2.5 text-sm font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
+              >
+                RSS feed
+              </a>
+            </div>
+          </div>
+        </Container>
+      </section>
+    )
+  }
 
   return (
     <section id="newsletter" className="relative overflow-hidden border-y border-border py-24 sm:py-32">

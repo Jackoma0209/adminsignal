@@ -7,25 +7,24 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
 
 /**
  * Accessible sections that are intentionally excluded from search while they are
- * incomplete, commercially weak, or not a useful standalone search result.
+ * incomplete, commercially weak, thin hub pages, or not a useful standalone
+ * search result. AdSense reviewers still see linked thin pages, so keep these
+ * out of the sitemap, ads, and indexation until they meet publication standard.
  */
 export const NOINDEX_STATIC_PATHS = new Set<string>([
   '/best-tools',
   '/reviews',
   '/scripts',
+  '/search',
+  '/advertise',
 ])
 
 /**
  * News records retained for editorial development but excluded from listings,
  * sitemap output, advertising, structured data, and search indexing.
+ * Keep this empty when liveSignals contains only publishable articles.
  */
-export const DRAFT_NEWS_SLUGS = new Set([
-  'windows-driver-cross-signed-trust-removal',
-  'windows-app-rd-client-deprecation-2026',
-  'intune-security-best-practices-2026',
-  'intune-opt-in-mdm-enrollment-preview',
-  'intune-frontline-mobile-migration',
-])
+export const DRAFT_NEWS_SLUGS = new Set<string>([])
 
 /**
  * Published records held out of search while an official-source review is in

@@ -52,6 +52,24 @@ export default function GroupPolicyPage() {
       <TopicHubPageTemplate
         topicName={topicName}
         description={topicDescription}
+        introSections={[
+          {
+            title: 'Start with scope and evidence, not gpupdate',
+            body: 'Most Group Policy failures are scope problems: wrong OU, blocked inheritance, security filtering, WMI filters, loopback mode, or a competing cloud policy. Collect RSoP or gpresult evidence before forcing another refresh cycle.',
+          },
+          {
+            title: 'Coexistence with Intune and security baselines',
+            body: 'Treat GPO and Intune Settings Catalog as one control plane in design reviews. Duplicate settings create conflict winners that are hard to explain to helpdesk and auditors. Inventory overlapping controls before hardening or migrating baselines.',
+          },
+          {
+            title: 'What good operational practice looks like',
+            body: 'Name GPOs by purpose, limit the number of linked policies per OU, document WMI filters, and keep a change record for security filtering changes. When something fails, capture computer and user RSoP, event log policy evidence, and the exact link order that applied.',
+          },
+          {
+            title: 'When not to add another GPO',
+            body: 'Do not create one-off GPOs for single machines or temporary exceptions without an expiry owner. Prefer a pilot OU, security group filtering, or an Intune assignment group with a removal date. Unowned exceptions become permanent drift.',
+          },
+        ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}

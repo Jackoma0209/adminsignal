@@ -84,13 +84,74 @@ This does not have to be a permanent decision. It means the migration plan shoul
 
 Do not move workloads because the slider exists. Move them when the receiving process in Intune is documented, monitored, and supportable.
 
+## Recommended Workload Slide Order
+
+Use co-management as a controlled migration programme, not a single toggle:
+
+| Order | Workload | Move when | Hold if |
+|---|---|---|---|
+| 1 | Compliance policies | Devices report healthy compliance and CA impact is understood | Compliance results are noisy or CA would lock users out |
+| 2 | Device configuration | Settings Catalog profiles cover required controls and conflict inventory is clean | Critical GPO or ConfigMgr baselines still conflict |
+| 3 | Windows Update policies | Pilot rings prove quality and feature update behaviour | ADRs, custom SQL patch reports, or maintenance windows still define production risk |
+| 4 | Endpoint protection | Defender onboarding and security baselines are owned in Intune/MDE | Existing antivirus or EDR coexistence is untested |
+| 5 | Client apps | Win32 packaging, detection, supersedence, and support runbooks are ready | Multi-GB packages or complex dependency chains still require DPs |
+| 6 | OSD / provisioning | Autopilot or hybrid provisioning covers the hardware classes you buy | Bare-metal PXE, offline builds, or factory imaging remain mandatory |
+
+Do not skip to apps or OSD because they are the most visible. They are usually the hardest to reverse cleanly.
+
+## Decision Matrix By Estate Type
+
+| Estate pattern | Prefer now | Why |
+|---|---|---|
+| Cloud-first Microsoft 365 + remote Windows fleet | Intune primary | Low infrastructure overhead, native CA and Autopilot path |
+| Hybrid with healthy ConfigMgr and complex OSD | Co-management | Keep imaging and heavy distribution while moving policy cloud-side |
+| Air-gapped or heavily segmented network | ConfigMgr primary | Cloud management plane may be unavailable or constrained |
+| New greenfield tenant with no site servers | Intune primary | Avoid standing up infrastructure you will retire later |
+| Regulated estate with SQL audit reports | Dual-plane until reports rebuilt | Do not lose evidence paths during migration |
+
+## Cost And Effort Reality Check
+
+Intune reduces site-server maintenance, but it does not remove packaging discipline, ring design, detection-rule quality, or support ownership. Configuration Manager keeps deep on-premises control, but you continue paying for SQL, site hierarchy health, boundary groups, DP content validation, and skilled operators.
+
+A practical planning question is not “which product is better?” It is “which team owns each failure mode after the change?” If nobody owns Win32 detection failures, update ring exceptions, or Autopilot ESP timeouts, moving the slider increases ticket volume without improving security posture.
+
+## When Not To Migrate A Workload Yet
+
+Keep the workload on Configuration Manager when:
+
+- There is no documented pilot success criteria
+- Helpdesk cannot find device state in the destination portal
+- Required reports only exist as ConfigMgr SQL queries
+- App detection methods are unreliable in lab tests
+- Network segments cannot reach required cloud endpoints consistently
+- Change control has no approved rollback path
+
+Leaving a hard workload on ConfigMgr is a valid interim architecture. Pretending every capability is ready for Intune is how dual-plane estates become dual-outage estates.
+
+## Validation Checklist After Each Slide
+
+- Pilot collection health in both consoles for at least one full business cycle
+- Policy conflict inventory reviewed and residual conflicts accepted or removed
+- Helpdesk runbook updated with the new portal path and log locations
+- Monitoring alert owners named for sync failures, app failures, and non-compliance
+- Rollback owner and steps recorded in the change record
+- Executive or security stakeholders told what improved and what remains on ConfigMgr
+
 ## Verdict
 
 For new cloud-managed endpoints, Intune is usually the right starting point. SCCM still has a role where complex OSD, large software distribution, detailed on-premises reporting, or restricted networks exist. The practical answer for many estates is a staged co-management model, not a rushed replacement.
 
+## Primary Sources
+
+- [Microsoft co-management overview](https://learn.microsoft.com/en-us/mem/configmgr/comanage/overview)
+- [Co-management workloads](https://learn.microsoft.com/en-us/mem/configmgr/comanage/workloads)
+- [Microsoft Intune endpoint management overview](https://learn.microsoft.com/en-us/mem/intune/fundamentals/what-is-intune)
+- [Windows Autopilot overview](https://learn.microsoft.com/en-us/autopilot/windows-autopilot)
+
 ## Related Reading
 
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
-- [Understanding Autopilot v2](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting)
+- [Windows Update for Business Deferral Not Respected](/troubleshooting/wufb-deferral-not-respected)
+- [SCCM / MECM topic hub](/sccm-mecm)
 - [Patch Management hub](/patch-management)
-- [Microsoft co-management documentation](https://learn.microsoft.com/en-us/mem/configmgr/comanage/overview)

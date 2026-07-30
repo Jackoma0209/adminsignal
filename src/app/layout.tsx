@@ -21,14 +21,14 @@ const geistMono = Geist_Mono({
 const SITE_NAME = 'AdminSignal'
 const SITE_URL = 'https://www.adminsignal.com'
 const SITE_DESCRIPTION =
-  'Practical guides, PowerShell implementation notes, and analysis for enterprise sysadmins. Written by a practitioner with 12+ years managing Windows fleets, Microsoft Intune tenants, and Active Directory environments across finance, logistics, and professional services.'
+  'Source-backed tutorials, troubleshooting guides, and analysis for Microsoft Intune, Windows endpoints, PowerShell, Microsoft 365, and enterprise IT administration. Written by Jack, an endpoint specialist.'
 const OG_IMAGE = `${SITE_URL}/og-default.png`
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: SITE_NAME,
   title: {
-    default: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
+    default: `${SITE_NAME} — Practical Microsoft Administration Guidance`,
     template: `%s | ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
@@ -79,14 +79,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: SITE_URL,
-    title: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
+    title: `${SITE_NAME} — Practical Microsoft Administration Guidance`,
     description: SITE_DESCRIPTION,
     images: [
       {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: 'AdminSignal — Practitioner-Focused Guides for Enterprise Sysadmins',
+        alt: 'AdminSignal — Practical Microsoft administration guidance',
       },
     ],
   },
@@ -94,9 +94,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@adminsignal',
     creator: '@adminsignal',
-    title: `${SITE_NAME} — Practitioner-Focused Content for Sysadmins`,
-    description:
-      'Practical guides, PowerShell implementation notes, and analysis for Windows admins and endpoint engineers. 12+ years enterprise experience, no lab theory.',
+    title: `${SITE_NAME} — Practical Microsoft Administration Guidance`,
+    description: SITE_DESCRIPTION,
     images: [OG_IMAGE],
   },
   category: 'technology',

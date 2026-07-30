@@ -51,6 +51,24 @@ export default function WindowsServerPage() {
       <TopicHubPageTemplate
         topicName={topicName}
         description={topicDescription}
+        introSections={[
+          {
+            title: 'Treat identity, DNS, and patching as one operational chain',
+            body: 'Windows Server issues rarely stay inside one role. Authentication failures often involve DNS, time sync, certificate trust, or Group Policy delivery. Capture which service failed, which dependency it needs, and which event logs prove the failure before changing production settings.',
+          },
+          {
+            title: 'Patch and reboot ownership must be explicit',
+            body: 'Domain controllers, file servers, and application hosts need different maintenance windows and rollback plans. Document who approves reboots, how cluster or failover roles are protected, and which monitoring alert confirms the service returned healthy after patching.',
+          },
+          {
+            title: 'Hardening without breaking line-of-business paths',
+            body: 'Baseline changes for SMB, TLS, local admin rights, and audit policy should go through a pilot OU or pilot server group first. Record the application owners who signed off and the exact setting that caused a regression if rollback is required.',
+          },
+          {
+            title: 'When not to rush cloud-only replacement',
+            body: 'Some server workloads still depend on local AD, on-premises file services, or network-adjacent management tools. Move the workloads that are ready, keep the ones that are not, and avoid deleting recovery paths before the replacement is proven under failure conditions.',
+          },
+        ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}

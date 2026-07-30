@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
 import { buildCategoryMetadata } from '@/lib/metadata'
+import { withNoindex } from '@/lib/noindex'
 
-export const metadata: Metadata = buildCategoryMetadata({
-  title: 'Advertise',
-  description:
-    'Reach IT professionals, sysadmins, and endpoint specialists through clearly labelled advertising on AdminSignal.',
-  path: '/advertise',
-})
+export const metadata: Metadata = withNoindex(
+  buildCategoryMetadata({
+    title: 'Advertise',
+    description:
+      'Reach IT professionals, sysadmins, and endpoint specialists through clearly labelled advertising on AdminSignal.',
+    path: '/advertise',
+  }),
+)
 
 export default function AdvertisePage() {
   return (

@@ -110,13 +110,78 @@ Start PIM with a small set of high-impact roles, such as Global Administrator, P
 
 For access reviews, begin with privileged groups and external guest access. Reviewing every group in the tenant at once usually creates fatigue and poor reviewer decisions.
 
+## Pilot Plan Before Buying Tenant-Wide P2
+
+Do not buy P2 for every user because a security framework document mentions JIT admin access. Run a short pilot that proves ownership, alert handling, and helpdesk impact first.
+
+### Suggested pilot scope
+
+1. Identify 10–30 privileged identities: Global Administrator, Privileged Role Administrator, Security Administrator, Exchange Administrator, and any break-glass accounts that should remain permanent exceptions.
+2. Licence P2 only for those identities and the reviewers who will approve activations or access reviews.
+3. Convert permanent privileged roles to eligible assignments in PIM for one non-emergency admin cohort.
+4. Enable a medium/high sign-in risk Conditional Access policy in report-only mode before enforcement.
+5. Run one access review cycle for a privileged group and one guest-access group.
+
+### Pilot success criteria
+
+- Admins can still complete urgent work within the approved activation window
+- Approvers respond within the SLA you set for production
+- Risky sign-in alerts are reviewed by a named owner, not an unwatched mailbox
+- Access review decisions are completed with fewer than a small percentage of “approve by fatigue”
+- Break-glass accounts remain excluded from risky MFA experiments and are monitored separately
+
+If those criteria fail, fix the process before expanding licences. P2 without ownership is an expensive checkbox.
+
+## When Not To Upgrade Yet
+
+Delay a broad P2 purchase when:
+
+- Permanent Global Administrator sprawl has not been cleaned up
+- There is no on-call owner for Identity Protection alerts
+- Conditional Access baselines, MFA registration, and legacy authentication blocks are still incomplete
+- Managers or resource owners have never completed an access review successfully
+- The only driver is “E5 marketing includes it” with no control design
+
+In those cases, finish P1 hygiene first. P2 multiplies process maturity; it does not create it.
+
+## Operational Cost Beyond Licence Price
+
+Budget time for:
+
+- PIM role design, approval groups, and emergency access exceptions
+- Access review cadence, reviewer training, and evidence export for audits
+- Identity Protection tuning to reduce false positives that cause password-reset storms
+- Conditional Access report-only evaluation and staged enforcement
+- SIEM or log retention if auditors require longer history than the default portal view
+
+A realistic estimate for a mid-size tenant is several weeks of design and pilot work, then ongoing weekly review of activations, risky users, and overdue access reviews.
+
+## Evidence To Keep For Auditors And Change Control
+
+Keep a simple evidence pack:
+
+- Role inventory before and after PIM conversion
+- Sample activation and approval records
+- Access review completion reports for privileged and guest scopes
+- Conditional Access report-only results for risk-based policies
+- Break-glass account list, storage method for credentials, and monitoring alert proof
+
+That pack is often more useful in an audit conversation than a feature comparison table alone.
+
 ## Verdict
 
-P2 is worth it if you have privileged accounts, external access to certify, or compliance requirements. For smaller tenants without those drivers, P1 covers the Conditional Access and SSPR fundamentals adequately.
+P2 is worth it if you have privileged accounts, external access to certify, or compliance requirements and a team ready to operate PIM, risk policies, and access reviews. For smaller tenants without those drivers, P1 covers the Conditional Access and SSPR fundamentals adequately. Prefer targeted P2 licensing for privileged identities before tenant-wide expansion.
+
+## Primary Sources
+
+- [Microsoft Entra ID Governance / PIM overview](https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-configure)
+- [Microsoft Entra ID Protection overview](https://learn.microsoft.com/en-us/entra/id-protection/overview-identity-protection)
+- [Access reviews overview](https://learn.microsoft.com/en-us/entra/id-governance/access-reviews-overview)
+- [Microsoft Entra ID editions and feature comparison](https://learn.microsoft.com/en-us/entra/fundamentals/feature-availability)
 
 ## Related Reading
 
 - [Configuring Conditional Access for Microsoft 365](/tutorials/conditional-access-m365-policy-map)
-- [Veeam Backup for Microsoft 365 Review](/reviews/veeam-backup-m365-review)
+- [Microsoft 365 Admin Centre Mandatory MFA Readiness](/tutorials/microsoft-365-admin-centre-mfa-readiness)
 - [Microsoft Entra ID hub](/microsoft-entra-id)
-- [Microsoft PIM documentation](https://learn.microsoft.com/en-us/entra/id-governance/privileged-identity-management/pim-configure)
+- [Microsoft Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating)

@@ -8,9 +8,14 @@ const expectedClientId = 'ca-pub-5563142788194204'
 const ignoredDirs = new Set(['.git', '.next', 'node_modules', 'out'])
 const routePath = path.join(root, 'src', 'app', 'ads.txt', 'route.ts')
 const consentPath = path.join(root, 'src', 'lib', 'consent.ts')
+const robotsPath = path.join(root, 'src', 'app', 'robots.ts')
+const noindexPath = path.join(root, 'src', 'lib', 'noindex.ts')
+const layoutPath = path.join(root, 'src', 'app', 'layout.tsx')
 const legacyPublisherPattern = new RegExp(
   `${['NEXT_PUBLIC', 'ADSENSE', 'PUBLISHER_ID'].join('_')}|${['ADSENSE', 'PUBLISHER_ID'].join('_')}`
 )
+const requiredRobotsDisallows = ['/scripts', '/reviews', '/best-tools', '/search', '/api/']
+const requiredNoindexPaths = ['/best-tools', '/reviews', '/scripts', '/search', '/advertise']
 
 function fail(message) {
   console.error(`AdSense readiness check failed: ${message}`)
@@ -71,9 +76,28 @@ if (adsTxtFiles.length > 0) {
 
 const routeSource = readText(routePath)
 const consentSource = readText(consentPath)
+const robotsSource = readText(robotsPath)
+const noindexSource = readText(noindexPath)
+const layoutSource = readText(layoutPath)
 
 if (!routeSource.includes('ADSENSE_SELLER_PUBLISHER_ID')) {
   fail('ads.txt route does not use ADSENSE_SELLER_PUBLISHER_ID')
+}
+
+for (const disallow of requiredRobotsDisallows) {
+  if (!robotsSource.includes(`'${disallow}'`) && !robotsSource.includes(`"${disallow}"`)) {
+    fail(`robots.ts is missing disallow for ${disallow}`)
+  }
+}
+
+for (const noindexPathValue of requiredNoindexPaths) {
+  if (!noindexSource.includes(`'${noindexPathValue}'`) && !noindexSource.includes(`"${noindexPathValue}"`)) {
+    fail(`noindex.ts is missing static path ${noindexPathValue}`)
+  }
+}
+
+if (/\b12\+\s*years\b|\bmore than\s+\d+\s+years\b|\bno lab theory\b/i.test(layoutSource)) {
+  fail('root layout metadata contains inflated experience claims that conflict with About page standards')
 }
 
 if (!routeSource.includes('text/plain')) {

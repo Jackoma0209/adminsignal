@@ -18,6 +18,13 @@ const knownStaticRoutes = new Set([
   '/reviews', '/sccm-mecm', '/scripts', '/search', '/terms', '/topics',
   '/troubleshooting', '/tutorials', '/windows-server',
 ])
+const requiredNoindexStaticPaths = [
+  '/best-tools',
+  '/reviews',
+  '/scripts',
+  '/search',
+  '/advertise',
+]
 const primarySourceHosts = new Set([
   'learn.microsoft.com', 'support.microsoft.com', 'www.microsoft.com',
   'techcommunity.microsoft.com', 'msrc.microsoft.com', 'cisa.gov', 'www.cisa.gov',
@@ -289,8 +296,10 @@ const scriptPageSource = read(path.join(root, 'src', 'app', 'scripts', '[slug]',
 const homepageSource = read(path.join(root, 'src', 'app', 'page.tsx'))
 const guideReviewPageSource = read(path.join(root, 'src', 'app', 'guides', 'windows-11-25h2-autopilot-v2', 'page.tsx'))
 
-for (const route of ["'/scripts'", "'/reviews'"]) {
-  if (!noindexSource.includes(route)) errors.push(`src/lib/noindex.ts: missing ${route} rule`)
+for (const route of requiredNoindexStaticPaths) {
+  if (!noindexSource.includes(`'${route}'`) && !noindexSource.includes(`"${route}"`)) {
+    errors.push(`src/lib/noindex.ts: missing ${route} rule`)
+  }
 }
 if (!/DRAFT_NEWS_SLUGS\.has\(slug\)\s*\|\|\s*NOINDEX_NEWS_SLUGS\.has\(slug\)/.test(noindexSource)) {
   errors.push('src/lib/noindex.ts: draft news is not enforced by isNoindexNewsSlug')

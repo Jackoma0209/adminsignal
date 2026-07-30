@@ -80,3 +80,59 @@ As of June 2026:
 - Keep Intune update rings, Autopatch assignments, and compliance policies explicit so 25H2 and 26H1 devices are measured correctly.
 
 Most organisations should only run 26H1 where hardware or procurement creates a real need. For the rest of the estate, a controlled 25H2 rollout is the cleaner operational plan.
+
+## Operational Decision Framework For Endpoint Teams
+
+Use this sequence before changing broad feature-update policy:
+
+1. **Confirm the servicing path** for each hardware class: in-place upgrade available, OEM ships with 26H1 only, or hold on 25H2.
+2. **Separate rings by build family**, not by department alone. A finance pilot ring that mixes 25H2 and 26H1 hardware will create false compliance noise.
+3. **Update Autopilot and ESP expectations** for any model that boots into a different build family than your documentation assumes.
+4. **Recheck security baselines** after the first 26H1 pilot wave: Defender platform version, Secure Boot state, BitLocker protectors, and any CIS or custom hardening packs.
+5. **Train helpdesk** on which build strings are expected so “wrong OS version” tickets are triaged correctly.
+
+## When Not To Broaden 26H1
+
+Do not expand 26H1 beyond required hardware when:
+
+- Application certification is still tied to the 25H2 build family
+- Your feature update policy language says “latest” without an explicit target release version
+- Compliance policies use minimum build logic that cannot express two supported families cleanly
+- Driver or firmware quality for the new silicon class is still failing pilot machines
+- Change control expects one estate-wide Windows 11 target and cannot accept segmented ownership
+
+In those cases, keep 25H2 as the standard and isolate 26H1 to procurement-driven exceptions with named owners.
+
+## Validation Evidence To Collect
+
+| Check | Why it matters | Example evidence |
+|---|---|---|
+| Build family inventory | Prevents one policy treating two releases as one | Intune or Graph export of OS version and model |
+| Update assignment map | Stops accidental broad offers | Feature update policy targets and group membership |
+| Autopilot success rate | New hardware often fails at provisioning first | ESP failure reasons, enrollment times |
+| Security baseline drift | New builds can surface deprecated or missing settings | Baseline report, Defender health, BitLocker status |
+| App readiness | LOB owners need a clear test matrix | Sign-off list by application and build family |
+
+## Procurement And Lifecycle Note
+
+Hardware buyers and endpoint engineers need a shared rule:
+
+- Default corporate catalogue stays on models and images aligned to the broad 25H2 target where possible
+- Silicon or OEM SKUs that require 26H1 are ordered only into a labelled exception catalogue
+- Exception devices get a distinct Autopilot profile, update ring, and support article from day one
+
+Without that rule, procurement creates an unmanaged second fleet and the update team discovers it through compliance failures.
+
+## Primary Sources
+
+- [Windows 11 release information](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information)
+- [Windows Update for Business feature updates](https://learn.microsoft.com/en-us/windows/deployment/update/waas-manage-updates-wufb)
+- [Intune feature update policies](https://learn.microsoft.com/en-us/mem/intune/protect/windows-10-feature-updates)
+- [Windows Autopilot overview](https://learn.microsoft.com/en-us/autopilot/windows-autopilot)
+
+## Related Reading
+
+- [Secure Boot CA 2023 Rollout Readiness](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness)
+- [Windows Update for Business Deferral Not Respected](/troubleshooting/wufb-deferral-not-respected)
+- [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Patch Management hub](/patch-management)

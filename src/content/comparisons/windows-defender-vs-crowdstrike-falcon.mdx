@@ -77,13 +77,84 @@ CrowdStrike deserves serious evaluation if:
 - Can the helpdesk understand device risk and isolation state without SOC access?
 - What is the rollback plan if an agent update or policy change affects production devices?
 
+## Operating Model Checklist
+
+Endpoint protection choices fail less often on feature lists and more often on ownership. Before buying either product, write down:
+
+1. Who owns sensor health and failed onboarding
+2. Who tunes exclusions and ASR or prevention policies
+3. Who triages high-severity alerts outside business hours
+4. How helpdesk requests device isolation or release
+5. Which SIEM or ticketing path receives automated detections
+6. How update rings for the security agent or platform are tested
+
+If those owners do not exist, neither Defender nor CrowdStrike will create a mature security operation by itself.
+
+## Pilot Design That Produces A Real Decision
+
+Run a 30–60 day pilot with equal care for both products if both are shortlisted:
+
+| Pilot item | Minimum evidence |
+|---|---|
+| Device classes | Domain-joined, Entra-joined, remote, and any critical LOB machines |
+| Detection quality | Known-safe attack simulation or red-team package approved by security |
+| False positives | Count of business-impacting blocks and time to resolve |
+| Performance | Login delay, CPU spikes, and LOB application owners sign-off |
+| Response | Time from alert to analyst context and containment action |
+| Admin workflow | Policy change path, role model, and audit log export |
+
+Score products against your workflow, not a vendor demo script. A console that is powerful for a specialist SOC can still be the wrong choice for a Microsoft-admin-led estate with limited hunting capacity.
+
+## When Not To Replace Your Current Stack
+
+Stay on the current product, or delay replacement, when:
+
+- Licensing for the preferred stack is already paid and underused
+- The SOC runbooks, detection content, and on-call model are built around the current console
+- A migration would force a second agent without a validated coexistence plan
+- Critical LOB applications have no owner available to test prevention policies
+- Leadership wants a logo change rather than alert ownership and response SLAs
+
+Replacement projects that skip coexistence, exclusion review, and rollback planning are a common source of self-inflicted outages.
+
+## Microsoft Estate Integration Notes
+
+If devices are Intune-managed and Conditional Access depends on device risk or compliance:
+
+- Confirm how Defender for Endpoint risk signals enter Conditional Access and compliance evaluation
+- Confirm whether CrowdStrike signals will integrate through a connector, custom compliance, or a parallel process
+- Decide whether isolation is performed in the security portal, Intune, or both
+- Document which team communicates with users during containment
+
+Security tools that cannot participate in your access-control model create process debt even when detection quality is excellent.
+
+## Cost Model Beyond List Price
+
+Include:
+
+- Microsoft 365 E5 or Defender Plan 2 licensing already owned
+- Falcon module tiers required for the capabilities in the RFP
+- SIEM ingestion volume differences
+- Professional services for onboarding and detection engineering
+- Ongoing FTE time for tuning, exclusions, and alert review
+- Dual-running cost during migration
+
+The cheaper unit price is often not the cheaper operating cost over 24 months.
+
 ## Verdict
 
 For Microsoft-centred environments already on E5 licensing, Defender for Endpoint is compelling and often easier to operate. CrowdStrike remains strong where investigation depth, cross-platform coverage, and specialist SOC workflows matter more than licensing consolidation. The right answer depends on estate mix, analyst workflow, support model, and appetite for third-party endpoint agent risk.
 
+## Primary Sources
+
+- [Microsoft Defender for Endpoint documentation](https://learn.microsoft.com/en-us/defender-endpoint/)
+- [Compare Microsoft Defender for Endpoint plans](https://learn.microsoft.com/en-us/defender-endpoint/defender-endpoint-plan-1-2)
+- [MITRE ATT&CK Evaluations](https://attackevals.mitre-engenuity.org/)
+- [CrowdStrike Falcon platform overview](https://www.crowdstrike.com/platform/)
+
 ## Related Reading
 
-- [CrowdStrike Falcon Go Review](/reviews/crowdstrike-falcon-go-review)
+- [Rolling Out Microsoft Defender for Endpoint with Intune](/tutorials/microsoft-defender-for-endpoint-intune-rollout)
 - [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
 - [Endpoint Security hub](/endpoint-security)
-- [Microsoft Defender for Endpoint documentation](https://learn.microsoft.com/en-us/defender-endpoint/)
+- [Intune Security Hardening Plan](/news/intune-security-best-practices-2026)

@@ -120,7 +120,7 @@ export function buildTopicMetadata({
   description: string
   slug: string
 }): Metadata {
-  const title = `${topicName} — Guides, Scripts & News`
+  const title = `${topicName} — Guides, Troubleshooting & Analysis`
   return buildCategoryMetadata({
     title,
     description,

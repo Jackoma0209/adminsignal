@@ -16,6 +16,11 @@ interface TopicHubPageTemplateProps {
   topicName: string
   description: string
   eyebrow?: string
+  /**
+   * Optional original editorial sections shown above the curated article lists.
+   * Use this on thin hubs so the page is not just a short doorway of links.
+   */
+  introSections?: { title: string; body: string }[]
   news: TopicContentItem[]
   tutorials: TopicContentItem[]
   troubleshooting?: TopicContentItem[]
@@ -82,11 +87,17 @@ export default function TopicHubPageTemplate({
   topicName,
   description,
   eyebrow = 'Topic Hub',
+  introSections = [],
   news,
   tutorials,
   troubleshooting = [],
   relatedTopics,
 }: TopicHubPageTemplateProps) {
+  const publicNews = news.filter((item) => !isNoindexHref(item.href))
+  const publicTutorials = tutorials.filter((item) => !isNoindexHref(item.href))
+  const publicTroubleshooting = troubleshooting.filter((item) => !isNoindexHref(item.href))
+  const publicCount = publicNews.length + publicTutorials.length + publicTroubleshooting.length
+
   return (
     <>
       <div className="border-b border-border bg-surface/20 py-14">
@@ -99,15 +110,39 @@ export default function TopicHubPageTemplate({
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
           <p className="mt-4 text-xs text-muted/60">
-            Verified tutorials, troubleshooting guides, news, and analysis
+            {publicCount > 0
+              ? `${publicCount} curated AdminSignal guide${publicCount === 1 ? '' : 's'} and signals on this topic`
+              : 'Topic overview and decision guidance for Microsoft administrators'}
           </p>
         </Container>
       </div>
 
-      <HubContentRow items={news} sectionTitle="Latest News" viewAllHref="/news" />
-      <HubContentRow items={tutorials} sectionTitle="Deep-Dive Tutorials" viewAllHref="/tutorials" />
+      {introSections.length > 0 && (
+        <div className="border-b border-border py-12">
+          <Container>
+            <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+              {introSections.map((section) => (
+                <section
+                  key={section.title}
+                  className="rounded-xl border border-border bg-surface p-6 shadow-card"
+                >
+                  <h2 className="mb-3 text-base font-semibold text-foreground">{section.title}</h2>
+                  <p className="text-sm leading-relaxed text-muted">{section.body}</p>
+                </section>
+              ))}
+            </div>
+          </Container>
+        </div>
+      )}
+
+      <HubContentRow items={publicNews} sectionTitle="Latest News" viewAllHref="/news" />
       <HubContentRow
-        items={troubleshooting}
+        items={publicTutorials}
+        sectionTitle="Deep-Dive Tutorials"
+        viewAllHref="/tutorials"
+      />
+      <HubContentRow
+        items={publicTroubleshooting}
         sectionTitle="Troubleshooting Guides"
         viewAllHref="/troubleshooting"
       />

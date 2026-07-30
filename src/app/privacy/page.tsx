@@ -83,7 +83,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Analytics</h2>
               <p>
-                AdminSignal uses, or may use,{' '}
+                AdminSignal may use{' '}
                 <strong className="text-foreground-soft">Google Analytics 4</strong> to understand
                 aggregate traffic patterns, such as page views, referral sources, device
                 categories, approximate location, and article performance.
@@ -93,11 +93,10 @@ export default function PrivacyPage() {
                 use Google Analytics to identify individual readers.
               </p>
               <p className="mt-3">
-                AdminSignal is configured to use Google Consent Mode v2 defaults where Google tags
-                are enabled. Consent Mode allows Google tags to adjust their behaviour based on
-                your consent choices for analytics storage, advertising storage, ad user data, and
-                ad personalisation. Non-essential analytics tags should remain disabled until the
-                required consent mechanism is configured for the visitor&apos;s region.
+                When Google tags are enabled, AdminSignal uses Google Consent Mode v2 defaults that
+                deny analytics and advertising storage until a valid consent choice is recorded.
+                Non-essential analytics tags remain disabled unless a Google-certified consent
+                management platform is configured for the visitor&apos;s region.
               </p>
               <p className="mt-3">
                 You can also opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -117,10 +116,11 @@ export default function PrivacyPage() {
                 Advertising &amp; Google AdSense
               </h2>
               <p>
-                AdminSignal uses, or may use, <strong className="text-foreground-soft">Google AdSense</strong>{' '}
-                to display advertising. AdSense and other third-party advertising vendors may use
-                cookies, device identifiers, IP addresses, and similar technologies for ad serving,
-                measurement, fraud prevention, and personalisation where permitted.
+                AdminSignal is prepared to use{' '}
+                <strong className="text-foreground-soft">Google AdSense</strong> to display
+                advertising on eligible article pages. AdSense and other third-party advertising
+                vendors may use cookies, device identifiers, IP addresses, and similar technologies
+                for ad serving, measurement, fraud prevention, and personalisation where permitted.
               </p>
               <p className="mt-3">
                 AdSense may serve personalised ads or non-personalised ads depending on the

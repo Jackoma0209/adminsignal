@@ -4,6 +4,7 @@ import {
   getDuplicateTutorialRedirect,
   isNoindexContentRoute,
   isNoindexNewsSlug,
+  isNoindexPath,
 } from '@/lib/noindex'
 import { liveSignals } from '@/data/signals'
 import { guides } from '@/data/guides'
@@ -11,7 +12,7 @@ import { guides } from '@/data/guides'
 const BASE = 'https://www.adminsignal.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const editorialRoutes: MetadataRoute.Sitemap = [
+  const editorialCandidates: MetadataRoute.Sitemap = [
     { url: BASE, priority: 1, changeFrequency: 'weekly' },
     { url: `${BASE}/news`, priority: 0.8, changeFrequency: 'daily' },
     { url: `${BASE}/tutorials`, priority: 0.9, changeFrequency: 'weekly' },
@@ -27,9 +28,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/patch-management`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/group-policy`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/sccm-mecm`, priority: 0.8, changeFrequency: 'weekly' },
-    { url: `${BASE}/about`, priority: 0.5, changeFrequency: 'monthly' },
+    { url: `${BASE}/about`, priority: 0.6, changeFrequency: 'monthly' },
+    { url: `${BASE}/contact`, priority: 0.5, changeFrequency: 'monthly' },
     { url: `${BASE}/editorial-policy`, priority: 0.4, changeFrequency: 'yearly' },
+    { url: `${BASE}/privacy`, priority: 0.4, changeFrequency: 'yearly' },
+    { url: `${BASE}/cookies`, priority: 0.4, changeFrequency: 'yearly' },
+    { url: `${BASE}/terms`, priority: 0.3, changeFrequency: 'yearly' },
+    { url: `${BASE}/affiliate-disclosure`, priority: 0.3, changeFrequency: 'yearly' },
   ]
+  const editorialRoutes = editorialCandidates.filter((entry) => {
+    const path = entry.url.replace(BASE, '') || '/'
+    return !isNoindexPath(path)
+  })
 
   const articleTypes = [
     { type: 'tutorials', segment: 'tutorials', priority: 0.8 },
