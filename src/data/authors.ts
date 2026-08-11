@@ -21,7 +21,7 @@ export const primaryAuthor: Author = {
   bio: 'I publish independent, source-backed guidance for Windows endpoint management, Microsoft Intune, Active Directory, PowerShell, and related Microsoft administration work. Articles focus on prerequisites, validation, operational risk, and safe rollout decisions, with examples and limitations labelled clearly.',
   initials: 'J',
   avatarUrl: '/images/authors/jack.jpg',
-  linkedIn: 'https://www.linkedin.com/in/jackoma0209',
+  linkedIn: 'https://www.linkedin.com/in/jack-hadcroft-5710a068',
   github: 'https://github.com/Jackoma0209',
 }
 
