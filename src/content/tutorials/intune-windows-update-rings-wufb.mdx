@@ -1,0 +1,218 @@
+---
+title: "Windows Update for Business Rings in Intune: A Practical Ring Design for Production Fleets"
+description: "Design Windows Update for Business rings in Microsoft Intune: pilot to broad deployment, quality and feature update policies, deadlines, exemptions, reporting, and rollback thinking for Windows 10/11 fleets."
+category: "Microsoft Intune"
+date: "Aug 11, 2026"
+authorId: "jack"
+lastReviewed: "Aug 11, 2026"
+reviewNote: "Operational WUfB ring design guide for Intune-managed Windows fleets. Product names and portal paths change; confirm current Windows Update for Business and Intune policy options in Microsoft Learn before production rollout."
+tags: ["Intune", "Windows Update for Business", "Patch Management", "Windows 11", "Update Rings"]
+metaTitle: "Intune Windows Update Rings: WUfB Design Guide"
+metaDescription: "Build Windows Update for Business rings in Intune with pilot design, deadlines, feature update control, reporting checks, and recovery when deferrals do not behave."
+image: "/images/article-covers/intune-windows-update-rings-wufb.svg"
+imageAlt: "Abstract staged update rings expanding across a managed device fleet"
+---
+
+Windows Update for Business (WUfB) in Intune fails more often from poor ring design than from missing checkboxes. Teams create one ring called “All Devices,” set a deferral that feels safe, then discover feature updates, quality updates, and restarts are owned by three different policies that disagree.
+
+This guide is a practical ring model for Intune-managed Windows fleets: how many rings to run, what each ring is for, which policy types to combine, how to pilot, and what evidence to collect before broadening deployment.
+
+If deferrals already misbehave, start with [Windows Update for Business deferral not respected](/troubleshooting/wufb-deferral-not-respected) and return here to redesign ownership.
+
+## Who This Guide Is For
+
+- Endpoint managers owning Windows quality and feature updates in Intune
+- Patching leads moving from WSUS or ConfigMgr ADRs toward cloud update policy
+- Admins introducing Autopatch later who still need a clean manual ring model first
+
+## Scope and Assumptions
+
+This guide assumes:
+
+- Devices are Intune-managed Windows 10/11 endpoints
+- You can create device groups and assign update policies
+- You are **not** treating Configuration Manager as the sole software update point for the devices in scope
+
+Co-managed estates can still use this model, but only after you confirm which workloads Intune owns. Sliding update authority without checking co-management is a common outage pattern.
+
+## The Policy Types You Must Stop Mixing Up
+
+| Policy type | What it mainly controls | Common mistake |
+|---|---|---|
+| **Update rings** | Quality update deferral, feature deferral (legacy ring settings), restart behaviour, active hours, deadline behaviour | One ring for the entire estate with no pilot |
+| **Feature updates policy** | Target feature version / stay on a release | Assuming the update ring alone pins 25H2 |
+| **Quality updates policy / expedite** | Faster security update rollout for urgent CVEs | Using expedite as everyday patching |
+| **Driver updates** (if used) | Driver approval channels | Letting drivers ride the same ring logic as security patches without a plan |
+
+If two policies set conflicting feature update behaviour, devices will not “pick the safer one.” They will produce helpdesk noise and reporting that looks random.
+
+## Recommended Ring Topology
+
+For most organisations between a few hundred and tens of thousands of Windows devices, four device rings are enough:
+
+| Ring | Population | Purpose | Quality deferral (example) | Feature behaviour |
+|---|---|---|---|---|
+| **Ring 0 – Test** | IT lab + willing champions (1–3%) | Break things early | 0 days | Explicit target version or first offer |
+| **Ring 1 – Pilot** | Representative business users (5–10%) | Validate LOB apps and peripherals | 2–5 days | Same target as intended production |
+| **Ring 2 – Fast** | Early production (20–30%) | Detect scale issues | 5–7 days | Production target |
+| **Ring 3 – Broad** | Remaining production | Controlled majority | 7–14 days | Production target |
+
+Adjust numbers to your risk tolerance. The important part is **representation**, not perfect percentages. Pilot must include finance, the floor-walking barcode scanners, the VPN-heavy remote cohort, and at least one executive-support device class if those devices are sacred.
+
+### Groups before policies
+
+Create device groups first:
+
+- `ug-wufb-ring0-test`
+- `ug-wufb-ring1-pilot`
+- `ug-wufb-ring2-fast`
+- `ug-wufb-ring3-broad`
+- `ug-wufb-hold` (exceptions with expiry owners)
+
+Prefer dynamic membership only when the rule is reliable. Bad dynamic rules silently move finance laptops into Ring 0.
+
+## Step 1: Decide Quality vs Feature Ownership
+
+Write this down before clicking Create policy:
+
+1. Who approves emergency zero-day acceleration?
+2. Which Windows feature update is the estate standard this quarter?
+3. Are any hardware classes on a different feature release (for example a device-scoped release)?
+4. Who can place a device on hold, and for how many days maximum?
+
+Without those answers, ring configuration becomes a debate during an incident.
+
+## Step 2: Build Update Rings in Intune
+
+1. Open [Microsoft Intune admin centre](https://intune.microsoft.com)
+2. Go to **Devices > Windows > Windows updates** (portal labels vary slightly by service release)
+3. Create an update ring for Ring 0 first
+4. Configure:
+   - Servicing channel / Microsoft product updates as required for your estate
+   - Quality update deferral period
+   - Feature update deferral only if you are still using ring-based feature control
+   - Automatic update behaviour and active hours aligned to the audience
+   - Deadline settings that match your reboot culture
+
+### Deadline guidance that avoids false confidence
+
+Deadlines help, but only if users can actually restart and if critical LOB apps survive the update. For Ring 0/1, prefer faster feedback over aggressive user deadlines. For Ring 3, deadlines should match the change window your business already understands.
+
+## Step 3: Add Feature Update Policies Explicitly
+
+If you need the fleet on a specific Windows 11 release, use a **feature updates** policy that states the target build family. Do not rely on tribal knowledge that “the ring will keep us on 25H2.”
+
+Recommended approach:
+
+- Ring 0/1/2/3 all get an explicit feature target for the standard release
+- Hardware exceptions that must stay on another build get a separate feature policy and group
+- Hold group gets neither broad feature offers nor silent “latest” behaviour
+
+See also the comparison guidance in [Windows 11 25H2 vs 26H1](/comparisons/windows-11-25h2-vs-26h1-2026) if your estate spans more than one build family.
+
+## Step 4: Pilot Design That Actually Finds Problems
+
+A pilot that only contains IT devices proves that IT devices patch. It does not prove payroll runs.
+
+Include in Ring 1:
+
+- [ ] One device per major VPN client in use
+- [ ] One device per major LOB thick client
+- [ ] Standard peripheral set: scanners, headsets, smart card readers if used
+- [ ] Both Entra-joined and hybrid-joined, if both exist
+- [ ] Disk encryption and security baseline already applied (do not pilot updates on unmanaged snowflakes only)
+
+Pilot exit criteria example:
+
+- No Sev-1 LOB failure for 5 business days after quality update offer
+- Helpdesk volume increase under an agreed threshold
+- Battery/performance complaints reviewed, not only ignored
+- Rollback path documented for the specific update class
+
+## Step 5: Reporting and Evidence
+
+Before moving from Ring 1 to Ring 2, collect:
+
+| Evidence | Why |
+|---|---|
+| Update readiness / Windows update report | Are devices offering or failing? |
+| Feature update policy assignment vs actual OS build | Are holds real? |
+| Device compliance trends | Did patch week break compliance joins? |
+| Helpdesk tag `patch-ring1` | Business impact signal |
+| Known issue notes from Microsoft release health | Avoid self-inflicted broad rollout |
+
+Do not use “it looks green for IT” as the only go/no-go signal.
+
+## Step 6: Expedite and Emergency Process
+
+Expedited quality updates are for urgent security events, not for catching up after poor ring hygiene.
+
+Define in advance:
+
+1. Who can create an expedite policy
+2. Which rings receive it first
+3. How success is measured within 24–72 hours
+4. How you communicate forced restarts
+
+If everything is expedited, nothing is.
+
+## Coexistence Warnings
+
+### Group Policy and ConfigMgr
+
+If devices still receive Windows Update settings from GPO or still sit under ConfigMgr software update workloads, Intune rings will look broken. Inventory competing authorities before blaming the ring.
+
+### Autopatch
+
+Microsoft Autopatch can replace parts of this model later. If you adopt Autopatch, do not leave duplicate manual rings assigned to the same devices without a migration plan. Dual ownership creates dual excuses.
+
+### Driver updates
+
+Driver updates can reboot devices and break peripherals independently of security patch success. Keep driver strategy visible, even if your first project only covers quality updates.
+
+## When Not To Broaden a Ring
+
+Hold the wave if:
+
+- Ring 1 shows a reproducible LOB failure without workaround
+- Microsoft documents a known issue affecting your build and the mitigation is not ready
+- A significant share of pilot devices never installed the update (readiness problem, not success)
+- Encryption, Secure Boot, or anti-malware regressions appear in pilot telemetry
+
+Broadening over a known failure to “stay on schedule” is how patch programmes lose political capital.
+
+## Rollback Thinking
+
+Windows quality updates are not always cleanly uninstallable at fleet scale. Plan for:
+
+- Pause offering further rings
+- Known issue rollback (KIR) when Microsoft provides it
+- Targeted hold groups
+- Communication templates for “pause patching” that do not sound like abandonment
+
+Your rollback plan is often “stop the blast and remediate,” not “uninstall KB everywhere in ten minutes.”
+
+## Validation Checklist
+
+- [ ] Four rings (or a documented smaller model) exist as device groups
+- [ ] Each ring has exactly one clear quality update authority
+- [ ] Feature target is explicit where needed
+- [ ] Hold group has owners and expiry dates
+- [ ] Pilot population is business-representative
+- [ ] Reporting owner is named for each patch Tuesday
+- [ ] Expedite path is written and rarely used
+- [ ] Competing GPO/ConfigMgr update authorities inventoried
+
+## Primary Sources
+
+- [Windows Update for Business overview](https://learn.microsoft.com/en-us/windows/deployment/update/waas-manage-updates-wufb)
+- [Intune update rings for Windows](https://learn.microsoft.com/en-us/mem/intune/protect/windows-10-update-rings)
+- [Feature updates for Windows 10 and later policy](https://learn.microsoft.com/en-us/mem/intune/protect/windows-10-feature-updates)
+- [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/)
+
+## Related Reading
+
+- [Windows Update for Business deferral not respected](/troubleshooting/wufb-deferral-not-respected)
+- [Windows 11 25H2 vs 26H1 admin comparison](/comparisons/windows-11-25h2-vs-26h1-2026)
+- [Patch management topic hub](/patch-management)
+- [Intune topic hub](/intune)

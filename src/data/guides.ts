@@ -21,6 +21,44 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '15',
+    title: 'Entra ID Emergency Access Accounts: Break-Glass Design That Survives MFA Lockout',
+    slug: 'entra-break-glass-emergency-access-accounts',
+    category: 'Microsoft Entra ID',
+    excerpt:
+      'A practical operational guide to Microsoft Entra emergency access accounts: cloud-only design, Conditional Access exclusions, phishing-resistant factors, offline custody, monitoring, quarterly tests, and recovery when admins are locked out.',
+    date: 'Aug 11, 2026',
+    publishedAt: '2026-08-11',
+    readTime: '18 min read',
+    difficulty: 'Advanced',
+    authorId: 'jack',
+    tags: ['Microsoft Entra ID', 'Break Glass', 'Emergency Access', 'Conditional Access', 'MFA', 'Identity'],
+    coverImage: {
+      src: '/images/article-covers/entra-break-glass-emergency-access-accounts.svg',
+      alt: 'Abstract emergency access key beside identity gate and monitoring signal',
+    },
+    isFeatured: true,
+  },
+  {
+    id: '14',
+    title: 'Windows Update for Business Rings in Intune: A Practical Ring Design for Production Fleets',
+    slug: 'intune-windows-update-rings-wufb',
+    category: 'Microsoft Intune',
+    excerpt:
+      'Design Windows Update for Business rings in Microsoft Intune: pilot-to-broad topology, quality and feature update ownership, deadlines, hold groups, reporting evidence, expedite process, coexistence warnings, and when not to broaden a wave.',
+    date: 'Aug 11, 2026',
+    publishedAt: '2026-08-11',
+    readTime: '17 min read',
+    difficulty: 'Intermediate',
+    authorId: 'jack',
+    tags: ['Intune', 'Windows Update for Business', 'Patch Management', 'Windows 11', 'Update Rings'],
+    coverImage: {
+      src: '/images/article-covers/intune-windows-update-rings-wufb.svg',
+      alt: 'Abstract staged update rings expanding across a managed device fleet',
+    },
+    isFeatured: true,
+  },
+  {
     id: '13',
     title: 'Exchange Online SMTP AUTH Basic Authentication 2026 Migration Planning',
     slug: 'exchange-online-smtp-auth-basic-auth-2026-migration',

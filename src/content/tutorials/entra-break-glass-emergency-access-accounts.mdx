@@ -1,0 +1,271 @@
+---
+title: "Entra ID Emergency Access Accounts: Break-Glass Design That Survives MFA Lockout"
+description: "Practical guide to Microsoft Entra emergency access accounts: account design, Conditional Access exclusions, phishing-resistant MFA choices, monitoring, tabletop tests, and recovery when admins are locked out."
+category: "Microsoft Entra ID"
+date: "Aug 11, 2026"
+authorId: "jack"
+lastReviewed: "Aug 11, 2026"
+reviewNote: "Operational break-glass guide aligned with Microsoft emergency access account guidance, Conditional Access exclusion patterns, and monitoring recommendations. Portal paths and product behaviour should be rechecked against current Microsoft Learn before production change."
+tags: ["Microsoft Entra ID", "Break Glass", "Emergency Access", "Conditional Access", "MFA", "Identity"]
+metaTitle: "Entra ID Emergency Access Accounts: Break-Glass Design Guide"
+metaDescription: "Design Microsoft Entra emergency access accounts that still work during MFA outages, Conditional Access mistakes, and federation failures — with monitoring and test procedures."
+image: "/images/article-covers/entra-break-glass-emergency-access-accounts.svg"
+imageAlt: "Abstract emergency access key beside identity gate and monitoring signal"
+---
+
+When every Global Administrator is blocked by Conditional Access, an MFA provider outage, or a bad security default change, you need a documented way back into the tenant. Microsoft calls these **emergency access accounts**. Most tenants either skip them, or create them and then lock them behind the same policies that caused the outage.
+
+This guide is an operational design for break-glass accounts in Microsoft Entra ID: how many to create, how to protect them, what to exclude, how to monitor them, and how to prove they work before you need them at 02:00.
+
+Read this alongside the [Conditional Access policy map](/tutorials/conditional-access-m365-policy-map) and [Microsoft 365 admin centre MFA readiness](/tutorials/microsoft-365-admin-centre-mfa-readiness).
+
+## Who This Guide Is For
+
+- Identity and Microsoft 365 administrators who own Conditional Access
+- Security teams that require evidence of emergency access controls
+- Managed service providers operating multiple customer tenants
+
+It assumes you can create cloud-only user accounts, assign directory roles, and edit Conditional Access policies.
+
+## What Success Looks Like
+
+A working break-glass design means:
+
+1. At least two cloud-only emergency accounts exist and are not tied to a single person’s phone
+2. The accounts can sign in when normal admin Conditional Access or MFA controls fail
+3. Every use is loud: monitored, alerted, and investigated
+4. Credentials are stored offline with dual control
+5. You have tested sign-in within the last quarter and recorded the result
+
+If any of those are missing, treat emergency access as incomplete.
+
+## Design Principles
+
+### Cloud-only, not federated
+
+Emergency accounts must not depend on on-premises Active Directory, federation, or an external identity provider. If AD FS, pass-through authentication, or a partner IdP fails, federated break-glass accounts fail with it.
+
+Create dedicated cloud-only accounts in Entra ID. Do not convert an existing human admin mailbox into “the break-glass account.”
+
+### At least two accounts
+
+Microsoft recommends a minimum of two emergency access accounts. One account is a single point of failure for password custody, MFA device loss, or accidental disablement.
+
+Practical pattern:
+
+| Account | Purpose | Role |
+|---|---|---|
+| `breakglass-01@<tenant>.onmicrosoft.com` | Primary emergency access | Global Administrator |
+| `breakglass-02@<tenant>.onmicrosoft.com` | Secondary emergency access | Global Administrator |
+
+Use the `.onmicrosoft.com` domain so DNS or custom-domain problems do not block sign-in.
+
+### Exclude from every blocking control that can lock you out
+
+Emergency accounts must be excluded from:
+
+- Conditional Access policies that require MFA, compliant device, or approved client app for admin portals
+- Security defaults, if still enabled (prefer migrating to Conditional Access and then handling exclusions correctly)
+- Identity Protection user-risk or sign-in-risk blocks that would prevent recovery
+- Password expiry policies that quietly disable the account
+- PIM eligibility-only models that require activation through a portal you cannot reach
+
+They should **not** be excluded from audit logging, sign-in logging, or monitoring. Exclusions are for access path survival, not invisibility.
+
+## Step 1: Create the Accounts
+
+1. Sign in to the [Microsoft Entra admin centre](https://entra.microsoft.com) with a role that can create users and assign directory roles.
+2. Go to **Identity > Users > All users > New user > Create new user**.
+3. Set:
+   - **User principal name**: `breakglass-01@<yourtenant>.onmicrosoft.com`
+   - **Display name**: `Emergency Access 01` (or your naming standard)
+   - **Password**: long, randomly generated (store offline immediately)
+   - **Account enabled**: Yes
+4. Repeat for `breakglass-02`.
+5. Assign **Global Administrator** to both accounts under **Assigned roles**.
+
+Do not licence these accounts for Exchange Online mailboxes unless you have a specific operational reason. Keep them as pure directory emergency identities.
+
+## Step 2: Protect Credentials Offline
+
+Password custody is where most break-glass designs fail in real incidents.
+
+Recommended controls:
+
+- Generate passwords of at least 32 characters with a password manager or offline generator
+- Split knowledge if your process allows: one sealed envelope or vault entry held by security, one by infrastructure leadership
+- Store recovery material offline and off-device: hardware password manager, sealed safe, or approved offline vault — not a Teams channel and not a shared mailbox
+- Record who may open the package and under what change ticket
+- Rotate after every use, and on a fixed schedule (for example quarterly) even if unused
+
+Do not store break-glass passwords in the same password manager tenant that requires the Entra sign-in you are trying to recover.
+
+## Step 3: MFA Strategy Without Painting Yourself Into a Corner
+
+Microsoft guidance has moved toward protecting emergency accounts with phishing-resistant methods where possible, while still ensuring the account remains usable when your normal MFA path fails.
+
+Practical options, in order of preference for many enterprises:
+
+1. **FIDO2 security keys** dedicated to break-glass, stored with the offline package
+2. **Certificate-based authentication** where you already operate a controlled admin cert process
+3. Temporary exception paths documented only for true provider-wide outages, with immediate rotation afterwards
+
+Avoid:
+
+- SMS or voice as the only factor
+- Authenticator on a single staff phone
+- The same Conditional Access grant controls that lock normal Global Admins
+
+Whatever method you choose, document the physical location of the keys and the dual-control process to retrieve them.
+
+## Step 4: Conditional Access Exclusions Without Creating a Permanent Back Door
+
+For every Conditional Access policy that can block admin portal access, exclude the emergency access group — not random individual exceptions scattered across twenty policies.
+
+Recommended pattern:
+
+1. Create a security group: `sg-emergency-access-accounts`
+2. Add only the two break-glass accounts
+3. Exclude that group from blocking admin policies
+4. Review the exclusion list whenever you create a new policy
+
+Policies that usually need the exclusion:
+
+- Require MFA for admins
+- Require compliant or hybrid-joined device for admins
+- Block legacy authentication (confirm break-glass still uses modern auth)
+- Risk-based block policies
+- Location policies that assume corporate egress only
+
+Do **not** exclude the group from:
+
+- Audit and investigation tooling
+- Continuous access evaluation concepts that you still want for normal users
+- Policies that do not affect admin recovery paths
+
+### Report-only first
+
+When changing exclusions:
+
+1. Put related policies in report-only if you are redesigning them
+2. Validate that normal admins still match as expected
+3. Validate that emergency accounts are excluded from the blocking grant controls
+4. Enable only after sign-in logs show the intended behaviour
+
+## Step 5: Monitoring That Makes Use Loud
+
+Break-glass accounts that can sign in silently are a security failure.
+
+Minimum monitoring:
+
+| Signal | Where to look | Response |
+|---|---|---|
+| Any successful sign-in | Entra sign-in logs | Page on-call identity owner |
+| Any failed sign-in burst | Sign-in logs | Investigate as possible probing |
+| Role assignment change | Audit logs | Confirm authorised change |
+| CA exclusion change on emergency group | Audit logs | Confirm authorised change |
+
+Implementation options:
+
+- Microsoft Sentinel analytics rules on emergency account object IDs
+- Entra ID protection / log export to your SIEM
+- Scheduled Graph queries during the pilot phase if SIEM is not ready
+
+Example Graph-oriented review idea (run with appropriate audit permissions and your own object IDs):
+
+```powershell
+# Example investigation pattern only — replace IDs and time range.
+# Requires Microsoft Graph PowerShell with AuditLog.Read.All (or equivalent).
+Connect-MgGraph -Scopes 'AuditLog.Read.All','Directory.Read.All'
+
+$emergencyUpns = @(
+  'breakglass-01@contoso.onmicrosoft.com',
+  'breakglass-02@contoso.onmicrosoft.com'
+)
+
+# Review recent sign-ins for the emergency accounts in the Entra portal
+# Identity > Monitoring & health > Sign-in logs, filter by user.
+# Automate only after you have approved log retention and alert routing.
+$emergencyUpns | ForEach-Object { Write-Output "Review sign-ins for $_ in Entra sign-in logs" }
+```
+
+The operational requirement is not a clever script. It is a named human who gets woken up when these accounts authenticate.
+
+## Step 6: Tabletop and Live Test Procedure
+
+Test on a schedule. Untested break-glass is theatre.
+
+### Quarterly live test (recommended)
+
+1. Open a change record labelled as a break-glass validation
+2. Retrieve credentials under dual control
+3. From a clean browser profile, sign in to [https://entra.microsoft.com](https://entra.microsoft.com) as `breakglass-01`
+4. Confirm you can open **Users**, **Conditional Access**, and role assignments
+5. Sign out
+6. Repeat for `breakglass-02` or alternate each quarter
+7. Rotate passwords or confirm FIDO key still functions
+8. Close the change with screenshots of successful access and monitoring alert evidence
+
+### When not to test in production casually
+
+- During an active security incident unless recovery requires it
+- From an unmanaged personal device if that violates your handling standard
+- Without alerting the SOC that a test is about to fire monitoring rules
+
+## Failure Modes and How to Avoid Them
+
+| Failure mode | Why it happens | Prevention |
+|---|---|---|
+| Both accounts excluded incorrectly | New CA policy created without the emergency group exclusion | Policy creation checklist + periodic CA exclusion audit |
+| Password only in a cloud vault | Vault depends on Entra sign-in | Offline dual-control storage |
+| Single FIDO key lost | One physical factor, no secondary account process | Two accounts, two keys, separate storage |
+| Account disabled by automation | Lifecycle scripts treat unused accounts as stale | Exclude emergency UPNs from joiner/mover/leaver disable jobs |
+| Federation dependency | Account created as guest or synced user | Cloud-only member accounts on `.onmicrosoft.com` |
+| Silent use | No alerting on object IDs | SIEM rule + quarterly alert test |
+
+## When Not To Use Break-Glass Accounts
+
+Do not use emergency accounts for:
+
+- Daily administration
+- Service account automation
+- Vendor standing access
+- “Temporary” work that lasts weeks
+
+Every use should be exceptional, ticketed, and followed by credential rotation and an incident or change note.
+
+## Validation Checklist Before You Call the Design Done
+
+- [ ] Two cloud-only emergency accounts exist on the `.onmicrosoft.com` domain
+- [ ] Both have Global Administrator (or your documented emergency role set)
+- [ ] Credentials or FIDO keys are offline with dual control
+- [ ] Emergency security group is excluded from blocking Conditional Access policies
+- [ ] Accounts are not subject to password expiry disablement
+- [ ] Sign-in alerts exist and have been tested
+- [ ] Quarterly test is on the calendar with an owner
+- [ ] Runbooks tell helpdesk who to call, not how to share the password in chat
+
+## Rollback and Cleanup Notes
+
+If you are replacing an old informal break-glass design:
+
+1. Create the new accounts and monitoring first
+2. Validate sign-in and exclusions
+3. Remove old shared Global Admin accounts that were used as informal break-glass
+4. Search automation, runbooks, and password managers for the old UPNs
+5. Keep the old account disabled under observation for a short period before deletion if your change process requires it
+
+Do not delete the only working emergency path before the replacement has passed a live sign-in test.
+
+## Primary Sources
+
+- [Manage emergency access accounts in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)
+- [Plan a Conditional Access deployment](https://learn.microsoft.com/en-us/entra/identity/conditional-access/plan-conditional-access)
+- [Secure privileged access with Microsoft Entra](https://learn.microsoft.com/en-us/security/privileged-access-workstations/overview)
+
+## Related Reading
+
+- [Configuring Conditional Access for Microsoft 365](/tutorials/conditional-access-m365-policy-map)
+- [Microsoft 365 Admin Centre Mandatory MFA Readiness](/tutorials/microsoft-365-admin-centre-mfa-readiness)
+- [Entra ID P1 vs P2 comparison](/comparisons/entra-id-p1-vs-p2)
+- [Microsoft Entra ID topic hub](/microsoft-entra-id)

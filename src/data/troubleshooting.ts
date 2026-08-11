@@ -15,6 +15,21 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '13',
+    title: 'Intune Company Portal Stuck or Enrollment Not Completing: Practical Diagnosis',
+    slug: 'intune-company-portal-enrollment-stuck',
+    category: 'Microsoft Intune',
+    excerpt:
+      'A practical troubleshooting guide for Company Portal hangs and incomplete MDM enrollment on Windows, covering Entra join state, licensing, automatic enrollment, Conditional Access catch-22s, logs, safe retry, and prevention.',
+    affectedProducts: ['Microsoft Intune', 'Company Portal', 'Microsoft Entra ID', 'Windows 11', 'Windows 10'],
+    difficulty: 'Intermediate',
+    date: 'Aug 11, 2026',
+    publishedAt: '2026-08-11',
+    readTime: '16 min read',
+    authorId: 'jack',
+    isFeatured: true,
+  },
+  {
     id: '12',
     title: 'Windows Autopilot Device Not Importing: Hardware Hash CSV, Duplicate Records, and Profile Assignment',
     slug: 'autopilot-device-not-importing-hardware-hash',

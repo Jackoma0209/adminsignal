@@ -1,0 +1,266 @@
+---
+title: "Intune Company Portal Stuck or Enrollment Not Completing: Practical Diagnosis"
+description: "Troubleshoot Microsoft Intune Company Portal hangs, MDM enrollment failures, and devices stuck between Entra join and Intune management with portal checks, logs, and safe retry steps."
+category: "Microsoft Intune"
+date: "Aug 11, 2026"
+authorId: "jack"
+lastReviewed: "Aug 11, 2026"
+reviewNote: "Enrollment and Company Portal troubleshooting guide for Windows endpoints. Log paths and portal labels can change by Windows build and Intune service release; verify against current Microsoft documentation during an incident."
+tags: ["Intune", "Company Portal", "Enrollment", "MDM", "Windows"]
+metaTitle: "Intune Company Portal Stuck: Enrollment Troubleshooting"
+metaDescription: "Diagnose Intune Company Portal hangs and incomplete MDM enrollment with ordered checks, event logs, Entra device state, and recovery steps that avoid making the device worse."
+---
+
+## Failure State
+
+A user opens Company Portal, signs in, and then one of the following happens:
+
+- Company Portal spins forever on setup or “connecting to Microsoft Intune”
+- The device appears in Entra ID but not as an Intune-managed device
+- Enrollment starts, fails with a generic error, and retry does nothing useful
+- Company Portal installs, but apps and policies never arrive
+- Autopilot finished, yet the user still cannot enrol a personally staged device
+
+This guide is a practical diagnosis path for **Windows** devices where Company Portal or MDM enrollment is stuck. It is not a full Autopilot ESP deep-dive — use your Autopilot guides when the failure is only during OOBE provisioning.
+
+## Scope
+
+In scope:
+
+- Entra-joined or hybrid-joined Windows 10/11 devices
+- Company Portal install and sign-in problems
+- MDM enrollment that never reaches managed state
+
+Out of scope:
+
+- Absolute pure Autopilot network failures during ESP only
+- Android/iOS enrollment
+- Co-management client health for ConfigMgr-only workloads
+
+## First 10 Minutes: Do Not Thrash
+
+Before reinstalling Company Portal five times:
+
+1. Record the exact user UPN, device name, and timestamp
+2. Capture the error text or screenshot
+3. Confirm whether the device object already exists in Entra and Intune
+4. Confirm the user is licensed for Intune
+5. Confirm the device is in scope for automatic enrollment if you expect user-driven MDM
+
+Guessing burns the evidence.
+
+## Decision Tree
+
+```text
+Is the device in Entra ID?
+├─ No → fix join/registration first (Entra join / hybrid join)
+└─ Yes
+   ├─ Is the user licensed for Intune?
+   │  ├─ No → assign licence, wait for licence propagation, retry
+   │  └─ Yes
+   │     ├─ Is MDM authority / automatic enrollment configured?
+   │     │  ├─ No → fix enrollment configuration
+   │     │  └─ Yes
+   │     │     ├─ Is device already MDM-enrolled to another tenant/management?
+   │     │     │  ├─ Yes → remove old management carefully
+   │     │     │  └─ No → collect Company Portal / MDM logs and continue below
+```
+
+## Step 1: Portal State Checks
+
+### Entra admin centre
+
+1. Open the device object
+2. Note **Join type** (Entra joined / Hybrid Azure AD joined)
+3. Note **MDM** and **Registered** fields if shown
+4. Check whether the device is disabled
+
+### Intune admin centre
+
+1. Search the device by name
+2. If missing, search by Entra device ID if you have it
+3. If present, open **Device enrollment** / hardware / compliance timestamps
+4. Check **Managed by** and last check-in
+
+Interpretation:
+
+| Entra | Intune | Likely meaning |
+|---|---|---|
+| Present | Missing | Join worked, MDM enrollment failed or never started |
+| Missing | Missing | Device identity problem first |
+| Present | Present, stale | Enrollment once worked; now a sync/agent problem |
+| Present | Present, healthy | Company Portal UX issue or app deployment issue, not enrollment |
+
+## Step 2: Licence and Enrollment Configuration
+
+Confirm:
+
+- User has an Intune licence (standalone or as part of M365 bundle)
+- **Automatic enrollment** is configured when you expect user-driven MDM for Entra joined devices
+- The user is in scope of the automatic enrollment configuration (some tenants scope by group)
+- Device limit restrictions have not been hit for the user
+- Enrollment restrictions do not block the platform or personally owned devices if that is your scenario
+
+If the user was licensed five minutes ago, wait for token/licence propagation before declaring failure.
+
+## Step 3: Local Device Checks
+
+On the Windows device (with user consent and support access):
+
+1. Confirm date/time and timezone are correct
+2. Confirm the device can reach required Microsoft endpoints (proxy/SSL inspection issues are common)
+3. Confirm the signed-in account is the expected work account
+4. Check whether another MDM enrollment exists
+
+Useful commands:
+
+```powershell
+# Who am I / join state hints
+dsregcmd /status
+
+# Look for AzureAdJoined / DomainJoined / WamDefaultSet sections
+# Capture the full output into the ticket
+```
+
+In `dsregcmd /status`, pay attention to:
+
+- `AzureAdJoined`
+- `DomainJoined`
+- `WorkplaceJoined`
+- SSO state / WAM errors
+- MDM URL fields when present
+
+If `AzureAdJoined : NO` and you expected Entra join, stop debugging Company Portal and fix join.
+
+## Step 4: Company Portal App Health
+
+### Reinstall is not the first step
+
+First determine:
+
+- Is Company Portal from Microsoft Store, Win32, or embedded provisioning?
+- Does the app open at all?
+- Does sign-in prompt appear?
+- Does failure occur after sign-in?
+
+Then:
+
+1. Update Company Portal if an update is available
+2. Clear the app’s local issue only if you understand you may remove cached state
+3. Reinstall only after collecting logs
+
+### Common local blockers
+
+- Broken Microsoft Store connectivity for Store-based installs
+- Time drift causing token failures
+- TLS inspection breaking auth endpoints
+- Conditional Access requiring a compliant device before enrollment can finish (catch-22 designs)
+- User signing in with the wrong tenant account
+
+## Step 5: Conditional Access Catch-22
+
+A frequent enterprise own-goal:
+
+1. CA requires compliant device for all cloud apps
+2. Device cannot become compliant until Intune enrollment completes
+3. Enrollment cannot complete because CA blocks the management paths
+
+Mitigations used in mature tenants:
+
+- Exclude Microsoft Intune enrollment / related setup from the strictest device compliance grants carefully
+- Use a staged policy set that allows enrollment pathways
+- Ensure break-glass and admin scenarios are not the only tested paths
+
+Do not casually exclude all cloud apps from MFA. Fix the enrollment path with the smallest safe exception and document it.
+
+## Step 6: Event Logs and MDM Evidence
+
+Collect:
+
+- **Applications and Services Logs > Microsoft > Windows > DeviceManagement-Enterprise-Diagnostics-Provider > Admin**
+- Company Portal logs from the app’s known local log location for your Windows build
+- `dsregcmd /status` output
+- Screenshot of Company Portal error
+
+In the DeviceManagement-Enterprise-Diagnostics-Provider Admin log, look for enrollment error codes around the failure time. Translate the code using Microsoft documentation rather than guessing from memory.
+
+Also check:
+
+```powershell
+Get-WinEvent -LogName 'Microsoft-Windows-DeviceManagement-Enterprise-Diagnostics-Provider/Admin' -MaxEvents 50 |
+  Select-Object TimeCreated, Id, LevelDisplayName, Message
+```
+
+Adjust log names if your build surfaces the provider differently; the goal is timed MDM errors, not a perfect one-liner.
+
+## Step 7: Safe Retry Sequence
+
+Only after evidence is captured:
+
+1. Confirm licence and automatic enrollment scope
+2. Confirm join state is healthy
+3. Sign out of Company Portal / Windows work account session if corrupted WAM state is suspected
+4. Retry enrollment once
+5. If still failing, reinstall Company Portal once
+6. If still failing, review CA and network path with security/network owners
+7. As a last resort for a non-production device, consider removing a broken partial enrollment state using your approved runbook — not random registry deletion on a CFO laptop
+
+## Step 8: When the Device Is Half-Enrolled
+
+Symptoms:
+
+- Entra object exists
+- Intune object missing or stuck
+- Company Portal thinks setup is incomplete
+
+Actions:
+
+1. Do not create duplicate device objects by aggressive re-joins without a plan
+2. Check for stale device records with the same hardware name
+3. Remove only the failed enrollment artifacts your runbook permits
+4. Re-enroll once
+5. Validate apps/policies arrive after managed state is true
+
+If Autopilot devices repeatedly half-enroll, escalate to provisioning profile and ESP diagnostics rather than treating every case as a Company Portal app bug.
+
+## When Not To Keep Retrying
+
+Stop the user-facing retry loop when:
+
+- Licence is missing
+- Join state is broken
+- CA catch-22 is confirmed
+- Network path to enrollment endpoints is blocked
+- The device is already managed by another tenant
+
+More retries will not create a licence or open a firewall.
+
+## Validation After Fix
+
+- [ ] Device appears in Intune as managed
+- [ ] Last check-in is current after a manual sync
+- [ ] Company Portal shows the device as managed
+- [ ] At least one required app or policy assignment begins applying
+- [ ] Compliance evaluation is not permanently “not evaluated” solely due to never checking in
+
+## Prevention Checklist
+
+- Document automatic enrollment scope and licence prerequisites for helpdesk
+- Test CA policies against enrollment accounts before enforcing compliance-for-all
+- Keep a known-good Company Portal deployment method
+- Train helpdesk to capture `dsregcmd /status` before reinstall loops
+- Monitor enrollment failure codes weekly during major Windows feature waves
+
+## Primary Sources
+
+- [Enroll Windows devices in Intune](https://learn.microsoft.com/en-us/mem/intune/enrollment/windows-enrollment-methods)
+- [Automatic enrollment for Windows](https://learn.microsoft.com/en-us/mem/intune/enrollment/windows-enroll)
+- [Company Portal app overview](https://learn.microsoft.com/en-us/mem/intune/user-help/company-portal-app)
+- [dsregcmd command details](https://learn.microsoft.com/en-us/azure/active-directory/devices/troubleshoot-device-dsregcmd)
+
+## Related Reading
+
+- [Intune device not syncing](/troubleshooting/intune-device-not-syncing)
+- [Intune compliance policy not evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
+- [Entra dynamic group not updating](/troubleshooting/entra-dynamic-group-not-updating)
+- [Intune topic hub](/intune)
