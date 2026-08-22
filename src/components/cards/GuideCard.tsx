@@ -85,6 +85,8 @@ export default function GuideCard({ guide }: GuideCardProps) {
 
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs text-muted/60">
+            <time dateTime={guide.publishedAt}>{guide.date}</time>
+            <span aria-hidden="true">·</span>
             <Clock className="h-3 w-3" />
             <span>{guide.readTime}</span>
           </div>
