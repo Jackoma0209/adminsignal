@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Group Policy'
 const topicDescription =
-  'Published Group Policy coverage currently on AdminSignal: RSoP and gpresult diagnosis, scope and processing failures, and coexistence with Intune Settings Catalog.'
+  'Published Group Policy coverage currently on AdminSignal is two diagnosis articles — RSoP/gpresult and GPO not applying — plus coexistence notes in the Intune Settings Catalog migration guide.'
 const topicPath = '/group-policy'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -62,8 +62,8 @@ export default function GroupPolicyPage() {
             body: 'Treat GPO and Intune Settings Catalog as one control plane in design reviews. Duplicate settings create conflict winners that are hard to explain to helpdesk and auditors. Inventory overlapping controls before hardening or migrating baselines.',
           },
           {
-            title: 'What good operational practice looks like',
-            body: 'Name GPOs by purpose, limit the number of linked policies per OU, document WMI filters, and keep a change record for security filtering changes. When something fails, capture computer and user RSoP, event log policy evidence, and the exact link order that applied.',
+            title: 'What this hub currently publishes',
+            body: 'Two diagnosis articles are live: Group Policy troubleshooting with RSoP and gpresult, and Group Policy not applying. Coexistence with Intune is covered in the Settings Catalog migration guide. There is not a GPO design catalogue or a loopback-mode tutorial yet.',
           },
           {
             title: 'When not to add another GPO',
