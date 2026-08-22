@@ -1,0 +1,215 @@
+---
+title: "October 2026 Windows Servicing Deadlines: What Still Needs a Plan"
+description: "Inventory and targeting plan for October 2026 Windows servicing deadlines: 24H2 Home/Pro, Server 2022 mainstream, Secure Boot PCA 2011, and 23H2 Enterprise."
+metaTitle: "October 2026 Windows Servicing Deadlines | AdminSignal"
+metaDescription: "What Windows and Intune admins still need a plan for before 13 Oct 2026: 24H2 Home/Pro end of updates, Server 2022 mainstream, PCA 2011, and 23H2 Enterprise."
+canonical: "https://www.adminsignal.com/news/october-2026-windows-servicing-deadlines"
+openGraphTitle: "October 2026 Windows Servicing Deadlines: What Still Needs a Plan"
+openGraphDescription: "Inventory and targeting plan for 13 Oct 24H2 Home/Pro, Server 2022 mainstream, 19 Oct PCA 2011 expiry, and 10 Nov 23H2 Enterprise. Not another CVE list."
+openGraphImage: "/images/article-covers/october-2026-windows-servicing-deadlines.svg"
+category: "Windows 11"
+date: "2026-08-22"
+authorId: "jack"
+lastReviewed: "2026-08-22"
+reviewNote: "Briefing checked against Microsoft supported-versions tables, lifecycle product pages, Windows message centre, KB5054156, and Secure Boot certificate guidance on 2026-08-22. Lifecycle product pages use Pacific end-of-day clocks that can read as the following calendar morning; admin communications use the Patch Tuesday calendar dates below."
+tags: ["Windows 11 24H2", "Windows 11 25H2", "Windows Server 2022", "Secure Boot", "Intune", "Windows Update for Business", "lifecycle"]
+keywords: ["Windows 11 24H2", "Windows 11 25H2", "Windows Server 2022", "Secure Boot", "Intune", "Windows Update for Business", "lifecycle"]
+image: "/images/article-covers/october-2026-windows-servicing-deadlines.svg"
+imageAlt: "Enterprise Windows servicing calendar illustration with October deadline dates, a shield, server nodes, and staged rollout tracks"
+---
+
+The August cumulative is not the October calendar. A device can be on [KB5121003](https://support.microsoft.com/help/5121003) from the [August 2026 Patch Tuesday briefing](/news/august-2026-patch-tuesday-admin-priorities) and still be weeks away from falling off a supported edition, leaving Server 2022 mainstream, or missing the last 2011 Secure Boot CA.
+
+This is an inventory and targeting plan for four Microsoft dates. It is not another CVE list. The useful question is which rings, SKUs, and certificates still need an owner before the next quality-update Tuesday cannot save them.
+
+Microsoft's admin communications use these calendar dates. The [lifecycle product listings](https://learn.microsoft.com/en-us/lifecycle/products/windows-11-home-and-pro) show Pacific Time end-of-day clocks that can read as the following calendar morning. Treat the dates below as the last Patch Tuesday that still services that edition, and do not plan work that assumes a later quality update.
+
+## The dates that change what "compliant" means
+
+<div className="my-5 max-w-full overflow-x-auto rounded-lg border border-border">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>What ends</th>
+        <th>What Microsoft wants next</th>
+        <th>Separate job?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>13 Oct 2026</strong></td>
+        <td>Windows 11 24H2 Home, Pro, Pro Education, Pro for Workstations: end of updates</td>
+        <td><a href="https://aka.ms/how-to-get-25H2">Windows 11 25H2</a></td>
+        <td>Yes. Feature update, not the August LCU.</td>
+      </tr>
+      <tr>
+        <td><strong>13 Oct 2026</strong></td>
+        <td>Windows 10 Enterprise LTSB 2016: end of updates</td>
+        <td><a href="https://learn.microsoft.com/en-us/windows/whats-new/ltsc/whats-new-windows-11-2024">Windows 11 Enterprise LTSC 2024</a>, or ESU if you must buy time</td>
+        <td>Yes. LTSC replacement, not 25H2.</td>
+      </tr>
+      <tr>
+        <td><strong>13 Oct 2026</strong></td>
+        <td>Windows Server 2022 mainstream support</td>
+        <td><a href="https://learn.microsoft.com/en-us/windows-server/get-started/whats-new-windows-server-2025">Windows Server 2025</a>. Extended security updates continue through <strong>14 Oct 2031</strong> at no extra cost</td>
+        <td>Yes. Server upgrade or a documented extended-support stay.</td>
+      </tr>
+      <tr>
+        <td><strong>19 Oct 2026</strong></td>
+        <td>Microsoft Windows Production PCA 2011 expires</td>
+        <td>2023 Secure Boot certificates on clients, servers, VMs, and recovery media</td>
+        <td>Yes. Certificate state, not OS version.</td>
+      </tr>
+      <tr>
+        <td><strong>10 Nov 2026</strong></td>
+        <td>Windows 11 23H2 Enterprise, Education, IoT Enterprise, Enterprise multi-session: end of updates</td>
+        <td>25H2 (serviced until 10 Oct 2028 for those editions)</td>
+        <td>Yes. 23H2 is build 22631. It does not take the 25H2 enablement package.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+[Windows 11 24H2 Enterprise and Education](https://learn.microsoft.com/en-us/lifecycle/products/windows-11-enterprise-and-education) stay supported until **12 Oct 2027**. Installing the August LCU on 24H2 Enterprise does not move a Home/Pro device, and it does not move 23H2.
+
+Do not put these five rows in one change record. Mix them and the wrong ring gets the wrong update.
+
+## What Windows admins should prioritise
+
+### 1. Find 24H2 Home and Pro before 13 October
+
+[Supported Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client) end 24H2 Home/Pro servicing on 2026-10-13. After that date those editions no longer get known-issue fixes, time zone updates, technical support, or monthly security and preview updates.
+
+Microsoft's current recommendation is 25H2. 24H2 and 25H2 share the 26200 platform. Devices already on 24H2 with a recent quality update take [KB5054156](https://support.microsoft.com/topic/kb5054156-feature-update-to-windows-11-version-25h2-by-using-an-enablement-package-4d307e2d-3028-4323-bb46-552cff491643), the enablement package, after the August 2025 preview [KB5064081](https://support.microsoft.com/help/5064081) or a later cumulative. One restart. That is not the path for 23H2.
+
+Unmanaged Home/Pro 24H2 devices that are not IT-managed are offered 25H2 automatically. Managed devices are not. If Intune, WSUS, or Windows Update client policies hold feature updates, those Pro laptops stay on 24H2 until you target 25H2.
+
+Inventory by **edition and display version**, not by build 26100 vs 26200 alone. 24H2 Enterprise on 26100 is still in support. 24H2 Pro on 26100 is the October problem.
+
+### 2. Server 2022 is leaving mainstream, not leaving security updates
+
+[Windows Server 2022](https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2022) mainstream support ends with the October 2026 security update. Microsoft's 14 Aug 2026 message-centre reminder is explicit: that update is the last mainstream update. Extended support then continues, with monthly security updates through 14 Oct 2031, at no additional cost.
+
+What changes in October is not "no more patches." It is paid incident support, non-security changes, and any assumption that 2022 is still the current LTSC for new builds. [Windows Server 2025](https://learn.microsoft.com/en-us/windows-server/get-started/whats-new-windows-server-2025) is the current LTSC. In-place upgrade from 2019/2022 via Windows Update exists and needs its own prerequisites and registry opt-in. That is a server programme, not an Intune quality ring.
+
+Hotpatch on Server 2022 Datacenter: Azure Edition was extended through October 2027. Do not read that as mainstream support for every 2022 SKU.
+
+### 3. Secure Boot PCA 2011 on 19 October
+
+Microsoft Corporation KEK CA 2011 and Microsoft UEFI CA 2011 already hit their June 2026 dates. **Microsoft Windows Production PCA 2011 expires 2026-10-19.**
+
+Microsoft still says devices without the 2023 certificates will start and receive normal Windows updates. They may not receive future early-boot protections, Secure Boot database updates, revocation lists, or mitigations. August cumulatives expanded high-confidence automatic delivery. That is not estate visibility.
+
+Use the [Secure Boot CA 2023 readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) for clients, servers, Hyper-V Generation 2 VMs, and recovery media. Budget the extra restart Microsoft documents when a certificate actually applies. A leftover 2011 PCA is a certificate problem even on a fully patched 25H2 device.
+
+### 4. 23H2 Enterprise is a November problem with an October decision
+
+23H2 Home/Pro is already out of updates. 23H2 Enterprise and Education last until **10 Nov 2026**. The November 2026 security update is the last one for those editions. Microsoft's target is 25H2, serviced until 10 Oct 2028 for Enterprise/Education.
+
+23H2 is OS build 22631. It does not flip to 25H2 with KB5054156. Plan a real feature update, with app and driver pilots, not an enablement-package assumption copied from the 24H2 ring.
+
+Windows 10 Enterprise LTSC 2021 is a different clock: end of updates **12 Jan 2027**. ESU purchase was announced for 1 Sep 2026. Mention it in the same programme board so it does not appear as a surprise in Q3.
+
+## What I'd prioritise first
+
+1. Export edition + `DisplayVersion` for every managed Windows device. Split 24H2 Pro/Home from 24H2 Enterprise before anyone argues about build numbers.
+2. Target 25H2 for 24H2 Pro/Home rings that you still intend to keep. Use a feature-update policy, not the quality-update ring that applied August.
+3. List Server 2022 by role. Either a 2025 upgrade wave or a written extended-support stay with an owner.
+4. Re-run Secure Boot certificate reporting. PCA 2011 leftover devices get a certificate owner, not another quality-update deadline.
+5. Start 23H2 Enterprise feature-update pilots now. November is one quality-update Tuesday after October. You do not have a spare month.
+
+## Suggested rollout approach
+
+Keep three tracks. Do not share a single "October patch" ticket.
+
+**Track A: 24H2 Pro/Home to 25H2.** Ring 0 on IT devices already current on 24H2 quality updates. Confirm the enablement package path, one restart, and that line-of-business apps still start. Ring 1 representative hardware. Ring 2 business users. Do not mix this with a 23H2 feature update in the same assignment.
+
+**Track B: Server 2022.** Lab in-place to 2025 where that is the plan, or freeze new 2022 builds and document extended support. Domain controllers, file, and RDS hosts are separate waves. The August LCU on 2022 does not count as this track.
+
+**Track C: Secure Boot 2023 CA.** Follow the existing tutorial. Include recovery media and VMs. Do not block Track A because a lab PC is waiting on firmware.
+
+**23H2 Enterprise** is Track A's cousin, not the same policy. Own it as Track D if the count is material.
+
+The [WUfB rings tutorial](/tutorials/intune-windows-update-rings-wufb) is the quality-update topology. Feature updates need their own assignments, exclusions, and rollback story.
+
+## Intune and Windows Update for Business checks
+
+- Feature update policy target is **Windows 11, version 25H2**, assigned to the 24H2 Pro/Home groups you actually mean. 24H2 Enterprise can wait.
+- Quality update rings (August LCU, deadlines, restart) are a different blade. Do not use expedite-quality-update to move editions.
+- 23H2 devices will not take the 24H2 enablement package. If they are in the 25H2 assignment, expect a full feature update. Pilot that path separately.
+- Unmanaged Home/Pro may already be taking 25H2 from Windows Update. Managed holds win. Check last feature-update report, not last quality-update success.
+- Autopatch: confirm whether feature updates are on the same service as quality updates in your profile. A current quality score does not mean 25H2 is targeted.
+- Record exclusions with owner, reason, compensating control, and a date **before 13 Oct 2026**.
+- Server 2022 and Entra-joined clients do not share this policy. Server upgrades stay in the server change calendar.
+
+If ring timing does not match policy, use the [WUfB deferral troubleshooting guide](/troubleshooting/wufb-deferral-not-respected).
+
+## Validation evidence
+
+On a sample of each ring, before you call the device "ready for October":
+
+```powershell
+Get-ComputerInfo |
+  Select-Object WindowsProductName, WindowsEditionId, OsName,
+                WindowsVersion, OsDisplayVersion, OsBuildNumber
+```
+
+Expected patterns:
+
+- 24H2 Pro/Home still in the October risk set: edition Pro/Home, display version 24H2, build 26100.x until the enablement package flips it to 25H2 on 26200.x.
+- 25H2 after eKB: display version 25H2, build 26200.x. Same servicing stack family as current 24H2 quality updates.
+- 23H2 Enterprise: display version 23H2, build 22631.x. Not done until a feature update moves it.
+- Server 2022: product name Windows Server 2022. Mainstream clock is independent of the client feature-update policy.
+
+Secure Boot certificate checks belong in the [CA 2023 guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness). Do not treat `Get-HotFix` for August KBs as proof that PCA 2011 is gone.
+
+This is a sample check. Estate reporting stays in Intune, Autopatch, WSUS, or ConfigMgr. Use those to find the outliers, then confirm edition on the device.
+
+## What I would defer
+
+- Do not expedite 24H2 Enterprise to 25H2 just because Pro is dying in October. Enterprise 24H2 is supported until 12 Oct 2027.
+- Do not treat Server 2022 extended support as an emergency rebuild. It is a support-SKU decision. Rebuilds are for hosts you already wanted on 2025.
+- Do not pause August quality rings for this programme. The LCU and the feature update are different packets.
+- Do not skip 23H2 Enterprise because October is "a Pro problem." November is the next Tuesday that matters for that edition.
+- Do not invent a single "compliant" bit that ORs quality update, feature update, and Secure Boot. Split the dashboards.
+
+## What to monitor after the first 25H2 pilots
+
+- Feature update install failures versus quality-update failures. They will be ticketed as "Windows Update" either way.
+- Devices that report 26200 but still show 24H2 in `OsDisplayVersion`.
+- 23H2 devices pulled into a 25H2 policy that then sit on a full feature-update download.
+- Server 2022 in-place upgrades: roles, replication, and the Windows Update opt-in path if you use it.
+- Secure Boot extra restarts that never reach a 2023 PCA.
+- Helpdesk volume on unmanaged Home/Pro that already took 25H2 from Windows Update while the managed ring was held.
+
+## Admin checklist
+
+1. Export edition, display version, and last feature-update result for every managed Windows client.
+2. Split 24H2 Pro/Home, 24H2 Enterprise, 23H2 Enterprise, and anything still on Windows 10 LTSB 2016.
+3. Assign a 25H2 feature-update policy to the 24H2 Pro/Home groups you intend to keep. Pilot first.
+4. Confirm 24H2 devices have a cumulative at or after KB5064081 before you expect the enablement package to apply.
+5. List Server 2022 with an owner: upgrade to 2025, or stay on extended support through 2031.
+6. Re-run Secure Boot 2023 reporting. Give PCA 2011 leftovers a certificate owner before 19 Oct.
+7. Start 23H2 Enterprise feature-update pilots with a November deadline, not an October quality-update deadline.
+8. Put Windows 10 Enterprise LTSC 2021 (12 Jan 2027) on the same board if that SKU still exists.
+9. Sample-check `Get-ComputerInfo` against Intune. Edition mismatches are the defect, not missing August KBs.
+10. Document exclusions with an owner and a date before 13 Oct 2026.
+
+## Final recommendation
+
+Run October as a programme of four clocks, not as a follow-on to August Patch Tuesday. Move 24H2 Pro/Home to 25H2 on the enablement-package path. Decide Server 2022's support SKU in writing. Finish Secure Boot 2023 CA coverage before 19 Oct. Start 23H2 Enterprise now because November is not a spare month.
+
+A current quality-update build is necessary. It is not sufficient. The device that fails in October is the one whose edition nobody exported in August.
+
+## Official sources
+
+- [Supported versions of Windows client](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client)
+- [Windows 11 Home and Pro lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/windows-11-home-and-pro)
+- [Windows 11 Enterprise and Education lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/windows-11-enterprise-and-education)
+- [Windows Server 2022 lifecycle](https://learn.microsoft.com/en-us/lifecycle/products/windows-server-2022)
+- [Windows message centre](https://learn.microsoft.com/en-us/windows/release-health/windows-message-center)
+- [How to get Windows 11, version 25H2](https://aka.ms/how-to-get-25H2)
+- [KB5054156: 25H2 enablement package](https://support.microsoft.com/topic/kb5054156-feature-update-to-windows-11-version-25h2-by-using-an-enablement-package-4d307e2d-3028-4323-bb46-552cff491643)
+- [Windows Secure Boot certificate expiration](https://support.microsoft.com/topic/windows-secure-boot-certificate-expiration-and-ca-updates-7ff40d33-95dc-4c3c-8725-a9b95457578e)
+- [August 2026 Patch Tuesday: Windows Admin Priorities](/news/august-2026-patch-tuesday-admin-priorities)
