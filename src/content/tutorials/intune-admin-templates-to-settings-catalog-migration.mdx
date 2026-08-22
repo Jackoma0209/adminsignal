@@ -24,7 +24,7 @@ Use these related AdminSignal guides while planning the wider change:
 - [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing)
 - [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
 - [Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating)
-- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
 - [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
 
 Official Microsoft references used for this guide:
@@ -134,15 +134,6 @@ TenantId : <tenant-id>
 Scopes   : {DeviceManagementConfiguration.Read.All, DeviceManagementManagedDevices.Read.All, Group.Read.All...}
 ```
 
-<EvidenceCallout
-  type="screenshot"
-  title="Intune configuration list with old Administrative Templates still assigned"
-  image="/images/evidence/intune-configuration.png"
-  imageAlt="Redacted Microsoft Intune configuration policies list showing Settings catalog and Administrative templates profile types with masked assignment groups"
-  capture="Intune admin centre > Devices > Manage devices > Configuration, filtered to Windows policies, showing profile type, assignment count, and last modified date"
-  redact="Tenant name, group names, and any device or user identifiers in the assignment column"
-  why="The migration starts from this inventory. If an old Administrative Templates profile is still assigned to production devices, replacing it without a pilot group changes behaviour for the whole ring."
-/>
 
 Use write scopes only when you are ready to create, assign or change policy. Most migration planning should be read-only.
 
@@ -638,6 +629,12 @@ For a pilot, record:
 
 ## Step 7: Create the Replacement Settings Catalog Profile
 
+{/* Jack must drop in a redacted capture. Do not generate a fake Intune portal image. */}
+<ScreenshotSlot
+  alt="Microsoft Intune admin centre Devices > Configuration > Create > Settings catalog, showing the settings picker with tenant name redacted"
+  caption="Intune Settings catalog profile creation blade. Paste a redacted capture of this blade."
+/>
+
 In the Intune admin centre:
 
 1. Go to **Devices > Manage devices > Configuration**.
@@ -1034,7 +1031,7 @@ You are not trying to make the Intune console look tidy. You are trying to keep 
 - [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing)
 - [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
 - [Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating)
-- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
 - [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
 - [Use the Intune settings catalog to configure settings](https://learn.microsoft.com/en-us/intune/device-configuration/settings-catalog/)
 - [Configure ADMX settings using the settings catalog in Microsoft Intune](https://learn.microsoft.com/en-us/intune/intune-service/configuration/administrative-templates-windows)
