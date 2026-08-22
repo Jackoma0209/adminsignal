@@ -41,7 +41,7 @@ const introSections = [
   },
   {
     title: 'How AdminSignal covers this topic',
-    body: 'Use the Intune versus SCCM comparison for the architectural decision, the Windows Update for Business troubleshooting guide when update ownership is split, and Intune app and compliance guides when you are preparing a workload slide. Official Microsoft co-management documentation remains the authority for product limits, supported workloads, and portal paths.',
+    body: 'This hub is a decision page, not a Configuration Manager tutorial library. The listing below is mostly Intune comparison, Win32 delivery, and update-ownership articles that matter when you are sequencing co-management. There are no standalone ConfigMgr task-sequence or distribution-point tutorials here yet. Official Microsoft co-management documentation remains the authority for product limits, supported workloads, and portal paths.',
   },
 ]
 
