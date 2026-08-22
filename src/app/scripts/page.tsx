@@ -7,7 +7,7 @@ import { withNoindex } from '@/lib/noindex'
 
 const pageTitle = 'PowerShell Implementation Notes'
 const pageDescription =
-  'Design notes and example fragments for endpoint administration. These pages document permissions, assumptions, and command shape. They are not a downloadable script catalogue and are excluded from search indexing.'
+  'Unfinished PowerShell implementation notes. These pages are not a production-tested script library, not signed releases, and not copy-and-run tools. They are excluded from search indexing.'
 const pagePath = '/scripts'
 
 export const metadata: Metadata = withNoindex(
@@ -34,7 +34,7 @@ export default async function ScriptsPage({
     <CategoryPageTemplate
       eyebrow="Reference archive"
       title={pageTitle}
-      description="Implementation notes for endpoint management, reporting, and automation. Each page records example fragments, permissions, and validation checks. None of these pages is a complete copy-and-run source file."
+      description="Unfinished notes only. Each page records example fragments, permissions, and validation checks. None of these pages is a complete, production-tested, or copy-and-run source file."
       itemCount={filtered.length}
       itemLabel="notes"
       categories={languages}
@@ -44,10 +44,10 @@ export default async function ScriptsPage({
       <div className="mb-8 rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
         <h2 className="font-semibold text-foreground">What these pages are</h2>
         <p className="mt-2">
-          AdminSignal publishes implementation notes here so an administrator can see the intended
-          inputs, permissions, and output shape before rebuilding a report or lab workflow. The
-          archive is kept out of search results because the pages are notes, not complete script
-          releases.
+          This archive is unfinished. AdminSignal keeps these pages out of search results because
+          they are implementation notes, not a finished production-tested PowerShell library. Do
+          not treat a fragment here as a tested, signed, or supported release. Rebuild any
+          automation from reviewed requirements in an authorised lab.
         </p>
       </div>
 
