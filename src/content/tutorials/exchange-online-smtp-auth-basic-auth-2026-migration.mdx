@@ -196,6 +196,12 @@ Build a register with one row per sender and system:
 
 ## Exchange Admin Centre Checks
 
+{/* Jack must drop in a redacted capture. Do not generate a fake Exchange admin centre image. */}
+<ScreenshotSlot
+  alt="Exchange admin centre Reports > Mail flow > SMTP AUTH clients, showing authenticated sender counts with tenant name and mailbox addresses redacted"
+  caption="EAC SMTP AUTH clients report. Paste a redacted capture of this report."
+/>
+
 Use the Exchange admin centre for two checks: observed use and current mailbox controls.
 
 For observed use:
@@ -215,16 +221,6 @@ For mailbox controls:
 - Check **Authenticated SMTP**.
 
 The admin centre checkbox maps to the mailbox SMTP AUTH setting. It does not prove that the sender is using Basic Authentication. Use the SMTP AUTH Clients report and Entra sign-in logs for observed authentication behaviour.
-
-<EvidenceCallout
-  type="screenshot"
-  title="Exchange admin centre SMTP AUTH Clients report"
-  image="/images/evidence/eac-smtp-auth-clients.png"
-  imageAlt="Redacted Exchange admin centre SMTP AUTH clients report sorted with Basic Auth first, mailbox names masked, and a TLS 1.0 row highlighted"
-  capture="Exchange admin centre > Reports > Mail flow > SMTP AUTH Clients, sorted with Basic Auth first, including TLS version columns where available"
-  redact="Mailbox addresses, client IP addresses, and any application names that identify the organisation"
-  why="This report is observed use, not a mailbox checkbox. Printers and report servers that still submit with Basic Auth will not appear in a user MFA project, and they fail first when SMTP AUTH is closed."
-/>
 
 ## Microsoft Entra Sign-In Log Checks
 
@@ -614,7 +610,7 @@ Choose the smallest option that matches the workflow. Do not move every printer 
 Search script repositories and automation hosts for Exchange Online connection patterns:
 
 ```powershell
-$SearchRoot = "C:\Scripts"
+$SearchRoot = "C:\\Scripts"
 
 Select-String `
     -Path (Join-Path $SearchRoot "*.ps1") `
@@ -628,8 +624,8 @@ Expected output shape:
 ```text
 Path                         LineNumber Line
 ----                         ---------- ----
-C:\Scripts\MailboxReport.ps1 <n>        Connect-ExchangeOnline -Credential $Credential
-C:\Scripts\OldRemote.ps1     <n>        New-PSSession ... -Authentication Basic
+C:\\Scripts\\MailboxReport.ps1 <n>        Connect-ExchangeOnline -Credential $Credential
+C:\\Scripts\\OldRemote.ps1     <n>        New-PSSession ... -Authentication Basic
 ```
 
 Create a separate automation register:
