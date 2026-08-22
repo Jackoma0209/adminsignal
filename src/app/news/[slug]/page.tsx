@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
@@ -292,7 +293,11 @@ export default async function NewsArticlePage({ params }: Props) {
 
               {!underReview && (
                 <Prose>
-                  <MDXRemote source={content} components={mdxComponents} />
+                  <MDXRemote
+                    source={content}
+                    options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                    components={mdxComponents}
+                  />
                 </Prose>
               )}
 

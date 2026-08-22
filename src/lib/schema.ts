@@ -33,12 +33,17 @@ function organizationRef() {
   }
 }
 
+function isPrimaryAuthor(name: string) {
+  return name === 'Jack' || name === 'Jack Hadcroft'
+}
+
 function authorRef(name: string) {
+  const primary = isPrimaryAuthor(name)
   return cleanSchema({
     '@type': 'Person',
-    '@id': name === 'Jack' ? PRIMARY_AUTHOR_URL : undefined,
-    name,
-    url: name === 'Jack' ? PRIMARY_AUTHOR_URL : undefined,
+    '@id': primary ? PRIMARY_AUTHOR_URL : undefined,
+    name: primary ? 'Jack Hadcroft' : name,
+    url: primary ? PRIMARY_AUTHOR_URL : undefined,
   })
 }
 
@@ -108,7 +113,7 @@ export function organizationSchema({
     name: SITE_NAME,
     url: SITE_URL,
     description,
-    founder: authorRef('Jack'),
+    founder: authorRef('Jack Hadcroft'),
   })
 }
 

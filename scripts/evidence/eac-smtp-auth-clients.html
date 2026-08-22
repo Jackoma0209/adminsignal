@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SMTP AUTH Clients report</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="capture" style="position: relative">
+    <div class="badge">Redacted example</div>
+    <div class="browser-chrome">
+      <div class="tabs"><div class="tab"><span class="dot"></span>SMTP AUTH clients | Exchange admin center</div></div>
+      <div class="omnibox"><span class="lock"></span>admin.exchange.microsoft.com/#/reports/smtputh</div>
+    </div>
+    <div class="shell">
+      <header class="topbar">
+        <div class="waffle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="product">Exchange admin center</div>
+        <div class="search">Search</div>
+        <div class="top-right">
+          <span class="redact wide"></span>
+          <div class="avatar">JH</div>
+        </div>
+      </header>
+      <nav class="nav">
+        <a>Home</a>
+        <a>Recipients</a>
+        <a>Mail flow</a>
+        <a class="active">Reports</a>
+        <div class="section">Mail flow</div>
+        <a>SMTP AUTH clients</a>
+      </nav>
+      <main class="main">
+        <div class="crumbs">Reports &gt; Mail flow &gt; <b>SMTP AUTH clients</b></div>
+        <h1>SMTP AUTH clients</h1>
+        <p class="lede">Observed authenticated SMTP usage. Sort Basic Auth first. TLS 1.0 / 1.1 is a separate remediation, not proof that the mailbox checkbox is off.</p>
+        <div class="toolbar">
+          <button class="btn">Last 30 days</button>
+          <button class="btn">Export</button>
+          <span style="margin-left:auto;font-size:12px;color:#605e5c">Sorted by: Auth method · Basic Auth first</span>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Mailbox</th>
+                <th>Client / app</th>
+                <th>Auth method</th>
+                <th>TLS</th>
+                <th>Messages (30d)</th>
+                <th>Last seen</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>scan@<span class="redact"></span></td>
+                <td>MFP / scanner</td>
+                <td><span class="pill warn">Basic Auth</span></td>
+                <td>TLS 1.2</td>
+                <td>4,812</td>
+                <td>8 May 2026</td>
+              </tr>
+              <tr>
+                <td>alerts@<span class="redact"></span></td>
+                <td>Monitoring appliance</td>
+                <td><span class="pill warn">Basic Auth</span></td>
+                <td style="color:#a4262c;font-weight:600">TLS 1.0</td>
+                <td>1,204</td>
+                <td>8 May 2026</td>
+              </tr>
+              <tr>
+                <td>reports@<span class="redact"></span></td>
+                <td>SQL Server Reporting</td>
+                <td><span class="pill warn">Basic Auth</span></td>
+                <td>TLS 1.2</td>
+                <td>286</td>
+                <td>7 May 2026</td>
+              </tr>
+              <tr>
+                <td>app-mail@<span class="redact"></span></td>
+                <td>Line-of-business app</td>
+                <td><span class="pill ok">OAuth</span></td>
+                <td>TLS 1.2</td>
+                <td>19,440</td>
+                <td>8 May 2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

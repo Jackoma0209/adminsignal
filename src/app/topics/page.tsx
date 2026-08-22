@@ -8,7 +8,7 @@ import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const pageTitle = 'Topic Hubs'
 const pageDescription =
-  'Browse AdminSignal topic hubs with verified tutorials, troubleshooting guides, news, comparisons, and analysis for Microsoft-centred administration.'
+  'Browse AdminSignal topic hubs. Each hub lists the published tutorials, troubleshooting guides, and news that actually exist for that discipline.'
 
 export const metadata: Metadata = buildCategoryMetadata({
   title: pageTitle,
@@ -46,8 +46,8 @@ export default function TopicsPage() {
             Browse by discipline
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-muted">
-            Focused collections for each discipline in a Microsoft-centred admin stack: verified
-            news, operational tutorials, troubleshooting guidance, comparisons, and analysis.
+            Focused collections for each discipline in a Microsoft-centred admin stack. A hub
+            only claims the articles already published for that topic.
           </p>
           <p className="mt-4 text-xs text-muted/60">
             Practical coverage across {topics.length} topic hubs

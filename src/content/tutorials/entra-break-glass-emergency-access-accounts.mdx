@@ -86,6 +86,16 @@ They should **not** be excluded from audit logging, sign-in logging, or monitori
 
 Do not licence these accounts for Exchange Online mailboxes unless you have a specific operational reason. Keep them as pure directory emergency identities.
 
+<EvidenceCallout
+  type="screenshot"
+  title="Emergency access accounts in Entra users"
+  image="/images/evidence/entra-emergency-users.png"
+  imageAlt="Redacted Microsoft Entra users list showing two cloud-only Emergency Access accounts with Global Administrator and a directory-synced user contrast row"
+  capture="Microsoft Entra admin centre > Identity > Users, filtered to the two cloud-only emergency accounts, showing account enabled, assigned roles, and on-premises sync status"
+  redact="Tenant name, any directory object IDs, and the real emergency UPNs if they identify the organisation"
+  why="Break-glass only works if both accounts exist, are cloud-only, remain enabled, and hold Global Administrator. A federated or synced account will fail during the identity incident this design is meant to survive."
+/>
+
 ## Step 2: Protect Credentials Offline
 
 Password custody is where most break-glass designs fail in real incidents.
@@ -179,8 +189,8 @@ Example Graph-oriented review idea (run with appropriate audit permissions and y
 Connect-MgGraph -Scopes 'AuditLog.Read.All','Directory.Read.All'
 
 $emergencyUpns = @(
-  'breakglass-01@contoso.onmicrosoft.com',
-  'breakglass-02@contoso.onmicrosoft.com'
+  'breakglass-01@example.onmicrosoft.com',
+  'breakglass-02@example.onmicrosoft.com'
 )
 
 # Review recent sign-ins for the emergency accounts in the Entra portal

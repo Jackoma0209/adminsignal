@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Microsoft 365'
 const topicDescription =
-  'Verified Microsoft 365 coverage for Exchange Online, SharePoint, Teams, tenant governance, security, compliance, and administrative troubleshooting.'
+  'Published Microsoft 365 coverage currently on AdminSignal: Exchange Online SMTP AUTH migration, admin-centre MFA readiness, and Conditional Access policy mapping. This hub does not yet include SharePoint or Teams tutorials.'
 const topicPath = '/microsoft-365'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -51,6 +51,24 @@ export default function Microsoft365Page() {
       <TopicHubPageTemplate
         topicName={topicName}
         description={topicDescription}
+        introSections={[
+          {
+            title: 'Mail flow and admin access are the current published work',
+            body: 'The live Microsoft 365 articles on this site cover SMTP AUTH Basic Authentication retirement, mandatory MFA for the admin centre, and Conditional Access policy mapping. They are operational playbooks, not a SharePoint, Teams, or licensing catalogue.',
+          },
+          {
+            title: 'Inventory senders before you close the protocol',
+            body: 'Printers, scanners, report servers, and stored-credential Exchange Online scripts fail independently of user MFA. Collect the SMTP AUTH Clients report and Entra sign-in evidence before changing tenant or mailbox controls.',
+          },
+          {
+            title: 'Treat break-glass as part of the MFA project',
+            body: 'Admin MFA readiness is incomplete if emergency access accounts, security defaults, and Conditional Access exclusions are still undecided. Locking out the only remaining admin role is a change-control failure, not a security win.',
+          },
+          {
+            title: 'What this hub will not claim',
+            body: 'There are no published Teams voice, SharePoint migration, or Microsoft 365 Copilot tutorials here yet. Those topics stay off this page until a complete, sourced article exists.',
+          },
+        ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}

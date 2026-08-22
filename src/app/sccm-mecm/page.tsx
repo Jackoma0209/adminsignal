@@ -8,7 +8,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'SCCM / MECM'
 const topicDescription =
-  'Practical Configuration Manager guidance for co-management, Intune migration sequencing, software distribution trade-offs, patching ownership, and when MECM should remain in the design.'
+  'Practical Configuration Manager decision guidance: when MECM still earns its place, how to sequence co-management, and which published Intune comparison and app-delivery articles to read next. This hub does not yet include standalone ConfigMgr task-sequence or DP tutorials.'
 const topicPath = '/sccm-mecm'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -47,21 +47,15 @@ const introSections = [
 
 export default function SccmMecmPage() {
   const { news, tutorials, troubleshooting, allItems } = buildTopicContent({
-    newsTags: ['SCCM', 'MECM', 'Configuration Manager', 'Co-management', 'Intune', 'WSUS', 'MECM'],
-    newsCategories: ['SCCM / MECM', 'Endpoint Management', 'Patch Tuesday'],
-    guideTags: ['SCCM', 'MECM', 'Configuration Manager', 'Co-management', 'Intune'],
-    guideCategories: ['SCCM / MECM', 'Endpoint Management', 'Microsoft Intune'],
-    troubleshootingCategories: ['SCCM / MECM', 'Endpoint Management', 'Microsoft Intune', 'Patch Management'],
-    affectedProducts: [
-      'Microsoft Configuration Manager',
-      'SCCM',
-      'MECM',
-      'Microsoft Intune',
-      'Windows Update for Business',
-    ],
+    newsTags: ['SCCM', 'MECM', 'Configuration Manager', 'Co-management'],
+    newsCategories: ['SCCM / MECM'],
+    guideTags: ['SCCM', 'MECM', 'Configuration Manager', 'Co-management'],
+    guideCategories: ['SCCM / MECM'],
+    troubleshootingCategories: ['SCCM / MECM'],
+    affectedProducts: ['Microsoft Configuration Manager', 'SCCM', 'MECM'],
     newsLimit: 4,
-    guideLimit: 6,
-    troubleshootingLimit: 6,
+    guideLimit: 4,
+    troubleshootingLimit: 4,
   })
 
   const relatedArticles = [

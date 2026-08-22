@@ -5,7 +5,7 @@ import { buildCategoryMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = buildCategoryMetadata({
   title: 'Contact',
-  description: 'Get in touch with Jack, author of AdminSignal.',
+  description: 'Get in touch with Jack Hadcroft, author of AdminSignal.',
   path: '/contact',
 })
 
@@ -27,9 +27,9 @@ export default function ContactPage() {
             <p>
               AdminSignal is independently operated by{' '}
               <Link href="/about" className="text-primary hover:underline">
-                Jack
+                Jack Hadcroft
               </Link>
-              , a Microsoft admin practitioner writing practical guides for enterprise sysadmins.
+              , an endpoint specialist writing practical guides for Microsoft administrators.
             </p>
           </div>
 

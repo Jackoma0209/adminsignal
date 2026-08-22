@@ -2,6 +2,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import { guides } from '@/data/guides'
 import { getAuthor } from '@/data/authors'
@@ -137,7 +138,32 @@ export default async function TutorialPage({ params }: Props) {
       <Container>
         <div className="py-10 lg:py-14">
           {underReview ? (
-            <EditorialReviewNotice reason="The current draft mixes legacy Windows Autopilot concepts with Windows Autopilot device preparation. Its technical body has been withdrawn while it is rewritten against Microsoft's current device-preparation workflow." />
+            <div className="mb-10 space-y-6">
+              <EditorialReviewNotice reason="The current draft mixes legacy Windows Autopilot concepts with Windows Autopilot device preparation. Its technical body has been withdrawn while it is rewritten against Microsoft's current device-preparation workflow." />
+              <div className="rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+                <p className="font-semibold text-foreground">Use these published Autopilot pages instead</p>
+                <ul className="mt-3 list-disc space-y-2 pl-5">
+                  <li>
+                    <Link href="/comparisons/autopilot-v1-vs-v2-2026" className="font-medium text-primary hover:underline">
+                      Autopilot v1 versus Device Preparation v2
+                    </Link>{' '}
+                    for the supported-capability comparison.
+                  </li>
+                  <li>
+                    <Link href="/troubleshooting/autopilot-device-not-importing-hardware-hash" className="font-medium text-primary hover:underline">
+                      Autopilot hardware hash import
+                    </Link>{' '}
+                    for CSV, duplicate identity, and profile assignment failures.
+                  </li>
+                  <li>
+                    <Link href="/troubleshooting/autopilot-enrollment-status-page-stuck" className="font-medium text-primary hover:underline">
+                      Enrollment Status Page stuck
+                    </Link>{' '}
+                    for ESP diagnosis on classic Autopilot.
+                  </li>
+                </ul>
+              </div>
+            </div>
           ) : (
             lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
           )}

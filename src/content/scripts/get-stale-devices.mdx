@@ -2,7 +2,7 @@
 title: "Get-StaleDevices"
 category: "PowerShell"
 language: "PowerShell"
-date: "Feb 2025"
+date: "Mar 2026"
 authorId: "jack"
 lastReviewed: "Apr 27, 2026"
 tags: ["Intune", "Entra ID", "Active Directory", "Reporting"]
@@ -74,8 +74,8 @@ Get-StaleDevices -Sources @('Intune', 'EntraID') -StaleThresholdDays 60 -OutputP
 **Unattended run with service principal — for scheduled task or pipeline use:**
 
 ```powershell
-$appId     = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-$appSecret = ConvertTo-SecureString 'YOUR_SECRET' -AsPlainText -Force
+$appId     = '<app-id>'
+$appSecret = ConvertTo-SecureString '<app-secret>' -AsPlainText -Force
 $cred      = New-Object PSCredential($appId, $appSecret)
 
 Get-StaleDevices -GraphCredential $cred -StaleThresholdDays 90 -IncludeRemediation -OutputPath C:\Reports

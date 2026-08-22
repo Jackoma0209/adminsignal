@@ -24,7 +24,7 @@ const internalLinks = [
   { label: 'Troubleshooting', href: '/troubleshooting' },
   { label: 'Windows Server', href: '/windows-server' },
   { label: 'All topics', href: '/topics' },
-  { label: 'About Jack', href: '/about' },
+  { label: 'About Jack Hadcroft', href: '/about' },
 ]
 
 export default function AuthorBioSection() {
@@ -108,7 +108,7 @@ export default function AuthorBioSection() {
               </h2>
               <div className="flex flex-col gap-4 text-base leading-relaxed text-muted">
                 <p>
-                  I am Jack, an endpoint specialist and the author of AdminSignal. I write for administrators who need to understand prerequisites, make safe rollout decisions, collect evidence, and troubleshoot Microsoft environments methodically.
+                  I am Jack Hadcroft, an endpoint specialist and the author of AdminSignal. I write for administrators who need to understand prerequisites, make safe rollout decisions, collect evidence, and troubleshoot Microsoft environments methodically.
                 </p>
                 <p>
                   Articles combine primary documentation with clearly labelled examples and operational interpretation. A guide does not claim universal testing, a production deployment, or measured results unless that evidence is explicitly stated on the page.

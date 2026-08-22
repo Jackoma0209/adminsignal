@@ -1,0 +1,314 @@
+---
+title: "August 2026 Patch Tuesday: Windows Admin Priorities"
+description: "Windows admin guide to August 2026 Patch Tuesday: exploited CVE-2026-68820, KB targets, Intune rollout checks, Autopatch hotpatch, known issues and Secure Boot readiness."
+metaTitle: "August 2026 Patch Tuesday: Admin Checklist | AdminSignal"
+metaDescription: "Windows admin guide to August 2026 Patch Tuesday: exploited WinSock zero-day, WDS/DHCP RCEs, KB targets, Intune checks, Autopatch and Secure Boot."
+canonical: "https://www.adminsignal.com/news/august-2026-patch-tuesday-admin-priorities"
+openGraphTitle: "August 2026 Patch Tuesday: What Windows Admins Should Prioritise"
+openGraphDescription: "A practical August 2026 Patch Tuesday guide covering exploited CVE-2026-68820, KB targets, Intune rollout, Autopatch hotpatch, known issues and Secure Boot."
+openGraphImage: "/images/article-covers/august-2026-patch-tuesday-admin-priorities.svg"
+category: "Patch Tuesday"
+date: "2026-08-11"
+authorId: "jack"
+lastReviewed: "2026-08-22"
+reviewNote: "Post-release admin briefing checked against Microsoft Support KB pages, Windows message center, Windows release health, individual MSRC CVE records, and Tenable’s August 2026 write-up on 2026-08-22. CVE totals below are Tenable’s scoped Microsoft count, not a substitute for the August 2026 Security Update Guide release note. Counts and exploit status can change if Microsoft revises the release."
+tags: ["August 2026 Patch Tuesday", "CVE-2026-68820", "Windows security updates", "Intune", "Windows Update for Business", "Windows Autopatch", "Secure Boot certificates", "Entra Connect"]
+keywords: ["August 2026 Patch Tuesday", "CVE-2026-68820", "Windows security updates", "Intune", "Windows Update for Business", "Windows Autopatch", "Secure Boot certificates", "Entra Connect"]
+image: "/images/article-covers/august-2026-patch-tuesday-admin-priorities.svg"
+imageAlt: "Enterprise Windows patch deployment illustration with a calendar, shield, server nodes, and staged rollout rings"
+---
+
+The practical takeaway for August is narrower than the headline suggests. Microsoft has confirmed active exploitation of [CVE-2026-68820](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-68820), a local WinSock Ancillary Function Driver elevation of privilege that can reach SYSTEM. That is a real patching priority, especially on admin workstations, jump hosts, and any device where a low-privileged foothold is plausible. It is still a local issue. It does not justify skipping server testing, and it is not a reason to expedite the whole estate.
+
+Do not treat this month as “one CVE, then done.” The same release includes WDS and DHCP remote code execution that Microsoft rates as more likely, a critical DNS RCE it rates as less likely, SharePoint Server RCE, and an Entra Connect elevation of privilege that the Windows cumulative update will not fix. Those are separate decisions with different blast radius, different prerequisites, and different rollback paths.
+
+AdminSignal did not publish a July 2026 Patch Tuesday briefing. For the previous published month, use the [June 2026 Patch Tuesday admin priorities](/news/june-2026-patch-tuesday-admin-priorities). This article turns the [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide) and the August KB pages into a deployment plan for Windows admins, Intune teams, MSPs, and endpoint management teams.
+
+## What changed in August 2026 Patch Tuesday
+
+Microsoft released the August security updates on 2026-08-11. I am not quoting a Microsoft Security Update Guide CVE total here. Use the [August 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-Aug) as the authoritative Microsoft count. [Tenable’s August 2026 write-up](https://www.tenable.com/blog/microsofts-august-2026-patch-tuesday-addresses-398-cves-cve-2026-68820) scoped **398 Microsoft CVEs**, **42 Critical**, **355 Important**, and **1 exploited**. Tenable notes that count omits two MITRE-assigned CVEs. Treat those figures as a secondary snapshot, not a substitute for the release note. Counts and exploit status can change if Microsoft revises the release.
+
+Three items are worth separating from the rest of the list:
+
+- [CVE-2026-68820](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-68820), Windows Ancillary Function Driver for WinSock elevation of privilege. Microsoft marks this as exploited. A locally authenticated attacker can reach SYSTEM. No user interaction is required. This is the only exploited CVE called out for this briefing.
+- [CVE-2026-62832](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62832), Windows User Profile Service elevation of privilege. Publicly disclosed. Microsoft assesses exploitation as more likely. Local, low-privileged, no user interaction.
+- [CVE-2026-72971](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-72971), Windows Container Isolation FS Filter Driver (`unionfs.sys`) tampering. Publicly disclosed. Microsoft assesses exploitation as unlikely. Relevant if you run Windows containers; not a reason to reorder the rest of the estate.
+
+The server RCEs that should drive the first maintenance windows are:
+
+- [CVE-2026-62893](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62893), Windows Deployment Services TFTP Server remote code execution, 9.8, exploitation more likely. Unauthenticated, crafted packet to the TFTP service.
+- [CVE-2026-62823](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62823), Windows DHCP Server remote code execution, 8.8, exploitation more likely. Unauthenticated on an adjacent network, heap overflow via a crafted packet.
+- [CVE-2026-62878](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62878), Windows DNS Server remote code execution, 9.8, exploitation less likely. Still a 9.8 unauthenticated packet against a DNS listener. Less likely is not “ignore the role.”
+
+Two identity and collaboration products sit outside the Windows LCU:
+
+- [CVE-2026-65665](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-65665), Microsoft SharePoint Server remote code execution. Confirm the SharePoint security update for the farm build you actually run. The Windows cumulative update does not patch SharePoint.
+- [CVE-2026-65673](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-65673), Microsoft Entra Connect elevation of privilege. Confirm the patched Entra Connect build on the MSRC record. Secondary sources list affected versions as earlier than **2.6.84.0**. The Windows LCU does not fix Entra Connect. Check the sync server separately.
+
+Those numbers describe the release. They do not tell you which devices should move first. For deployment planning, exposure and server role still matter more than the headline total.
+
+## Windows KBs and builds to verify
+
+Use the KB and build as your compliance target. Do not rely only on an update policy showing as assigned.
+
+<div className="my-5 max-w-full overflow-x-auto rounded-lg border border-border">
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>August 2026 update</th>
+        <th>Build to verify</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Windows 11, version 26H1</td>
+        <td><a href="https://support.microsoft.com/help/5121000">KB5121000</a></td>
+        <td>28000.2704</td>
+      </tr>
+      <tr>
+        <td>Windows 11, versions 25H2 and 24H2</td>
+        <td><a href="https://support.microsoft.com/help/5121003">KB5121003</a></td>
+        <td>26200.9168 / 26100.9168</td>
+      </tr>
+      <tr>
+        <td>Windows 11, version 23H2</td>
+        <td><a href="https://support.microsoft.com/help/5120240">KB5120240</a></td>
+        <td>22631.7517</td>
+      </tr>
+      <tr>
+        <td>Supported Windows 10 22H2 / 21H2 ESU servicing paths</td>
+        <td><a href="https://support.microsoft.com/help/5120249">KB5120249</a></td>
+        <td>19045.7663 / 19044.7663</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2025</td>
+        <td><a href="https://support.microsoft.com/help/5120233">KB5120233</a></td>
+        <td>26100.33296</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2022</td>
+        <td><a href="https://support.microsoft.com/help/5120242">KB5120242</a></td>
+        <td>20348.5499</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2019</td>
+        <td><a href="https://support.microsoft.com/help/5120238">KB5120238</a></td>
+        <td>17763.9121</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2016</td>
+        <td><a href="https://support.microsoft.com/help/5120418">KB5120418</a></td>
+        <td>14393.9418</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Check the exact edition, architecture, and servicing entitlement in your environment. Windows 10 devices outside a supported LTSC or ESU path should not be treated as compliant simply because an older cumulative update is installed.
+
+Microsoft combines the latest servicing stack update with the LCU. Record the SSU that applies to each OS version before you service offline media or standalone packages:
+
+- [KB5123304](https://support.microsoft.com/help/5123304) (build 26100.9156) for Windows 11 24H2 and 25H2
+- [KB5120232](https://support.microsoft.com/help/5120232)
+- [KB5120241](https://support.microsoft.com/help/5120241) for Windows Server 2022
+
+For Windows Autopatch hotpatch estates, the [Windows message centre](https://learn.microsoft.com/en-us/windows/release-health/windows-message-center) documents a standalone follow-on after the August hotpatch:
+
+- [KB5123607](https://support.microsoft.com/help/5123607) for Windows 11 Enterprise 25H2 and 24H2
+- [KB5123273](https://support.microsoft.com/help/5123273) additional update where Pluton is configured as the TPM (restart required)
+- [KB5123303](https://support.microsoft.com/help/5123303) for Windows Server 2022 (restart required)
+
+A device that did not restart is not automatically evidence of a missed update. Confirm which path the device is on before you open a failure ticket.
+
+## What Windows admins should prioritise
+
+### 1. The exploited local WinSock EoP, without skipping servers
+
+[CVE-2026-68820](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-68820) is the only exploited CVE in this briefing. Scope is local. The useful decision is which devices already have, or could reasonably gain, a low-privileged local logon: helpdesk workstations, RDP jump hosts, VDI, shared admin boxes, developer machines, and any server that accepts interactive or service-account logon from a wider group than it should.
+
+Do not use “it is only local” as a reason to leave servers until the end of the month. The same LCU carries the WDS, DHCP, and DNS fixes. If you delay the server ring to “focus on the zero-day,” you delay the RCEs that actually face the network.
+
+There is no workaround listed for CVE-2026-68820. The update needs a restart on the standard cumulative path. Treat pending restart as an incomplete install.
+
+### 2. Windows Deployment Services and DHCP
+
+[CVE-2026-62893](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62893) is the clearer first server priority if you still run WDS or PXE. Microsoft rates it Critical 9.8 and more likely. An unauthenticated attacker can send a crafted packet to the TFTP server component. If imaging infrastructure is reachable from a wider VLAN than the build network, that is the failure state to plan around.
+
+Patch the WDS server in a window where you can validate PXE boot, task sequences, WinPE, driver injection, and the first device to complete an image. Do not assume a quiet TFTP service is unused until you have checked DHCP options 66/67 and any IP helpers.
+
+[CVE-2026-62823](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62823) is Critical 8.8 and more likely. Exploitation is adjacent-network, not arbitrary internet RCE. That still covers any DHCP server that shares L2 with untrusted or loosely trusted clients: branch offices, guest-adjacent VLANs, lab networks that were never isolated. Validate lease issuance, options, failover, and PXE-related DHCP options after the pilot server is updated.
+
+### 3. DNS, then identity-adjacent servers
+
+[CVE-2026-62878](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62878) is Critical 9.8. Microsoft assesses exploitation as less likely. Less likely is an exploitability rating, not a statement that DNS is out of scope. Patch DNS servers in redundant waves. Check resolution, zone transfers, AD-integrated zone replication, and forwarders before moving the next server.
+
+Domain controllers that also host DNS should follow your normal DC sequence: one at a time, with replication, SYSVOL, time service, LDAP, and Kerberos checked between waves. The [Windows Server hub](/windows-server) has role-aware maintenance guidance.
+
+### 4. SharePoint and Entra Connect
+
+These are not Windows LCU problems. Putting them in the same change record as KB5121003 is how they get missed.
+
+For [CVE-2026-65665](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-65665), identify every SharePoint Server farm, confirm the August SharePoint security update for that product version, and validate crawling, authentication, and the common line-of-business web parts after the pilot server. Internet-facing or partner-facing farms should move first.
+
+For [CVE-2026-65673](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-65673), read the MSRC record and confirm the patched Entra Connect build there. Secondary sources currently describe versions earlier than **2.6.84.0** as affected. That is a secondary-source figure until you have checked MSRC for the build you run. Inventory the sync server, staging server if you have one, and any recovered VM that still boots an old installer. The Windows cumulative update on that box does not close this CVE.
+
+### 5. The publicly disclosed local issues
+
+Do not ignore [CVE-2026-62832](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-62832). Public disclosure plus “more likely” is enough to keep privileged and multi-user endpoints in an early ring. It is still local. It does not justify treating every laptop as if an unauthenticated remote exploit is already in progress.
+
+[CVE-2026-72971](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-72971) is a `unionfs.sys` tampering issue, publicly disclosed, exploitation unlikely. If you do not run Windows containers, it should not reorder your rings. If you do, include a container host in the server pilot.
+
+## What I'd prioritise first
+
+1. WDS and DHCP servers that are reachable beyond a tightly controlled build network, after a focused PXE and lease check.
+2. DNS servers and domain controllers, patched in redundant waves with replication and name-resolution validation between each wave.
+3. Privileged workstations, RDP jump hosts, helpdesk endpoints, VDI, and other devices where CVE-2026-68820 or CVE-2026-62832 would turn a local foothold into SYSTEM or administrator.
+4. SharePoint farms and Entra Connect servers, as separate changes from the Windows LCU.
+5. Windows 10 devices that might match the PCR7 BitLocker known-issue configuration, then the wider workstation estate through normal rings.
+
+Confirmed exploitation of a local EoP supports a controlled, evidence-led rollout. It does not support leaving network-facing server roles until the end of a month-long endpoint deadline, and it does not support expediting every ring.
+
+## Suggested rollout approach
+
+Use rings that give you evidence, not rings that exist only on a diagram.
+
+**Ring 0: lab and recovery validation.** Test representative Windows versions, a domain controller or DNS server, a DHCP or WDS server if you run those roles, an Autopatch or hotpatch-eligible device if you have one, and any image deployment path you operate. Confirm backups, recovery keys, console access, and rollback ownership before installing. This is a checklist of what to validate, not a claim that a lab result has already been collected for this release.
+
+**Ring 1: IT and representative pilot devices.** Include different hardware models, VPN clients, endpoint security agents, line-of-business applications, and at least one device from each active Windows build. Include a small number of servers by role. If Autopatch hotpatch is in use, include both a hotpatch-eligible device and a device that still takes the restarting LCU.
+
+**Ring 2: early production.** Expand to business users and low-risk server groups once installation, restart, application, and security telemetry from the pilot ring is clean.
+
+**Ring 3: broad deployment.** Promote only after you have checked failure codes, restart compliance, BitLocker events, service health, and the Microsoft known-issues pages again.
+
+For WDS, DHCP, and exposed DNS, use a focused maintenance window after that role has been through Ring 0 or Ring 1. Do not wait for the broad workstation ring, and do not expedite the rest of the estate to match that window. For clustered or redundant server roles, keep enough capacity online to reverse course without creating an availability incident.
+
+The [patch management hub](/patch-management) covers ring design and change control.
+
+## Intune and Windows Update for Business checks
+
+For Intune and Windows Update for Business environments, check policy intent against device state:
+
+- Confirm update ring assignments, exclusions, deadlines, grace periods, active hours, and restart settings.
+- Check that feature update policies are not moving the same pilot devices to a new Windows release during the quality update test.
+- Review devices that have not synced recently. A stale device can appear outside the failure count while still missing the August update.
+- Verify the installed OS build, not only the Intune policy deployment state.
+- For Windows Autopatch estates, confirm which devices are hotpatch eligible and whether they also received the standalone follow-on ([KB5123607](https://support.microsoft.com/help/5123607), [KB5123273](https://support.microsoft.com/help/5123273) for Pluton-as-TPM, [KB5123303](https://support.microsoft.com/help/5123303) on Server 2022). A device that did not restart is not automatically evidence of a missed update. Some of those standalone packages do require a restart.
+- Expect an extra restart on a limited set of devices as part of the Secure Boot certificate update. That is a documented installation behaviour, not a failure state by itself.
+- Use an expedited quality update policy only for a clearly defined high-risk group, such as WDS/DHCP servers or privileged endpoints, after the pilot result is known. Do not expedite the estate because one local EoP is marked exploited.
+- Record exclusions with an owner, reason, compensating control, and review date.
+
+If ring timing does not match policy, use the [WUfB deferral troubleshooting guide](/troubleshooting/wufb-deferral-not-respected). The [Intune hub](/intune) has broader reporting and policy checks.
+
+## Validate the build on the device
+
+Intune compliance and WSUS reports are necessary. They are not sufficient. Confirm the OS build and the August hotfix on a sample of each ring before you promote.
+
+```powershell
+Get-ComputerInfo |
+    Select-Object WindowsProductName, WindowsVersion, OsName, OsBuildNumber, OsHardwareAbstractionLayer
+
+Get-HotFix |
+    Where-Object {
+        $_.HotFixID -in @(
+            'KB5121000',
+            'KB5121003',
+            'KB5120240',
+            'KB5120249',
+            'KB5120233',
+            'KB5120242',
+            'KB5120238',
+            'KB5120418',
+            'KB5123607',
+            'KB5123273',
+            'KB5123303'
+        )
+    } |
+    Select-Object HotFixID, InstalledOn, Description |
+    Sort-Object InstalledOn -Descending
+```
+
+Expected output is the target build from the table above, plus the matching `KB512xxxx` entry. `Get-HotFix` will not list every combined SSU the same way on every OS, and hotpatch devices may show a different KB than the LCU path. If the build number matches and the device is Autopatch hotpatch-eligible, treat the hotpatch/standalone KB as the compliance artefact rather than forcing an LCU hotfix ID.
+
+This is a validation check, not a fleet inventory. For estate-wide reporting, keep using Intune, Autopatch, WSUS, or ConfigMgr as the source of record and sample-check the outliers.
+
+## Watch for known issues
+
+Re-check [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/) and each relevant KB before promoting a ring. Known-issue text can be added after the Tuesday release.
+
+**Windows 11 25H2 and 24H2 ([KB5121003](https://support.microsoft.com/help/5121003)):** Microsoft added a known issue on 2026-08-20 for certain games becoming unresponsive. The investigation points at peripherals or internal components that support RGB lighting, and at drivers or software with names similar to `inpoutx64`. That is a consumer and RGB-peripheral pattern. Do not pause enterprise rings for the game issue. If a pilot workstation in the estate actually matches that hardware, document it as a device-specific exception with an owner and a review date. It is not suitable as a reason to hold business rings.
+
+The same KB also records that this update removes the Drop Tray experience (previously named Drag Tray) on devices where it was available. Treat that as a behaviour change for helpdesk scripts and user comms, not as a deployment blocker.
+
+**Windows 10 ([KB5120249](https://support.microsoft.com/help/5120249)):** Microsoft lists a limited BitLocker recovery issue on devices with an unrecommended PCR7 validation policy. All documented conditions must be present, including BitLocker on the OS drive, explicit PCR7 policy, `msinfo32.exe` showing PCR7 Binding as "Not Possible", and the related Secure Boot certificate state. Audit that configuration and recovery-key escrow before the first restart on matching devices. If your support team handled this pattern earlier in 2026, keep the [BitLocker recovery loop troubleshooting guide](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063) available during rollout.
+
+**Windows Server 2025 ([KB5120233](https://support.microsoft.com/help/5120233)):** Microsoft lists the WSUS error-detail issue. After specified earlier updates, WSUS does not display synchronisation error details. Treat missing detail as an observability limitation, not proof that synchronisation itself failed.
+
+## Secure Boot extra restart is now an August task
+
+The Secure Boot certificate transition is no longer a planning item for next quarter. Microsoft Windows Production PCA 2011 expires on **2026-10-19**. Microsoft Corporation KEK CA 2011 and Microsoft UEFI CA 2011 already reached their June 2026 dates.
+
+The [Windows message centre](https://learn.microsoft.com/en-us/windows/release-health/windows-message-center) states that a limited number of consumer and business devices might experience one additional restart during installation. That one-time restart occurs after a Secure Boot certificate update is applied as part of the [Secure Boot update process](https://support.microsoft.com/help/5062710). Tell service desk and server operators to expect it. Do not treat the extra restart as a failed cumulative update unless the device then sits below the target build or loops.
+
+Microsoft says devices without the newer 2023 certificates will continue to start and receive normal Windows updates, but they may not receive future early-boot protections, Secure Boot database updates, revocation lists, or mitigations. Several August cumulative updates continue Microsoft's high-confidence device targeting for automatic certificate delivery. That helps, but it does not replace estate visibility. Use the [Secure Boot CA 2023 enterprise readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) to check client devices, servers, recovery media, virtual machines, and Intune reporting.
+
+## Lifecycle dates inside this patch window
+
+Three servicing dates sit immediately after this release. They are not August CVEs, but they change what “compliant” means in October:
+
+- **2026-10-13:** Windows 11, version 24H2 Home and Pro end of updates.
+- **2026-10-13:** Windows Server 2022 mainstream support ends (extended support continues; confirm the SKU and licensing path you are on).
+- **2026-11-10:** Windows 11, version 23H2 Enterprise and Education end of updates.
+
+Do not assume a device that installed KB5121003 or KB5120240 is on a supported edition for the next quarter. Feature update policy, edition, and channel still have to match the lifecycle table. 24H2 Home/Pro and 23H2 Enterprise/Education are different problems with different target versions.
+
+## What to monitor after deployment
+
+During the first 24 to 48 hours, monitor by workload and failure pattern:
+
+- Update installation failures, rollback events, pending restarts, extra Secure Boot restarts that never reach the target build, and devices still below the target build.
+- BitLocker recovery prompts, recovery-key lookups, PCR7 binding state, and helpdesk ticket volume, especially on Windows 10.
+- WDS PXE boot, TFTP, task sequence, and first-image success.
+- DHCP lease issuance, failover, and PXE-related options.
+- DNS resolution, zone replication, and domain controller authentication.
+- SharePoint farm health and Entra Connect export/import, run profile, and staging-server deltas.
+- Autopatch hotpatch versus LCU restart behaviour, including Pluton standalone restarts.
+- VPN, EDR, Defender for Endpoint, printing, and line-of-business application health on pilot devices.
+- WSUS synchronisation outcome, while accounting for the known error-detail display limitation on Server 2025.
+- Intune and Windows Update for Business reports for stale check-ins, download failures, install failures, and deadline behaviour.
+- RGB/inpoutx64 game hangs only where that hardware actually exists in the estate. Do not use that signal to pause business rings.
+
+Group incidents by OS version, KB, hardware model, driver, security agent, and server role. A concentrated pattern is more useful than a raw failure total when deciding whether to pause a ring.
+
+## Admin checklist
+
+1. Review the August 2026 Microsoft Security Update Guide release note and retain the filtered export with the change record. Use Tenable’s 398/42/355/1 snapshot only as a secondary caveat, not as the Microsoft total.
+2. Identify affected products and map every supported Windows version to the expected August KB and build, including SSU and Autopatch standalone KBs.
+3. Patch representative pilot devices and servers before broad approval. Include WDS or DHCP if you run those roles.
+4. Prioritise WDS/DHCP, DNS and domain controllers, privileged endpoints for CVE-2026-68820, then SharePoint and Entra Connect as separate changes.
+5. Confirm the Entra Connect build on MSRC. Secondary sources currently cite versions earlier than 2.6.84.0. Do not assume the Windows LCU closed it.
+6. Review Intune or Windows Update for Business rings, Autopatch hotpatch eligibility, exclusions, deadlines, restart settings, and recent device sync. Do not expedite the estate.
+7. Check Windows release health and each KB known-issues section before promoting a ring. Do not pause enterprise rings for the KB5121003 game issue.
+8. Confirm rollback, console access, backup, recovery, Secure Boot extra-restart comms, and Microsoft support ownership.
+9. Sample-check `Get-ComputerInfo` and `Get-HotFix` against the target build. Monitor update failures, BitLocker prompts, DHCP/WDS/DNS, Entra Connect, endpoint security, and application health.
+10. Document exceptions with an owner, reason, compensating control, and review date. Include 24H2 Home/Pro, Server 2022 mainstream, and 23H2 Enterprise/Education lifecycle owners before October.
+
+## Final recommendation
+
+Run August as a fast, evidence-led rollout. Move WDS, DHCP, DNS, and privileged endpoints through focused pilots first. Keep normal rings for the wider estate. Shorten promotion decisions when telemetry is clean. Do not expedite the estate because CVE-2026-68820 is exploited: it is local, and the server RCEs are the items that change maintenance-window order.
+
+Do not let a third-party CVE total replace environment-specific prioritisation. The useful question is not "How many vulnerabilities shipped?" It is "Which of our systems expose the affected component, and what evidence do we need before expanding deployment?"
+
+The root cause of a bad August cycle is usually mixing three different changes: the Windows LCU, the Autopatch/Secure Boot restart path, and the products the LCU does not touch. Keep those decisions separate in the change record.
+
+## Official sources
+
+- [Microsoft Security Update Guide](https://msrc.microsoft.com/update-guide)
+- [August 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-Aug)
+- [CVE-2026-68820](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-68820)
+- [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/)
+- [Windows message centre](https://learn.microsoft.com/en-us/windows/release-health/windows-message-center)
+- [Windows 11 KB5121003](https://support.microsoft.com/help/5121003)
+- [Windows 10 KB5120249](https://support.microsoft.com/help/5120249)
+- [Windows Secure Boot certificate expiration and CA updates](https://support.microsoft.com/help/5062710)
+- [Tenable: Microsoft's August 2026 Patch Tuesday addresses 398 CVEs (CVE-2026-68820)](https://www.tenable.com/blog/microsofts-august-2026-patch-tuesday-addresses-398-cves-cve-2026-68820)

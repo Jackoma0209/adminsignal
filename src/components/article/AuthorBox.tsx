@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import type { Author } from '@/data/authors'
@@ -9,12 +10,22 @@ interface AuthorBoxProps {
 export default function AuthorBox({ author }: AuthorBoxProps) {
   return (
     <div className="flex items-start gap-4 rounded-xl border border-border bg-surface p-6">
-      <div
-        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary"
-        aria-hidden="true"
-      >
-        {author.initials}
-      </div>
+      {author.avatarUrl ? (
+        <Image
+          src={author.avatarUrl}
+          alt={`${author.name}, ${author.role}`}
+          width={48}
+          height={48}
+          className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-border"
+        />
+      ) : (
+        <div
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-bold text-primary"
+          aria-hidden="true"
+        >
+          {author.initials}
+        </div>
+      )}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-3">
           <p className="text-sm font-semibold text-foreground">{author.name}</p>

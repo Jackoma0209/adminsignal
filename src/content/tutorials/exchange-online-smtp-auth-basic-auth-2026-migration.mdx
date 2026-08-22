@@ -216,6 +216,16 @@ For mailbox controls:
 
 The admin centre checkbox maps to the mailbox SMTP AUTH setting. It does not prove that the sender is using Basic Authentication. Use the SMTP AUTH Clients report and Entra sign-in logs for observed authentication behaviour.
 
+<EvidenceCallout
+  type="screenshot"
+  title="Exchange admin centre SMTP AUTH Clients report"
+  image="/images/evidence/eac-smtp-auth-clients.png"
+  imageAlt="Redacted Exchange admin centre SMTP AUTH clients report sorted with Basic Auth first, mailbox names masked, and a TLS 1.0 row highlighted"
+  capture="Exchange admin centre > Reports > Mail flow > SMTP AUTH Clients, sorted with Basic Auth first, including TLS version columns where available"
+  redact="Mailbox addresses, client IP addresses, and any application names that identify the organisation"
+  why="This report is observed use, not a mailbox checkbox. Printers and report servers that still submit with Basic Auth will not appear in a user MFA project, and they fail first when SMTP AUTH is closed."
+/>
+
 ## Microsoft Entra Sign-In Log Checks
 
 Use Microsoft Entra sign-in logs to find legacy authentication and failed sign-ins.

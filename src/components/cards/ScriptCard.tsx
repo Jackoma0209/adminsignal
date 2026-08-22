@@ -12,9 +12,9 @@ export default function ScriptCard({ script }: ScriptCardProps) {
     <article className="group flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-card transition-colors hover:border-border-strong hover:bg-surface-elevated/40">
       <div className="flex items-start justify-between gap-3">
         <Badge variant="language">{script.language}</Badge>
-        <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-400">
+        <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
           <FileWarning className="h-3.5 w-3.5" aria-hidden="true" />
-          Incomplete source
+          Notes only
         </span>
       </div>
 
@@ -45,7 +45,7 @@ export default function ScriptCard({ script }: ScriptCardProps) {
       )}
 
       <div className="mt-auto flex items-center justify-between">
-        <span className="text-xs text-muted/60">Reference pattern · no complete file</span>
+        <span className="text-xs text-muted/60">Implementation notes</span>
         <Link
           href={`/scripts/${script.slug}`}
           className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"

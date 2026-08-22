@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>IME health output</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="term-wrap capture">
+    <div class="term-bar">
+      <div class="lights"><i></i><i></i><i></i></div>
+      PowerShell — device under investigation
+    </div>
+    <div class="term-body"><span class="prompt">PS C:\Windows\system32&gt;</span> <span class="cmd">Get-Service IntuneManagementExtension | Select-Object Name, Status, StartType</span>
+
+<span class="head">Name                       Status  StartType</span>
+<span class="head">----                       ------  ---------</span>
+IntuneManagementExtension  Running Automatic
+
+<span class="prompt">PS C:\Windows\system32&gt;</span> <span class="cmd">$ImeExe = "${env:ProgramFiles(x86)}\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe"</span>
+<span class="prompt">PS C:\Windows\system32&gt;</span> <span class="cmd">Get-Item $ImeExe | Select-Object FullName, LastWriteTime, @{n="Version";e={$_.VersionInfo.FileVersion}}</span>
+
+<span class="head">FullName      :</span> C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe
+<span class="head">LastWriteTime :</span> 18 August 2026 07:41:12
+<span class="head">Version       :</span> 1.86.108.0
+
+<span class="prompt">PS C:\Windows\system32&gt;</span> <span class="cmd">Get-ChildItem "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs" | Select-Object Name, Length, LastWriteTime</span>
+
+<span class="head">Name                          Length LastWriteTime</span>
+<span class="head">----                          ------ -------------</span>
+IntuneManagementExtension.log 248811 22 August 2026 08:14:03
+AppWorkload.log               891204 22 August 2026 08:13:57
+AgentExecutor.log              44120 22 August 2026 08:12:41
+
+<span class="warn"># Log timestamps are current. Device name and tenant identifiers omitted.</span>
+<span class="prompt">PS C:\Windows\system32&gt;</span> </div>
+  </div>
+</body>
+</html>

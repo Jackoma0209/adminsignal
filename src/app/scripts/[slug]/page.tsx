@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return withNoindex(
     buildArticleMetadata({
       title: `${script.title}: implementation pattern`,
-      description: `${script.description} Complete source is not currently published; this page is an implementation reference and is excluded from search indexing.`,
+      description: `${script.description} This page is an implementation note with example fragments, not a complete script release, and is excluded from search indexing.`,
       url: `${siteUrl}/scripts/${slug}`,
       category: script.language,
       tags: script.tags,
@@ -72,7 +72,7 @@ export default async function ScriptDetailPage({ params }: Props) {
       href: `/scripts/${item.slug}`,
       type: 'script' as const,
       excerpt: item.description,
-      meta: 'Implementation pattern · complete source unavailable',
+      meta: 'Implementation notes',
     }))
 
   const pageUrl = `${siteUrl}/scripts/${slug}`
@@ -133,10 +133,12 @@ export default async function ScriptDetailPage({ params }: Props) {
                 </div>
               </header>
 
-              <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm leading-relaxed text-muted">
-                <h2 className="font-semibold text-foreground">Incomplete resource — not a downloadable script</h2>
+              <div className="mb-6 rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+                <h2 className="font-semibold text-foreground">Implementation notes — example fragments only</h2>
                 <p className="mt-2">
-                  This page contains implementation guidance and example fragments. It does not provide a complete .ps1 file, release package, reproducible test record, or source-history link. It is excluded from search indexing and must not be represented as production-ready automation.
+                  This page records design guidance, permissions, and command shape. It is not a
+                  complete .ps1 file, signed release, or production-ready automation. Rebuild any
+                  implementation from reviewed requirements and test it on authorised systems.
                 </p>
               </div>
 
@@ -167,7 +169,8 @@ export default async function ScriptDetailPage({ params }: Props) {
                 <div className="rounded-xl border border-border bg-surface p-5 text-xs leading-relaxed text-muted">
                   <p className="font-semibold text-foreground">Indexing status</p>
                   <p className="mt-2">
-                    Noindex until complete source, dependencies, parameters, error handling, validation, rollback guidance, and version history are published.
+                    These notes stay out of search results because they are implementation
+                    fragments, not complete script releases.
                   </p>
                 </div>
               </div>

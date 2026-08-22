@@ -16,10 +16,10 @@ export interface Author {
 /** Primary site author / founder */
 export const primaryAuthor: Author = {
   id: 'jack',
-  name: 'Jack',
-  role: 'Endpoint Specialist and AdminSignal Author',
-  bio: 'I publish independent, source-backed guidance for Windows endpoint management, Microsoft Intune, Active Directory, PowerShell, and related Microsoft administration work. Articles focus on prerequisites, validation, operational risk, and safe rollout decisions, with examples and limitations labelled clearly.',
-  initials: 'J',
+  name: 'Jack Hadcroft',
+  role: 'Endpoint specialist and author of AdminSignal',
+  bio: 'Jack Hadcroft is an endpoint specialist working with Microsoft Intune, Windows clients, Microsoft Entra ID, Group Policy, and PowerShell in Microsoft 365 estates. He publishes independent, source-backed guidance that focuses on prerequisites, validation evidence, operational risk, and safe rollout decisions, with examples and limitations labelled clearly.',
+  initials: 'JH',
   avatarUrl: '/images/authors/jack.jpg',
   linkedIn: 'https://www.linkedin.com/in/jack-hadcroft-5710a068',
   github: 'https://github.com/Jackoma0209',

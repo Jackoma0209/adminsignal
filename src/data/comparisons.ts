@@ -61,7 +61,7 @@ export const comparisons: Comparison[] = [
   },
   {
     id: '1',
-    title: 'Microsoft Intune vs. SCCM/MECM in 2025: Which Should You Use?',
+    title: 'Microsoft Intune vs. SCCM/MECM: Which Should You Use?',
     slug: 'intune-vs-sccm-mecm-2025',
     category: 'Endpoint Management',
     excerpt:
@@ -71,8 +71,8 @@ export const comparisons: Comparison[] = [
     winner: 'Microsoft Intune',
     verdict:
       'For new cloud-managed endpoints, Intune is usually the right starting point. SCCM still has a role in complex OSD, large software distribution, detailed on-prem reporting, and restricted networks. Many estates need staged co-management rather than a rushed replacement.',
-    date: 'Mar 24, 2025',
-    publishedAt: '2025-03-24',
+    date: 'Mar 27, 2026',
+    publishedAt: '2026-03-27',
     readTime: '12 min read',
     authorId: 'jack',
     tags: ['Intune', 'SCCM', 'MECM', 'Co-management'],
@@ -89,8 +89,8 @@ export const comparisons: Comparison[] = [
     productB: 'CrowdStrike Falcon',
     verdict:
       'For Microsoft-centred environments already on E5, Defender for Endpoint is often easier to operate. CrowdStrike remains strong where investigation depth, cross-platform coverage, and specialist SOC workflows matter more than licensing consolidation.',
-    date: 'Mar 10, 2025',
-    publishedAt: '2025-03-10',
+    date: 'Mar 25, 2026',
+    publishedAt: '2026-03-25',
     readTime: '11 min read',
     authorId: 'jack',
     tags: ['Microsoft Defender for Endpoint', 'CrowdStrike', 'EDR', 'Endpoint Security'],
@@ -108,8 +108,8 @@ export const comparisons: Comparison[] = [
     winner: 'Entra ID P2',
     verdict:
       'P2 is worthwhile when privileged access, external access reviews, or compliance evidence are owned operational processes. For smaller tenants without those drivers, P1 covers Conditional Access and SSPR fundamentals well.',
-    date: 'Feb 20, 2025',
-    publishedAt: '2025-02-20',
+    date: 'Mar 24, 2026',
+    publishedAt: '2026-03-24',
     readTime: '8 min read',
     authorId: 'jack',
     tags: ['Microsoft Entra ID', 'Conditional Access', 'PIM', 'Identity'],

@@ -130,6 +130,16 @@ In the Intune admin centre, check the Autopilot list first:
 
 Do not rely only on **Devices > Windows devices**. A newly imported Autopilot device appears in the Autopilot devices list before it becomes an enrolled Intune managed device.
 
+<EvidenceCallout
+  type="screenshot"
+  title="Windows Autopilot devices list after CSV import"
+  image="/images/evidence/intune-autopilot-devices.png"
+  imageAlt="Redacted Windows Autopilot devices list showing Assigned, Not assigned, and Assigning profile status with serial numbers and UPNs masked"
+  capture="Intune admin centre > Devices > Windows > Windows enrolment > Windows Autopilot devices, searched by serial, with Group tag, Assigned user, Profile status, and Date assigned columns visible"
+  redact="Serial numbers, group tags that identify sites, assigned UPNs, and tenant name"
+  why="Import success and profile assignment are different states. If the device is missing here, later Entra or Intune device-object cleanup is the wrong investigation."
+/>
+
 ## Step 2: Collect the Hardware Hash Cleanly
 
 For a manual import, collect the hash from the device that will actually go through Autopilot. Microsoft documents `Get-WindowsAutopilotInfo` for this purpose.

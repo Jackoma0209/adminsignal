@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Microsoft Intune'
 const topicDescription =
-  'Verified AdminSignal coverage for Microsoft Intune, including device management, compliance, application deployment, reporting, remediation, and supported Windows provisioning workflows.'
+  'Published AdminSignal coverage for Microsoft Intune: Settings Catalog migration, Windows Update rings, Win32 app failures, device sync, remediations, Company Portal enrolment, and Autopilot hardware-hash imports.'
 const topicPath = '/intune'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 

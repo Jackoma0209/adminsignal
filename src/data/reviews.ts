@@ -50,8 +50,8 @@ export const reviews: Review[] = [
     ],
     summary:
       'Falcon Go may belong on a shortlist for smaller teams seeking a dedicated endpoint-protection product, but package boundaries, investigation depth, update control, support, and coexistence with Microsoft Defender must be verified before purchase.',
-    date: 'Mar 18, 2025',
-    publishedAt: '2025-03-18',
+    date: 'Mar 29, 2026',
+    publishedAt: '2026-03-29',
     readTime: '8 min read',
     authorId: 'jack',
     isFeatured: true,
@@ -76,8 +76,8 @@ export const reviews: Review[] = [
     ],
     summary:
       'Nerdio is worth structured evaluation where AVD or Windows 365 administration creates sustained operational overhead. Licensing, delegated access, reporting, change control, and fallback processes need tenant-specific validation.',
-    date: 'Feb 28, 2025',
-    publishedAt: '2025-02-28',
+    date: 'Mar 26, 2026',
+    publishedAt: '2026-03-26',
     readTime: '10 min read',
     authorId: 'jack',
     isFeatured: true,
@@ -102,8 +102,8 @@ export const reviews: Review[] = [
     ],
     summary:
       'Veeam can be evaluated where the organisation wants a Microsoft 365 backup platform and is prepared to own the selected operating model. Storage, permissions, recovery objectives, restore testing, and ongoing administration require explicit design decisions.',
-    date: 'Feb 10, 2025',
-    publishedAt: '2025-02-10',
+    date: 'Mar 24, 2026',
+    publishedAt: '2026-03-24',
     readTime: '9 min read',
     authorId: 'jack',
     isFeatured: true,

@@ -44,10 +44,10 @@ Keep that flag `false` until a Google-certified CMP integrated with IAB Europe's
 
 ## Script Library Status
 
-The `/scripts` pages currently provide implementation guidance, prerequisites, permissions, examples, validation steps, safety notes, and expected output. Complete `.ps1` source files are not present in this repo yet, so every script page displays an honest source-status notice:
+The `/scripts` pages currently provide implementation notes: prerequisites, permissions, example fragments, validation steps, safety notes, and expected output. They are not a downloadable script catalogue. Complete `.ps1` source files are not in this repo, so every script page states that it is notes rather than a script release:
 
 ```text
-Complete .ps1 source is not published yet. This page is an implementation guide with example patterns, safety notes, and validation steps.
+This page is an implementation note with example fragments, not a complete script release.
 ```
 
 Add real GitHub or source-file links only after the complete script source exists and has been reviewed.

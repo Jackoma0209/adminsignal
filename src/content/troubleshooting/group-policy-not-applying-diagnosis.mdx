@@ -1,7 +1,7 @@
 ---
 title: "Group Policy Not Applying to Users or Computers: A Systematic Diagnosis"
 category: "Group Policy"
-date: "Mar 5, 2025"
+date: "Mar 27, 2026"
 authorId: "jack"
 lastReviewed: "Apr 27, 2026"
 reviewNote: "Added slow-link detection, replication health check, DC connectivity diagnosis, RSoP wizard steps, and known limitations section."
@@ -90,7 +90,7 @@ gpresult /R
 
 Look at the header output for the line:
 ```
-Group Policy was applied from: DC01.corp.contoso.com
+Group Policy was applied from: DC01.corp.example.com
 Group Policy slow link threshold: 500 kbps
 The computer is not using a slow link connection.
 ```
@@ -108,8 +108,8 @@ If gpresult shows no GPOs applied at all, the client is not reaching a domain co
 **Confirm DC connectivity from the client**:
 
 ```cmd
-nltest /dsgetdc:corp.contoso.com /force
-nslookup _ldap._tcp.dc._msdcs.corp.contoso.com
+nltest /dsgetdc:corp.example.com /force
+nslookup _ldap._tcp.dc._msdcs.corp.example.com
 ```
 
 If `nltest` fails, the client cannot locate a DC. Check:

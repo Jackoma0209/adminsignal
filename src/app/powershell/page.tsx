@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'PowerShell'
 const topicDescription =
-  'Verified PowerShell tutorials and troubleshooting for Windows, Microsoft 365, Graph API, endpoint reporting, and repeatable administrative automation.'
+  'Published PowerShell coverage currently on AdminSignal: AzureAD/MSOnline to Graph SDK migration, software inventory patterns, and Graph examples used in Intune and Microsoft 365 guides. This hub is not a downloadable script catalogue.'
 const topicPath = '/powershell'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -51,6 +51,24 @@ export default function PowerShellPage() {
       <TopicHubPageTemplate
         topicName={topicName}
         description={topicDescription}
+        introSections={[
+          {
+            title: 'Inventory the script before rewriting the cmdlet',
+            body: 'Most AzureAD and MSOnline failures are not a missing Graph equivalent. They are an undocumented identity, a write action nobody owns, or a scheduled task that still authenticates with a stored password. Capture the host, identity, permissions, output, and rollback owner before you replace a single command.',
+          },
+          {
+            title: 'Graph work is permission discovery, not search-and-replace',
+            body: 'Map the Graph resource, delegated versus application permissions, paging, and throttling for each script. A renamed cmdlet that still pulls every user in the tenant, or that silently uses the beta endpoint, is not a completed migration.',
+          },
+          {
+            title: 'Example fragments are not a script library',
+            body: 'AdminSignal PowerShell pages show command shape, expected output, and safety notes. They are not signed releases or copy-and-run production tools. Rebuild any automation from reviewed requirements and test it in an authorised lab first.',
+          },
+          {
+            title: 'When not to automate yet',
+            body: 'Do not wrap a write action — licence assignment, group membership, session revocation, or device delete — in a scheduled job until the read-only report is trusted and a named owner can reverse the change.',
+          },
+        ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}

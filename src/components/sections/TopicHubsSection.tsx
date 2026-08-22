@@ -12,7 +12,7 @@ export default function TopicHubsSection() {
         <SectionHeader
           eyebrow="Topic Hubs"
           title="Browse by discipline"
-          description="Focused hubs for every discipline in your stack — signals, guides, and scripts in one place."
+          description="Focused hubs that list only the published tutorials, troubleshooting guides, and news currently on AdminSignal."
           action={
             <Link
               href="/topics"

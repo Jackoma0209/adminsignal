@@ -197,6 +197,16 @@ AgentExecutor.log             <bytes>  <date and time>
 
 If the log files have not changed recently, the app may be waiting because IME is not checking in.
 
+<EvidenceCallout
+  type="output"
+  title="Intune Management Extension service, version, and log timestamps"
+  image="/images/evidence/pwsh-ime-health.png"
+  imageAlt="Redacted PowerShell output showing IntuneManagementExtension Running Automatic, agent version, and current AppWorkload.log timestamps"
+  capture="PowerShell Get-Service IntuneManagementExtension plus Get-Item on the IME executable and Get-ChildItem of C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs"
+  redact="Device name, user profile paths, and any tenant or app identifiers inside log file names"
+  why="A Waiting or Pending app is often an IME health problem, not a detection-rule problem. Fresh AppWorkload.log timestamps tell you whether the agent is even evaluating the package."
+/>
+
 Microsoft's IME documentation confirms that logs are normally under `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs`, and that IME check-in is separate from normal MDM sync: [Intune Management Extension for Windows](https://learn.microsoft.com/en-us/intune/device-management/tools/management-extension-windows).
 
 ## Step 3: Read the Right Logs

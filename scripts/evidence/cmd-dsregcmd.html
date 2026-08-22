@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>dsregcmd /status</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="term-wrap capture">
+    <div class="term-bar">
+      <div class="lights"><i></i><i></i><i></i></div>
+      Command Prompt — dsregcmd /status
+    </div>
+    <div class="term-body"><span class="prompt">C:\Windows\system32&gt;</span> <span class="cmd">dsregcmd /status</span>
+
++----------------------------------------------------------------------+
+| Device State                                                         |
++----------------------------------------------------------------------+
+
+<span class="head">             AzureAdJoined :</span> YES
+<span class="head">          EnterpriseJoined :</span> NO
+<span class="head">              DomainJoined :</span> YES
+<span class="head">                DomainName :</span> <span class="redact"></span>
+<span class="head">           WorkplaceJoined :</span> NO
+<span class="head">          DeviceAuthStatus :</span> SUCCESS
+
++----------------------------------------------------------------------+
+| Tenant Details                                                       |
++----------------------------------------------------------------------+
+
+<span class="head">                TenantName :</span> <span class="redact wide"></span>
+<span class="head">                  TenantId :</span> <span class="redact guid"></span>
+<span class="head">                       Idp :</span> login.windows.net
+
++----------------------------------------------------------------------+
+| MDM URLS                                                             |
++----------------------------------------------------------------------+
+
+<span class="head">                    MdmUrl :</span> https://enrollment.manage.microsoft.com/enrollmentserver/discovery.svc
+<span class="head">                 MdmTouUrl :</span> https://portal.manage.microsoft.com/TermsofUse.aspx
+<span class="head">          MdmComplianceUrl :</span> https://portal.manage.microsoft.com/?portalAction=Compliance
+
++----------------------------------------------------------------------+
+| SSO State                                                            |
++----------------------------------------------------------------------+
+
+<span class="head">                 AzureAdPrt :</span> YES
+<span class="head">        AzureAdPrtUpdateTime :</span> 2026-08-22 07:58:11.000 UTC
+
+<span class="warn">Tenant display name, TenantId, and domain name redacted.</span>
+<span class="prompt">C:\Windows\system32&gt;</span> </div>
+  </div>
+</body>
+</html>

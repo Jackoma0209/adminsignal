@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Patch Management'
 const topicDescription =
-  'Verified patch-management coverage for Windows Update for Business, Intune update policy, WSUS, rollout planning, compliance reporting, and update troubleshooting.'
+  'Published patch-management coverage currently on AdminSignal: Windows Update for Business rings in Intune, Patch Tuesday admin notes, and deferral-policy troubleshooting. This hub is not a WSUS administration manual.'
 const topicPath = '/patch-management'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 

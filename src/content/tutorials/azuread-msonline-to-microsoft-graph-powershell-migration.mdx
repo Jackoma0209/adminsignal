@@ -118,6 +118,16 @@ C:\Scripts\AppAudit.ps1    <n>        Get-AzureADApplication -All $true
 C:\Scripts\GroupSync.ps1   <n>        Add-AzureADGroupMember ...
 ```
 
+<EvidenceCallout
+  type="output"
+  title="Legacy module inventory from the automation share"
+  image="/images/evidence/pwsh-legacy-inventory.png"
+  imageAlt="Redacted PowerShell output of Select-String against AzureAD and MSOnline scripts, with object IDs and UPNs masked"
+  capture="PowerShell Select-String against the authorised script root, showing path, line number, and matching AzureAD or MSOnline calls"
+  redact="Server names, share paths that identify the organisation, and any user or app names inside the matched lines"
+  why="This output is the migration register. Without it, teams rewrite one visible script and leave scheduled MSOnline jobs running on another host."
+/>
+
 Create a migration register:
 
 | Field | Example shape |

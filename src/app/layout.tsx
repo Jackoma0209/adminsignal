@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 const SITE_NAME = 'AdminSignal'
 const SITE_URL = 'https://www.adminsignal.com'
 const SITE_DESCRIPTION =
-  'Source-backed tutorials, troubleshooting guides, and analysis for Microsoft Intune, Windows endpoints, PowerShell, Microsoft 365, and enterprise IT administration. Written by Jack, an endpoint specialist.'
+  'Source-backed tutorials, troubleshooting guides, and analysis for Microsoft Intune, Windows endpoints, PowerShell, Microsoft 365, and enterprise IT administration. Written by Jack Hadcroft, an endpoint specialist.'
 const OG_IMAGE = `${SITE_URL}/og-default.png`
 
 export const metadata: Metadata = {
@@ -57,11 +57,11 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: 'Jack',
+      name: 'Jack Hadcroft',
       url: `${SITE_URL}/about`,
     },
   ],
-  creator: 'Jack',
+  creator: 'Jack Hadcroft',
   publisher: SITE_NAME,
   robots: {
     index: true,

@@ -18,9 +18,9 @@ export interface Script {
 }
 
 /**
- * Incomplete implementation patterns. None of the entries below should be
- * described as tested, supported, downloadable, or production-ready until a
- * complete source file and reproducible validation record are published.
+ * Implementation notes. None of the entries below should be described as
+ * tested, supported, downloadable, or production-ready. They document
+ * command shape, permissions, and intended output only.
  */
 export const scripts: Script[] = [
   {

@@ -48,7 +48,9 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
               </div>
             ) : (
               <p className="mt-1">
-                Complete source is not published. This page contains design notes and example fragments only. It is not a downloadable, tested, supported, or production-ready script.
+                This page contains design notes and example fragments only. It is not a
+                downloadable, tested, supported, or production-ready script. Rebuild any
+                implementation from reviewed requirements.
               </p>
             )}
           </div>
@@ -98,7 +100,8 @@ export default function ScriptSafetyNotice({ script }: ScriptSafetyNoticeProps) 
               <div>
                 <p className="font-semibold text-foreground-soft">Publication state</p>
                 <p className="mt-1">
-                  Status: implementation pattern. Editorial label: {script.version}. No test date is claimed while complete source and reproducible evidence are unavailable.
+                  Status: implementation pattern. Editorial label: {script.version}. These notes
+                  are not a tested, signed, or supported script release.
                 </p>
               </div>
             </div>

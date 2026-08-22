@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Endpoint Security'
 const topicDescription =
-  'Verified endpoint-security coverage for Microsoft Defender, BitLocker, Windows hardening, local administrator control, compliance, and incident-focused troubleshooting.'
+  'Published endpoint-security coverage currently on AdminSignal: Defender for Endpoint with Intune, BitLocker escrow, Windows LAPS, CIS Level 1 hardening, and Secure Boot CA 2023 readiness.'
 const topicPath = '/endpoint-security'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 

@@ -9,6 +9,7 @@ import type { MDXComponents } from 'mdx/types'
 import type React from 'react'
 import CodeBlock from '@/components/ui/CodeBlock'
 import Checklist from '@/components/ui/Checklist'
+import EvidenceCallout from '@/components/article/EvidenceCallout'
 import { slugifyHeading } from '@/lib/content'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -98,4 +99,5 @@ export const mdxComponents: MDXComponents = {
   pre: Pre,
   table: Table,
   Checklist,
+  EvidenceCallout,
 }

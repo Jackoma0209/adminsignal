@@ -5,9 +5,9 @@ import CategoryPageTemplate from '@/components/templates/CategoryPageTemplate'
 import { buildCategoryMetadata } from '@/lib/metadata'
 import { withNoindex } from '@/lib/noindex'
 
-const pageTitle = 'PowerShell Implementation Patterns'
+const pageTitle = 'PowerShell Implementation Notes'
 const pageDescription =
-  'Reference notes and example patterns for endpoint administration. Complete downloadable source files are not currently published, so this archive is excluded from search indexing.'
+  'Design notes and example fragments for endpoint administration. These pages document permissions, assumptions, and command shape. They are not a downloadable script catalogue and are excluded from search indexing.'
 const pagePath = '/scripts'
 
 export const metadata: Metadata = withNoindex(
@@ -34,17 +34,20 @@ export default async function ScriptsPage({
     <CategoryPageTemplate
       eyebrow="Reference archive"
       title={pageTitle}
-      description="Implementation notes for endpoint management, reporting, and automation. These pages contain examples and design guidance, not complete copy-and-run source files."
+      description="Implementation notes for endpoint management, reporting, and automation. Each page records example fragments, permissions, and validation checks. None of these pages is a complete copy-and-run source file."
       itemCount={filtered.length}
-      itemLabel="patterns"
+      itemLabel="notes"
       categories={languages}
       activeCategory={category}
       basePath="/scripts"
     >
-      <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/5 p-5 text-sm leading-relaxed text-muted">
-        <h2 className="font-semibold text-foreground">Why this archive is not indexed</h2>
+      <div className="mb-8 rounded-xl border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+        <h2 className="font-semibold text-foreground">What these pages are</h2>
         <p className="mt-2">
-          Complete .ps1 files, test evidence, release packages, and source-history links are not yet available. Until each resource can stand alone as a complete and reviewable script, AdminSignal treats these pages as supporting implementation patterns and keeps them out of search results and the XML sitemap.
+          AdminSignal publishes implementation notes here so an administrator can see the intended
+          inputs, permissions, and output shape before rebuilding a report or lab workflow. The
+          archive is kept out of search results because the pages are notes, not complete script
+          releases.
         </p>
       </div>
 
@@ -52,19 +55,22 @@ export default async function ScriptsPage({
         <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
           <h2 className="mb-2 text-sm font-semibold text-foreground">Safe use</h2>
           <p>
-            Read prerequisites and permissions first. Replace example values, review every command, and test only on authorised lab or pilot systems.
+            Read prerequisites and permissions first. Replace example values, review every command,
+            and test only on authorised lab or pilot systems.
           </p>
         </section>
         <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-          <h2 className="mb-2 text-sm font-semibold text-foreground">What is missing</h2>
+          <h2 className="mb-2 text-sm font-semibold text-foreground">What is included</h2>
           <p>
-            The archive does not yet provide complete source files, signed releases, automated tests, reproducible test environments, or a public issue history.
+            Example fragments, environment assumptions, required permissions, intended output, and
+            safety notes. Rebuild any implementation from reviewed requirements.
           </p>
         </section>
         <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-          <h2 className="mb-2 text-sm font-semibold text-foreground">Publication threshold</h2>
+          <h2 className="mb-2 text-sm font-semibold text-foreground">What is not included</h2>
           <p>
-            A page will become indexable only after its complete source, dependencies, parameters, error handling, validation, rollback guidance, and version history are published and reviewed.
+            Complete .ps1 files, signed releases, automated tests, and a public issue history. Do
+            not treat a fragment on this site as production automation.
           </p>
         </section>
       </div>

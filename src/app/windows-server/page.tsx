@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Windows Server'
 const topicDescription =
-  'Verified Windows Server coverage for Active Directory, DNS, DHCP, patching, hardening, backup, monitoring, and administrative troubleshooting.'
+  'Published Windows Server coverage currently on AdminSignal: Group Policy processing against Active Directory, and Secure Boot CA 2023 readiness for server fleets. This hub does not yet include DNS, DHCP, backup, or monitoring tutorials.'
 const topicPath = '/windows-server'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 

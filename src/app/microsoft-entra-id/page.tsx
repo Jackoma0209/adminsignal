@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Microsoft Entra ID'
 const topicDescription =
-  'Verified Microsoft Entra ID coverage for identity management, Conditional Access, privileged access, app registrations, device identity, and audit-focused troubleshooting.'
+  'Published Microsoft Entra ID coverage currently on AdminSignal: Conditional Access baselines, emergency access accounts, and dynamic group troubleshooting. This hub does not yet include PIM or SSPR walkthroughs.'
 const topicPath = '/microsoft-entra-id'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -51,6 +51,24 @@ export default function MicrosoftEntraIdPage() {
       <TopicHubPageTemplate
         topicName={topicName}
         description={topicDescription}
+        introSections={[
+          {
+            title: 'Start with Conditional Access and emergency access',
+            body: 'The published Entra articles on this site are the Conditional Access policy map, emergency access account design, and dynamic group troubleshooting. Those three topics cause more tenant lockouts and assignment misses than most portal walkthroughs admit.',
+          },
+          {
+            title: 'Dynamic groups are an assignment dependency, not a nice-to-have',
+            body: 'Intune, Autopilot, and licence assignment all fail quietly when a dynamic rule does not match. Capture the rule, the user or device attribute, and the processing timestamp before rebuilding the group.',
+          },
+          {
+            title: 'Break-glass is an operations control',
+            body: 'Emergency accounts need cloud-only identities, phishing-resistant factors or offline custody, Conditional Access exclusions that are monitored, and a quarterly live test. An unused Global Administrator in a password manager is not a recovery plan.',
+          },
+          {
+            title: 'What this hub will not claim',
+            body: 'There are no published PIM, SSPR, or app-registration hardening tutorials here yet. Those topics stay off this page until a complete, sourced article exists.',
+          },
+        ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}

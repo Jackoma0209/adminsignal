@@ -2,7 +2,7 @@
 title: "Export-IntuneDeviceReport"
 category: "PowerShell"
 language: "PowerShell"
-date: "Feb 2025"
+date: "Mar 2026"
 authorId: "jack"
 lastReviewed: "Apr 27, 2026"
 tags: ["Intune", "Graph API", "Reporting", "Inventory"]
@@ -53,8 +53,8 @@ Get-InstalledModule Microsoft.Graph | Select-Object Name, Version
 ### Option 1: Service Principal with Client Secret (simplest, less secure)
 
 ```powershell
-Export-IntuneDeviceReport -TenantId  "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
-                          -ClientId  "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
+Export-IntuneDeviceReport -TenantId  '<tenant-id>' `
+                          -ClientId  '<app-id>' `
                           -ClientSecret $secret `
                           -OutputFormat CSV -OutputPath C:\Reports\Intune
 ```
@@ -73,9 +73,9 @@ $secret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto(
 ### Option 2: Service Principal with Certificate (recommended for automation)
 
 ```powershell
-Export-IntuneDeviceReport -TenantId    "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
-                          -ClientId    "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
-                          -CertThumbprint "ABCDEF1234567890ABCDEF1234567890ABCDEF12" `
+Export-IntuneDeviceReport -TenantId    '<tenant-id>' `
+                          -ClientId    '<app-id>' `
+                          -CertThumbprint '<certificate-thumbprint>' `
                           -OutputFormat Both -OutputPath C:\Reports\Intune
 ```
 
@@ -108,8 +108,8 @@ Interactive mode uses `Connect-MgGraph` with Delegated permissions. The signed-i
 **Full Windows inventory with compliance data, CSV and JSON output:**
 
 ```powershell
-Export-IntuneDeviceReport -TenantId  "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" `
-                          -ClientId  "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy" `
+Export-IntuneDeviceReport -TenantId  '<tenant-id>' `
+                          -ClientId  '<app-id>' `
                           -ClientSecret $secret `
                           -OutputFormat Both `
                           -OutputPath C:\Reports\Intune `

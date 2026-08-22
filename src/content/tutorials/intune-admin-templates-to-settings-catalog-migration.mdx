@@ -134,6 +134,16 @@ TenantId : <tenant-id>
 Scopes   : {DeviceManagementConfiguration.Read.All, DeviceManagementManagedDevices.Read.All, Group.Read.All...}
 ```
 
+<EvidenceCallout
+  type="screenshot"
+  title="Intune configuration list with old Administrative Templates still assigned"
+  image="/images/evidence/intune-configuration.png"
+  imageAlt="Redacted Microsoft Intune configuration policies list showing Settings catalog and Administrative templates profile types with masked assignment groups"
+  capture="Intune admin centre > Devices > Manage devices > Configuration, filtered to Windows policies, showing profile type, assignment count, and last modified date"
+  redact="Tenant name, group names, and any device or user identifiers in the assignment column"
+  why="The migration starts from this inventory. If an old Administrative Templates profile is still assigned to production devices, replacing it without a pilot group changes behaviour for the whole ring."
+/>
+
 Use write scopes only when you are ready to create, assign or change policy. Most migration planning should be read-only.
 
 ## Administrative Templates vs Settings Catalog

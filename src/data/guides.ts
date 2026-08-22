@@ -190,7 +190,7 @@ export const guides: Guide[] = [
       src: '/images/article-covers/windows-11-25h2-autopilot-v2.svg',
       alt: 'Abstract device provisioning flow with staged deployment rings',
     },
-    isFeatured: true,
+    isFeatured: false,
   },
   {
     id: '1',
@@ -199,8 +199,8 @@ export const guides: Guide[] = [
     category: 'Microsoft Intune',
     excerpt:
       'A step-by-step guide to rolling out Windows Local Administrator Password Solution across your Intune-managed fleet, including policy configuration, reporting, and migration from legacy LAPS.',
-    date: 'Mar 20, 2025',
-    publishedAt: '2025-03-20',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '14 min read',
     difficulty: 'Intermediate',
     authorId: 'jack',
@@ -218,8 +218,8 @@ export const guides: Guide[] = [
     category: 'Endpoint Security',
     excerpt:
       'Apply the CIS Level 1 benchmark to Windows 11 22H2 and 24H2 endpoints using Group Policy, Intune profiles, and a validation script that reports compliance gaps.',
-    date: 'Mar 14, 2025',
-    publishedAt: '2025-03-14',
+    date: 'Mar 28, 2026',
+    publishedAt: '2026-03-28',
     readTime: '20 min read',
     difficulty: 'Advanced',
     authorId: 'jack',
@@ -237,8 +237,8 @@ export const guides: Guide[] = [
     category: 'Microsoft Intune',
     excerpt:
       'Windows Autopilot v2 changes how enrollment profiles work. This guide covers device preparation, the Enrollment Status Page, and a decision tree for diagnosing the most common deployment failures.',
-    date: 'Mar 7, 2025',
-    publishedAt: '2025-03-07',
+    date: 'Mar 27, 2026',
+    publishedAt: '2026-03-27',
     readTime: '16 min read',
     difficulty: 'Intermediate',
     authorId: 'jack',
@@ -247,7 +247,7 @@ export const guides: Guide[] = [
       src: '/images/article-covers/autopilot-v2-enrollment-esp-troubleshooting.svg',
       alt: 'Abstract setup progress ring with diagnostic nodes for Autopilot troubleshooting',
     },
-    isFeatured: true,
+    isFeatured: false,
   },
   {
     id: '4',
@@ -256,8 +256,8 @@ export const guides: Guide[] = [
     category: 'PowerShell',
     excerpt:
       'Use WMI, the registry, and a lightweight SQLite output to build a software inventory pipeline that runs without an RMM agent — useful for legacy environments and incident response.',
-    date: 'Feb 28, 2025',
-    publishedAt: '2025-02-28',
+    date: 'Mar 26, 2026',
+    publishedAt: '2026-03-26',
     readTime: '18 min read',
     difficulty: 'Intermediate',
     authorId: 'jack',
@@ -274,8 +274,8 @@ export const guides: Guide[] = [
     category: 'Microsoft Entra ID',
     excerpt:
       'A policy-by-policy walkthrough of building a Conditional Access baseline for Microsoft 365, from MFA requirements and compliant device enforcement to emergency access accounts.',
-    date: 'Feb 21, 2025',
-    publishedAt: '2025-02-21',
+    date: 'Mar 25, 2026',
+    publishedAt: '2026-03-25',
     readTime: '22 min read',
     difficulty: 'Advanced',
     authorId: 'jack',
@@ -292,8 +292,8 @@ export const guides: Guide[] = [
     category: 'Group Policy',
     excerpt:
       'A practical troubleshooting methodology for Group Policy: reading RSoP, interpreting gpresult /h output, diagnosing WMI filter failures, and resolving OUlinking conflicts.',
-    date: 'Feb 14, 2025',
-    publishedAt: '2025-02-14',
+    date: 'Mar 24, 2026',
+    publishedAt: '2026-03-24',
     readTime: '12 min read',
     difficulty: 'Beginner',
     authorId: 'jack',

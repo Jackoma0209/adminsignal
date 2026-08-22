@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Group Policy'
 const topicDescription =
-  'Verified Group Policy coverage for GPO design, processing order, scope, RSoP, gpresult, troubleshooting, and coexistence with cloud-managed policy.'
+  'Published Group Policy coverage currently on AdminSignal: RSoP and gpresult diagnosis, scope and processing failures, and coexistence with Intune Settings Catalog.'
 const topicPath = '/group-policy'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 

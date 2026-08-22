@@ -183,8 +183,8 @@ The Intune to Defender connection is a tenant level integration. Microsoft docum
 Check the connection before policy creation:
 
 1. Open the Microsoft Intune admin centre.
-2. Go to **Endpoint security > Microsoft Defender for Endpoint**.
-3. Check **Connection status**.
+2. Go to **Tenant administration > Connectors and tokens > Microsoft Defender for Endpoint**.
+3. Check **Connection status**. Microsoft currently documents this as **Connected** when the service-to-service link is healthy.
 4. If it is not enabled, open the Microsoft Defender portal.
 5. Go to **System > Settings > Endpoints > General > Advanced features**.
 6. Turn on **Microsoft Intune connection**.
@@ -201,6 +201,16 @@ Record these values:
 | Defender portal access | Admin can open device inventory and configuration management areas |
 | Scope tags | Confirm whether Endpoint security policies need scope tags |
 | RBAC | Confirm who can create, assign, report and troubleshoot |
+
+<EvidenceCallout
+  type="screenshot"
+  title="Intune Defender for Endpoint connection status"
+  image="/images/evidence/intune-defender-connector.png"
+  imageAlt="Redacted Microsoft Intune connector page showing Microsoft Defender for Endpoint connection status as Connected, with the tenant identifier masked"
+  capture="Intune admin centre > Tenant administration > Connectors and tokens > Microsoft Defender for Endpoint, showing Connection status and the Windows compliance policy evaluation toggle"
+  redact="Tenant name, any device counts, and operator account identifiers"
+  why="Onboarding policy and device-risk compliance both depend on this tenant connection. If the status is not enabled, later Sense-service checks will look like device problems when the connector is the actual gap."
+/>
 
 If the connection is not enabled, the EDR onboarding policy may require manual onboarding blob handling rather than the recommended automatic package from the connector. Treat that as a setup problem, not as a reason to rush a manual workaround.
 

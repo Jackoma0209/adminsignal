@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Emergency access accounts</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="capture" style="position: relative">
+    <div class="badge">Redacted example</div>
+    <div class="browser-chrome">
+      <div class="tabs"><div class="tab"><span class="dot"></span>All users | Microsoft Entra</div></div>
+      <div class="omnibox"><span class="lock"></span>entra.microsoft.com/#view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers</div>
+    </div>
+    <div class="shell">
+      <header class="topbar">
+        <div class="waffle"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="product">Microsoft Entra</div>
+        <div class="search">Search</div>
+        <div class="top-right">
+          <span class="redact wide"></span>
+          <div class="avatar">JH</div>
+        </div>
+      </header>
+      <nav class="nav">
+        <div class="section">Identity</div>
+        <a class="active">Users</a>
+        <a>Groups</a>
+        <a>Roles &amp; admins</a>
+        <a>Devices</a>
+        <a>Applications</a>
+        <a>Protection</a>
+        <a>Monitoring &amp; health</a>
+      </nav>
+      <main class="main">
+        <div class="crumbs">Identity &gt; Users &gt; <b>All users</b></div>
+        <h1>Users</h1>
+        <p class="lede">Filter to the two cloud-only emergency accounts. Both must be enabled, not directory synced, and hold Global Administrator.</p>
+        <div class="toolbar">
+          <button class="btn primary">New user</button>
+          <button class="btn">Refresh</button>
+          <span style="margin-left:auto;font-size:12px;color:#605e5c">Filter: display name starts with Emergency Access</span>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Display name</th>
+                <th>User principal name</th>
+                <th>Identities</th>
+                <th>Directory synced</th>
+                <th>Account enabled</th>
+                <th>Assigned roles</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Emergency Access 01</td>
+                <td>breakglass-01@example.onmicrosoft.com</td>
+                <td>Microsoft Entra</td>
+                <td><span class="pill ok">No</span></td>
+                <td><span class="pill ok">Yes</span></td>
+                <td>Global Administrator</td>
+              </tr>
+              <tr>
+                <td>Emergency Access 02</td>
+                <td>breakglass-02@example.onmicrosoft.com</td>
+                <td>Microsoft Entra</td>
+                <td><span class="pill ok">No</span></td>
+                <td><span class="pill ok">Yes</span></td>
+                <td>Global Administrator</td>
+              </tr>
+              <tr>
+                <td><span class="redact wide"></span></td>
+                <td><span class="redact wide"></span></td>
+                <td>Windows Server AD</td>
+                <td><span class="pill warn">Yes</span></td>
+                <td><span class="pill ok">Yes</span></td>
+                <td>User</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

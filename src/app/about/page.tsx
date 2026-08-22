@@ -11,9 +11,9 @@ const ABOUT_URL = `${SITE_URL}/about`
 const AUTHOR_ID = `${ABOUT_URL}#jack`
 const ORGANIZATION_ID = `${SITE_URL}#organization`
 
-const title = 'About Jack and AdminSignal'
+const title = 'About Jack Hadcroft and AdminSignal'
 const description =
-  'Learn who writes AdminSignal, what the publication covers, and how technical guidance, examples, sources, corrections, and commercial content are handled.'
+  'Jack Hadcroft is an endpoint specialist and the author of AdminSignal, an independent publication for Microsoft Intune, Windows, Entra ID, PowerShell, and Microsoft 365 administrators.'
 
 export const metadata: Metadata = {
   title,
@@ -44,6 +44,22 @@ const coverageTopics = [
   'endpoint security',
 ]
 
+const audience = [
+  'Intune and endpoint engineers planning a change, not just reading a feature list',
+  'Windows administrators who need prerequisites, logs, and rollback criteria',
+  'Identity and messaging admins dealing with Conditional Access, MFA, or SMTP AUTH cutovers',
+  'Helpdesk leads who need a diagnosis order they can hand to a technician',
+]
+
+const willNotPublish = [
+  'Microsoft Learn rewrites that add no operational interpretation, validation, or risk callouts',
+  'Invented deployments, fake screenshots, unverified certifications, or inflated job titles',
+  'Numerical product ratings or “best tool” lists without documented evaluation evidence',
+  'Complete script downloads presented as tested or production-ready when only fragments exist',
+  'Hub pages that advertise tutorials, products, or coverage the site does not actually have',
+  'Automatic site-wide freshness dates used as a substitute for an article-level review',
+]
+
 const methodology = [
   'Start with a defined administrative task, failure state, rollout decision, or reporting need.',
   'Check product behaviour, portal paths, permissions, and support boundaries against current primary documentation where available.',
@@ -52,32 +68,35 @@ const methodology = [
   'Correct material errors and record meaningful updates on the affected article rather than advancing a generic site-wide date.',
 ]
 
-const limitations = [
-  'An example environment is not evidence that a configuration works unchanged in every tenant or estate.',
-  'A buyer note is not a lab benchmark, deployment case study, or claim of firsthand product use unless the page explicitly documents that evidence.',
-  'PowerShell fragments and implementation patterns are not represented as complete downloadable scripts.',
-  'Microsoft licensing, product names, portal paths, and feature availability can change after publication.',
-]
-
 const selectedReading = [
+  {
+    title: 'Migrating AzureAD and MSOnline scripts to Microsoft Graph PowerShell',
+    href: '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration',
+    type: 'Tutorial',
+  },
   {
     title: 'Migrating Intune Administrative Templates to Settings Catalog',
     href: '/tutorials/intune-admin-templates-to-settings-catalog-migration',
     type: 'Tutorial',
   },
   {
-    title: 'Secure Boot CA 2023 Rollout Readiness',
-    href: '/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness',
+    title: 'Rolling out Microsoft Defender for Endpoint with Intune',
+    href: '/tutorials/microsoft-defender-for-endpoint-intune-rollout',
     type: 'Tutorial',
   },
   {
-    title: 'Intune Remediation Script Not Running',
-    href: '/troubleshooting/intune-remediation-script-not-running',
+    title: 'Exchange Online SMTP AUTH Basic Authentication migration',
+    href: '/tutorials/exchange-online-smtp-auth-basic-auth-2026-migration',
+    type: 'Tutorial',
+  },
+  {
+    title: 'Windows Autopilot device not importing a hardware hash',
+    href: '/troubleshooting/autopilot-device-not-importing-hardware-hash',
     type: 'Troubleshooting',
   },
   {
-    title: 'Intune Device Not Syncing',
-    href: '/troubleshooting/intune-device-not-syncing',
+    title: 'Intune Win32 app install stuck at waiting or failed',
+    href: '/troubleshooting/intune-win32-app-install-stuck-waiting',
     type: 'Troubleshooting',
   },
 ]
@@ -132,13 +151,18 @@ export default function AboutPage() {
                 About the publication
               </p>
               <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
-                About Jack and AdminSignal
+                About Jack Hadcroft and AdminSignal
               </h1>
               <p className="mt-5 text-lg leading-relaxed text-foreground-soft">
-                I am Jack, an endpoint specialist and the author of AdminSignal. I publish independent technical guidance for administrators working with Windows endpoints, Microsoft Intune, Active Directory, PowerShell, Microsoft 365, identity, patching, and endpoint security.
+                I am Jack Hadcroft, an endpoint specialist and the author of AdminSignal. I work with
+                Microsoft Intune, Windows clients, Microsoft Entra ID, Group Policy, and PowerShell
+                in Microsoft 365 estates, and I publish independent technical guidance for
+                administrators who have to make those platforms survive a change window.
               </p>
               <p className="mt-4 text-base leading-relaxed text-muted">
-                The purpose of the site is practical: explain the checks, evidence, risks, and decision points that are often missing from a short product document or portal walkthrough. The site does not use inflated job titles, unverified certifications, invented deployments, or automatic freshness dates as substitutes for useful content.
+                AdminSignal exists to record the checks, evidence, risks, and decision points that
+                are often missing from a short product document or portal walkthrough. The site is
+                written for practising Microsoft administrators, not for generic IT round-ups.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 <Link
@@ -207,13 +231,24 @@ export default function AboutPage() {
       <Container>
         <div className="grid gap-12 py-14 lg:grid-cols-[minmax(0,1fr)_320px] lg:py-16">
           <main className="space-y-14">
-            <section aria-labelledby="scope-heading">
-              <h2 id="scope-heading" className="text-2xl font-bold tracking-tight text-foreground">
-                Editorial scope
+            <section aria-labelledby="who-heading">
+              <h2 id="who-heading" className="text-2xl font-bold tracking-tight text-foreground">
+                Who the site is for
               </h2>
               <p className="mt-4 text-base leading-relaxed text-muted">
-                AdminSignal is deliberately focused on Microsoft administration and endpoint operations. Coverage is organised around tasks administrators actually need to complete: planning changes, identifying prerequisites, limiting blast radius, collecting logs, validating outcomes, and recovering safely when a change fails.
+                AdminSignal is for people who already own a Microsoft estate and need to change it
+                without guessing. Coverage is organised around tasks administrators actually
+                complete: planning a rollout, identifying prerequisites, limiting blast radius,
+                collecting logs, validating outcomes, and recovering when a change fails.
               </p>
+              <ul className="mt-5 space-y-3">
+                {audience.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm leading-relaxed text-muted">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
               <div className="mt-5 flex flex-wrap gap-2">
                 {coverageTopics.map((topic) => (
                   <span key={topic} className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-muted">
@@ -221,6 +256,23 @@ export default function AboutPage() {
                   </span>
                 ))}
               </div>
+            </section>
+
+            <section aria-labelledby="will-not-heading">
+              <div className="flex items-center gap-3">
+                <FileWarning className="h-6 w-6 text-amber-400" aria-hidden="true" />
+                <h2 id="will-not-heading" className="text-2xl font-bold tracking-tight text-foreground">
+                  What AdminSignal will not publish
+                </h2>
+              </div>
+              <ul className="mt-5 space-y-3">
+                {willNotPublish.map((item) => (
+                  <li key={item} className="flex gap-3 text-sm leading-relaxed text-muted">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </section>
 
             <section aria-labelledby="method-heading">
@@ -237,23 +289,6 @@ export default function AboutPage() {
                   </li>
                 ))}
               </ol>
-            </section>
-
-            <section aria-labelledby="limits-heading">
-              <div className="flex items-center gap-3">
-                <FileWarning className="h-6 w-6 text-amber-400" aria-hidden="true" />
-                <h2 id="limits-heading" className="text-2xl font-bold tracking-tight text-foreground">
-                  Evidence and limitations
-                </h2>
-              </div>
-              <ul className="mt-5 space-y-3">
-                {limitations.map((item) => (
-                  <li key={item} className="flex gap-3 text-sm leading-relaxed text-muted">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
             </section>
 
             <section aria-labelledby="reading-heading">
@@ -282,7 +317,8 @@ export default function AboutPage() {
                 <h2 className="font-semibold text-foreground">Publication commitments</h2>
               </div>
               <ul className="mt-4 space-y-3 text-sm leading-relaxed text-muted">
-                <li>No fabricated deployments, tests, ratings, credentials, or social proof.</li>
+                <li>Named author, public contact address, and editorial policy on every article.</li>
+                <li>No fabricated tests, ratings, credentials, or social proof.</li>
                 <li>Commercial relationships disclosed where they exist.</li>
                 <li>Corrections accepted through the contact page.</li>
                 <li>Weak or unfinished resources kept out of search until they are ready.</li>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Legacy module inventory</title>
+  <link rel="stylesheet" href="shared.css" />
+</head>
+<body>
+  <div class="term-wrap capture">
+    <div class="term-bar">
+      <div class="lights"><i></i><i></i><i></i></div>
+      Windows PowerShell — authorised admin workstation
+    </div>
+    <div class="term-body"><span class="prompt">PS C:\Scripts&gt;</span> <span class="cmd">Select-String -Path .\*.ps1 -Pattern "AzureAD|MSOnline|Connect-AzureAD|Connect-MsolService" | Select-Object Path, LineNumber, Line</span>
+
+<span class="head">Path                       LineNumber Line</span>
+<span class="head">----                       ---------- ----</span>
+C:\Scripts\UserReport.ps1           12 Connect-MsolService
+C:\Scripts\AppAudit.ps1              8 Get-AzureADApplication -All $true
+C:\Scripts\GroupSync.ps1            24 Add-AzureADGroupMember -ObjectId <span class="redact guid"></span>
+C:\Scripts\LicenceJob.ps1           17 Set-MsolUserLicense -UserPrincipalName <span class="redact wide"></span>
+
+<span class="prompt">PS C:\Scripts&gt;</span> <span class="cmd">Get-Module AzureAD, MSOnline -ListAvailable | Select-Object Name, Version</span>
+
+<span class="head">Name     Version</span>
+<span class="head">----     -------</span>
+AzureAD  2.0.2.182
+MSOnline 1.1.183.66
+
+<span class="warn"># Example capture only. Tenant object IDs and UPNs redacted.</span>
+<span class="prompt">PS C:\Scripts&gt;</span> </div>
+  </div>
+</body>
+</html>

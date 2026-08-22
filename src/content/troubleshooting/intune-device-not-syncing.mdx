@@ -203,6 +203,16 @@ If `AzureAdJoined` and `DomainJoined` do not match your intended join model, do 
 
 Microsoft's `dsregcmd` troubleshooting reference is here: [Troubleshoot devices by using dsregcmd](https://learn.microsoft.com/en-us/entra/identity/devices/troubleshoot-device-dsregcmd).
 
+<EvidenceCallout
+  type="output"
+  title="dsregcmd /status join and MDM fields"
+  image="/images/evidence/cmd-dsregcmd.png"
+  imageAlt="Redacted dsregcmd /status output showing AzureAdJoined YES, DeviceAuthStatus SUCCESS, MdmUrl present, and AzureAdPrt YES, with tenant identifiers masked"
+  capture="Command Prompt output of dsregcmd /status showing AzureAdJoined, DomainJoined, DeviceAuthStatus, TenantId, MdmUrl, and AzureAdPrt"
+  redact="Tenant display name, TenantId, device IDs, and any user or workplace-join identifiers"
+  why="A stale Last check-in in Intune is not proof that MDM is still enrolled. Missing MdmUrl or a failed DeviceAuthStatus means the Sync button cannot repair the device."
+/>
+
 ## Step 4: Use Windows Sync Paths Correctly
 
 There are several sync paths, and they do not all prove the same thing.

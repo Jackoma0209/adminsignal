@@ -13,8 +13,8 @@ export default function FeaturedScriptsSection() {
       <Container>
         <SectionHeader
           eyebrow="Script Library"
-          title="PowerShell implementation patterns for admin workflows"
-          description="Guides and examples for endpoint management, compliance reporting, and automation, with permissions, safety notes, and validation steps."
+          title="PowerShell implementation notes for admin workflows"
+          description="Design notes and example fragments for endpoint management, compliance reporting, and automation, with permissions, safety notes, and validation steps."
           action={
             <Link
               href="/scripts"
