@@ -17,6 +17,7 @@ export const NOINDEX_STATIC_PATHS = new Set<string>([
   '/scripts',
   '/search',
   '/advertise',
+  '/guides/windows-11-25h2-autopilot-v2',
 ])
 
 /**
