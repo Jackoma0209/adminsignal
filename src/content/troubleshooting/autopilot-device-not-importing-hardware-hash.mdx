@@ -76,7 +76,7 @@ Use the symptom to choose the first diagnostic path.
 | Device was previously in another tenant | Prior tenant deregistration, OEM or reseller registration conflict |
 | Imported device never becomes an Intune device | Autopilot registration is not the same as Intune enrolment, user sign-in and enrolment still need to complete |
 
-If the device imports and receives a profile but later stops syncing after enrolment, use [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing). For fleet reporting after enrolment, the [Export Intune Device Report](/scripts/export-intune-device-report) script gives a useful audit pattern.
+If the device imports and receives a profile but later stops syncing after enrolment, use [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing). For fleet reporting after enrolment, the [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration) script gives a useful audit pattern.
 
 ## Likely Causes
 
@@ -130,15 +130,6 @@ In the Intune admin centre, check the Autopilot list first:
 
 Do not rely only on **Devices > Windows devices**. A newly imported Autopilot device appears in the Autopilot devices list before it becomes an enrolled Intune managed device.
 
-<EvidenceCallout
-  type="screenshot"
-  title="Windows Autopilot devices list after CSV import"
-  image="/images/evidence/intune-autopilot-devices.png"
-  imageAlt="Redacted Windows Autopilot devices list showing Assigned, Not assigned, and Assigning profile status with serial numbers and UPNs masked"
-  capture="Intune admin centre > Devices > Windows > Windows enrolment > Windows Autopilot devices, searched by serial, with Group tag, Assigned user, Profile status, and Date assigned columns visible"
-  redact="Serial numbers, group tags that identify sites, assigned UPNs, and tenant name"
-  why="Import success and profile assignment are different states. If the device is missing here, later Entra or Intune device-object cleanup is the wrong investigation."
-/>
 
 ## Step 2: Collect the Hardware Hash Cleanly
 
@@ -256,6 +247,12 @@ CSV checks that catch most rejected imports:
 If the file was opened and saved in a spreadsheet tool, collect a fresh CSV or export again from the original source.
 
 ## Step 4: Import Manually and Check the Right Status
+
+{/* Jack must drop in a redacted capture. Do not generate a fake Intune Autopilot devices image. */}
+<ScreenshotSlot
+  alt="Microsoft Intune admin centre Devices > Windows > Windows enrollment > Devices, showing an Autopilot import status row with serial number and tenant name redacted"
+  caption="Windows Autopilot devices import status. Paste a redacted capture of this blade."
+/>
 
 Use a small import when diagnosing. A one-device CSV is easier to reason about than a batch.
 
@@ -463,7 +460,7 @@ If the profile uses **Convert all targeted devices to Autopilot**, remember that
 
 If your tenant uses a default Autopilot profile, confirm that it is intentional. A default profile can hide a missing targeted assignment until a device receives a different OOBE experience than expected.
 
-If you are preparing a Windows 11 deployment flow, compare your profile design with [Windows 11 25H2 Autopilot v2 Guide](/guides/windows-11-25h2-autopilot-v2).
+If you are preparing a Windows 11 deployment flow, compare your profile design with [Windows Autopilot v1 vs v2](/comparisons/autopilot-v1-vs-v2-2026).
 
 ## Step 9: Check Dynamic Group Targeting
 
@@ -681,7 +678,7 @@ Use this checklist before importing production devices:
 - Keep Intune Connector for Active Directory current if you use hybrid Autopilot.
 - Review stale Intune and Entra device records before reusing rebuilt devices.
 - Capture `dsregcmd /status`, Autopilot diagnostics, and relevant event logs before resetting a failed device.
-- Build a monthly stale-device review using the [Export Intune Device Report](/scripts/export-intune-device-report) script and your normal asset inventory.
+- Build a monthly stale-device review using the [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration) script and your normal asset inventory.
 
 ## Related Resources
 
@@ -691,8 +688,8 @@ Use this checklist before importing production devices:
 - [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck)
 - [Intune Device Not Syncing](/troubleshooting/intune-device-not-syncing)
 - [Microsoft Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating)
-- [Windows 11 25H2 Autopilot v2 Guide](/guides/windows-11-25h2-autopilot-v2)
-- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Windows Autopilot v1 vs v2](/comparisons/autopilot-v1-vs-v2-2026)
+- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
 - [Windows Autopilot registration overview](https://learn.microsoft.com/en-us/autopilot/registration-overview)
 - [Manually register devices with Windows Autopilot](https://learn.microsoft.com/en-us/autopilot/add-devices)
 - [Windows Autopilot profiles](https://learn.microsoft.com/en-us/autopilot/profiles)
