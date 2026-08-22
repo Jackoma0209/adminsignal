@@ -1,12 +1,12 @@
 import { notFound, permanentRedirect } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import { guides } from '@/data/guides'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
+import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
 import {
   getDuplicateTutorialRedirect,
@@ -193,7 +193,7 @@ export default async function TutorialPage({ params }: Props) {
                 <Prose>
                   <MDXRemote
                     source={content}
-                    options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                    options={articleMdxOptions}
                     components={mdxComponents}
                   />
                 </Prose>
