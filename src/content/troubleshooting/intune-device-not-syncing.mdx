@@ -128,9 +128,15 @@ Use the Intune admin centre first:
 
 If you see two devices with the same name, compare serial number, Entra device ID, last check-in, and primary user before taking action.
 
-For reporting across multiple devices, the [Export Intune Device Report](/scripts/export-intune-device-report) script is a useful companion pattern.
+For reporting across multiple devices, the [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration) script is a useful companion pattern.
 
 ## Step 2: Check the Intune Portal State
+
+{/* Jack must drop in a redacted capture. Do not generate a fake Intune device overview image. */}
+<ScreenshotSlot
+  alt="Microsoft Intune admin centre Devices > Windows devices > device Overview, showing Last check-in and MDM with device name, UPN, and tenant redacted"
+  caption="Intune device Overview last check-in. Paste a redacted capture of this blade."
+/>
 
 In the Intune admin centre, check whether the device is stale everywhere or only stale for one workload.
 
@@ -203,15 +209,6 @@ If `AzureAdJoined` and `DomainJoined` do not match your intended join model, do 
 
 Microsoft's `dsregcmd` troubleshooting reference is here: [Troubleshoot devices by using dsregcmd](https://learn.microsoft.com/en-us/entra/identity/devices/troubleshoot-device-dsregcmd).
 
-<EvidenceCallout
-  type="output"
-  title="dsregcmd /status join and MDM fields"
-  image="/images/evidence/cmd-dsregcmd.png"
-  imageAlt="Redacted dsregcmd /status output showing AzureAdJoined YES, DeviceAuthStatus SUCCESS, MdmUrl present, and AzureAdPrt YES, with tenant identifiers masked"
-  capture="Command Prompt output of dsregcmd /status showing AzureAdJoined, DomainJoined, DeviceAuthStatus, TenantId, MdmUrl, and AzureAdPrt"
-  redact="Tenant display name, TenantId, device IDs, and any user or workplace-join identifiers"
-  why="A stale Last check-in in Intune is not proof that MDM is still enrolled. Missing MdmUrl or a failed DeviceAuthStatus means the Sync button cannot repair the device."
-/>
 
 ## Step 4: Use Windows Sync Paths Correctly
 
@@ -847,7 +844,7 @@ If you must re-enrol:
 - [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
 - [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting)
 - [Intune Remediation Script Not Running](/troubleshooting/intune-remediation-script-not-running)
-- [Export Intune Device Report](/scripts/export-intune-device-report)
+- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
 - [Microsoft documentation: Sync your Windows device manually](https://learn.microsoft.com/en-gb/intune/intune-service/user-help/sync-your-device-manually-windows)
 - [Microsoft documentation: Windows device enrolment in Intune](https://learn.microsoft.com/en-us/intune/intune-service/enrollment/windows-enroll)
 - [Microsoft documentation: Troubleshoot devices by using dsregcmd](https://learn.microsoft.com/en-us/entra/identity/devices/troubleshoot-device-dsregcmd)
