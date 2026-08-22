@@ -1,12 +1,12 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
 import Image from 'next/image'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import { comparisons } from '@/data/comparisons'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
+import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
@@ -191,7 +191,7 @@ export default async function ComparisonArticlePage({ params }: Props) {
               <Prose>
                 <MDXRemote
                   source={content}
-                  options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                  options={articleMdxOptions}
                   components={mdxComponents}
                 />
               </Prose>

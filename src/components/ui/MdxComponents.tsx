@@ -10,6 +10,7 @@ import type React from 'react'
 import CodeBlock from '@/components/ui/CodeBlock'
 import Checklist from '@/components/ui/Checklist'
 import EvidenceCallout from '@/components/article/EvidenceCallout'
+import ScreenshotSlot from '@/components/article/ScreenshotSlot'
 import { slugifyHeading } from '@/lib/content'
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -68,8 +69,26 @@ function Pre({ children }: React.HTMLAttributes<HTMLPreElement>) {
 function Table({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) {
   return (
     <div className="my-5 max-w-full overflow-x-auto rounded-lg border border-border">
-      <table {...props}>{children}</table>
+      <table className="w-full border-collapse text-left" {...props}>
+        {children}
+      </table>
     </div>
+  )
+}
+
+function Th({ children, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
+  return (
+    <th className="bg-surface px-3 py-2 text-sm font-semibold text-foreground" {...props}>
+      {children}
+    </th>
+  )
+}
+
+function Td({ children, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) {
+  return (
+    <td className="border-t border-border px-3 py-2 text-sm text-muted" {...props}>
+      {children}
+    </td>
   )
 }
 
@@ -98,6 +117,9 @@ export const mdxComponents: MDXComponents = {
   h3: createHeading(3),
   pre: Pre,
   table: Table,
+  th: Th,
+  td: Td,
   Checklist,
   EvidenceCallout,
+  ScreenshotSlot,
 }

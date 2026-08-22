@@ -28,8 +28,6 @@ Use these related AdminSignal resources while planning the migration:
 - [PowerShell](/powershell)
 - [Microsoft Entra ID](/microsoft-entra-id)
 - [Microsoft 365](/microsoft-365)
-- [Get-StaleDevices](/scripts/get-stale-devices)
-- [Export-IntuneDeviceReport](/scripts/export-intune-device-report)
 - [Microsoft 365 Admin Centre Mandatory MFA Readiness](/tutorials/microsoft-365-admin-centre-mfa-readiness)
 - [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
 
@@ -118,15 +116,6 @@ C:\Scripts\AppAudit.ps1    <n>        Get-AzureADApplication -All $true
 C:\Scripts\GroupSync.ps1   <n>        Add-AzureADGroupMember ...
 ```
 
-<EvidenceCallout
-  type="output"
-  title="Legacy module inventory from the automation share"
-  image="/images/evidence/pwsh-legacy-inventory.png"
-  imageAlt="Redacted PowerShell output of Select-String against AzureAD and MSOnline scripts, with object IDs and UPNs masked"
-  capture="PowerShell Select-String against the authorised script root, showing path, line number, and matching AzureAD or MSOnline calls"
-  redact="Server names, share paths that identify the organisation, and any user or app names inside the matched lines"
-  why="This output is the migration register. Without it, teams rewrite one visible script and leave scheduled MSOnline jobs running on another host."
-/>
 
 Create a migration register:
 
@@ -284,6 +273,12 @@ finally {
 ```
 
 ## App-Only Authentication with Certificate
+
+{/* Jack must drop in a redacted capture. Do not generate a fake Entra portal image. */}
+<ScreenshotSlot
+  alt="Microsoft Entra admin centre App registrations > Certificates and secrets, showing a certificate thumbprint with tenant name and object IDs redacted"
+  caption="Entra app registration Certificates and secrets blade. Paste a redacted capture of this blade."
+/>
 
 Use app-only authentication for scheduled jobs where no user should sign in. Certificate authentication is usually a better production choice than a client secret because it avoids storing a plain secret value in the script.
 
@@ -671,7 +666,7 @@ DisplayName DeviceId       ApproximateLastSignInDateTime
 DEVICE-NAME <device-guid>  <date/time>
 ```
 
-For a fuller stale device workflow, use [Get-StaleDevices](/scripts/get-stale-devices).
+For a fuller stale device workflow, use the [PowerShell hub](/powershell).
 
 ## App Registration Examples
 
@@ -826,7 +821,7 @@ For production exports, always decide whether the script needs:
 - One page for a dashboard sample.
 - Every object with `-All`.
 - A filtered subset with `-Filter`.
-- A report export pattern such as [Export-IntuneDeviceReport](/scripts/export-intune-device-report).
+- A report export pattern such as [PowerShell topic hub](/powershell).
 
 Do not rely on visual output in the console to prove paging is correct. Count the returned objects and compare with an expected source such as the admin centre or an existing approved report.
 
@@ -1327,8 +1322,6 @@ The goal is not only to make the old script run again. The goal is to leave behi
 - [PowerShell](/powershell)
 - [Microsoft Entra ID](/microsoft-entra-id)
 - [Microsoft 365](/microsoft-365)
-- [Get-StaleDevices](/scripts/get-stale-devices)
-- [Export-IntuneDeviceReport](/scripts/export-intune-device-report)
 - [Microsoft 365 Admin Centre Mandatory MFA Readiness](/tutorials/microsoft-365-admin-centre-mfa-readiness)
 - [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
 - [Upgrade from Azure AD PowerShell to Microsoft Graph PowerShell](https://learn.microsoft.com/en-us/powershell/microsoftgraph/migration-steps?view=graph-powershell-1.0)

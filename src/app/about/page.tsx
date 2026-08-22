@@ -154,10 +154,11 @@ export default function AboutPage() {
                 About Jack Hadcroft and AdminSignal
               </h1>
               <p className="mt-5 text-lg leading-relaxed text-foreground-soft">
-                I am Jack Hadcroft, an endpoint specialist and the author of AdminSignal. I work with
-                Microsoft Intune, Windows clients, Microsoft Entra ID, Group Policy, and PowerShell
-                in Microsoft 365 estates, and I publish independent technical guidance for
-                administrators who have to make those platforms survive a change window.
+                I am Jack Hadcroft, an endpoint specialist and the author of AdminSignal. AdminSignal
+                is independently operated. I work with Microsoft Intune, Windows clients, Microsoft
+                Entra ID, Group Policy, and PowerShell in Microsoft 365 estates, and I publish
+                independent technical guidance for administrators who have to make those platforms
+                survive a change window.
               </p>
               <p className="mt-4 text-base leading-relaxed text-muted">
                 AdminSignal exists to record the checks, evidence, risks, and decision points that

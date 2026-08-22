@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
 import { scripts } from '@/data/scripts'
 import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
+import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
 import { withNoindex } from '@/lib/noindex'
 import { breadcrumbSchema } from '@/lib/schema'
@@ -147,7 +147,7 @@ export default async function ScriptDetailPage({ params }: Props) {
               <Prose>
                 <MDXRemote
                   source={content}
-                  options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+                  options={articleMdxOptions}
                   components={mdxComponents}
                 />
               </Prose>

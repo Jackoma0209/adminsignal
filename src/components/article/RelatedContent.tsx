@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, BookOpen, Terminal, Newspaper, FlaskConical } from 'lucide-react'
+import { isNoindexHref } from '@/lib/noindex'
 
 export interface RelatedItem {
   title: string
@@ -30,13 +31,14 @@ export default function RelatedContent({
   items,
   heading = 'Related reading',
 }: RelatedContentProps) {
-  if (items.length === 0) return null
+  const visible = items.filter((item) => !isNoindexHref(item.href))
+  if (visible.length === 0) return null
 
   return (
     <section aria-label="Related content">
       <h2 className="mb-6 text-lg font-bold text-foreground">{heading}</h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((item) => {
+        {visible.map((item) => {
           const { label, Icon } = typeConfig[item.type]
           return (
             <Link

@@ -71,8 +71,8 @@ export const comparisons: Comparison[] = [
     winner: 'Microsoft Intune',
     verdict:
       'For new cloud-managed endpoints, Intune is usually the right starting point. SCCM still has a role in complex OSD, large software distribution, detailed on-prem reporting, and restricted networks. Many estates need staged co-management rather than a rushed replacement.',
-    date: 'Mar 27, 2026',
-    publishedAt: '2026-03-27',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '12 min read',
     authorId: 'jack',
     tags: ['Intune', 'SCCM', 'MECM', 'Co-management'],
@@ -89,8 +89,8 @@ export const comparisons: Comparison[] = [
     productB: 'CrowdStrike Falcon',
     verdict:
       'For Microsoft-centred environments already on E5, Defender for Endpoint is often easier to operate. CrowdStrike remains strong where investigation depth, cross-platform coverage, and specialist SOC workflows matter more than licensing consolidation.',
-    date: 'Mar 25, 2026',
-    publishedAt: '2026-03-25',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '11 min read',
     authorId: 'jack',
     tags: ['Microsoft Defender for Endpoint', 'CrowdStrike', 'EDR', 'Endpoint Security'],
@@ -108,8 +108,8 @@ export const comparisons: Comparison[] = [
     winner: 'Entra ID P2',
     verdict:
       'P2 is worthwhile when privileged access, external access reviews, or compliance evidence are owned operational processes. For smaller tenants without those drivers, P1 covers Conditional Access and SSPR fundamentals well.',
-    date: 'Mar 24, 2026',
-    publishedAt: '2026-03-24',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '8 min read',
     authorId: 'jack',
     tags: ['Microsoft Entra ID', 'Conditional Access', 'PIM', 'Identity'],

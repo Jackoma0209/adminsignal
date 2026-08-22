@@ -157,7 +157,7 @@ By default, Global Administrators and Privileged Role Administrators can recover
 - **Co-management**: If the device is co-managed (Intune + SCCM) and the Account Protection workload is not set to Intune, the LAPS policy will not be applied by Intune. Move the Account Protection workload to Intune, or deploy LAPS via SCCM's separate integration path.
 - **The local administrator account must exist**: Native LAPS targets the built-in Administrator account (RID 500) unless you specify a name. If the built-in account is disabled (common in CIS hardening baselines), LAPS will manage it in a disabled state — the password rotates but the account cannot be used until re-enabled. Decide whether to keep the built-in account enabled or create a named admin account for LAPS to manage.
 - **Intune device-to-user assignment**: LAPS password recovery in Intune shows the password to Intune administrators on the device's page. There is no per-user delegation within Intune's LAPS recovery UI — use the Entra Cloud Device Administrator role for delegated access.
-- **Recovery key not visible in Intune but visible in Entra**: This is expected behaviour. The Intune portal retrieves the key from Entra ID on demand. If Entra ID shows the key but Intune does not, it is a display delay — refresh the page.
+- **Recovery key not visible in Intune but visible in Entra**: This is expected behaviour. The Intune portal retrieves the key from Entra ID on demand. If Entra ID shows the key and Intune does not, it is a display delay — refresh the page.
 
 ## Rollback and Cleanup
 
@@ -171,7 +171,7 @@ If you need to remove LAPS from a device or roll back the policy:
 ## Related Resources
 
 - [Microsoft Entra ID hub](/microsoft-entra-id)
-- [Get-StaleDevices script for LAPS coverage reporting](/scripts/get-stale-devices)
-- [Autopilot v2 Enrollment Troubleshooting](/tutorials/autopilot-v2-enrollment-esp-troubleshooting)
+- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
+- [Windows Autopilot v1 vs v2](/comparisons/autopilot-v1-vs-v2-2026)
 - [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 - [Microsoft Windows LAPS documentation](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-overview)

@@ -56,7 +56,7 @@ export const guides: Guide[] = [
       src: '/images/article-covers/intune-windows-update-rings-wufb.svg',
       alt: 'Abstract staged update rings expanding across a managed device fleet',
     },
-    isFeatured: true,
+    isFeatured: false,
   },
   {
     id: '13',
@@ -218,8 +218,8 @@ export const guides: Guide[] = [
     category: 'Endpoint Security',
     excerpt:
       'Apply the CIS Level 1 benchmark to Windows 11 22H2 and 24H2 endpoints using Group Policy, Intune profiles, and a validation script that reports compliance gaps.',
-    date: 'Mar 28, 2026',
-    publishedAt: '2026-03-28',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '20 min read',
     difficulty: 'Advanced',
     authorId: 'jack',
@@ -237,8 +237,8 @@ export const guides: Guide[] = [
     category: 'Microsoft Intune',
     excerpt:
       'Windows Autopilot v2 changes how enrollment profiles work. This guide covers device preparation, the Enrollment Status Page, and a decision tree for diagnosing the most common deployment failures.',
-    date: 'Mar 27, 2026',
-    publishedAt: '2026-03-27',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '16 min read',
     difficulty: 'Intermediate',
     authorId: 'jack',
@@ -256,8 +256,8 @@ export const guides: Guide[] = [
     category: 'PowerShell',
     excerpt:
       'Use WMI, the registry, and a lightweight SQLite output to build a software inventory pipeline that runs without an RMM agent — useful for legacy environments and incident response.',
-    date: 'Mar 26, 2026',
-    publishedAt: '2026-03-26',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '18 min read',
     difficulty: 'Intermediate',
     authorId: 'jack',
@@ -274,8 +274,8 @@ export const guides: Guide[] = [
     category: 'Microsoft Entra ID',
     excerpt:
       'A policy-by-policy walkthrough of building a Conditional Access baseline for Microsoft 365, from MFA requirements and compliant device enforcement to emergency access accounts.',
-    date: 'Mar 25, 2026',
-    publishedAt: '2026-03-25',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '22 min read',
     difficulty: 'Advanced',
     authorId: 'jack',
@@ -292,8 +292,8 @@ export const guides: Guide[] = [
     category: 'Group Policy',
     excerpt:
       'A practical troubleshooting methodology for Group Policy: reading RSoP, interpreting gpresult /h output, diagnosing WMI filter failures, and resolving OUlinking conflicts.',
-    date: 'Mar 24, 2026',
-    publishedAt: '2026-03-24',
+    date: 'Mar 31, 2026',
+    publishedAt: '2026-03-31',
     readTime: '12 min read',
     difficulty: 'Beginner',
     authorId: 'jack',

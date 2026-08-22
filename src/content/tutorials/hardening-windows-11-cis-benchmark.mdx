@@ -1,7 +1,7 @@
 ---
 title: "Hardening Windows 11 Endpoints with CIS Benchmark Level 1"
 category: "Endpoint Security"
-date: "Mar 28, 2026"
+date: "Mar 31, 2026"
 authorId: "jack"
 lastReviewed: "Apr 27, 2026"
 reviewNote: "Added tested environment note, pilot deployment methodology, rollback procedure, SMBv1 and Credential Guard verification commands, and known conflict table."
@@ -32,7 +32,7 @@ For Level 2 settings, create a separate project. Level 2 can be appropriate, but
 
 - Windows 11 22H2 or 24H2 (the benchmark versions differ slightly — confirm you are applying the correct benchmark revision for your OS version)
 - [PolicyAnalyzer](https://www.microsoft.com/en-us/download/details.aspx?id=55319) from Microsoft's Security Compliance Toolkit (for validation)
-- [`Invoke-WindowsHardening` script](/scripts/invoke-windows-hardening) if you prefer automated application
+- Intune Settings Catalog or Group Policy for automated application
 - Group Policy Management Console or Intune admin access
 - A **pilot OU or pilot device group** containing 5–10 representative machines before broad deployment — do not skip this step
 
@@ -237,7 +237,7 @@ If the baseline causes production issues, roll back cleanly:
 
 ## Related Resources
 
-- [Invoke-WindowsHardening: Automated CIS hardening script](/scripts/invoke-windows-hardening)
+- [Endpoint Security hub](/endpoint-security)
 - [Group Policy hub](/group-policy)
 - [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)

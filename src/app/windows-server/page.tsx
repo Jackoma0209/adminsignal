@@ -19,12 +19,12 @@ export const metadata: Metadata = buildTopicMetadata({
 
 export default function WindowsServerPage() {
   const { news, tutorials, troubleshooting, allItems } = buildTopicContent({
-    newsTags: ['Windows Server', 'Active Directory', 'DNS'],
+    newsTags: ['Windows Server', 'Active Directory', 'Secure Boot'],
     newsCategories: ['Windows Server'],
-    guideTags: ['Windows Server', 'Active Directory', 'DNS', 'DHCP'],
+    guideTags: ['Windows Server', 'Active Directory', 'Group Policy', 'Secure Boot'],
     guideCategories: ['Windows Server'],
-    troubleshootingCategories: ['Windows Server'],
-    affectedProducts: ['Windows Server', 'Active Directory', 'DNS', 'DHCP'],
+    troubleshootingCategories: ['Windows Server', 'Group Policy'],
+    affectedProducts: ['Windows Server', 'Active Directory', 'Group Policy'],
     guideLimit: 6,
   })
 
@@ -53,20 +53,20 @@ export default function WindowsServerPage() {
         description={topicDescription}
         introSections={[
           {
-            title: 'Treat identity, DNS, and patching as one operational chain',
-            body: 'Windows Server issues rarely stay inside one role. Authentication failures often involve DNS, time sync, certificate trust, or Group Policy delivery. Capture which service failed, which dependency it needs, and which event logs prove the failure before changing production settings.',
+            title: 'What this hub currently publishes',
+            body: 'AdminSignal’s Windows Server pages currently cover Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and related patch notes. They are not a DNS, DHCP, file-services, clustering, or backup tutorial library.',
           },
           {
-            title: 'Patch and reboot ownership must be explicit',
-            body: 'Domain controllers, file servers, and application hosts need different maintenance windows and rollback plans. Document who approves reboots, how cluster or failover roles are protected, and which monitoring alert confirms the service returned healthy after patching.',
+            title: 'Collect RSoP evidence before another gpupdate',
+            body: 'Most “the GPO did not apply on the server” tickets are scope problems: wrong OU, blocked inheritance, security filtering, or a competing cloud policy. Capture computer and user RSoP or gpresult before forcing another refresh cycle.',
           },
           {
-            title: 'Hardening without breaking line-of-business paths',
-            body: 'Baseline changes for SMB, TLS, local admin rights, and audit policy should go through a pilot OU or pilot server group first. Record the application owners who signed off and the exact setting that caused a regression if rollback is required.',
+            title: 'Secure Boot CA 2023 is a fleet change',
+            body: 'The 2023 certificate authority rollout is a sequenced firmware and OS trust change, not a single BIOS tick-box. Use the published readiness guide for inventory and rollback ownership rather than assuming every server can flip in one window.',
           },
           {
-            title: 'When not to rush cloud-only replacement',
-            body: 'Some server workloads still depend on local AD, on-premises file services, or network-adjacent management tools. Move the workloads that are ready, keep the ones that are not, and avoid deleting recovery paths before the replacement is proven under failure conditions.',
+            title: 'What this hub will not claim',
+            body: 'There are no published DNS, DHCP, file-server, or clustering tutorials here yet. Those topics stay off this page until a complete, sourced article exists.',
           },
         ]}
         news={news}

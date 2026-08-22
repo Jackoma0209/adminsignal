@@ -19,6 +19,7 @@ export default function robots(): MetadataRoute.Robots {
         '/best-tools/',
         '/search',
         '/api/',
+        '/guides/windows-11-25h2-autopilot-v2',
       ],
     },
     sitemap: 'https://www.adminsignal.com/sitemap.xml',

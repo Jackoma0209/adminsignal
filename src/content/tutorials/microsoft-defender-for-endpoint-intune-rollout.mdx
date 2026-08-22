@@ -178,6 +178,12 @@ Do not enable response features without an owner and a support path. A technical
 
 ## Intune and Defender Tenant Connection
 
+{/* Jack must drop in a redacted capture. Do not generate a fake Intune or Defender portal image. */}
+<ScreenshotSlot
+  alt="Microsoft Intune admin centre Endpoint security > Microsoft Defender for Endpoint, showing the tenant connector status with tenant ID redacted"
+  caption="Intune Defender for Endpoint connector blade. Paste a redacted capture of this blade."
+/>
+
 The Intune to Defender connection is a tenant level integration. Microsoft documents it as the service to service connection that lets Intune interact with Defender for Endpoint, including onboarding and risk reporting for supported devices.
 
 Check the connection before policy creation:
@@ -202,15 +208,6 @@ Record these values:
 | Scope tags | Confirm whether Endpoint security policies need scope tags |
 | RBAC | Confirm who can create, assign, report and troubleshoot |
 
-<EvidenceCallout
-  type="screenshot"
-  title="Intune Defender for Endpoint connection status"
-  image="/images/evidence/intune-defender-connector.png"
-  imageAlt="Redacted Microsoft Intune connector page showing Microsoft Defender for Endpoint connection status as Connected, with the tenant identifier masked"
-  capture="Intune admin centre > Tenant administration > Connectors and tokens > Microsoft Defender for Endpoint, showing Connection status and the Windows compliance policy evaluation toggle"
-  redact="Tenant name, any device counts, and operator account identifiers"
-  why="Onboarding policy and device-risk compliance both depend on this tenant connection. If the status is not enabled, later Sense-service checks will look like device problems when the connector is the actual gap."
-/>
 
 If the connection is not enabled, the EDR onboarding policy may require manual onboarding blob handling rather than the recommended automatic package from the connector. Treat that as a setup problem, not as a reason to rush a manual workaround.
 

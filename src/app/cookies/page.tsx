@@ -119,11 +119,11 @@ export default function CookiesPage() {
                 <li>Time spent on pages</li>
               </ul>
               <p className="mt-3">
-                AdminSignal is configured to use Google Consent Mode v2 defaults where Google tags
-                are enabled. If analytics consent is not granted, analytics cookies should not be
-                set by Google tags, and measurement is limited. Non-essential analytics tags should
-                remain disabled until the required consent mechanism is configured for the
-                visitor&apos;s region.
+                AdminSignal uses Google Consent Mode v2 with analytics and advertising storage
+                denied by default. Non-essential Google Analytics tags stay off unless a valid
+                consent choice is recorded. AdminSignal does not currently run a Google-certified
+                consent management platform, so those tags remain off for visitors in regions
+                where consent is required.
               </p>
               <p className="mt-3">
                 You can opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -193,16 +193,16 @@ export default function CookiesPage() {
                 analytics or advertising cookies are used.
               </p>
               <p className="mt-3">
-                For AdSense personalised ads in those regions, AdminSignal must use a
-                Google-certified consent management platform integrated with IAB Europe&apos;s
-                Transparency and Consent Framework. This repository provides the integration
-                points, but does not claim that a certified CMP is already configured.
+                AdminSignal does not currently run a Google-certified consent management platform
+                integrated with IAB Europe&apos;s Transparency and Consent Framework. Personalised
+                AdSense ads are not enabled on that basis. Non-essential Google advertising tags
+                stay off, and Consent Mode v2 remains default-denied.
               </p>
               <p className="mt-3">
-                Once a CMP is configured, you should be able to accept, reject, or customise cookie
-                categories and vendor choices, including advertising vendors. You should also be
-                able to update or withdraw consent at any time using the privacy or cookie settings
-                link in the site footer.
+                If a certified CMP is added later, you will be able to accept, reject, or customise
+                cookie categories and vendor choices from the privacy or cookie settings link in
+                the site footer. Until then, non-essential advertising and analytics cookies are
+                not used.
               </p>
               <p className="mt-3">
                 Withdrawing consent does not remove cookies that were already stored. You can delete

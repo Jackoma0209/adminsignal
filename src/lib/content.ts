@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 import readingTime from 'reading-time'
+import { normalizeGfmTables } from '@/lib/mdx'
 
 const contentRoot = path.join(process.cwd(), 'src', 'content')
 
@@ -51,11 +52,12 @@ export function getContentItem(type: string, slug: string): ContentItem {
   const filePath = path.join(contentRoot, type, `${slug}.mdx`)
   const raw = fs.readFileSync(filePath, 'utf-8')
   const { content, data } = matter(raw)
-  const stats = readingTime(content)
-  const headings = extractHeadings(content)
+  const normalised = normalizeGfmTables(content)
+  const stats = readingTime(normalised)
+  const headings = extractHeadings(normalised)
   return {
     slug,
-    content,
+    content: normalised,
     frontmatter: data,
     readTime: stats.text,
     headings,
