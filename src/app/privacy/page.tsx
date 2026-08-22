@@ -93,10 +93,10 @@ export default function PrivacyPage() {
                 use Google Analytics to identify individual readers.
               </p>
               <p className="mt-3">
-                When Google tags are enabled, AdminSignal uses Google Consent Mode v2 defaults that
-                deny analytics and advertising storage until a valid consent choice is recorded.
-                Non-essential analytics tags remain disabled unless a Google-certified consent
-                management platform is configured for the visitor&apos;s region.
+                AdminSignal uses Google Consent Mode v2 defaults that deny analytics and
+                advertising storage until a valid consent choice is recorded. A Google-certified
+                consent management platform is not currently live on this site, so non-essential
+                Google Analytics and AdSense tags stay off.
               </p>
               <p className="mt-3">
                 You can also opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -125,10 +125,9 @@ export default function PrivacyPage() {
               <p className="mt-3">
                 AdSense may serve personalised ads or non-personalised ads depending on the
                 visitor&apos;s region, consent choices, Google settings, and publisher
-                configuration. Visitors in the UK, EEA, and Switzerland must be given appropriate
-                consent choices through a Google-certified consent management platform integrated
-                with IAB Europe&apos;s Transparency and Consent Framework before personalised ads
-                are served.
+                configuration. A Google-certified CMP is not currently live, so personalised ads
+                that require TCF consent are not enabled. Visitors in the UK, EEA, and Switzerland
+                would need that CMP before personalised ads could be served.
               </p>
               <p className="mt-3">Google requires publishers using AdSense to disclose the following:</p>
               <ul className="mt-3 list-disc space-y-2 pl-5">
@@ -198,10 +197,9 @@ export default function PrivacyPage() {
               <p className="mt-3">
                 Visitors in regions where consent is required, including the UK, EU/EEA, and
                 Switzerland, must be presented with cookie and vendor choices before non-essential
-                analytics or advertising cookies are used. You can update or withdraw your choices
-                using the privacy or cookie settings link in the site footer once the consent
-                management platform is configured. Until then, AdminSignal should keep
-                non-essential Google advertising and analytics tags disabled.
+                analytics or advertising cookies are used. A certified CMP is not currently live,
+                so AdminSignal keeps non-essential Google advertising and analytics tags disabled.
+                Consent Mode v2 remains default-denied.
               </p>
               <p className="mt-3">
                 For more detail, see our{' '}
