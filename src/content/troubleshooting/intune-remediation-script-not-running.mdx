@@ -144,7 +144,7 @@ Record this before changing anything:
 | Affected device | `DEVICE-NAME` |
 | Portal status | `Pending`, `With issue`, `Issue fixed`, `No issue`, or `Failed` |
 
-For fleet work, export the status before editing the package. You can also build your own repeatable export using [Export Intune Device Report](/scripts/export-intune-device-report).
+For fleet work, export the status before editing the package. You can also build your own repeatable export using [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration).
 
 ## Step 2: Understand Detection vs Remediation Behaviour
 
@@ -197,7 +197,7 @@ Expected output shape from detection:
 Compliant: HKLM:\SOFTWARE\AdminSignal\Test\Remediated is Yes
 ```
 
-or:
+ or:
 
 ```text
 Issue found: value is missing
@@ -229,7 +229,7 @@ Script   : C:\Temp\Detect-Example.ps1
 ExitCode : 0
 ```
 
-or:
+ or:
 
 ```text
 Script   : C:\Temp\Detect-Example.ps1
@@ -470,7 +470,7 @@ True
 False
 ```
 
-or:
+ or:
 
 ```text
 False
@@ -627,7 +627,7 @@ AgentExecutor.log             <date and time>      <bytes>
 IntuneManagementExtension.log <date and time>      <bytes>
 ```
 
-If local logs show the script ran successfully but the portal has not changed, wait for reporting or export the script output. For reporting and stale device lists, the scripts at [Export Intune Device Report](/scripts/export-intune-device-report) and [Get Stale Devices](/scripts/get-stale-devices) are useful companion patterns.
+If local logs show the script ran successfully but the portal has not changed, wait for reporting or export the script output. For reporting and stale device lists, use the Graph patterns in [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration).
 
 ## Step 11: Check Registry Evidence
 
@@ -786,8 +786,7 @@ Before assigning a remediation broadly:
 
 - [Microsoft Intune hub](/intune)
 - [PowerShell hub](/powershell)
-- [Export Intune Device Report](/scripts/export-intune-device-report)
-- [Get Stale Devices](/scripts/get-stale-devices)
+- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
 - [Intune Win32 App Install Stuck](/troubleshooting/intune-win32-app-install-stuck-waiting)
 - [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
 - [Microsoft documentation: Remediations in Intune](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations)
