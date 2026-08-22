@@ -5,7 +5,8 @@ import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
 import GuideCard from '@/components/cards/GuideCard'
 import Badge from '@/components/ui/Badge'
-import { guides } from '@/data/guides'
+import { guides, type Guide } from '@/data/guides'
+import { troubleshootingArticles } from '@/data/troubleshooting'
 import { isNoindexHref } from '@/lib/noindex'
 
 const categoryGradients: Record<string, string> = {
@@ -17,24 +18,54 @@ const categoryGradients: Record<string, string> = {
   'Microsoft Entra ID': 'from-blue-950 via-slate-900 to-slate-950',
 }
 
+const HOMEPAGE_FEATURED: { kind: 'guide' | 'troubleshooting'; slug: string }[] = [
+  { kind: 'guide', slug: 'azuread-msonline-to-microsoft-graph-powershell-migration' },
+  { kind: 'guide', slug: 'intune-admin-templates-to-settings-catalog-migration' },
+  { kind: 'guide', slug: 'microsoft-defender-for-endpoint-intune-rollout' },
+  { kind: 'guide', slug: 'exchange-online-smtp-auth-basic-auth-2026-migration' },
+  { kind: 'troubleshooting', slug: 'autopilot-device-not-importing-hardware-hash' },
+  { kind: 'troubleshooting', slug: 'intune-device-not-syncing' },
+]
+
+function featuredAsGuide(entry: (typeof HOMEPAGE_FEATURED)[number]): Guide | undefined {
+  if (entry.kind === 'guide') {
+    return guides.find((guide) => guide.slug === entry.slug)
+  }
+  const article = troubleshootingArticles.find((item) => item.slug === entry.slug)
+  if (!article) return undefined
+  return {
+    id: `ts-${article.id}`,
+    title: article.title,
+    slug: article.slug,
+    href: `/troubleshooting/${article.slug}`,
+    category: article.category,
+    excerpt: article.excerpt,
+    date: article.date,
+    publishedAt: article.publishedAt,
+    readTime: article.readTime,
+    difficulty: article.difficulty,
+    authorId: article.authorId,
+  }
+}
+
 export default function FeaturedGuidesSection() {
-  const featured = guides
-    .filter((guide) => {
-      const href = guide.href ?? `/tutorials/${guide.slug}`
-      return guide.isFeatured && !isNoindexHref(href)
-    })
-    .slice(0, 4)
+  const featured = HOMEPAGE_FEATURED.map(featuredAsGuide).filter((guide): guide is Guide => {
+    if (!guide) return false
+    const href = guide.href ?? `/tutorials/${guide.slug}`
+    return !isNoindexHref(href)
+  })
   const hero = featured[0]
-  const rest = featured.slice(1, 4)
+  const rest = featured.slice(1)
 
   if (!hero) return null
 
   const heroGradient = categoryGradients[hero.category] ?? 'from-slate-900 via-slate-900 to-slate-950'
   const heroHref = hero.href ?? `/tutorials/${hero.slug}`
   const updatedLabel = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(hero.publishedAt))
+  }).format(new Date(`${hero.publishedAt}T00:00:00Z`))
 
   return (
     <section className="border-t border-border bg-surface/20 py-20">
@@ -42,7 +73,7 @@ export default function FeaturedGuidesSection() {
         <SectionHeader
           eyebrow="Featured Guides"
           title="The depth your vendor docs don't cover"
-          description="Step-by-step technical guides that go where official documentation stops — from GPO internals to Graph API edge cases."
+          description="Command-heavy operator guides: Graph migrations, Settings Catalog, Defender rollout, SMTP AUTH, Autopilot imports, and Intune sync failures."
           action={
             <Link
               href="/tutorials"
@@ -102,6 +133,8 @@ export default function FeaturedGuidesSection() {
                     <ArrowUpRight className="h-4 w-4" />
                   </Link>
                   <div className="flex items-center gap-1.5 text-xs text-muted/70">
+                    <time dateTime={hero.publishedAt}>{hero.date}</time>
+                    <span aria-hidden="true">·</span>
                     <Clock className="h-3.5 w-3.5" />
                     <span>{hero.readTime}</span>
                   </div>
