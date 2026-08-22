@@ -19,12 +19,12 @@ export const metadata: Metadata = buildTopicMetadata({
 
 export default function Microsoft365Page() {
   const { news, tutorials, troubleshooting, allItems } = buildTopicContent({
-    newsTags: ['Microsoft 365', 'Exchange Online', 'Microsoft Teams', 'SharePoint'],
+    newsTags: ['Microsoft 365', 'Exchange Online', 'SMTP AUTH', 'MFA'],
     newsCategories: ['Microsoft 365'],
-    guideTags: ['Microsoft 365', 'Exchange Online', 'Microsoft Teams', 'SharePoint'],
+    guideTags: ['Microsoft 365', 'Exchange Online', 'SMTP AUTH', 'Conditional Access', 'MFA'],
     guideCategories: ['Microsoft 365'],
     troubleshootingCategories: ['Microsoft 365'],
-    affectedProducts: ['Microsoft 365', 'Exchange Online', 'Microsoft Teams', 'SharePoint Online'],
+    affectedProducts: ['Microsoft 365', 'Exchange Online', 'Microsoft Entra ID'],
     troubleshootingLimit: 6,
   })
 
