@@ -1,0 +1,2 @@
+ScriptName,Owner,CurrentModule,AuthType,DataTouched,WriteActions,Criticality,Status,Notes
+UserReport.ps1,REPLACE-WITH-OWNER,MSOnline,REPLACE-WITH-AUTH,REPLACE-WITH-DATA,REPLACE-WITH-WRITE-ACTIONS,REPLACE-WITH-CRITICALITY,inventory,REPLACE-WITH-NOTES

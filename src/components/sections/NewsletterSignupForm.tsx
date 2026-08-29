@@ -1,20 +1,27 @@
 'use client'
 
 import { type FormEvent, useState } from 'react'
+import { cn } from '@/lib/utils'
 
 type SubmitState = 'idle' | 'submitting' | 'success' | 'inactive' | 'error'
 
 interface NewsletterSignupFormProps {
   enabled: boolean
+  inputId?: string
+  className?: string
 }
 
-export default function NewsletterSignupForm({ enabled }: NewsletterSignupFormProps) {
+export default function NewsletterSignupForm({
+  enabled,
+  inputId = 'newsletter-email',
+  className,
+}: NewsletterSignupFormProps) {
   const [email, setEmail] = useState('')
   const [state, setState] = useState<SubmitState>(enabled ? 'idle' : 'inactive')
   const [message, setMessage] = useState(
     enabled
       ? 'Your email is sent to the newsletter provider only when you submit this form.'
-      : 'Newsletter signup is being connected. Until it is active, please use the contact page for updates or corrections.'
+      : 'Newsletter signup is being connected. Until it is active, please use the contact page for updates or corrections.',
   )
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -23,7 +30,7 @@ export default function NewsletterSignupForm({ enabled }: NewsletterSignupFormPr
     if (!enabled) {
       setState('inactive')
       setMessage(
-        'Newsletter signup is not active yet because the provider credentials are not configured.'
+        'Newsletter signup is not active yet because the provider credentials are not configured.',
       )
       return
     }
@@ -50,7 +57,7 @@ export default function NewsletterSignupForm({ enabled }: NewsletterSignupFormPr
       if (response.status === 503 || data.error === 'not_configured') {
         setState('inactive')
         setMessage(
-          'Newsletter signup is not active yet because the provider credentials are not configured.'
+          'Newsletter signup is not active yet because the provider credentials are not configured.',
         )
         return
       }
@@ -74,14 +81,17 @@ export default function NewsletterSignupForm({ enabled }: NewsletterSignupFormPr
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto max-w-md rounded-lg border border-border bg-surface p-4 shadow-card"
+      className={cn(
+        'mx-auto max-w-md rounded-lg border border-border bg-surface p-4 shadow-card',
+        className,
+      )}
     >
       <div className="flex flex-col gap-3 sm:flex-row">
-        <label className="sr-only" htmlFor="newsletter-email">
+        <label className="sr-only" htmlFor={inputId}>
           Email address
         </label>
         <input
-          id="newsletter-email"
+          id={inputId}
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
