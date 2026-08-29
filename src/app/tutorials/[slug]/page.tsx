@@ -56,6 +56,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TutorialPage({ params }: Props) {
   const { slug } = await params
+  if (isNoindexTutorialSlug(slug)) notFound()
+
   const duplicateRedirect = getDuplicateTutorialRedirect(slug)
   if (duplicateRedirect) permanentRedirect(duplicateRedirect)
 

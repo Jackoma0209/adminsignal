@@ -52,6 +52,7 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
   const { slug } = await params
   const article = troubleshootingArticles.find((item) => item.slug === slug)
   if (!article) notFound()
+  if (isNoindexTroubleshootingSlug(slug)) notFound()
   const underReview = isNoindexTroubleshootingSlug(slug)
 
   let content = ''

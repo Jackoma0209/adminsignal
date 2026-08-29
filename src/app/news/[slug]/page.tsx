@@ -116,6 +116,7 @@ export default async function NewsArticlePage({ params }: Props) {
   const { slug } = await params
   const signal = signals.find((item) => item.slug === slug)
   if (!signal) notFound()
+  if (isNoindexNewsSlug(slug)) notFound()
   const underReview = isNoindexNewsSlug(slug)
   const draft = isDraftNewsSlug(slug)
   const sourceConflict = isEditorialReviewNewsSlug(slug)
