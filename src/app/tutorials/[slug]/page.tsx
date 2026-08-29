@@ -19,6 +19,7 @@ import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
 import AuthorBox from '@/components/article/AuthorBox'
+import ArticleNewsletter from '@/components/article/ArticleNewsletter'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
@@ -120,6 +121,14 @@ export default async function TutorialPage({ params }: Props) {
     Advanced: 'language',
   }
 
+  const graphTemplate =
+    slug === 'azuread-msonline-to-microsoft-graph-powershell-migration'
+      ? {
+          templateHref: '/templates',
+          templateLabel: 'Download the Graph migration register CSV',
+        }
+      : {}
+
   return (
     <>
       {!underReview && <StructuredData data={jsonLd} />}
@@ -199,6 +208,14 @@ export default async function TutorialPage({ params }: Props) {
                     components={mdxComponents}
                   />
                 </Prose>
+              )}
+
+              {!underReview && (
+                <ArticleNewsletter
+                  heading="Tuesday digest"
+                  description="For when this breaks again."
+                  {...graphTemplate}
+                />
               )}
 
               {!underReview && (
