@@ -9,8 +9,9 @@ const footerLinks = [
     links: [
       { label: 'Home', href: '/' },
       { label: 'News', href: '/news' },
-      { label: 'Tutorials', href: '/tutorials' },
       { label: 'Troubleshooting', href: '/troubleshooting' },
+      { label: 'Templates', href: '/templates' },
+      { label: 'Tutorials', href: '/tutorials' },
       { label: 'Comparisons', href: '/comparisons' },
     ],
   },

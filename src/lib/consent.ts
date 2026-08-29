@@ -60,6 +60,7 @@ const AD_SCRIPT_SUPPRESSED_PATHS = new Set([
   '/reviews',
   '/search',
   '/scripts',
+  '/templates',
   '/terms',
   '/topics',
 ])

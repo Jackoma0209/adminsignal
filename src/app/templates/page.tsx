@@ -1,0 +1,127 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { AlertTriangle, Download, FileSpreadsheet } from 'lucide-react'
+import Container from '@/components/layout/Container'
+import ArticleNewsletter from '@/components/article/ArticleNewsletter'
+import { buildCategoryMetadata } from '@/lib/metadata'
+import { primaryAuthor } from '@/data/authors'
+
+const pageTitle = 'Operator templates'
+const pageDescription =
+  'Free starter CSVs for Autopilot hardware-hash import and Graph PowerShell migration registers. Replace placeholder values, redact identifying data, and test in a lab. These are not production automation.'
+
+export const metadata: Metadata = buildCategoryMetadata({
+  title: pageTitle,
+  description: pageDescription,
+  path: '/templates',
+})
+
+const templates = [
+  {
+    title: 'Autopilot hardware-hash CSV',
+    description:
+      'Microsoft Autopilot bulk-import headers, with one clearly labelled placeholder row. Replace the serial and hardware hash from Get-WindowsAutopilotInfo. Leave Windows Product ID and Assigned User blank unless you have a real value.',
+    href: '/templates/autopilot-hardware-hash.csv',
+    filename: 'autopilot-hardware-hash.csv',
+    relatedHref: '/troubleshooting/autopilot-device-not-importing-hardware-hash',
+    relatedLabel: 'Diagnose Autopilot hardware-hash import failures',
+  },
+  {
+    title: 'Graph migration register CSV',
+    description:
+      'Starter inventory columns for an AzureAD/MSOnline to Microsoft Graph PowerShell rewrite. One example row for UserReport.ps1 in inventory status. Replace owner, auth, data, write-action, and criticality before you treat it as a live register.',
+    href: '/templates/graph-migration-register.csv',
+    filename: 'graph-migration-register.csv',
+    relatedHref: '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration',
+    relatedLabel: 'Read the Graph PowerShell migration guide',
+  },
+]
+
+export default function TemplatesPage() {
+  return (
+    <div className="py-16 sm:py-20">
+      <Container>
+        <div className="max-w-3xl">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary">
+            Free downloads
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Operator templates
+          </h1>
+          <p className="mt-4 text-base leading-relaxed text-muted">
+            Starter files for jobs that fail in the portal when the CSV is wrong. They are not
+            production automation, a paid store, or a Microsoft download. Replace every REPLACE-
+            value, redact serial numbers and hashes before you share a filled copy, and test the
+            import or script in a lab tenant first.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted/80">
+            Prepared by {primaryAuthor.name} for AdminSignal. Independent operator notes.
+          </p>
+        </div>
+
+        <div className="mt-10 rounded-xl border border-amber-500/20 bg-amber-500/5 p-5">
+          <div className="flex gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden="true" />
+            <div className="text-sm leading-relaxed text-muted">
+              <p className="font-semibold text-foreground">
+                Treat these as blanks, not samples of a live estate
+              </p>
+              <p className="mt-1">
+                The Autopilot row uses a placeholder serial and a placeholder hash token, not a
+                captured hardware hash. The Graph row keeps the article example script name and
+                inventory status only. Do not invent tenant IDs, object IDs, or real hashes to
+                complete the file.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,22rem)] lg:items-start">
+          <div className="grid gap-5">
+            {templates.map((item) => (
+              <article
+                key={item.href}
+                className="rounded-xl border border-border bg-surface p-6 shadow-card"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft ring-1 ring-primary/20">
+                    <FileSpreadsheet className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                      {item.title}
+                    </h2>
+                    <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      <a
+                        href={item.href}
+                        download={item.filename}
+                        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                      >
+                        <Download className="h-4 w-4" aria-hidden="true" />
+                        Download CSV
+                      </a>
+                      <Link
+                        href={item.relatedHref}
+                        className="text-sm font-medium text-primary hover:underline"
+                      >
+                        {item.relatedLabel}
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <ArticleNewsletter
+            heading="Tuesday digest"
+            description="When Autopilot imports or Graph cmdlets break again, the notes go here. Signup is live only when the newsletter provider is configured."
+            inputId="templates-newsletter-email"
+            className="mt-0 lg:sticky lg:top-24"
+          />
+        </div>
+      </Container>
+    </div>
+  )
+}
