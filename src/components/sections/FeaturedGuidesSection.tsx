@@ -75,13 +75,22 @@ export default function FeaturedGuidesSection() {
           title="The depth your vendor docs don't cover"
           description="Command-heavy operator guides: Graph migrations, Settings Catalog, Defender rollout, SMTP AUTH, Autopilot imports, and Intune sync failures."
           action={
-            <Link
-              href="/tutorials"
-              className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
-            >
-              Browse all guides
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+            <div className="flex flex-col items-end gap-2">
+              <Link
+                href="/troubleshooting"
+                className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
+              >
+                Browse troubleshooting
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/tutorials"
+                className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
+              >
+                Browse all guides
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
           }
         />
 

@@ -31,8 +31,10 @@ export default function FailureStateSection() {
   const bySlug = new Map(troubleshootingArticles.map((article) => [article.slug, article]))
 
   const articles = PREFERRED_SLUGS.map((slug) => bySlug.get(slug)).filter(
-    (article): article is TroubleshootingArticle =>
-      Boolean(article) && !isNoindexTroubleshootingSlug(article.slug),
+    (article): article is TroubleshootingArticle => {
+      if (!article) return false
+      return !isNoindexTroubleshootingSlug(article.slug)
+    },
   )
 
   if (articles.length === 0) return null
