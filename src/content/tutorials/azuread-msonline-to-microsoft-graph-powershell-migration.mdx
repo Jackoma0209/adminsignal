@@ -274,10 +274,10 @@ finally {
 
 ## App-Only Authentication with Certificate
 
-{/* Jack must drop in a redacted capture. Do not generate a fake Entra portal image. */}
 <ScreenshotSlot
-  alt="Microsoft Entra admin centre App registrations > Certificates and secrets, showing a certificate thumbprint with tenant name and object IDs redacted"
-  caption="Entra app registration Certificates and secrets blade. Paste a redacted capture of this blade."
+  src="/images/evidence/entra-app-certificates-secrets.png"
+  alt="Microsoft Entra admin centre, App registrations, Certificates and secrets, Client secrets tab, with secret values and IDs redacted"
+  caption="Entra app registration Certificates and secrets, Client secrets tab. Secret values and IDs redacted. One secret is approaching expiry."
 />
 
 Use app-only authentication for scheduled jobs where no user should sign in. Certificate authentication is usually a better production choice than a client secret because it avoids storing a plain secret value in the script.
