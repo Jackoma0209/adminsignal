@@ -5,6 +5,7 @@ import HeroSection from '@/components/sections/HeroSection'
 import ValuePropSection from '@/components/sections/ValuePropSection'
 import TrustStripSection from '@/components/sections/TrustStripSection'
 import FeaturedSignalsSection from '@/components/sections/FeaturedSignalsSection'
+import FailureStateSection from '@/components/sections/FailureStateSection'
 import FeaturedGuidesSection from '@/components/sections/FeaturedGuidesSection'
 import NewsletterSection from '@/components/sections/NewsletterSection'
 import TopicHubsSection from '@/components/sections/TopicHubsSection'
@@ -76,6 +77,7 @@ export default function HomePage() {
       <TrustStripSection />
       <ValuePropSection />
       <FeaturedSignalsSection />
+      <FailureStateSection />
       <FeaturedGuidesSection />
       <NewsletterSection />
       <TopicHubsSection />
