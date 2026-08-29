@@ -16,6 +16,7 @@ import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
 import TableOfContents from '@/components/article/TableOfContents'
 import AuthorBox from '@/components/article/AuthorBox'
+import ArticleNewsletter from '@/components/article/ArticleNewsletter'
 import RelatedContent from '@/components/article/RelatedContent'
 import AdSlot from '@/components/article/AdSlot'
 import TrustBanner from '@/components/article/TrustBanner'
@@ -112,6 +113,14 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
     Advanced: 'language',
   }
 
+  const autopilotTemplate =
+    slug === 'autopilot-device-not-importing-hardware-hash'
+      ? {
+          templateHref: '/templates',
+          templateLabel: 'Download the Autopilot hardware-hash CSV template',
+        }
+      : {}
+
   return (
     <>
       {!underReview && <StructuredData data={jsonLd} />}
@@ -176,6 +185,14 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
                     components={mdxComponents}
                   />
                 </Prose>
+              )}
+
+              {!underReview && (
+                <ArticleNewsletter
+                  heading="Tuesday digest"
+                  description="For when this breaks again."
+                  {...autopilotTemplate}
+                />
               )}
 
               {author && !underReview && (
