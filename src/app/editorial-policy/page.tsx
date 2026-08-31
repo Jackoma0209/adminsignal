@@ -20,7 +20,7 @@ export default function EditorialPolicyPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Editorial Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: August 2026</p>
           <p className="mb-8 text-base leading-relaxed text-muted">
             This policy explains how AdminSignal produces and maintains content. For background on
             the site and who writes for it, see the{' '}
@@ -42,14 +42,43 @@ export default function EditorialPolicyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Accuracy</h2>
               <p>
-                We test scripts, configurations, and procedures before publishing where possible.
-                Content is reviewed for technical accuracy against official Microsoft documentation.
-                If you find an error, please{' '}
+                Content is checked against current official Microsoft documentation before
+                publication. Scripts, portal paths, and procedures are executed in a lab or tenant
+                only when the article says they were. If you find an error, please{' '}
                 <a href="/contact" className="text-primary underline underline-offset-2">
                   let us know
                 </a>
                 .
               </p>
+            </section>
+
+            <section>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">
+                How verification is labelled
+              </h2>
+              <ul className="list-disc space-y-2 pl-5">
+                <li>
+                  <strong className="text-foreground">Tested in a tenant or lab:</strong> the
+                  commands, portal path, or procedure were run in a named class of environment. The
+                  article will say so.
+                </li>
+                <li>
+                  <strong className="text-foreground">Reviewed against documentation:</strong> the
+                  article was checked against current Microsoft Learn, MSRC, or product
+                  documentation. That is source review, not a claim that every command was executed.
+                </li>
+                <li>
+                  <strong className="text-foreground">Example output only:</strong> sample commands
+                  and expected output are illustrative. Adapt them to the estate and test before
+                  production use.
+                </li>
+                <li>
+                  <strong className="text-foreground">AI assistance:</strong> drafting tools may be
+                  used for structure or copy-edit. Technical claims, sources, and operational
+                  recommendations are reviewed before publication. AI output is not published
+                  unedited as a finished guide.
+                </li>
+              </ul>
             </section>
 
             <section>
