@@ -1,21 +1,24 @@
 ---
-title: "Building a PowerShell-Driven Software Inventory System for Unmanaged Endpoints"
+title: "Collecting Installed Software with PowerShell on Unmanaged Endpoints"
 category: "PowerShell"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "Mar 31, 2026"
+lastReviewed: "Aug 31, 2026"
+reviewNote: "Retitled to match the collection-and-export scope actually published. Removed SQLite and multi-host database promises that were not implemented."
 tags: ["PowerShell", "WMI", "Inventory", "Automation"]
 ---
 
-## Why Build Your Own
+## Why collect inventory without an agent
 
-Enterprise RMM tools and Intune both provide software inventory. But for legacy environments, air-gapped networks, or incident response scenarios where you need to know *right now* what is installed on a machine without an agent, a PowerShell-based pipeline is indispensable.
+Enterprise RMM tools and Intune both provide software inventory. For a legacy environment, an air-gapped network, or an incident-response hour where you need to know what is installed on a machine you already administer, a PowerShell collection script is still useful.
 
-This guide builds a three-source inventory system that combines:
+This guide collects three *sources of evidence* and writes CSV or HTML:
 
-1. **Win32_Product WMI class** (installed MSI packages)
-2. **Registry uninstall keys** (broader coverage, including non-MSI installs)
-3. **A lightweight SQLite output** for persistence and querying across multiple hosts
+1. **Registry uninstall keys** (primary source, including many non-MSI installs)
+2. **Win32_Product WMI class** (MSI packages only; use sparingly)
+3. **AppX / Store packages** (kept in a separate list so names do not collide)
+
+It does **not** build a persistent inventory system. There is no SQLite schema, no upsert path, and no rolling multi-host database in this article. If you need that, use Intune discovered apps, Configuration Manager, or an approved RMM export.
 
 Use this only on systems you are authorised to administer. Software inventory can expose installed security tools, business applications, usernames embedded in paths, and licensing data, so treat exports as internal operational evidence rather than general-purpose files.
 
@@ -162,7 +165,7 @@ $results |
     Out-File "C:\Inventory\report.html"
 ```
 
-For environments where you want persistent, queryable results, consider exporting to CSV and importing into a scheduled task that builds a rolling inventory database.
+Treat CSV and HTML as point-in-time exports. A persisted multi-host inventory database is out of scope for this page.
 
 ## Validation Steps
 
