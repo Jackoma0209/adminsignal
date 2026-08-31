@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { comparisons } from '@/data/comparisons'
+import { isNoindexComparisonSlug } from '@/lib/noindex'
 import ComparisonCard from '@/components/cards/ComparisonCard'
 import CategoryPageTemplate from '@/components/templates/CategoryPageTemplate'
 import StructuredData from '@/components/StructuredData'
@@ -17,7 +18,9 @@ export const metadata: Metadata = buildCategoryMetadata({
   path: pagePath,
 })
 
-const categories = [...new Set(comparisons.map((c) => c.category))]
+const categories = [
+  ...new Set(comparisons.filter((c) => !isNoindexComparisonSlug(c.slug)).map((c) => c.category)),
+]
 
 export default async function ComparisonsPage({
   searchParams,
@@ -25,7 +28,10 @@ export default async function ComparisonsPage({
   searchParams: Promise<{ category?: string }>
 }) {
   const { category } = await searchParams
-  const filtered = category ? comparisons.filter((c) => c.category === category) : comparisons
+  const visibleComparisons = comparisons.filter((c) => !isNoindexComparisonSlug(c.slug))
+  const filtered = category
+    ? visibleComparisons.filter((c) => c.category === category)
+    : visibleComparisons
 
   const pageUrl = category
     ? `https://www.adminsignal.com/comparisons?category=${encodeURIComponent(category)}`
@@ -55,7 +61,7 @@ export default async function ComparisonsPage({
         eyebrow="Comparisons"
         title={pageTitle}
         description="Side-by-side analysis for enterprise IT teams, focused on operating model, migration risk, licensing caveats, supportability, and the questions to validate in your own environment."
-        itemCount={comparisons.length}
+        itemCount={filtered.length}
         categories={categories}
         activeCategory={category}
         basePath="/comparisons"
