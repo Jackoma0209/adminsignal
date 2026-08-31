@@ -1,39 +1,39 @@
 ---
-title: "Windows Defender vs. CrowdStrike Falcon: Enterprise Endpoint Protection Compared"
+title: "Choosing Between Microsoft Defender for Endpoint and CrowdStrike Falcon"
 category: "Endpoint Security"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "July 5, 2026"
-reviewNote: "Disclosure, evaluation criteria, and purchasing caveats refreshed. Confirm current Microsoft Defender and CrowdStrike feature packaging, platform support, and pricing before buying."
+lastReviewed: "Aug 31, 2026"
+reviewNote: "Rewritten as a decision framework. Comparative judgements without a documented evaluation were removed. Page is noindexed until first-hand evidence exists."
 tags: ["Defender", "CrowdStrike", "EDR", "Endpoint Security"]
 ---
 This page is an operator decision framework based on documented product capabilities and the facts already in this article. It is not a lab test, benchmark, or fabricated evaluation.
 
 ## Why This Comparison Matters Now
 
-Two years ago, this comparison often had a clearer answer for larger security teams. Microsoft Defender for Endpoint Plan 2 is a stronger option than many admins remember, particularly for organisations already invested in Microsoft 365 E5, Intune, Sentinel, and Defender XDR. The answer is now more nuanced.
+The useful question is not which vendor wins a feature matrix. It is which console, licensing bundle, and update-risk model your team can operate. Microsoft Defender for Endpoint Plan 2 is part of Microsoft 365 E5 and Defender XDR. CrowdStrike Falcon is a separate agent and console. Confirm current packaging and platform support with each vendor before any purchase.
 
 ## Detection and Prevention
 
 **Microsoft Defender for Endpoint Plan 2** uses a combination of cloud-delivered protection, behavioural analysis, and attack surface reduction rules. Independent evaluations such as MITRE ATT&CK Evaluations are useful reference points, but they should not replace testing against your own operating model.
 
-**CrowdStrike Falcon** is strong on behavioural detection, threat intelligence, and investigation depth. The process tree and response workflow are often easier for incident responders who spend their day inside an EDR console.
+**CrowdStrike Falcon** publishes behavioural detection, threat intelligence, and a process-tree investigation workflow. Treat vendor descriptions as claims to verify in a pilot, not as a ranking.
 
-**Operator take on detection**: Independent evaluations such as MITRE ATT&CK Evaluations are a reference, not a substitute for your own operating model. CrowdStrike is often chosen for investigation depth and threat intelligence. MDE is competitive on coverage for Microsoft-centred estates and has native Windows kernel visibility without an extra driver stack. This page does not claim a ranked lab winner.
+**How to use public evaluations:** MITRE ATT&CK Evaluations are a reference. They are not a substitute for your operating model. This page does not claim a ranked lab winner.
 
 ## Investigation and Threat Hunting
 
-**MDE** provides the Microsoft 365 Defender portal with Advanced Hunting (KQL-based), the device timeline, and integration with Microsoft Sentinel. The investigation experience has improved significantly and is now genuinely usable for SOC analysts.
+**MDE** documents Advanced Hunting with KQL, a device timeline, and Microsoft Sentinel integration in the Defender portal.
 
-**CrowdStrike** provides the Threat Graph, a process-tree based investigation interface that many incident response analysts prefer. The ability to pivot through every process, network connection, and file operation on a device and see the full causal chain is often more intuitive in Falcon than in MDE.
+**CrowdStrike** documents Threat Graph and a process-tree investigation interface.
 
-For organisations with mature SOC teams doing threat hunting, CrowdStrike's investigation tools may still fit the workflow better. For Microsoft-centred teams, MDE's KQL hunting and Sentinel integration may be the more practical path.
+Fit depends on where analysts already work. A Microsoft-admin-led estate that already uses Sentinel and KQL is not the same operating model as a SOC built around Falcon. Collect that evidence in a pilot instead of inferring it from marketing copy.
 
 ## Cross-Platform Coverage
 
 **MDE**: Available for Windows, macOS, Linux, iOS, and Android. The Windows coverage is the strongest; macOS and Linux agents are functional but have historically lagged behind the Windows sensor.
 
-**CrowdStrike**: Strong cross-platform coverage including Windows, macOS, Linux, ChromeOS, and cloud workloads (AWS, Azure, GCP). For organisations with significant non-Windows infrastructure, this is a meaningful advantage.
+**CrowdStrike**: Vendor documentation covers Windows, macOS, Linux, ChromeOS, and cloud workloads. Confirm the platforms you actually run, and the module tier required, before treating that list as coverage you own.
 
 ## Integration with the Microsoft Security Stack
 
@@ -144,7 +144,7 @@ The cheaper unit price is often not the cheaper operating cost over 24 months.
 
 ## Verdict
 
-For Microsoft-centred environments already on E5 licensing, Defender for Endpoint is compelling and often easier to operate. CrowdStrike remains strong where investigation depth, cross-platform coverage, and specialist SOC workflows matter more than licensing consolidation. The right answer depends on estate mix, analyst workflow, support model, and appetite for third-party endpoint agent risk.
+This page does not pick a winner. If Microsoft 365 E5 or Defender Plan 2 is already licensed and devices are Intune-managed, start the evaluation with Defender for Endpoint because the incremental licence cost may be zero. If the SOC already runs on Falcon process trees, or the estate is substantially non-Windows, put CrowdStrike on the shortlist and run the pilot table above. Publish first-hand results before treating either path as settled.
 
 ## Primary Sources
 
@@ -156,6 +156,6 @@ For Microsoft-centred environments already on E5 licensing, Defender for Endpoin
 ## Related Reading
 
 - [Rolling Out Microsoft Defender for Endpoint with Intune](/tutorials/microsoft-defender-for-endpoint-intune-rollout)
-- [Hardening Windows 11 with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
+- [Selected CIS Windows 11 Level 1 controls](/tutorials/hardening-windows-11-cis-benchmark)
 - [Endpoint Security hub](/endpoint-security)
 - [Intune Security Hardening Plan](/news/intune-security-best-practices-2026)
