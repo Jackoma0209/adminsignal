@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Group Policy'
 const topicDescription =
-  'Published Group Policy coverage currently on AdminSignal is two diagnosis articles — RSoP/gpresult and GPO not applying — plus coexistence notes in the Intune Settings Catalog migration guide.'
+  'Published Group Policy coverage on AdminSignal is one canonical diagnosis guide for policies that do not apply, plus coexistence notes in the Intune Settings Catalog migration guide.'
 const topicPath = '/group-policy'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -63,7 +63,7 @@ export default function GroupPolicyPage() {
           },
           {
             title: 'What this hub currently publishes',
-            body: 'Two diagnosis articles are live: Group Policy troubleshooting with RSoP and gpresult, and Group Policy not applying. Coexistence with Intune is covered in the Settings Catalog migration guide. There is not a GPO design catalogue or a loopback-mode tutorial yet.',
+            body: 'One diagnosis article is live: Group Policy not applying, including RSoP, gpresult, denied-GPO reasons, WMI filters, replication, and known tool limits. The previous standalone RSoP tutorial now redirects to that page. Coexistence with Intune is covered in the Settings Catalog migration guide. There is not a GPO design catalogue or a loopback-mode tutorial yet.',
           },
           {
             title: 'When not to add another GPO',
