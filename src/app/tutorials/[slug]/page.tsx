@@ -223,7 +223,9 @@ export default async function TutorialPage({ params }: Props) {
                   toolName="Microsoft Intune"
                   tagline="Manage, secure, and report on all your endpoints from a single cloud-native console."
                   href="https://intune.microsoft.com"
-                  badge="Recommended"
+                  badge="Product link"
+                  ctaLabel="Open Intune"
+                  disclosure="This is a Microsoft product link, not an advert and not an affiliate placement. AdminSignal has no affiliate arrangement for Intune."
                   external
                 />
               )}
