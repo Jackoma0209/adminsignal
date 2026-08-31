@@ -18,6 +18,12 @@ import { isNoindexHref } from '@/lib/noindex'
  * Keep NEXT_PUBLIC_GA_ENABLED, NEXT_PUBLIC_ADSENSE_ENABLED, and
  * NEXT_PUBLIC_ADS_ENABLED unset or false. Advertising tags must stay off.
  *
+ * Production note: those three Vercel flags were true after the CMP merge, so
+ * the client bundle folded adsenseScriptEnabled and analyticsEnabled onto the
+ * CMP flag and preloaded adsbygoogle.js / gtag on article URLs. The hold below
+ * keeps non-essential Google tags off until the live CMP banner is verified
+ * and the Vercel flags are actually false.
+ *
  * Publishing the European regulations (UK/EEA/CH) message still has to be done
  * in AdSense → Privacy & messaging. Include Google Advertising Products
  * (IAB TCF vendor ID 755) in that message. Code cannot publish the banner.
@@ -54,15 +60,28 @@ export const googleTagsRequested =
 export const consentDefaultsRequired = fundingChoicesEnabled || googleTagsRequested
 
 /**
+ * Hard hold: do not inject adsbygoogle.js or GA4 until this is false.
+ * Funding Choices is unaffected. Flip only after the live CMP banner is
+ * verified and Vercel ads/GA flags are unset or false.
+ */
+export const nonEssentialGoogleTagsHeld = true
+
+/**
  * Non-essential Google tags stay disabled unless their own flags are on and a
  * certified CMP is in place. Funding Choices loading does not enable ads.
  */
 export const analyticsEnabled =
-  process.env.NEXT_PUBLIC_GA_ENABLED === 'true' && googleCertifiedCmpConfigured
+  !nonEssentialGoogleTagsHeld &&
+  process.env.NEXT_PUBLIC_GA_ENABLED === 'true' &&
+  googleCertifiedCmpConfigured
 export const adsenseScriptEnabled =
-  process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true' && googleCertifiedCmpConfigured
+  !nonEssentialGoogleTagsHeld &&
+  process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true' &&
+  googleCertifiedCmpConfigured
 export const adsEnabled =
-  process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' && googleCertifiedCmpConfigured
+  !nonEssentialGoogleTagsHeld &&
+  process.env.NEXT_PUBLIC_ADS_ENABLED === 'true' &&
+  googleCertifiedCmpConfigured
 
 const AD_SCRIPT_ELIGIBLE_PREFIXES = [
   '/news/',
