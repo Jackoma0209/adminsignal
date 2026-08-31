@@ -28,19 +28,48 @@ google.com, pub-5563142788194204, DIRECT, f08c47fec0942fa0
 - Do not replace these IDs with placeholder or fake publisher IDs.
 - The AdSense loader is route-gated so it stays off legal pages, search/noindex pages, topic/listing pages, and script library pages while those remain implementation guides.
 - Incomplete archives (`/scripts`, `/reviews`, `/best-tools`, `/search`) are noindex and disallowed in `robots.ts` until they meet publication standard.
+- `/templates` is noindex and excluded from the sitemap. It stays in `AD_SCRIPT_SUPPRESSED_PATHS`.
 - Sitewide metadata must not claim unverifiable years of experience; author claims stay aligned with `/about`.
 - Keep the inactive newsletter form hidden until MailerLite credentials are configured.
 - Before re-applying to AdSense: run `npm run check:release`, confirm legal pages load, and browse the site as a first-time visitor for thin or unfinished pages.
+- Do not promise that Google will approve AdSense.
 
 ## CMP And Consent Status
 
-This repo does not currently include a Google-certified CMP package. Non-essential Google Analytics and AdSense scripts are gated behind:
+Google Funding Choices / Privacy & messaging is implemented as the Google-certified CMP (IAB TCF v2.3). The loader is `src/components/FundingChoicesScript.tsx` and is on by default. It is not an advertising tag.
 
 ```env
-NEXT_PUBLIC_GOOGLE_CERTIFIED_CMP_ENABLED=true
+# Optional. Unset means the CMP loader is on. Set false only to disable Funding Choices.
+NEXT_PUBLIC_GOOGLE_CERTIFIED_CMP_ENABLED=false
 ```
 
-Keep that flag `false` until a Google-certified CMP integrated with IAB Europe's TCF is configured and verified for UK, EEA, and Switzerland traffic. After CMP setup, verify that users can accept, reject, customise, and withdraw consent, and that Google Consent Mode updates are sent before analytics or advertising storage is granted.
+Keep ads and Analytics off:
+
+```env
+NEXT_PUBLIC_GA_ENABLED=false
+NEXT_PUBLIC_ADSENSE_ENABLED=false
+NEXT_PUBLIC_ADS_ENABLED=false
+```
+
+Do not set those three flags to true. Funding Choices may load; `pagead2.googlesyndication.com` and adsbygoogle Auto ads must not.
+
+The consent banner still has to be published in AdSense:
+
+1. AdSense → Privacy & messaging
+2. Create and publish a European regulations message for the UK, EEA, and Switzerland
+3. Include Google Advertising Products (IAB TCF vendor ID 755)
+4. Enable Consent Mode support in that message if it is not already on
+
+Until that message is published, the Funding Choices script may load without showing a banner. Ads stay off regardless.
+
+Footer **Privacy and cookie settings** calls `googlefc.showRevocationMessage` when the CMP is ready, and falls back to `/cookies` if it is not.
+
+Verify after deploy:
+
+- Network: `fundingchoicesmessages.google.com/i/pub-5563142788194204` may load
+- Network: `pagead2.googlesyndication.com` must not load
+- After the AdSense message is published: `?fc=alwaysshow&fctype=gdpr` should preview the banner
+- Footer control should open the CMP, not `/cookies#manage-consent`
 
 ## Script Library Status
 

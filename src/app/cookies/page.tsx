@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
+import PrivacySettingsButton from '@/components/PrivacySettingsButton'
 import { buildCategoryMetadata } from '@/lib/metadata'
 
 export const metadata: Metadata = buildCategoryMetadata({
@@ -20,7 +21,7 @@ export default function CookiesPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Cookie Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: August 2026</p>
 
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
@@ -94,7 +95,7 @@ export default function CookiesPage() {
                         Preference
                       </th>
                       <td className="px-4 py-3">Remember privacy and cookie choices</td>
-                      <td className="px-4 py-3">AdminSignal or consent management provider</td>
+                      <td className="px-4 py-3">Google Funding Choices (Privacy &amp; messaging)</td>
                       <td className="px-4 py-3">Usually not</td>
                     </tr>
                   </tbody>
@@ -120,10 +121,10 @@ export default function CookiesPage() {
               </ul>
               <p className="mt-3">
                 AdminSignal uses Google Consent Mode v2 with analytics and advertising storage
-                denied by default. Non-essential Google Analytics tags stay off unless a valid
-                consent choice is recorded. AdminSignal does not currently run a Google-certified
-                consent management platform, so those tags remain off for visitors in regions
-                where consent is required.
+                denied by default. Google Funding Choices is implemented on this site as the
+                Google-certified consent management platform. Non-essential Google Analytics tags
+                stay off until a valid consent choice is recorded and those tags are actually
+                enabled. They are not loaded today. Advertisements are not currently served.
               </p>
               <p className="mt-3">
                 You can opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -158,11 +159,15 @@ export default function CookiesPage() {
                 <li>Limit how often the same ad is shown</li>
               </ul>
               <p className="mt-3">
-                Google&apos;s use of advertising cookies may allow Google and its partners to serve
-                ads based on visits to AdminSignal and/or other websites.
+                Third-party vendors, including Google, use cookies to serve ads based on a
+                user&apos;s prior visits to your website or other websites.
               </p>
               <p className="mt-3">
-                You can manage Google ad personalisation here:{' '}
+                Google&apos;s use of advertising cookies enables it and its partners to serve ads to
+                your users based on their visit to your sites and/or other sites on the Internet.
+              </p>
+              <p className="mt-3">
+                Users may opt out of personalised advertising by visiting{' '}
                 <a
                   href="https://www.google.com/settings/ads"
                   className={linkClass}
@@ -171,9 +176,9 @@ export default function CookiesPage() {
                 >
                   https://www.google.com/settings/ads
                 </a>
-              </p>
-              <p className="mt-3">
-                You can also opt out of some third-party personalised advertising here:{' '}
+                {
+                  ". Alternatively, users can opt out of a third-party vendor's use of cookies for personalised advertising by visiting "
+                }
                 <a
                   href="http://www.aboutads.info/choices/"
                   className={linkClass}
@@ -182,6 +187,23 @@ export default function CookiesPage() {
                 >
                   http://www.aboutads.info/choices/
                 </a>
+                {'.'}
+              </p>
+              <p className="mt-3">
+                You can learn more about how Google uses information from sites that use its
+                services here:{' '}
+                <a
+                  href="https://policies.google.com/technologies/partner-sites"
+                  className={linkClass}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  https://policies.google.com/technologies/partner-sites
+                </a>
+              </p>
+              <p className="mt-3">
+                Non-essential Google advertising tags are not loaded on AdminSignal today. Ads are
+                not currently served.
               </p>
             </section>
 
@@ -193,16 +215,25 @@ export default function CookiesPage() {
                 analytics or advertising cookies are used.
               </p>
               <p className="mt-3">
-                AdminSignal does not currently run a Google-certified consent management platform
-                integrated with IAB Europe&apos;s Transparency and Consent Framework. Personalised
-                AdSense ads are not enabled on that basis. Non-essential Google advertising tags
-                stay off, and Consent Mode v2 remains default-denied.
+                AdminSignal implements Google Funding Choices (Privacy &amp; messaging) as the
+                Google-certified consent management platform, integrated with IAB Europe&apos;s
+                Transparency and Consent Framework (TCF v2.3). Google Advertising Products (vendor
+                ID 755) is the intended Google vendor in that configuration.
               </p>
               <p className="mt-3">
-                If a certified CMP is added later, you will be able to accept, reject, or customise
-                cookie categories and vendor choices from the privacy or cookie settings link in
-                the site footer. Until then, non-essential advertising and analytics cookies are
-                not used.
+                The Funding Choices loader is in the site code. The consent banner itself appears
+                after the European regulations message for the UK, EEA, and Switzerland is published
+                in Google AdSense Privacy &amp; messaging. Until that message is published, the
+                banner may not show. Consent Mode v2 remains default-denied. Non-essential Google
+                advertising and analytics tags stay off, and ads are not currently served.
+              </p>
+              <p className="mt-3">
+                Use Privacy and cookie settings in the site footer, or the control below, to review
+                or change your choices when the CMP is ready. If the CMP has not loaded, that
+                control stays on this page.
+              </p>
+              <p className="mt-4">
+                <PrivacySettingsButton className="text-sm font-medium text-primary underline underline-offset-2 hover:text-primary/80" />
               </p>
               <p className="mt-3">
                 Withdrawing consent does not remove cookies that were already stored. You can delete

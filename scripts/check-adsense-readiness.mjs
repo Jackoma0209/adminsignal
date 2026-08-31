@@ -15,7 +15,7 @@ const legacyPublisherPattern = new RegExp(
   `${['NEXT_PUBLIC', 'ADSENSE', 'PUBLISHER_ID'].join('_')}|${['ADSENSE', 'PUBLISHER_ID'].join('_')}`
 )
 const requiredRobotsDisallows = ['/scripts', '/reviews', '/best-tools', '/search', '/api/']
-const requiredNoindexPaths = ['/best-tools', '/reviews', '/scripts', '/search', '/advertise']
+const requiredNoindexPaths = ['/best-tools', '/reviews', '/scripts', '/search', '/advertise', '/templates']
 
 function fail(message) {
   console.error(`AdSense readiness check failed: ${message}`)
@@ -114,6 +114,18 @@ if (!consentSource.includes(expectedSellerId)) {
 
 if (!consentSource.includes(expectedClientId)) {
   fail(`consent config is missing ${expectedClientId}`)
+}
+
+if (consentSource.includes("NEXT_PUBLIC_ADSENSE_ENABLED === 'true'") === false) {
+  fail('consent config must still gate adsenseScriptEnabled on NEXT_PUBLIC_ADSENSE_ENABLED')
+}
+
+if (consentSource.includes("NEXT_PUBLIC_ADS_ENABLED === 'true'") === false) {
+  fail('consent config must still gate adsEnabled on NEXT_PUBLIC_ADS_ENABLED')
+}
+
+if (consentSource.includes("NEXT_PUBLIC_GA_ENABLED === 'true'") === false) {
+  fail('consent config must still gate analyticsEnabled on NEXT_PUBLIC_GA_ENABLED')
 }
 
 for (const file of files) {

@@ -205,6 +205,12 @@ for (const url of sitemapUrls) {
 for (const pathname of noindexPaths) {
   const cleanPath = pathname.split('?')[0]
   const { response, body } = await get(pathname)
+  if (response.status === 404) {
+    if (sitemapPaths.has(cleanPath)) {
+      errors.push(`${pathname}: withdrawn 404 route appears in sitemap`)
+    }
+    continue
+  }
   if (response.status !== 200) {
     errors.push(`${pathname}: expected accessible noindex page with 200, received ${response.status}`)
     continue
