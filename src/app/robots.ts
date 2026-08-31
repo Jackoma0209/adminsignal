@@ -1,9 +1,8 @@
 import type { MetadataRoute } from 'next'
 
 /**
- * Incomplete or low-value sections remain on the site for human readers and
- * internal links, but are kept out of search crawls until they meet the same
- * editorial standard as indexable guides.
+ * Unfinished archives (/scripts, /reviews, /best-tools) and withdrawn guides
+ * are 404 on the public surface. Keep them out of crawls as well.
  */
 export default function robots(): MetadataRoute.Robots {
   return {

@@ -104,8 +104,7 @@ export function isNoindexContentRoute(segment: string, slug: string): boolean {
       return isNoindexNewsSlug(slug)
     case 'reviews':
     case 'scripts':
-      // These archives remain available to readers but are not eligible for
-      // indexing until the resources meet their stated editorial standard.
+      // These archives 404 on the public surface until they meet publication standard.
       return true
     case 'troubleshooting':
       return isNoindexTroubleshootingSlug(slug)
