@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Privacy Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: August 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
               AdminSignal publishes technical guides, scripts, and analysis for enterprise
@@ -94,9 +94,10 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-3">
                 AdminSignal uses Google Consent Mode v2 defaults that deny analytics and
-                advertising storage until a valid consent choice is recorded. A Google-certified
-                consent management platform is not currently live on this site, so non-essential
-                Google Analytics and AdSense tags stay off.
+                advertising storage until a valid consent choice is recorded. Google Funding Choices
+                (Privacy &amp; messaging) is implemented as the Google-certified consent management
+                platform. Non-essential Google Analytics and AdSense tags stay off and are not
+                loaded today. Ads are not currently served.
               </p>
               <p className="mt-3">
                 You can also opt out of Google Analytics using Google&apos;s browser add-on:{' '}
@@ -125,9 +126,10 @@ export default function PrivacyPage() {
               <p className="mt-3">
                 AdSense may serve personalised ads or non-personalised ads depending on the
                 visitor&apos;s region, consent choices, Google settings, and publisher
-                configuration. A Google-certified CMP is not currently live, so personalised ads
-                that require TCF consent are not enabled. Visitors in the UK, EEA, and Switzerland
-                would need that CMP before personalised ads could be served.
+                configuration. Google Funding Choices is implemented for IAB TCF consent. The
+                consent banner appears after the European regulations message is published in
+                AdSense Privacy &amp; messaging. Non-essential advertising tags are not loaded, so
+                ads are not currently served.
               </p>
               <p className="mt-3">Google requires publishers using AdSense to disclose the following:</p>
               <ul className="mt-3 list-disc space-y-2 pl-5">
@@ -192,17 +194,23 @@ export default function PrivacyPage() {
                   Google AdSense, for advertising, measurement, fraud prevention, and
                   personalisation where consent permits
                 </li>
+                <li>
+                  Google Funding Choices (Privacy &amp; messaging), for consent records and vendor
+                  choices
+                </li>
                 <li>Other trusted service providers involved in hosting, security, or site delivery</li>
               </ul>
               <p className="mt-3">
                 Visitors in regions where consent is required, including the UK, EU/EEA, and
                 Switzerland, must be presented with cookie and vendor choices before non-essential
-                analytics or advertising cookies are used. A certified CMP is not currently live,
-                so AdminSignal keeps non-essential Google advertising and analytics tags disabled.
-                Consent Mode v2 remains default-denied.
+                analytics or advertising cookies are used. Google Funding Choices is implemented in
+                the site code as the Google-certified CMP. The banner appears after the European
+                regulations message is published in AdSense. Until then, Consent Mode v2 remains
+                default-denied, and non-essential Google advertising and analytics tags stay off.
               </p>
               <p className="mt-3">
-                For more detail, see our{' '}
+                Use Privacy and cookie settings in the site footer to review or change your choices
+                when the CMP is ready. If the CMP has not loaded, that control opens the{' '}
                 <a href="/cookies" className={linkClass}>
                   Cookie Policy
                 </a>
