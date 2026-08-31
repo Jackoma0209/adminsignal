@@ -58,7 +58,7 @@ export const topics: Topic[] = [
     id: '6',
     name: 'Group Policy',
     slug: 'group-policy',
-    description: 'Two diagnosis articles: RSoP/gpresult and GPO not applying, plus Intune coexistence notes.',
+    description: 'One canonical GPO diagnosis runbook covering gpresult, RSoP, scope, replication, and Intune coexistence.',
     icon: 'Settings',
     iconBg: 'bg-amber-500/10',
     iconColor: 'text-amber-400',

@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         destination: '/troubleshooting/group-policy-not-applying-diagnosis',
         permanent: true,
       },
+      {
+        source: '/comparisons/windows-defender-vs-crowdstrike-falcon',
+        destination: '/tutorials/microsoft-defender-for-endpoint-intune-rollout',
+        permanent: true,
+      },
     ]
   },
   images: {

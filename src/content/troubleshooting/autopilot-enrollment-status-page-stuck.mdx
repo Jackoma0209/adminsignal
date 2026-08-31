@@ -65,7 +65,7 @@ If either fails, the device has a network connectivity issue.
 **Common network issues**:
 - **Captive portal Wi-Fi**: The device needs network access before any browser is available. Use WPA2-Enterprise or a pre-shared key network during Autopilot provisioning.
 - **Proxy requiring authentication**: Windows OOBE does not send proxy credentials. Configure WPAD or use a transparent proxy.
-- **Firewall blocking required URLs**: Verify all required FQDNs are permitted. Check the [Microsoft Intune network endpoints](https://learn.microsoft.com/en-us/intune/fundamentals/intune-endpoints) list — pay particular attention to `*.manage.microsoft.com`, `*.azureedge.net`, and `*.delivery.mp.microsoft.com`.
+- **Firewall blocking required URLs**: Verify all required FQDNs are permitted. Check the [Microsoft Intune network endpoints](https://learn.microsoft.com/en-us/intune/fundamentals/endpoints) list — pay particular attention to `*.manage.microsoft.com`, `*.azureedge.net`, and `*.delivery.mp.microsoft.com`.
 
 ## Cause 2: Device Not Registered in Autopilot
 
