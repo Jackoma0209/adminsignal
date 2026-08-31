@@ -1,7 +1,5 @@
 'use client'
 
-import { fundingChoicesEnabled } from '@/lib/consent'
-
 declare global {
   interface Window {
     googlefc?: {
@@ -54,5 +52,3 @@ export default function PrivacySettingsButton({
     </button>
   )
 }
-
-export { fundingChoicesEnabled, COOKIES_FALLBACK }
