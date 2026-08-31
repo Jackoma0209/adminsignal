@@ -127,7 +127,7 @@ export default function CookiesPage() {
                 enabled. They are not loaded today. Advertisements are not currently served.
               </p>
               <p className="mt-3">
-                You can opt out of Google Analytics using Google's browser add-on:{' '}
+                You can opt out of Google Analytics using Google{"'"}s browser add-on:{' '}
                 <a
                   href="https://tools.google.com/dlpage/gaoptout"
                   className={linkClass}
@@ -160,10 +160,10 @@ export default function CookiesPage() {
               </ul>
               <p className="mt-3">
                 Third-party vendors, including Google, use cookies to serve ads based on a
-                user's prior visits to your website or other websites.
+                user{"'"}s prior visits to your website or other websites.
               </p>
               <p className="mt-3">
-                Google's use of advertising cookies enables it and its partners to serve ads to
+                Google{"'"}s use of advertising cookies enables it and its partners to serve ads to
                 your users based on their visit to your sites and/or other sites on the Internet.
               </p>
               <p className="mt-3">
@@ -216,7 +216,7 @@ export default function CookiesPage() {
               </p>
               <p className="mt-3">
                 AdminSignal implements Google Funding Choices (Privacy & messaging) as the
-                Google-certified consent management platform, integrated with IAB Europe's
+                Google-certified consent management platform, integrated with IAB Europe{"'"}s
                 Transparency and Consent Framework (TCF v2.3). Google Advertising Products (vendor
                 ID 755) is the intended Google vendor in that configuration.
               </p>
@@ -275,7 +275,7 @@ export default function CookiesPage() {
               <p>
                 We may update this Cookie Policy when our analytics, advertising, consent, or site
                 infrastructure changes. Updates will be posted on this page with a revised
-                "Last updated" date.
+                {'"Last updated"'} date.
               </p>
             </section>
 
@@ -286,7 +286,7 @@ export default function CookiesPage() {
                 <a href="/contact" className="text-primary underline underline-offset-2">
                   contact page
                 </a>{' '}
-                and include "Cookie Policy" in your message.
+                and include {'"Cookie Policy"'} in your message.
               </p>
             </section>
           </div>
