@@ -15,7 +15,7 @@ const knownStaticRoutes = new Set([
   '/contact', '/cookies', '/editorial-policy', '/endpoint-security', '/group-policy',
   '/guides/windows-11-25h2-autopilot-v2', '/intune', '/microsoft-365',
   '/microsoft-entra-id', '/news', '/patch-management', '/powershell', '/privacy',
-  '/reviews', '/sccm-mecm', '/scripts', '/search', '/terms', '/topics',
+  '/reviews', '/sccm-mecm', '/scripts', '/search', '/templates', '/terms', '/topics',
   '/troubleshooting', '/tutorials', '/windows-server',
 ])
 const requiredNoindexStaticPaths = [
@@ -24,6 +24,7 @@ const requiredNoindexStaticPaths = [
   '/scripts',
   '/search',
   '/advertise',
+  '/templates',
 ]
 const primarySourceHosts = new Set([
   'learn.microsoft.com', 'support.microsoft.com', 'www.microsoft.com',
@@ -304,7 +305,7 @@ for (const route of requiredNoindexStaticPaths) {
 if (!/DRAFT_NEWS_SLUGS\.has\(slug\)\s*\|\|\s*NOINDEX_NEWS_SLUGS\.has\(slug\)/.test(noindexSource)) {
   errors.push('src/lib/noindex.ts: draft news is not enforced by isNoindexNewsSlug')
 }
-if (/\$\{BASE\}\/scripts|\$\{BASE\}\/reviews/.test(sitemapSource)) {
+if (/\$\{BASE\}\/scripts|\$\{BASE\}\/reviews|\$\{BASE\}\/templates/.test(sitemapSource)) {
   errors.push('src/app/sitemap.ts: noindex archive included in sitemap')
 }
 if (!/isNoindexContentRoute\('guides', guide\.slug\)/.test(sitemapSource)) {
