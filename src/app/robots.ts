@@ -3,7 +3,7 @@ import type { MetadataRoute } from 'next'
 /**
  * Unfinished archives (/scripts, /reviews, /best-tools) and withdrawn guides
  * are 404 on the public surface. Keep them out of crawls as well.
- * The Defender comparison stays addressable but is noindexed and disallowed.
+ * Withdrawn pages with useful replacements are handled as permanent redirects.
  */
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -24,7 +24,6 @@ export default function robots(): MetadataRoute.Robots {
         '/tutorials/autopilot-v2-enrollment-esp-troubleshooting',
         '/news/april-2026-patch-tuesday-breakdown',
         '/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063',
-        '/comparisons/windows-defender-vs-crowdstrike-falcon',
       ],
     },
     sitemap: 'https://www.adminsignal.com/sitemap.xml',

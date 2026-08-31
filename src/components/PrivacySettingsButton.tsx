@@ -3,9 +3,6 @@
 declare global {
   interface Window {
     googlefc?: {
-      callbackQueue?: {
-        push: (item: (() => void) | Record<string, () => void>) => number
-      }
       showRevocationMessage?: () => void
     }
   }
@@ -18,20 +15,32 @@ function openFundingChoicesRevocation() {
   const fc = window.googlefc
   if (!fc || typeof fc.showRevocationMessage !== 'function') return false
 
-  if (fc.callbackQueue && typeof fc.callbackQueue.push === 'function') {
-    fc.callbackQueue.push(fc.showRevocationMessage)
-  } else {
+  try {
     fc.showRevocationMessage()
+    return true
+  } catch {
+    return false
   }
-  return true
 }
 
 function cmpDialogLooksOpen() {
-  return Boolean(
-    document.querySelector(
-      '[id*="googlefc" i], [class*="fc-dialog" i], [class*="fc-consent" i], iframe[src*="fundingchoices"]',
-    ),
+  const candidates = document.querySelectorAll<HTMLElement>(
+    '[role="dialog"], [class*="fc-dialog" i], [class*="fc-consent" i], iframe[src*="fundingchoices" i], iframe[name^="googlefc" i]',
   )
+
+  return Array.from(candidates).some((candidate) => {
+    if (candidate.getAttribute('name') === 'googlefcPresent') return false
+
+    const styles = window.getComputedStyle(candidate)
+    const bounds = candidate.getBoundingClientRect()
+    return (
+      styles.display !== 'none' &&
+      styles.visibility !== 'hidden' &&
+      Number(styles.opacity || '1') > 0 &&
+      bounds.width > 1 &&
+      bounds.height > 1
+    )
+  })
 }
 
 /** Opens the Funding Choices revocation dialog, or /cookies if no dialog appears. */
@@ -47,11 +56,13 @@ export default function PrivacySettingsButton({
       return
     }
 
+    // showRevocationMessage reloads the Funding Choices script, so allow time
+    // for its cross-origin dialog to render before using the policy fallback.
     window.setTimeout(() => {
       if (!cmpDialogLooksOpen()) {
         window.location.assign(COOKIES_FALLBACK)
       }
-    }, 700)
+    }, 2500)
   }
 
   return (
