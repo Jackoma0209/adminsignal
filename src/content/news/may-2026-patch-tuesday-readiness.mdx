@@ -68,7 +68,7 @@ Read the known issue section in each Microsoft KB for the OS versions in your es
 
 Microsoft advises auditing BitLocker group policies for explicit PCR7 inclusion and checking PCR7 binding status before installing this update on devices that match the affected configuration. A permanent resolution is planned in a future Windows update.
 
-If you are already managing BitLocker recovery prompts caused by a previous update in your environment, the [April 2026 BitLocker recovery loop troubleshooting guide](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063) covers the recovery pattern for PCR7 and Secure Boot-related recovery loops and is a useful reference for the same root cause.
+If you are already managing BitLocker recovery prompts caused by a previous update in your environment, the [BitLocker recovery key Entra backup guide](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra) covers escrow and recovery-key availability when PCR7 or Secure Boot-related prompts appear.
 
 **WSUS synchronisation error details (Windows Server 2022 and Server 23H2)**
 
@@ -175,7 +175,7 @@ Check Microsoft 365 admin centre Service health for Exchange Online, Teams, Shar
 3. Track devices that have not checked in since before the May 13 release date. Stale devices create compliance reporting gaps that can mask deployment failures.
 4. Run the [Windows Update for Business deferral troubleshooting](/troubleshooting/wufb-deferral-not-respected) to cross-check Intune, ConfigMgr, Defender, and WSUS reporting for drift across the estate.
 5. Review open incidents by Windows version, KB, hardware model, driver version, VPN client, security tool version, and server role. A pattern concentrated on the same hardware or driver combination points to a compatibility issue rather than a broad update problem.
-6. For the BitLocker PCR7 issue, confirm whether any additional devices in broader rings match the affected configuration. If recovery prompts appear after the May 2026 update, apply the [April 2026 BitLocker recovery loop troubleshooting guide](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063).
+6. For the BitLocker PCR7 issue, confirm whether any additional devices in broader rings match the affected configuration. If recovery prompts appear after the May 2026 update, use the [BitLocker recovery key Entra backup guide](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra).
 7. Close the cycle with a brief note covering what was approved, what was held, and what needs monitoring before the June 2026 Patch Tuesday window.
 
 ## What not to assume
@@ -196,7 +196,7 @@ Check Microsoft 365 admin centre Service health for Exchange Online, Teams, Shar
 - [Windows Server hub](/windows-server) for role-aware server maintenance planning.
 - [Endpoint security hub](/endpoint-security) for BitLocker, Secure Boot, and Defender deployment checks.
 - [Secure Boot CA 2023 rollout enterprise readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) for certificate preparation and recovery media checks ahead of June 2026 expiration.
-- [April 2026 BitLocker recovery loop troubleshooting guide](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063) for recovery patterns when PCR7 or Secure Boot changes trigger BitLocker prompts.
+- [BitLocker recovery key Entra backup guide](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra) for escrow and recovery-key availability when PCR7 or Secure Boot changes trigger BitLocker prompts.
 - [WUfB deferral not respected troubleshooting guide](/troubleshooting/wufb-deferral-not-respected) for when cloud-managed devices ignore update ring timing.
 - [Windows Update for Business deferral troubleshooting](/troubleshooting/wufb-deferral-not-respected) for a consolidated per-device view of installed and missing updates.
 

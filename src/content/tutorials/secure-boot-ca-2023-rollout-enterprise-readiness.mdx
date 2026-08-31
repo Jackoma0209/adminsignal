@@ -22,7 +22,7 @@ For adjacent planning, keep these internal references close:
 - [Patch Management](/patch-management)
 - [Intune](/intune)
 - [Windows Server](/windows-server)
-- [Fixing the April 2026 BitLocker Recovery Loop](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063)
+- [BitLocker recovery key Entra backup](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 - [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 
 Official Microsoft references used for this guide:
@@ -594,7 +594,7 @@ Operational safeguards:
 - Do not start broad rollout on devices with missing recovery keys.
 - Avoid PXE-first boot order on BitLocker-protected devices unless the PXE path is tested with the new signing chain.
 - Coordinate Secure Boot certificate updates with firmware updates rather than stacking them blindly.
-- For devices with a known BitLocker loop pattern, use the recovery guidance in [Fixing the April 2026 BitLocker Recovery Loop](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063).
+- For devices with a known BitLocker recovery pattern, confirm escrow with [BitLocker recovery key Entra backup](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra).
 
 ## Step 10: OEM Firmware Coordination
 
@@ -723,7 +723,7 @@ Use this checklist before expanding beyond pilot:
 - [Patch Management](/patch-management)
 - [Intune](/intune)
 - [Windows Server](/windows-server)
-- [Fixing the April 2026 BitLocker Recovery Loop](/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063)
+- [BitLocker recovery key Entra backup](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 - [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 - [Windows Secure Boot certificate expiration and CA updates](https://support.microsoft.com/en-us/help/5062710)
 - [Secure Boot Certificate updates for IT professionals and organizations](https://support.microsoft.com/en-us/help/5062713)
