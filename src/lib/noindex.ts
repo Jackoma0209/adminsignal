@@ -41,7 +41,9 @@ export const NOINDEX_TROUBLESHOOTING_SLUGS = new Set<string>([
   'april-2026-bitlocker-recovery-loop-kb5082063',
 ])
 
-export const NOINDEX_COMPARISON_SLUGS = new Set<string>()
+export const NOINDEX_COMPARISON_SLUGS = new Set<string>([
+  'windows-defender-vs-crowdstrike-falcon',
+])
 
 export const NOINDEX_TUTORIAL_SLUGS = new Set<string>([
   'autopilot-v2-enrollment-esp-troubleshooting',
@@ -54,6 +56,10 @@ export const NOINDEX_GUIDE_SLUGS = new Set<string>([
 
 const DUPLICATE_TUTORIAL_REDIRECTS = new Map([
   ['windows-11-25h2-autopilot-v2', '/guides/windows-11-25h2-autopilot-v2'],
+  [
+    'group-policy-troubleshooting-rsop-gpresult',
+    '/troubleshooting/group-policy-not-applying-diagnosis',
+  ],
 ])
 
 export function withNoindex(metadata: Metadata): Metadata {
