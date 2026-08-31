@@ -100,7 +100,7 @@ export default function PrivacyPage() {
                 loaded today. Ads are not currently served.
               </p>
               <p className="mt-3">
-                You can also opt out of Google Analytics using Google's browser add-on:{' '}
+                You can also opt out of Google Analytics using Google{"'"}s browser add-on:{' '}
                 <a
                   href="https://tools.google.com/dlpage/gaoptout"
                   className={linkClass}
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-3">
                 AdSense may serve personalised ads or non-personalised ads depending on the
-                visitor's region, consent choices, Google settings, and publisher
+                visitor{"'"}s region, consent choices, Google settings, and publisher
                 configuration. Google Funding Choices is implemented for IAB TCF consent. The
                 consent banner appears after the European regulations message is published in
                 AdSense Privacy & messaging. Non-essential advertising tags are not loaded, so
@@ -135,10 +135,10 @@ export default function PrivacyPage() {
               <ul className="mt-3 list-disc space-y-2 pl-5">
                 <li>
                   Third-party vendors, including Google, use cookies to serve ads based on a
-                  user's prior visits to your website or other websites.
+                  user{"'"}s prior visits to your website or other websites.
                 </li>
                 <li>
-                  Google's use of advertising cookies enables it and its partners to serve ads
+                  Google{"'"}s use of advertising cookies enables it and its partners to serve ads
                   to your users based on their visit to your sites and/or other sites on the
                   Internet.
                 </li>
@@ -290,12 +290,12 @@ export default function PrivacyPage() {
                 <a href="/contact" className={linkClass}>
                   contact page
                 </a>{' '}
-                and include "Privacy Request" in your message.
+                and include {"\"Privacy Request\""} in your message.
               </p>
             </section>
 
             <section>
-              <h2 className="mb-2 text-lg font-semibold text-foreground">Children's Privacy</h2>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">Children{"'"}s Privacy</h2>
               <p>
                 AdminSignal is a professional technical website intended for IT professionals and
                 technical readers. It is not directed at children, and we do not knowingly collect
@@ -317,7 +317,7 @@ export default function PrivacyPage() {
               <p>
                 We may update this Privacy Policy from time to time to reflect changes in the site,
                 advertising tools, analytics configuration, or legal requirements. The updated
-                version will be posted on this page with a revised "Last updated" date.
+                version will be posted on this page with a revised {"\"Last updated\""} date.
               </p>
             </section>
 
@@ -328,7 +328,7 @@ export default function PrivacyPage() {
                 <a href="/contact" className={linkClass}>
                   contact page
                 </a>{' '}
-                and include "Privacy Request" in your message.
+                and include {"\"Privacy Request\""} in your message.
               </p>
             </section>
           </div>
