@@ -95,7 +95,7 @@ export default function CookiesPage() {
                         Preference
                       </th>
                       <td className="px-4 py-3">Remember privacy and cookie choices</td>
-                      <td className="px-4 py-3">Google Funding Choices (Privacy &amp; messaging)</td>
+                      <td className="px-4 py-3">Google Funding Choices (Privacy & messaging)</td>
                       <td className="px-4 py-3">Usually not</td>
                     </tr>
                   </tbody>
@@ -127,7 +127,7 @@ export default function CookiesPage() {
                 enabled. They are not loaded today. Advertisements are not currently served.
               </p>
               <p className="mt-3">
-                You can opt out of Google Analytics using Google&apos;s browser add-on:{' '}
+                You can opt out of Google Analytics using Google's browser add-on:{' '}
                 <a
                   href="https://tools.google.com/dlpage/gaoptout"
                   className={linkClass}
@@ -160,10 +160,10 @@ export default function CookiesPage() {
               </ul>
               <p className="mt-3">
                 Third-party vendors, including Google, use cookies to serve ads based on a
-                user&apos;s prior visits to your website or other websites.
+                user's prior visits to your website or other websites.
               </p>
               <p className="mt-3">
-                Google&apos;s use of advertising cookies enables it and its partners to serve ads to
+                Google's use of advertising cookies enables it and its partners to serve ads to
                 your users based on their visit to your sites and/or other sites on the Internet.
               </p>
               <p className="mt-3">
@@ -215,22 +215,22 @@ export default function CookiesPage() {
                 analytics or advertising cookies are used.
               </p>
               <p className="mt-3">
-                AdminSignal implements Google Funding Choices (Privacy &amp; messaging) as the
-                Google-certified consent management platform, integrated with IAB Europe&apos;s
+                AdminSignal implements Google Funding Choices (Privacy & messaging) as the
+                Google-certified consent management platform, integrated with IAB Europe's
                 Transparency and Consent Framework (TCF v2.3). Google Advertising Products (vendor
                 ID 755) is the intended Google vendor in that configuration.
               </p>
               <p className="mt-3">
                 The Funding Choices loader is in the site code. The consent banner itself appears
                 after the European regulations message for the UK, EEA, and Switzerland is published
-                in Google AdSense Privacy &amp; messaging. Until that message is published, the
+                in Google AdSense Privacy & messaging. Until that message is published, the
                 banner may not show. Consent Mode v2 remains default-denied. Non-essential Google
                 advertising and analytics tags stay off, and ads are not currently served.
               </p>
               <p className="mt-3">
                 Use Privacy and cookie settings in the site footer, or the control below, to review
-                or change your choices when the CMP is ready. If the CMP has not loaded, that
-                control stays on this page.
+                or change your choices. If the Funding Choices dialog does not appear, the control
+                opens this Cookie Policy page.
               </p>
               <p className="mt-4">
                 <PrivacySettingsButton className="text-sm font-medium text-primary underline underline-offset-2 hover:text-primary/80" />
@@ -275,7 +275,7 @@ export default function CookiesPage() {
               <p>
                 We may update this Cookie Policy when our analytics, advertising, consent, or site
                 infrastructure changes. Updates will be posted on this page with a revised
-                &quot;Last updated&quot; date.
+                "Last updated" date.
               </p>
             </section>
 
@@ -286,7 +286,7 @@ export default function CookiesPage() {
                 <a href="/contact" className="text-primary underline underline-offset-2">
                   contact page
                 </a>{' '}
-                and include &quot;Cookie Policy&quot; in your message.
+                and include "Cookie Policy" in your message.
               </p>
             </section>
           </div>
