@@ -323,7 +323,9 @@ for (const claim of [/Microsoft Certified:/i, /senior enterprise sysadmin/i, /mo
 if (/Last site-wide review|toLocaleDateString\([^)]*month/.test(homepageSource)) {
   errors.push('src/app/page.tsx: automatic site-wide review date detected')
 }
-if (!/withNoindex/.test(guideReviewPageSource) || /MDXRemote|articleSchema|AdSlot|AffiliateBlock/.test(guideReviewPageSource)) {
+const guideWithdrawn = /notFound\s*\(/.test(guideReviewPageSource)
+const guideHasUnsafeSurface = /MDXRemote|articleSchema|AdSlot|AffiliateBlock/.test(guideReviewPageSource)
+if (guideHasUnsafeSurface || (!guideWithdrawn && !/withNoindex/.test(guideReviewPageSource))) {
   errors.push('Flagship Autopilot guide is not safely reduced to a noindex editorial-review page')
 }
 
