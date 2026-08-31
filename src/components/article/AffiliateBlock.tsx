@@ -6,6 +6,8 @@ interface AffiliateBlockProps {
   tagline: string
   href: string
   badge?: string
+  ctaLabel?: string
+  disclosure?: string
   external?: boolean
 }
 
@@ -14,10 +16,12 @@ export default function AffiliateBlock({
   tagline,
   href,
   badge,
+  ctaLabel,
+  disclosure,
   external = false,
 }: AffiliateBlockProps) {
   const linkProps = external
-    ? { target: '_blank', rel: 'noopener noreferrer' }
+    ? { target: '_blank' as const, rel: 'noopener noreferrer' }
     : {}
 
   return (
@@ -35,6 +39,9 @@ export default function AffiliateBlock({
           )}
         </div>
         <p className="text-sm text-muted">{tagline}</p>
+        {disclosure && (
+          <p className="mt-2 text-xs leading-relaxed text-muted/80">{disclosure}</p>
+        )}
       </div>
       <Link
         href={href}
@@ -44,10 +51,10 @@ export default function AffiliateBlock({
         <span className="flex items-center gap-1.5">
           {external ? (
             <>
-              Try it <ExternalLink className="h-3 w-3" />
+              {ctaLabel ?? 'Open site'} <ExternalLink className="h-3 w-3" />
             </>
           ) : (
-            'Learn more'
+            ctaLabel ?? 'Learn more'
           )}
         </span>
       </Link>
