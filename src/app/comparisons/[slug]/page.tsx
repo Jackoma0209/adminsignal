@@ -8,6 +8,7 @@ import { getAuthor } from '@/data/authors'
 import { getContentItem, getContentSlugs } from '@/lib/content'
 import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
+import { isNoindexComparisonSlug, withNoindex } from '@/lib/noindex'
 import { articleSchema, breadcrumbSchema } from '@/lib/schema'
 import Container from '@/components/layout/Container'
 import Breadcrumbs from '@/components/article/Breadcrumbs'
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!comparison) return {}
   const author = getAuthor(comparison.authorId)
   const coverImage = comparison.coverImage
-  return buildArticleMetadata({
+  const metadata = buildArticleMetadata({
     title: comparison.title,
     description: comparison.excerpt,
     url: `${siteUrl}/comparisons/${slug}`,
@@ -53,6 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         }
       : undefined,
   })
+  return isNoindexComparisonSlug(slug) ? withNoindex(metadata) : metadata
 }
 
 export default async function ComparisonArticlePage({ params }: Props) {

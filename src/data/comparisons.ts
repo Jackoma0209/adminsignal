@@ -80,15 +80,15 @@ export const comparisons: Comparison[] = [
   },
   {
     id: '2',
-    title: 'Windows Defender vs. CrowdStrike Falcon: Enterprise Endpoint Protection Compared',
+    title: 'Choosing Between Microsoft Defender for Endpoint and CrowdStrike Falcon',
     slug: 'windows-defender-vs-crowdstrike-falcon',
     category: 'Endpoint Security',
     excerpt:
-      'Defender for Endpoint and CrowdStrike Falcon fit different operating models. Compare licensing, investigation workflow, estate mix, update control, and SOC needs before choosing.',
+      'A decision framework for Microsoft-centred versus multi-OS SOC estates. Licensing, documented integrations, the July 2024 CrowdStrike outage as operational risk, and pilot evidence to collect. Not a lab ranking.',
     productA: 'Microsoft Defender for Endpoint',
     productB: 'CrowdStrike Falcon',
     verdict:
-      'For Microsoft-centred environments already on E5, Defender for Endpoint is often easier to operate. CrowdStrike remains strong where investigation depth, cross-platform coverage, and specialist SOC workflows matter more than licensing consolidation.',
+      'This page does not rank the products. Use licensing already owned, estate mix, analyst workflow, and a documented pilot. Treat vendor marketing and this article as inputs, not as a substitute for your own evaluation.',
     date: 'Mar 31, 2026',
     publishedAt: '2026-03-31',
     readTime: '11 min read',
