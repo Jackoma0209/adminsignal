@@ -1,0 +1,127 @@
+---
+title: "Patch Tuesday Operations for Intune and Windows Update for Business"
+category: "Patch Management"
+date: "Aug 31, 2026"
+authorId: "jack"
+lastReviewed: "Aug 31, 2026"
+reviewNote: "Evergreen operating model extracted so monthly Patch Tuesday news pages keep only month-specific CVEs, KBs, known issues, and priorities."
+tags: ["Patch Tuesday", "Intune", "Windows Update for Business", "Patch Management", "Windows 11"]
+---
+
+Use this page for the parts of Patch Tuesday that do not change with the CVE list. Monthly briefings such as [August 2026](/news/august-2026-patch-tuesday-admin-priorities) and [June 2026](/news/june-2026-patch-tuesday-admin-priorities) should keep the month-specific KBs, exploited issues, and known issues, then link here for rings, Intune checks, monitoring, and exception logging.
+
+Ring topology and quality-versus-feature ownership are covered in the [Windows Update for Business rings guide](/tutorials/intune-windows-update-rings-wufb). This page is the monthly operating loop that sits on top of that design.
+
+**Scope and verification basis:** this is an operational model reviewed against current Microsoft Intune and Windows Update for Business documentation. It is not a claim that every check was executed in one named tenant on one Tuesday.
+
+## What stays on the monthly page
+
+Keep on the month’s news article:
+
+- CVE and exploit status for that release
+- KB and build table for each supported Windows version
+- that month’s priority order
+- that month’s known issues
+- lifecycle dates that fall inside the window
+- product changes the Windows LCU does not fix
+
+Do not paste the sections below back into every monthly briefing.
+
+## Ring promotion evidence
+
+Use rings that produce evidence, not rings that exist only on a diagram.
+
+**Ring 0 — lab and recovery.** Representative Windows versions, one identity-critical server role if you patch those this cycle, the image-deployment path you operate, backups, recovery keys, console access, and a named rollback owner.
+
+**Ring 1 — IT and pilot.** Different hardware models, VPN clients, endpoint security agents, line-of-business applications, and at least one device from each active Windows build.
+
+**Ring 2 — early production.** Expand only after installation, restart, application, and security telemetry from Ring 1 is clean.
+
+**Ring 3 — broad deployment.** Promote only after failure codes, restart compliance, BitLocker events, service health, and the Microsoft known-issues pages have been checked again.
+
+Do not expedite the whole estate because one local elevation of privilege is marked exploited. Expedite a named high-risk group after a focused pilot.
+
+If ring timing does not match policy, use the [WUfB deferral diagnosis](/troubleshooting/wufb-deferral-not-respected).
+
+## Intune and Windows Update for Business checks
+
+Check policy intent against device state:
+
+- Ring assignments, exclusions, deadlines, grace periods, active hours, and restart settings
+- Feature update policies that would move the same pilot devices to a new Windows release during the quality-update test
+- Devices that have not synced recently
+- Installed OS build, not only Intune policy deployment state
+- Autopatch hotpatch eligibility, where that programme is in use
+- Exclusions with owner, reason, compensating control, and review date
+
+A device that did not restart is not automatically evidence of a missed quality update on a hotpatch path.
+
+## Validate the build on a sample
+
+Intune compliance and WSUS reports are necessary. They are not sufficient. Confirm the OS build and the expected hotfix on a sample of each ring before you promote.
+
+```powershell
+Get-ComputerInfo |
+    Select-Object WindowsProductName, WindowsVersion, OsName, OsBuildNumber
+
+Get-HotFix |
+    Sort-Object InstalledOn -Descending |
+    Select-Object -First 15 HotFixID, InstalledOn, Description
+```
+
+Expected output is the target build from that month’s KB table. `Get-HotFix` will not list every combined servicing stack the same way on every OS. If the build number matches and the device is Autopatch hotpatch-eligible, treat the hotpatch artefact as the compliance evidence rather than forcing an LCU hotfix ID.
+
+This is a sample check, not a fleet inventory. Keep Intune, Autopatch, WSUS, or ConfigMgr as the source of record.
+
+## Known-issue watch
+
+Before each ring promotion:
+
+1. Re-read [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/) and the KB pages in that month’s briefing.
+2. Separate consumer-only issues from estate-matching hardware and roles.
+3. Treat missing WSUS error detail as an observability limit, not proof that synchronisation failed, when Microsoft documents that behaviour.
+4. Keep the [BitLocker recovery key Entra backup guide](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra) available when PCR7 or recovery-prompt issues are in the notes.
+
+## Post-deployment monitoring
+
+For the first 24 to 48 hours, group incidents by OS version, KB, hardware model, driver, security agent, and server role:
+
+- Installation failures, rollback events, pending restarts, devices still below the target build
+- BitLocker recovery prompts and recovery-key lookups
+- Role-specific health for whatever you prioritised that month (identity, imaging, DHCP, DNS, HTTP.sys, and so on)
+- Intune and WUfB reports for stale check-ins, download failures, install failures, and deadline behaviour
+- VPN, EDR, printing, and line-of-business application health on pilot devices
+
+A concentrated pattern is more useful than a raw failure total when deciding whether to pause a ring.
+
+## Exception log
+
+Do not leave exclusions as unnamed policy filters. Record:
+
+| Field | Why it exists |
+|---|---|
+| Device or group | Blast radius |
+| Owner | Who can remove it |
+| Reason | Why the monthly update is delayed |
+| Compensating control | What reduces risk while it is delayed |
+| Review date | When the exception dies |
+
+## Hold and rollback criteria
+
+Pause promotion when:
+
+- A known issue matches hardware or roles in the next ring
+- Failure codes concentrate on one model, driver, or security agent
+- Recovery-key lookups or BitLocker prompts rise beyond the pilot baseline
+- Identity or imaging roles fail their smoke tests
+
+Rollback ownership belongs in the change record before Ring 0 starts. Console access, backups, and the previous known-good build are prerequisites, not afterthoughts.
+
+## Related resources
+
+- [Windows Update for Business rings in Intune](/tutorials/intune-windows-update-rings-wufb)
+- [Patch management hub](/patch-management)
+- [August 2026 Patch Tuesday](/news/august-2026-patch-tuesday-admin-priorities)
+- [June 2026 Patch Tuesday](/news/june-2026-patch-tuesday-admin-priorities)
+- [October 2026 Windows servicing deadlines](/news/october-2026-windows-servicing-deadlines)
+- [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/)
