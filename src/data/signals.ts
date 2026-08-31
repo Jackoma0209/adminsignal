@@ -93,7 +93,7 @@ export const liveSignals: Signal[] = [
     slug: 'june-2026-patch-tuesday-admin-priorities',
     category: 'Patch Tuesday',
     excerpt:
-      'June 2026 Patch Tuesday guidance for Windows admins: key CVEs, KBs, known issues, Intune rollout checks, Secure Boot readiness, and post-deployment monitoring.',
+      'June 2026 Patch Tuesday priorities for Windows admins: HTTP.sys, domain controllers, privileged RDP endpoints, June KBs, PCR7 BitLocker notes, and Secure Boot certificate dates.',
     date: '10 Jun 2026',
     publishedAt: '2026-06-10',
     readTime: '10 min read',
@@ -110,7 +110,7 @@ export const liveSignals: Signal[] = [
       'endpoint management',
       'Secure Boot certificates',
     ],
-    isFeatured: true,
+    isFeatured: false,
     image: '/images/article-covers/june-2026-patch-tuesday-admin-priorities.svg',
   },
   {

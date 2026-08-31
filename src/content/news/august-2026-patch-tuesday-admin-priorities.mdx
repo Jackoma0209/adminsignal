@@ -10,7 +10,7 @@ openGraphImage: "/images/article-covers/august-2026-patch-tuesday-admin-prioriti
 category: "Patch Tuesday"
 date: "2026-08-11"
 authorId: "jack"
-lastReviewed: "2026-08-22"
+lastReviewed: "2026-08-31"
 reviewNote: "Post-release admin briefing checked against Microsoft Support KB pages, Windows message center, Windows release health, individual MSRC CVE records, and Tenable’s August 2026 write-up on 2026-08-22. CVE totals below are Tenable’s scoped Microsoft count, not a substitute for the August 2026 Security Update Guide release note. Counts and exploit status can change if Microsoft revises the release."
 tags: ["August 2026 Patch Tuesday", "CVE-2026-68820", "Windows security updates", "Intune", "Windows Update for Business", "Windows Autopatch", "Secure Boot certificates", "Entra Connect"]
 keywords: ["August 2026 Patch Tuesday", "CVE-2026-68820", "Windows security updates", "Intune", "Windows Update for Business", "Windows Autopatch", "Secure Boot certificates", "Entra Connect"]
@@ -169,36 +169,16 @@ Do not ignore [CVE-2026-62832](https://msrc.microsoft.com/update-guide/vulnerabi
 
 Confirmed exploitation of a local EoP supports a controlled, evidence-led rollout. It does not support leaving network-facing server roles until the end of a month-long endpoint deadline, and it does not support expediting every ring.
 
-## Suggested rollout approach
+## How to roll this month
 
-Use rings that give you evidence, not rings that exist only on a diagram.
+Use the [Patch Tuesday Intune and WUfB operations guide](/tutorials/patch-tuesday-intune-wufb-operations) for rings, Intune and Autopatch checks, sample build validation, monitoring, exception logs, and hold criteria.
 
-**Ring 0: lab and recovery validation.** Test representative Windows versions, a domain controller or DNS server, a DHCP or WDS server if you run those roles, an Autopatch or hotpatch-eligible device if you have one, and any image deployment path you operate. Confirm backups, recovery keys, console access, and rollback ownership before installing. This is a checklist of what to validate, not a claim that a lab result has already been collected for this release.
+For August, keep two month-specific checks on this page:
 
-**Ring 1: IT and representative pilot devices.** Include different hardware models, VPN clients, endpoint security agents, line-of-business applications, and at least one device from each active Windows build. Include a small number of servers by role. If Autopatch hotpatch is in use, include both a hotpatch-eligible device and a device that still takes the restarting LCU.
-
-**Ring 2: early production.** Expand to business users and low-risk server groups once installation, restart, application, and security telemetry from the pilot ring is clean.
-
-**Ring 3: broad deployment.** Promote only after you have checked failure codes, restart compliance, BitLocker events, service health, and the Microsoft known-issues pages again.
-
-For WDS, DHCP, and exposed DNS, use a focused maintenance window after that role has been through Ring 0 or Ring 1. Do not wait for the broad workstation ring, and do not expedite the rest of the estate to match that window. For clustered or redundant server roles, keep enough capacity online to reverse course without creating an availability incident.
-
-The [patch management hub](/patch-management) covers ring design and change control.
-
-## Intune and Windows Update for Business checks
-
-For Intune and Windows Update for Business environments, check policy intent against device state:
-
-- Confirm update ring assignments, exclusions, deadlines, grace periods, active hours, and restart settings.
-- Check that feature update policies are not moving the same pilot devices to a new Windows release during the quality update test.
-- Review devices that have not synced recently. A stale device can appear outside the failure count while still missing the August update.
-- Verify the installed OS build, not only the Intune policy deployment state.
-- For Windows Autopatch estates, confirm which devices are hotpatch eligible and whether they also received the standalone follow-on ([KB5123607](https://support.microsoft.com/help/5123607), [KB5123273](https://support.microsoft.com/help/5123273) for Pluton-as-TPM, [KB5123303](https://support.microsoft.com/help/5123303) on Server 2022). A device that did not restart is not automatically evidence of a missed update. Some of those standalone packages do require a restart.
+- Autopatch standalone follow-ons: [KB5123607](https://support.microsoft.com/help/5123607), [KB5123273](https://support.microsoft.com/help/5123273) for Pluton-as-TPM, and [KB5123303](https://support.microsoft.com/help/5123303) on Server 2022. Some of those packages require a restart.
 - Expect an extra restart on a limited set of devices as part of the Secure Boot certificate update. That is a documented installation behaviour, not a failure state by itself.
-- Use an expedited quality update policy only for a clearly defined high-risk group, such as WDS/DHCP servers or privileged endpoints, after the pilot result is known. Do not expedite the estate because one local EoP is marked exploited.
-- Record exclusions with an owner, reason, compensating control, and review date.
 
-If ring timing does not match policy, use the [WUfB deferral troubleshooting guide](/troubleshooting/wufb-deferral-not-respected). The [Intune hub](/intune) has broader reporting and policy checks.
+Expedite only WDS, DHCP, exposed DNS, and privileged endpoints after a focused pilot. Do not expedite the estate because CVE-2026-68820 is local. The [patch management hub](/patch-management) still applies.
 
 ## Validate the build on the device
 
@@ -264,21 +244,7 @@ Do not assume a device that installed KB5121003 or KB5120240 is on a supported e
 
 ## What to monitor after deployment
 
-During the first 24 to 48 hours, monitor by workload and failure pattern:
-
-- Update installation failures, rollback events, pending restarts, extra Secure Boot restarts that never reach the target build, and devices still below the target build.
-- BitLocker recovery prompts, recovery-key lookups, PCR7 binding state, and helpdesk ticket volume, especially on Windows 10.
-- WDS PXE boot, TFTP, task sequence, and first-image success.
-- DHCP lease issuance, failover, and PXE-related options.
-- DNS resolution, zone replication, and domain controller authentication.
-- SharePoint farm health and Entra Connect export/import, run profile, and staging-server deltas.
-- Autopatch hotpatch versus LCU restart behaviour, including Pluton standalone restarts.
-- VPN, EDR, Defender for Endpoint, printing, and line-of-business application health on pilot devices.
-- WSUS synchronisation outcome, while accounting for the known error-detail display limitation on Server 2025.
-- Intune and Windows Update for Business reports for stale check-ins, download failures, install failures, and deadline behaviour.
-- RGB/inpoutx64 game hangs only where that hardware actually exists in the estate. Do not use that signal to pause business rings.
-
-Group incidents by OS version, KB, hardware model, driver, security agent, and server role. A concentrated pattern is more useful than a raw failure total when deciding whether to pause a ring.
+Use the [Patch Tuesday operations guide](/tutorials/patch-tuesday-intune-wufb-operations) for the shared 24–48 hour watch list. For August, add WDS/PXE and DHCP, DNS and domain-controller health, SharePoint and Entra Connect as separate changes from the LCU, Autopatch hotpatch versus LCU restart behaviour, the extra Secure Boot restart, and the Windows 10 PCR7 BitLocker pattern. Do not pause business rings for the KB5121003 RGB/inpoutx64 game issue unless that hardware is actually in the estate.
 
 ## Admin checklist
 

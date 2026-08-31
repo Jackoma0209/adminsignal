@@ -95,12 +95,12 @@ export default function PrivacyPage() {
               <p className="mt-3">
                 AdminSignal uses Google Consent Mode v2 defaults that deny analytics and
                 advertising storage until a valid consent choice is recorded. Google Funding Choices
-                (Privacy &amp; messaging) is implemented as the Google-certified consent management
+                (Privacy & messaging) is implemented as the Google-certified consent management
                 platform. Non-essential Google Analytics and AdSense tags stay off and are not
                 loaded today. Ads are not currently served.
               </p>
               <p className="mt-3">
-                You can also opt out of Google Analytics using Google&apos;s browser add-on:{' '}
+                You can also opt out of Google Analytics using Google's browser add-on:{' '}
                 <a
                   href="https://tools.google.com/dlpage/gaoptout"
                   className={linkClass}
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
 
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">
-                Advertising &amp; Google AdSense
+                Advertising & Google AdSense
               </h2>
               <p>
                 AdminSignal is prepared to use{' '}
@@ -125,20 +125,20 @@ export default function PrivacyPage() {
               </p>
               <p className="mt-3">
                 AdSense may serve personalised ads or non-personalised ads depending on the
-                visitor&apos;s region, consent choices, Google settings, and publisher
+                visitor's region, consent choices, Google settings, and publisher
                 configuration. Google Funding Choices is implemented for IAB TCF consent. The
                 consent banner appears after the European regulations message is published in
-                AdSense Privacy &amp; messaging. Non-essential advertising tags are not loaded, so
+                AdSense Privacy & messaging. Non-essential advertising tags are not loaded, so
                 ads are not currently served.
               </p>
               <p className="mt-3">Google requires publishers using AdSense to disclose the following:</p>
               <ul className="mt-3 list-disc space-y-2 pl-5">
                 <li>
                   Third-party vendors, including Google, use cookies to serve ads based on a
-                  user&apos;s prior visits to your website or other websites.
+                  user's prior visits to your website or other websites.
                 </li>
                 <li>
-                  Google&apos;s use of advertising cookies enables it and its partners to serve ads
+                  Google's use of advertising cookies enables it and its partners to serve ads
                   to your users based on their visit to your sites and/or other sites on the
                   Internet.
                 </li>
@@ -195,7 +195,7 @@ export default function PrivacyPage() {
                   personalisation where consent permits
                 </li>
                 <li>
-                  Google Funding Choices (Privacy &amp; messaging), for consent records and vendor
+                  Google Funding Choices (Privacy & messaging), for consent records and vendor
                   choices
                 </li>
                 <li>Other trusted service providers involved in hosting, security, or site delivery</li>
@@ -209,8 +209,8 @@ export default function PrivacyPage() {
                 default-denied, and non-essential Google advertising and analytics tags stay off.
               </p>
               <p className="mt-3">
-                Use Privacy and cookie settings in the site footer to review or change your choices
-                when the CMP is ready. If the CMP has not loaded, that control opens the{' '}
+                Use Privacy and cookie settings in the site footer to review or change your choices.
+                If the Funding Choices dialog does not appear, that control opens the{' '}
                 <a href="/cookies" className={linkClass}>
                   Cookie Policy
                 </a>
@@ -290,12 +290,12 @@ export default function PrivacyPage() {
                 <a href="/contact" className={linkClass}>
                   contact page
                 </a>{' '}
-                and include &quot;Privacy Request&quot; in your message.
+                and include "Privacy Request" in your message.
               </p>
             </section>
 
             <section>
-              <h2 className="mb-2 text-lg font-semibold text-foreground">Children&apos;s Privacy</h2>
+              <h2 className="mb-2 text-lg font-semibold text-foreground">Children's Privacy</h2>
               <p>
                 AdminSignal is a professional technical website intended for IT professionals and
                 technical readers. It is not directed at children, and we do not knowingly collect
@@ -317,7 +317,7 @@ export default function PrivacyPage() {
               <p>
                 We may update this Privacy Policy from time to time to reflect changes in the site,
                 advertising tools, analytics configuration, or legal requirements. The updated
-                version will be posted on this page with a revised &quot;Last updated&quot; date.
+                version will be posted on this page with a revised "Last updated" date.
               </p>
             </section>
 
@@ -328,7 +328,7 @@ export default function PrivacyPage() {
                 <a href="/contact" className={linkClass}>
                   contact page
                 </a>{' '}
-                and include &quot;Privacy Request&quot; in your message.
+                and include "Privacy Request" in your message.
               </p>
             </section>
           </div>

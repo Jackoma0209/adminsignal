@@ -10,7 +10,7 @@ openGraphImage: "/images/article-covers/june-2026-patch-tuesday-admin-priorities
 category: "Patch Tuesday"
 date: "2026-06-10"
 authorId: "jack"
-lastReviewed: "2026-06-10"
+lastReviewed: "2026-08-31"
 reviewNote: "Post-release admin briefing checked against the Microsoft Security Update Guide release note and API, individual Microsoft CVE records, Windows cumulative update KBs, Windows release health, and current Microsoft Secure Boot certificate guidance on 2026-06-10. Counts and exploit status can change if Microsoft revises the release."
 tags: ["June 2026 Patch Tuesday", "Windows security updates", "Microsoft Security Update Guide", "Windows admins", "Intune", "Windows Update for Business", "endpoint management", "Secure Boot certificates"]
 keywords: ["June 2026 Patch Tuesday", "Windows security updates", "Microsoft Security Update Guide", "Windows admins", "Intune", "Windows Update for Business", "endpoint management", "Secure Boot certificates"]
@@ -150,35 +150,11 @@ These still justify prompt endpoint patching, especially for shared workstations
 
 The absence of Microsoft-confirmed exploitation supports a controlled rollout. It does not support leaving exposed or identity-critical systems until the end of a month-long endpoint deadline.
 
-## Suggested rollout approach
+## How to roll this month
 
-Use rings that give you evidence, not rings that exist only on a diagram.
+Use the [Patch Tuesday Intune and WUfB operations guide](/tutorials/patch-tuesday-intune-wufb-operations) for rings, Intune checks, sample build validation, monitoring, exception logs, and hold criteria. Do not copy that operating model into every monthly briefing.
 
-**Ring 0: lab and recovery validation.** Test representative Windows versions, a domain controller, an HTTP.sys workload, an RDP client, and any image deployment path you operate. Confirm backups, recovery keys, console access, and rollback ownership before installing.
-
-**Ring 1: IT and representative pilot devices.** Include different hardware models, VPN clients, endpoint security agents, line-of-business applications, and at least one device from each active Windows build. Include a small number of servers by role.
-
-**Ring 2: early production.** Expand to business users and low-risk server groups once installation, restart, application, and security telemetry from the pilot ring is clean.
-
-**Ring 3: broad deployment.** Promote only after you have checked failure codes, restart compliance, BitLocker events, service health, and the Microsoft known-issues pages again.
-
-For exposed HTTP.sys servers, use an expedited maintenance window after focused testing rather than waiting for the broad workstation ring. For clustered or redundant server roles, keep enough capacity online to reverse course without creating an availability incident.
-
-The [patch management hub](/patch-management) covers ring design and change control. The [Windows Server hub](/windows-server) has role-aware maintenance guidance.
-
-## Intune and Windows Update for Business checks
-
-For Intune and Windows Update for Business environments, check policy intent against device state:
-
-- Confirm update ring assignments, exclusions, deadlines, grace periods, active hours, and restart settings.
-- Check that feature update policies are not moving the same pilot devices to a new Windows release during the quality update test.
-- Review devices that have not synced recently. A stale device can appear outside the failure count while still missing the June update.
-- Verify the installed OS build, not only the Intune policy deployment state.
-- For Windows Autopatch estates, confirm which devices are hotpatch eligible. A device that did not restart is not automatically evidence of a missed update.
-- Use an expedited quality update policy only for a clearly defined high-risk group, such as exposed HTTP.sys servers or privileged endpoints, after the pilot result is known.
-- Record exclusions with an owner, reason, compensating control, and review date.
-
-If ring timing does not match policy, use the [WUfB deferral troubleshooting guide](/troubleshooting/wufb-deferral-not-respected). The [Intune hub](/intune) has broader reporting and policy checks.
+For June, expedite only internet-facing HTTP.sys servers, domain controllers, and privileged RDP endpoints after a focused pilot. Keep normal rings for the rest of the estate. The [patch management hub](/patch-management) and [Windows Server hub](/windows-server) still apply.
 
 ## Watch for known issues
 
@@ -212,19 +188,7 @@ There is also a deployment-media detail in the June KBs: when applying Dynamic U
 
 ## What to monitor after deployment
 
-During the first 24 to 48 hours, monitor by workload and failure pattern:
-
-- Update installation failures, rollback events, pending restarts, and devices still below the target build.
-- BitLocker recovery prompts, recovery-key lookups, PCR7 binding state, and helpdesk ticket volume.
-- HTTP.sys-backed service availability, application response codes, CPU and memory use, and load-balancer health.
-- Domain controller replication, Kerberos and LDAP authentication, DNS registration, and time synchronisation.
-- RDP client launches and connections from privileged endpoints.
-- Hyper-V cluster state, live migration, backup agents, and guest networking.
-- VPN, EDR, Defender for Endpoint, printing, and line-of-business application health on pilot devices.
-- WSUS synchronisation outcome, while accounting for the known error-detail display limitation.
-- Intune and Windows Update for Business reports for stale check-ins, download failures, install failures, and deadline behaviour.
-
-Group incidents by OS version, KB, hardware model, driver, security agent, and server role. A concentrated pattern is more useful than a raw failure total when deciding whether to pause a ring.
+Use the [Patch Tuesday operations guide](/tutorials/patch-tuesday-intune-wufb-operations) for the shared 24–48 hour watch list. For June, add HTTP.sys service health, domain-controller replication and authentication, privileged RDP, and the PCR7 BitLocker pattern on Windows 10 and Server 2022.
 
 ## Admin checklist
 

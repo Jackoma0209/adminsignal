@@ -3,8 +3,8 @@ title: "Group Policy Not Applying to Users or Computers: A Systematic Diagnosis"
 category: "Group Policy"
 date: "Mar 27, 2026"
 authorId: "jack"
-lastReviewed: "Apr 27, 2026"
-reviewNote: "Added slow-link detection, replication health check, DC connectivity diagnosis, RSoP wizard steps, and known limitations section."
+lastReviewed: "Aug 31, 2026"
+reviewNote: "Merged the standalone RSoP/gpresult tutorial into this canonical diagnosis page. The old tutorial URL now redirects here."
 tags: ["Group Policy", "Active Directory", "Windows Server"]
 ---
 
@@ -154,15 +154,30 @@ As an alternative to running gpresult on the client, you can run the Resultant S
 
 **Limitation**: RSoP Wizard requires WMI access to the target machine (TCP 135, dynamic RPC). It also requires the machine to be online and domain-joined. If you cannot run RSoP remotely, use `gpresult /H` directly on the machine.
 
-## Known Limitations
+## Backing up and restoring a GPO before you change it
+
+Before you edit a GPO that looks like the cause, take a backup:
+
+```powershell
+Backup-GPO -Name "CIS-Win11-Level1-Computer" -Path C:\GPOBackups
+Restore-GPO -Name "CIS-Win11-Level1-Computer" -Path C:\GPOBackups
+```
+
+Restoration replaces settings and keeps the GPO GUID and links. Store backups before any significant policy change.
+
+## Known Limitations of RSoP and gpresult
 
 - **gpresult shows incorrect data for recently logged-off users**: gpresult /R reflects the currently logged-on user's session. Log on as the affected user before running to get accurate results.
 - **User policy applied at computer startup does not show in gpresult**: Some user-targeted CSEs applied via loopback processing in Replace mode may not appear in the standard gpresult output.
 - **Group Policy does not apply to local accounts**: GP only applies to domain-joined computers processing against a DC. Local accounts and workgroup computers are outside its scope.
 - **Security filtering requires Authenticated Users for Read**: If you remove Authenticated Users from the Security Filter and replace it with a specific group, confirm the group has both **Read** AND **Apply Group Policy** permissions on the GPO's Delegation tab — the GPMC sometimes only adds Read by default.
+- **RSoP does not show all CSEs**: Software Installation and Folder Redirection are not included in RSoP output — use `gpresult /H` for those.
+- **gpresult /R does not show the per-setting winning GPO**: use `gpresult /H` for the full per-setting breakdown.
+- **gpresult reflects the current session**: it shows what applied at last logon or startup, not necessarily what would apply now if policies changed afterwards.
+- **Non-Group Policy preferences**: PowerShell DSC, Intune, and registry edits outside GP are not visible in gpresult or RSoP. A setting may appear as "not configured" in GP while another management plane is setting it.
 
 ## Related Resources
 
-- [Group Policy Troubleshooting with RSoP and gpresult — full guide](/tutorials/group-policy-troubleshooting-rsop-gpresult)
 - [Group Policy hub](/group-policy)
+- [Selected CIS Windows 11 Level 1 controls](/tutorials/hardening-windows-11-cis-benchmark)
 - [Microsoft Group Policy troubleshooting documentation](https://learn.microsoft.com/en-us/troubleshoot/windows-server/group-policy/applying-group-policy-troubleshooting-guidance)

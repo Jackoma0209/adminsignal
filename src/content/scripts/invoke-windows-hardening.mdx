@@ -45,15 +45,15 @@ The recommended sequence is:
 Get-ExecutionPolicy -List
 
 # If RemoteSigned or AllSigned, unblock the script file:
-Unblock-File -Path .\Invoke-WindowsHardening.ps1
+Unblock-File -Path .\\Invoke-WindowsHardening.ps1
 ```
 
 ## Parameters
 
 | Parameter | Type | Description |
 |---|---|---|
-| `-Mode` | `[Audit\|Apply]` | `Audit` reports gaps without making changes. `Apply` enforces settings. Default: `Audit` |
-| `-Level` | `[CIS1\|CIS2\|Custom]` | CIS Level 1, Level 2, or custom control profile. Default: `CIS1` |
+| `-Mode` | `[Audit\\|Apply]` | `Audit` reports gaps without making changes. `Apply` enforces settings. Default: `Audit` |
+| `-Level` | `[CIS1\\|CIS2\\|Custom]` | CIS Level 1, Level 2, or custom control profile. Default: `CIS1` |
 | `-ReportPath` | `[string]` | Full path for the HTML report file. Default: current directory |
 | `-ExcludeCategories` | `[string[]]` | Skip specific control categories by name (see category list below) |
 | `-WhatIf` | `[switch]` | Show what `-Mode Apply` would change, without writing anything |
@@ -63,7 +63,7 @@ Unblock-File -Path .\Invoke-WindowsHardening.ps1
 **Audit mode — generate compliance gap report without any changes:**
 
 ```powershell
-Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\Temp\HardeningAudit.html
+Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\\Temp\\HardeningAudit.html
 ```
 
 **Preview what Apply mode would change (safe — no writes):**
@@ -75,21 +75,21 @@ Invoke-WindowsHardening -Mode Apply -Level CIS1 -WhatIf
 **Apply CIS Level 1 controls:**
 
 ```powershell
-Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath C:\Temp\HardeningApplied.html
+Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath C:\\Temp\\HardeningApplied.html
 ```
 
 **Apply hardening excluding BitLocker and Firewall categories (useful if managed separately):**
 
 ```powershell
 Invoke-WindowsHardening -Mode Apply -Level CIS1 -ExcludeCategories @('BitLocker', 'WindowsFirewall') `
-    -ReportPath C:\Temp\HardeningApplied.html
+    -ReportPath C:\\Temp\\HardeningApplied.html
 ```
 
 **Run as Intune remediation script (SYSTEM context):**
 
 ```powershell
 # Detection script — check for a recent report file
-$ReportDir  = 'C:\ProgramData\AdminSignal'
+$ReportDir  = 'C:\\ProgramData\\AdminSignal'
 $Threshold  = (Get-Date).AddDays(-30)
 $Report     = Get-ChildItem -Path $ReportDir -Filter 'HardeningReport-*.html' -ErrorAction SilentlyContinue |
               Sort-Object LastWriteTime -Descending | Select-Object -First 1
@@ -105,7 +105,7 @@ if ($Report -and $Report.LastWriteTime -gt $Threshold) {
 
 ```powershell
 # Remediation script — apply and record
-$ReportPath = "C:\ProgramData\AdminSignal\HardeningReport-$(Get-Date -Format yyyyMMdd).html"
+$ReportPath = "C:\\ProgramData\\AdminSignal\\HardeningReport-$(Get-Date -Format yyyyMMdd).html"
 New-Item -ItemType Directory -Path (Split-Path $ReportPath) -Force | Out-Null
 Invoke-WindowsHardening -Mode Apply -Level CIS1 -ReportPath $ReportPath
 ```
@@ -142,10 +142,10 @@ After running in Apply mode, verify key controls took effect:
 
 ```powershell
 # Verify NTLMv2-only enforcement (should return 5)
-(Get-ItemProperty 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa').LmCompatibilityLevel
+(Get-ItemProperty 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa').LmCompatibilityLevel
 
 # Verify Script Block Logging is enabled (should return 1)
-(Get-ItemProperty 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging' `
+(Get-ItemProperty 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging' `
     -ErrorAction SilentlyContinue).EnableScriptBlockLogging
 
 # Verify SMBv1 is disabled (should return False)
@@ -185,7 +185,7 @@ Checkpoint-Computer -Description "Pre-CIS-Hardening $(Get-Date -Format yyyy-MM-d
 
 ```powershell
 # Example: revert LM Compatibility Level to its previous value (e.g. 3)
-Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa' `
+Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' `
     -Name LmCompatibilityLevel -Value 3
 ```
 
@@ -214,8 +214,8 @@ Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Control\Lsa' `
 
 ## Related Resources
 
-- [Hardening Windows 11 Endpoints with CIS Benchmark Level 1](/tutorials/hardening-windows-11-cis-benchmark)
-- [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Selected CIS Windows 11 Level 1 controls](/tutorials/hardening-windows-11-cis-benchmark)
+- [Group Policy not applying: RSoP and gpresult diagnosis](/troubleshooting/group-policy-not-applying-diagnosis)
 - [Group Policy hub](/group-policy)
 - [CIS Windows 11 Benchmark](https://www.cisecurity.org/benchmark/microsoft_windows_desktop)
 - [Microsoft Security Compliance Toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=55319)

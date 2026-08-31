@@ -1,10 +1,10 @@
 ---
-title: "Hardening Windows 11 Endpoints with CIS Benchmark Level 1"
+title: "Selected CIS Windows 11 Level 1 Controls: Pilot, Apply, Validate"
 category: "Endpoint Security"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "Apr 27, 2026"
-reviewNote: "Added tested environment note, pilot deployment methodology, rollback procedure, SMBv1 and Credential Guard verification commands, and known conflict table."
+lastReviewed: "Aug 31, 2026"
+reviewNote: "Narrowed title and lead to the selected Level 1 controls this page actually covers. This is not a complete CIS benchmark implementation."
 tags: ["CIS Benchmark", "Windows 11", "Hardening", "Endpoint Security"]
 ---
 
@@ -16,9 +16,9 @@ The CIS Windows 11 Benchmark is a prescriptive set of configuration recommendati
 
 **What it isn't**: A guarantee of security. It addresses known configuration weaknesses but does not substitute for patch management, EDR, identity controls, or monitoring.
 
-This guide covers **Level 1 only**. Level 2 is appropriate for high-security environments and requires separate validation.
+This page covers **selected Level 1 controls only**: account and lockout settings, a short audit-policy set, Defender and PUA settings, NTLMv2 / SMBv1 / firewall, and Credential Guard. It is not a complete CIS Windows 11 Level 1 implementation and it is not a substitute for the official CIS benchmark catalogue.
 
-**Tested environment**: Windows 11 22H2 and 24H2, Group Policy with Windows Server 2022 domain controllers, and Microsoft Intune (April 2026 service release) for MDM-managed endpoints. The CIS Windows 11 Benchmark v3.0.0 was used as the reference.
+**Scope and verification basis**: the control list was reviewed against the CIS Windows 11 Benchmark v3.0.0 and against current Microsoft documentation for Windows 11 22H2 and 24H2, Group Policy on Windows Server 2022 domain controllers, and Microsoft Intune. Commands in later sections are example validation checks unless an individual section says they were executed.
 
 ## When I Would Not Apply This As-Is
 
@@ -220,7 +220,7 @@ If the baseline causes production issues, roll back cleanly:
 
 1. Remove the link from the affected OU in GPMC (do not delete the GPO — just unlink it).
 2. Run `gpupdate /force` on affected machines or wait for the next background refresh cycle.
-3. Investigate the issue using the [Group Policy troubleshooting guide](/tutorials/group-policy-troubleshooting-rsop-gpresult).
+3. Investigate the issue using the [Group Policy not applying diagnosis](/troubleshooting/group-policy-not-applying-diagnosis).
 4. Restore the previous GPO state from backup if needed: `Restore-GPO -Name "CIS-Win11-Level1-Computer" -Path C:\GPOBackups\PreCIS`
 
 ### Intune rollback
@@ -239,7 +239,7 @@ If the baseline causes production issues, roll back cleanly:
 
 - [Endpoint Security hub](/endpoint-security)
 - [Group Policy hub](/group-policy)
-- [Group Policy Troubleshooting with RSoP and gpresult](/tutorials/group-policy-troubleshooting-rsop-gpresult)
+- [Group Policy not applying: RSoP and gpresult diagnosis](/troubleshooting/group-policy-not-applying-diagnosis)
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
 - [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 - [CIS Windows 11 Benchmark](https://www.cisecurity.org/benchmark/microsoft_windows_desktop)

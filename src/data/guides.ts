@@ -21,6 +21,21 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    id: '16',
+    title: 'Patch Tuesday Operations for Intune and Windows Update for Business',
+    slug: 'patch-tuesday-intune-wufb-operations',
+    category: 'Patch Management',
+    excerpt:
+      'Reusable Patch Tuesday operating model: ring promotion evidence, Intune and WUfB checks, build validation, known-issue watch, post-deploy monitoring, exception logs, and hold criteria. Monthly CVE pages link here instead of repeating this body.',
+    date: 'Aug 31, 2026',
+    publishedAt: '2026-08-31',
+    readTime: '14 min read',
+    difficulty: 'Intermediate',
+    authorId: 'jack',
+    tags: ['Patch Tuesday', 'Intune', 'Windows Update for Business', 'Patch Management', 'Windows 11'],
+    isFeatured: true,
+  },
+  {
     id: '15',
     title: 'Entra ID Emergency Access Accounts: Break-Glass Design That Survives MFA Lockout',
     slug: 'entra-break-glass-emergency-access-accounts',
@@ -213,11 +228,11 @@ export const guides: Guide[] = [
   },
   {
     id: '2',
-    title: 'Hardening Windows 11 Endpoints with CIS Benchmark Level 1',
+    title: 'Selected CIS Windows 11 Level 1 Controls: Pilot, Apply, Validate',
     slug: 'hardening-windows-11-cis-benchmark',
     category: 'Endpoint Security',
     excerpt:
-      'Apply the CIS Level 1 benchmark to Windows 11 22H2 and 24H2 endpoints using Group Policy, Intune profiles, and a validation script that reports compliance gaps.',
+      'Selected CIS Windows 11 Level 1 controls only — accounts, audit policy, Defender, SMBv1, and Credential Guard — with pilot, Intune or GPO application, validation, and rollback. Not a complete benchmark rollout.',
     date: 'Mar 31, 2026',
     publishedAt: '2026-03-31',
     readTime: '20 min read',
@@ -251,11 +266,11 @@ export const guides: Guide[] = [
   },
   {
     id: '4',
-    title: 'Building a PowerShell-Driven Software Inventory System for Unmanaged Endpoints',
+    title: 'Collecting Installed Software with PowerShell on Unmanaged Endpoints',
     slug: 'powershell-software-inventory-system',
     category: 'PowerShell',
     excerpt:
-      'Use WMI, the registry, and a lightweight SQLite output to build a software inventory pipeline that runs without an RMM agent — useful for legacy environments and incident response.',
+      'Collect installed software from registry uninstall keys, optional Win32_Product, and AppX packages, then export CSV or HTML. Point-in-time collection for unmanaged endpoints — not a persistent inventory database.',
     date: 'Mar 31, 2026',
     publishedAt: '2026-03-31',
     readTime: '18 min read',
@@ -283,24 +298,6 @@ export const guides: Guide[] = [
     coverImage: {
       src: '/images/article-covers/conditional-access-m365-policy-map.svg',
       alt: 'Abstract identity access gate with device compliance signal',
-    },
-  },
-  {
-    id: '6',
-    title: 'Group Policy Troubleshooting with RSoP, gpresult, and Policy Scope Analysis',
-    slug: 'group-policy-troubleshooting-rsop-gpresult',
-    category: 'Group Policy',
-    excerpt:
-      'A practical troubleshooting methodology for Group Policy: reading RSoP, interpreting gpresult /h output, diagnosing WMI filter failures, and resolving OUlinking conflicts.',
-    date: 'Mar 31, 2026',
-    publishedAt: '2026-03-31',
-    readTime: '12 min read',
-    difficulty: 'Beginner',
-    authorId: 'jack',
-    tags: ['Group Policy', 'Active Directory', 'Windows Server', 'Troubleshooting'],
-    coverImage: {
-      src: '/images/article-covers/group-policy-troubleshooting-rsop-gpresult.svg',
-      alt: 'Abstract organisational unit tree with policy link and diagnostic path',
     },
   },
 ]

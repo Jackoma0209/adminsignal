@@ -76,9 +76,9 @@ export default function HomePage() {
       <HeroSection />
       <TrustStripSection />
       <ValuePropSection />
-      <FeaturedSignalsSection />
       <FailureStateSection />
       <FeaturedGuidesSection />
+      <FeaturedSignalsSection />
       <NewsletterSection />
       <TopicHubsSection />
       <AuthorBioSection />
