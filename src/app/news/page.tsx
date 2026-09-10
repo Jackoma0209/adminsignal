@@ -13,11 +13,19 @@ const pageDescription =
   'Current signals from the Microsoft ecosystem: Patch Tuesday analysis, vulnerability alerts, Intune updates, and enterprise IT news for Windows administrators.'
 const pagePath = '/news'
 
-export const metadata: Metadata = buildCategoryMetadata({
+const baseMetadata: Metadata = buildCategoryMetadata({
   title: pageTitle,
   description: pageDescription,
   path: pagePath,
 })
+
+export async function generateMetadata({ searchParams }: {
+  searchParams: Promise<{ category?: string }>
+}): Promise<Metadata> {
+  const { category } = await searchParams
+  return category ? { ...baseMetadata, robots: { index: false, follow: true } } : baseMetadata
+}
+
 
 const publicSignals = signals.filter((signal) => !isNoindexNewsSlug(signal.slug))
 const categories = [...new Set(publicSignals.map((signal) => signal.category))]

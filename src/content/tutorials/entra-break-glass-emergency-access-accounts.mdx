@@ -4,8 +4,8 @@ description: "Practical guide to Microsoft Entra emergency access accounts: acco
 category: "Microsoft Entra ID"
 date: "Aug 11, 2026"
 authorId: "jack"
-lastReviewed: "Aug 11, 2026"
-reviewNote: "Operational break-glass guide aligned with Microsoft emergency access account guidance, Conditional Access exclusion patterns, and monitoring recommendations. Portal paths and product behaviour should be rechecked against current Microsoft Learn before production change."
+lastReviewed: "September 10, 2026"
+reviewNote: "Clarified mandatory MFA, security-defaults limitations, permanent active roles and validation of both emergency accounts. Removed advice to put existing production protection into report-only during redesign."
 tags: ["Microsoft Entra ID", "Break Glass", "Emergency Access", "Conditional Access", "MFA", "Identity"]
 metaTitle: "Entra ID Emergency Access Accounts: Break-Glass Design Guide"
 metaDescription: "Design Microsoft Entra emergency access accounts that still work during MFA outages, Conditional Access mistakes, and federation failures — with monitoring and test procedures."
@@ -65,7 +65,7 @@ Use the `.onmicrosoft.com` domain so DNS or custom-domain problems do not block 
 Emergency accounts must be excluded from:
 
 - Conditional Access policies that require MFA, compliant device, or approved client app for admin portals
-- Security defaults, if still enabled (prefer migrating to Conditional Access and then handling exclusions correctly)
+- Blocking Conditional Access controls, using documented exclusions. Security defaults do not offer per-user exclusions; a migration to Conditional Access must preserve equivalent protection and be separately planned
 - Identity Protection user-risk or sign-in-risk blocks that would prevent recovery
 - Password expiry policies that quietly disable the account
 - PIM eligibility-only models that require activation through a portal you cannot reach
@@ -82,7 +82,7 @@ They should **not** be excluded from audit logging, sign-in logging, or monitori
    - **Password**: long, randomly generated (store offline immediately)
    - **Account enabled**: Yes
 4. Repeat for `breakglass-02`.
-5. Assign **Global Administrator** to both accounts under **Assigned roles**.
+5. Assign **Global Administrator** as permanent active, not PIM eligible-only, to both accounts. Register the phishing-resistant credentials described below before accepting the design.
 
 Do not licence these accounts for Exchange Online mailboxes unless you have a specific operational reason. Keep them as pure directory emergency identities.
 
@@ -112,13 +112,13 @@ Do not store break-glass passwords in the same password manager tenant that requ
 
 ## Step 3: MFA Strategy Without Painting Yourself Into a Corner
 
-Microsoft guidance has moved toward protecting emergency accounts with phishing-resistant methods where possible, while still ensuring the account remains usable when your normal MFA path fails.
+Emergency accounts must satisfy Microsoft’s mandatory MFA requirements. A Conditional Access exclusion does not bypass platform-enforced MFA. Register phishing-resistant credentials with a different dependency from normal administrators. [Microsoft emergency access guidance](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access).
 
 Practical options, in order of preference for many enterprises:
 
 1. **FIDO2 security keys** dedicated to break-glass, stored with the offline package
 2. **Certificate-based authentication** where you already operate a controlled admin cert process
-3. Temporary exception paths documented only for true provider-wide outages, with immediate rotation afterwards
+There is no password-only bypass of mandatory Microsoft MFA in this design. Record credential dependencies and test the chosen method from a designated secure workstation.
 
 Avoid:
 
@@ -157,7 +157,7 @@ Do **not** exclude the group from:
 
 When changing exclusions:
 
-1. Put related policies in report-only if you are redesigning them
+1. Evaluate a new or replacement policy in report-only; keep existing production protections enabled while testing
 2. Validate that normal admins still match as expected
 3. Validate that emergency accounts are excluded from the blocking grant controls
 4. Enable only after sign-in logs show the intended behaviour
@@ -209,10 +209,10 @@ Test on a schedule. Untested break-glass is theatre.
 
 1. Open a change record labelled as a break-glass validation
 2. Retrieve credentials under dual control
-3. From a clean browser profile, sign in to [https://entra.microsoft.com](https://entra.microsoft.com) as `breakglass-01`
+3. From a designated secure workstation and clean browser profile, sign in to [https://entra.microsoft.com](https://entra.microsoft.com) as `breakglass-01`
 4. Confirm you can open **Users**, **Conditional Access**, and role assignments
 5. Sign out
-6. Repeat for `breakglass-02` or alternate each quarter
+6. Repeat for `breakglass-02`; validate both accounts at least every 90 days
 7. Rotate passwords or confirm FIDO key still functions
 8. Close the change with screenshots of successful access and monitoring alert evidence
 
@@ -279,3 +279,7 @@ Do not delete the only working emergency path before the replacement has passed 
 - [Microsoft 365 Admin Centre Mandatory MFA Readiness](/tutorials/microsoft-365-admin-centre-mfa-readiness)
 - [Entra ID P1 vs P2 comparison](/comparisons/entra-id-p1-vs-p2)
 - [Microsoft Entra ID topic hub](/microsoft-entra-id)
+
+## Correction Record
+
+**10 September 2026:** Clarified mandatory MFA, security-defaults limitations, permanent active roles and validation of both emergency accounts. Removed advice to put existing production protection into report-only during redesign.

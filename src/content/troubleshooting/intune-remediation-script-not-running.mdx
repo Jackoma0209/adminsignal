@@ -3,8 +3,8 @@ title: "Intune Remediation Script Not Running, Detecting, Remediating, or Report
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
-reviewNote: "Initial practical guide covering remediation licensing, detection and remediation behaviour, exit codes, schedule and assignment checks, device eligibility, Intune Management Extension logs, PowerShell context, reporting delay, registry evidence, safe retry, and rollback."
+lastReviewed: "Sep 10, 2026"
+reviewNote: "Made the illustrative marker fail on write errors, separated failed reads from missing values, and used an isolated PowerShell process and verified device identity."
 tags: ["Intune", "Remediations", "Intune Management Extension", "PowerShell", "Endpoint Analytics"]
 ---
 
@@ -25,7 +25,7 @@ The useful question is not "did Intune run it?" It is "which part ran, in which 
 
 For nearby Intune troubleshooting paths, see the [Intune hub](/intune), the [PowerShell hub](/powershell), and [Intune Compliance Policy Not Evaluating](/troubleshooting/intune-compliance-policy-not-evaluating).
 
-## Tested Environment and Scope
+## Scope and Assumptions
 
 This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2 and 25H2 devices managed by Microsoft Intune Remediations. It covers custom remediation script packages with a detection script only, and packages with both a detection script and a remediation script.
 
@@ -160,7 +160,7 @@ The core logic is simple:
 
 After a remediation script runs, the detection logic is the evidence that the issue was fixed. If remediation changes the device but the detection script still exits `1`, the device can continue to report with issue.
 
-Use this minimal pattern when testing:
+The following marker example is for an isolated lab device only. It writes a new AdminSignal test value and is not a complete production repair tool. Confirm the test key was absent or back up its existing value before testing; remove only the marker created by this test when finished. Use this minimal pattern when testing:
 
 ```powershell
 # Detection script
@@ -177,18 +177,27 @@ try {
     Write-Output "Issue found: value is '$Value'"
     exit 1
 } catch {
-    Write-Output "Issue found: value is missing"
-    exit 1
+    if ($_.CategoryInfo.Category -eq 'ObjectNotFound') {
+        Write-Output "Issue found: value is missing"
+        exit 1
+    }
+    Write-Output "Detection could not read the value; investigate before repair."
+    exit 2
 }
 ```
 
 ```powershell
 # Remediation script
 $Path = "HKLM:\SOFTWARE\AdminSignal\Test"
-New-Item -Path $Path -Force | Out-Null
-New-ItemProperty -Path $Path -Name "Remediated" -Value "Yes" -PropertyType String -Force | Out-Null
-Write-Output "Set remediation marker"
-exit 0
+try {
+    New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
+    New-ItemProperty -Path $Path -Name "Remediated" -Value "Yes" -PropertyType String -Force -ErrorAction Stop | Out-Null
+    Write-Output "Set remediation marker; rerun detection to validate."
+    exit 0
+} catch {
+    Write-Output "Marker write failed: $($_.Exception.Message)"
+    exit 1
+}
 ```
 
 Expected output shape from detection:
@@ -203,7 +212,7 @@ Compliant: HKLM:\SOFTWARE\AdminSignal\Test\Remediated is Yes
 Issue found: value is missing
 ```
 
-Do not put the fix in the detection script unless you deliberately created a detection-only remediation. Detection should normally be safe to run repeatedly and should not make changes.
+Keep detection read-only, including in a detection-only package. A failed read is not proof that a repair is needed. Only exit 1 should request remediation; see [Microsoft’s Remediations contract](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations).
 
 ## Step 3: Check Script Exit Codes and Output
 
@@ -213,7 +222,7 @@ For a quick exit code test:
 
 ```powershell
 $Script = "C:\Temp\Detect-Example.ps1"
-& $Script
+& powershell.exe -NoProfile -File $Script
 $ExitCode = $LASTEXITCODE
 
 [pscustomobject]@{
@@ -275,7 +284,7 @@ Check device group membership through Graph PowerShell:
 Connect-MgGraph -Scopes "Device.Read.All", "Group.Read.All"
 
 $DeviceName = "DEVICE-NAME"
-$Device = Get-MgDevice -Filter "displayName eq '$DeviceName'" -ConsistencyLevel eventual
+$Device = Get-MgDevice -DeviceId "<verified-entra-object-id>" -ErrorAction Stop
 
 Get-MgDeviceTransitiveMemberOf -DeviceId $Device.Id -All |
     Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } |
@@ -573,7 +582,7 @@ Test script duration locally:
 
 ```powershell
 $Script = "C:\Temp\Detect-Example.ps1"
-$Duration = Measure-Command { & $Script }
+$Duration = Measure-Command { & powershell.exe -NoProfile -File $Script }
 
 [pscustomobject]@{
     Script = $Script
@@ -793,3 +802,9 @@ Before assigning a remediation broadly:
 - [Microsoft documentation: PowerShell scripts for Remediations](https://learn.microsoft.com/en-us/intune/device-management/tools/ref-remediation-scripts)
 - [Microsoft documentation: Intune Management Extension for Windows](https://learn.microsoft.com/en-us/intune/device-management/tools/management-extension-windows)
 - [Microsoft documentation: Use PowerShell scripts on Windows devices in Intune](https://learn.microsoft.com/en-us/intune/device-management/tools/run-powershell-scripts-windows)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Made the illustrative marker fail on write errors, separated failed reads from missing values, and used an isolated PowerShell process and verified device identity. Code and output remain illustrative, not execution evidence.

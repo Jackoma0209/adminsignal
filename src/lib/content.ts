@@ -52,6 +52,7 @@ export function getContentItem(type: string, slug: string): ContentItem {
   const filePath = path.join(contentRoot, type, `${slug}.mdx`)
   const raw = fs.readFileSync(filePath, 'utf-8')
   const { content, data } = matter(raw)
+  if (data.draft === true || data.published === false) throw new Error('Unpublished content')
   const normalised = normalizeGfmTables(content)
   const stats = readingTime(normalised)
   const headings = extractHeadings(normalised)
@@ -70,6 +71,10 @@ export function getContentSlugs(type: string): string[] {
   return fs
     .readdirSync(dir)
     .filter((f) => f.endsWith('.mdx'))
+    .filter((f) => {
+      const { data } = matter(fs.readFileSync(path.join(dir, f), 'utf-8'))
+      return data.draft !== true && data.published !== false
+    })
     .map((f) => f.replace(/\.mdx$/, ''))
 }
 

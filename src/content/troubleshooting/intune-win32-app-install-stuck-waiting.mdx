@@ -3,8 +3,8 @@ title: "Intune Win32 App Install Stuck at Waiting, Pending, Installing, or Faile
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
-reviewNote: "Initial practical guide covering Intune Management Extension health, Win32 app logs, detection and requirement rules, assignments, dependencies, supersedence, Company Portal sync behaviour, safe retry, and rollback."
+lastReviewed: "Sep 10, 2026"
+reviewNote: "Clarified example status and used a verified Entra object ID to avoid ambiguous display-name matches."
 tags: ["Intune", "Win32 apps", "Intune Management Extension", "Company Portal", "PowerShell"]
 ---
 
@@ -23,7 +23,7 @@ The aim is to identify which layer is stuck: assignment, Intune Management Exten
 
 For the wider endpoint management context, see the [Intune hub](/intune). For reusable scripts and report exports, see the [PowerShell hub](/powershell) and [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration).
 
-## Tested Environment and Scope
+## Scope and Assumptions
 
 This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2 and 25H2 devices managed by Microsoft Intune. It focuses on Win32 apps deployed through the Intune Management Extension, including required apps, available apps installed from Company Portal, dependencies, supersedence, and uninstall assignments.
 
@@ -161,8 +161,8 @@ Microsoft's app monitoring guidance is here: [Monitor app information and assign
 On the affected device, check the IME service, version and log folder.
 
 ```powershell
-$ImeExe = "C:\\Program Files (x86)\\Microsoft Intune Management Extension\\Microsoft.Management.Services.IntuneWindowsAgent.exe"
-$LogRoot = "C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs"
+$ImeExe = "C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe"
+$LogRoot = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
 
 Get-Service IntuneManagementExtension |
     Select-Object Name, Status, StartType
@@ -190,7 +190,7 @@ Name                       Status   StartType
 ----                       ------   ---------
 IntuneManagementExtension  Running  Automatic
 
-FullName      : C:\\Program Files (x86)\\Microsoft Intune Management Extension\\Microsoft.Management.Services.IntuneWindowsAgent.exe
+FullName      : C:\Program Files (x86)\Microsoft Intune Management Extension\Microsoft.Management.Services.IntuneWindowsAgent.exe
 LastWriteTime : <date and time>
 Version       : <agent version>
 
@@ -203,14 +203,14 @@ AgentExecutor.log             <bytes>  <date and time>
 
 If the log files have not changed recently, the app may be waiting because IME is not checking in.
 
-Microsoft's IME documentation confirms that logs are normally under `C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs`, and that IME check-in is separate from normal MDM sync: [Intune Management Extension for Windows](https://learn.microsoft.com/en-us/intune/device-management/tools/management-extension-windows).
+Microsoft's IME documentation confirms that logs are normally under `C:\ProgramData\Microsoft\IntuneManagementExtension\Logs`, and that IME check-in is separate from normal MDM sync: [Intune Management Extension for Windows](https://learn.microsoft.com/en-us/intune/device-management/tools/management-extension-windows).
 
 ## Step 3: Read the Right Logs
 
 The main log path is:
 
 ```text
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs
 ```
 
 Start with these files:
@@ -227,7 +227,7 @@ Start with these files:
 Search the logs for the app name, app ID, common error text and return codes:
 
 ```powershell
-$LogRoot = "C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs"
+$LogRoot = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
 $SearchTerms = @(
     "APP-NAME",
     "Detection",
@@ -238,7 +238,7 @@ $SearchTerms = @(
     "0x"
 )
 
-Select-String -Path "$LogRoot\\*.log" -Pattern $SearchTerms -SimpleMatch |
+Select-String -Path "$LogRoot\*.log" -Pattern $SearchTerms -SimpleMatch |
     Select-Object Path, LineNumber, Line |
     Sort-Object Path, LineNumber |
     Select-Object -First 80
@@ -247,7 +247,7 @@ Select-String -Path "$LogRoot\\*.log" -Pattern $SearchTerms -SimpleMatch |
 Expected output shape:
 
 ```text
-Path       : C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\AppWorkload.log
+Path       : C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AppWorkload.log
 LineNumber : <line number>
 Line       : <timestamp> <thread> <app processing message>
 ```
@@ -256,7 +256,7 @@ If you know the app ID from the Intune URL, search for that as well:
 
 ```powershell
 $AppId = "<win32-app-guid-from-intune-url>"
-Select-String -Path "$LogRoot\\*.log" -Pattern $AppId -SimpleMatch |
+Select-String -Path "$LogRoot\*.log" -Pattern $AppId -SimpleMatch |
     Select-Object Path, LineNumber, Line
 ```
 
@@ -283,7 +283,7 @@ For device-side group confirmation through Microsoft Graph PowerShell:
 Connect-MgGraph -Scopes "Device.Read.All", "Group.Read.All"
 
 $DeviceName = "DEVICE-NAME"
-$Device = Get-MgDevice -Filter "displayName eq '$DeviceName'" -ConsistencyLevel eventual
+$Device = Get-MgDevice -DeviceId "<verified-entra-object-id>" -ErrorAction Stop
 
 Get-MgDeviceTransitiveMemberOf -DeviceId $Device.Id -All |
     Where-Object { $_.AdditionalProperties.'@odata.type' -eq '#microsoft.graph.group' } |
@@ -384,8 +384,8 @@ If you use a registry requirement, check both registry views:
 
 ```powershell
 $Paths = @(
-    "HKLM:\\SOFTWARE\\Vendor\\App",
-    "HKLM:\\SOFTWARE\\WOW6432Node\\Vendor\\App"
+    "HKLM:\SOFTWARE\Vendor\App",
+    "HKLM:\SOFTWARE\WOW6432Node\Vendor\App"
 )
 
 foreach ($Path in $Paths) {
@@ -402,10 +402,10 @@ foreach ($Path in $Paths) {
 Expected output shape:
 
 ```text
-[HKLM:\\SOFTWARE\\Vendor\\App]
+[HKLM:\SOFTWARE\Vendor\App]
 Not present
 
-[HKLM:\\SOFTWARE\\WOW6432Node\\Vendor\\App]
+[HKLM:\SOFTWARE\WOW6432Node\Vendor\App]
 Version : <version string>
 ```
 
@@ -433,8 +433,8 @@ For MSI detection, avoid `Win32_Product` because it can trigger MSI repair opera
 ```powershell
 $ProductCode = "{PRODUCT-CODE-GUID}"
 $Roots = @(
-    "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-    "HKLM:\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall"
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
 )
 
 foreach ($Root in $Roots) {
@@ -460,7 +460,7 @@ PSChildName    : {PRODUCT-CODE-GUID}
 For file detection:
 
 ```powershell
-$File = "C:\\Program Files\\Vendor\\App\\App.exe"
+$File = "C:\Program Files\Vendor\App\App.exe"
 
 if (Test-Path $File) {
     Get-Item $File |
@@ -473,7 +473,7 @@ if (Test-Path $File) {
 Expected output shape:
 
 ```text
-FullName      : C:\\Program Files\\Vendor\\App\\App.exe
+FullName      : C:\Program Files\Vendor\App\App.exe
 Length        : <bytes>
 LastWriteTime : <date and time>
 Version       : <file version>
@@ -482,7 +482,7 @@ Version       : <file version>
 A safe custom detection script looks like this:
 
 ```powershell
-$File = "C:\\Program Files\\Vendor\\App\\App.exe"
+$File = "C:\Program Files\Vendor\App\App.exe"
 
 if (Test-Path $File) {
     Write-Output "Detected"
@@ -512,19 +512,19 @@ Check:
 Microsoft notes that calling `powershell.exe` directly from the install command launches a 32-bit PowerShell process. If your installer must run 64-bit PowerShell, use:
 
 ```text
-%SystemRoot%\\Sysnative\\WindowsPowerShell\\v1.0\\powershell.exe
+%SystemRoot%\Sysnative\WindowsPowerShell\v1.0\powershell.exe
 ```
 
 A common wrapper pattern:
 
 ```text
-%SystemRoot%\\Sysnative\\WindowsPowerShell\\v1.0\\powershell.exe -ExecutionPolicy Bypass -File .\\Install-App.ps1
+%SystemRoot%\Sysnative\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File .\Install-App.ps1
 ```
 
 Test the command manually from the extracted package folder:
 
 ```powershell
-$Process = Start-Process -FilePath ".\\setup.exe" `
+$Process = Start-Process -FilePath ".\setup.exe" `
     -ArgumentList "/quiet /norestart" `
     -Wait `
     -PassThru
@@ -552,7 +552,7 @@ Common return code meanings:
 If the app runs `msiexec`, add MSI logging inside the install command or wrapper:
 
 ```text
-msiexec /i "App.msi" /qn /norestart /L*v "%ProgramData%\\Microsoft\\IntuneManagementExtension\\Logs\\AppName-msi.log"
+msiexec /i "App.msi" /qn /norestart /L*v "%ProgramData%\Microsoft\IntuneManagementExtension\Logs\AppName-msi.log"
 ```
 
 That log then travels with the IME log folder if you collect diagnostics.
@@ -577,9 +577,9 @@ Microsoft documents that dependent apps do not need separate assignment when aut
 On the device, search the logs for dependency language:
 
 ```powershell
-$LogRoot = "C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs"
+$LogRoot = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
 
-Select-String -Path "$LogRoot\\*.log" -Pattern "dependency", "dependent", "pending reboot", "requirements" |
+Select-String -Path "$LogRoot\*.log" -Pattern "dependency", "dependent", "pending reboot", "requirements" |
     Select-Object Path, LineNumber, Line |
     Select-Object -First 80
 ```
@@ -587,7 +587,7 @@ Select-String -Path "$LogRoot\\*.log" -Pattern "dependency", "dependent", "pendi
 Expected output shape:
 
 ```text
-Path       : C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\AppWorkload.log
+Path       : C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AppWorkload.log
 LineNumber : <line number>
 Line       : <timestamp> <dependency or applicability message>
 ```
@@ -621,9 +621,9 @@ Run:
 
 ```powershell
 $Checks = [ordered]@{
-    CBSRebootPending = "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\RebootPending"
-    WURebootRequired = "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\RebootRequired"
-    PendingFileRename = "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager"
+    CBSRebootPending = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"
+    WURebootRequired = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"
+    PendingFileRename = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager"
 }
 
 [pscustomobject]@{
@@ -648,7 +648,7 @@ If a reboot is pending and the app return code was mapped as soft reboot or hard
 IME stores Win32 app processing state under the local Intune Management Extension registry keys. Treat this as diagnostic evidence, not as a supported configuration interface.
 
 ```powershell
-$Base = "HKLM:\\SOFTWARE\\Microsoft\\IntuneManagementExtension"
+$Base = "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension"
 
 Get-ChildItem $Base -Recurse -ErrorAction SilentlyContinue |
     Where-Object { $_.PSPath -match "Win32Apps|Policies|SideCar" } |
@@ -661,8 +661,8 @@ Expected output shape:
 ```text
 PSPath
 ------
-Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\IntuneManagementExtension\\Win32Apps\\...
-Microsoft.PowerShell.Core\\Registry::HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\IntuneManagementExtension\\Policies\\...
+Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\Win32Apps\...
+Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\IntuneManagementExtension\Policies\...
 ```
 
 If you know the app ID, look for it:
@@ -670,7 +670,7 @@ If you know the app ID, look for it:
 ```powershell
 $AppId = "<win32-app-guid-from-intune-url>"
 
-Get-ChildItem "HKLM:\\SOFTWARE\\Microsoft\\IntuneManagementExtension" -Recurse -ErrorAction SilentlyContinue |
+Get-ChildItem "HKLM:\SOFTWARE\Microsoft\IntuneManagementExtension" -Recurse -ErrorAction SilentlyContinue |
     Where-Object { $_.Name -match $AppId } |
     Select-Object Name, PSChildName
 ```
@@ -684,29 +684,29 @@ For persistent failures, collect logs before changing the app again.
 Useful paths:
 
 ```text
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\IntuneManagementExtension.log
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\AppWorkload.log
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\AgentExecutor.log
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\AppActionProcessor.log
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\ClientHealth.log
-C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs\\Win32AppInventory.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\IntuneManagementExtension.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AppWorkload.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AgentExecutor.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\AppActionProcessor.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\ClientHealth.log
+C:\ProgramData\Microsoft\IntuneManagementExtension\Logs\Win32AppInventory.log
 ```
 
 You can collect a local zip:
 
 ```powershell
-$Source = "C:\\ProgramData\\Microsoft\\IntuneManagementExtension\\Logs"
-$Destination = "C:\\Temp\\IME-Logs-$env:COMPUTERNAME.zip"
+$Source = "C:\ProgramData\Microsoft\IntuneManagementExtension\Logs"
+$Destination = "C:\Temp\IME-Logs-$env:COMPUTERNAME.zip"
 
-New-Item -Path "C:\\Temp" -ItemType Directory -Force | Out-Null
-Compress-Archive -Path "$Source\\*" -DestinationPath $Destination -Force
+New-Item -Path "C:\Temp" -ItemType Directory -Force | Out-Null
+Compress-Archive -Path "$Source\*" -DestinationPath $Destination -Force
 Write-Output $Destination
 ```
 
 Expected output shape:
 
 ```text
-C:\\Temp\\IME-Logs-DEVICE-NAME.zip
+C:\Temp\IME-Logs-DEVICE-NAME.zip
 ```
 
 You can also use Intune's **Collect diagnostics** action. Microsoft's Win32 app troubleshooting documentation explains that diagnostic collection can include Win32 app logs and has file count and size limits: [Troubleshooting Win32 app installations with Intune](https://learn.microsoft.com/en-us/troubleshoot/mem/intune/app-management/troubleshoot-win32-app-install).
@@ -727,7 +727,7 @@ Expected output shape:
 ```text
 Id    ProcessName  StartTime            Path
 --    -----------  ---------            ----
-<id>  msiexec      <date and time>      C:\\Windows\\System32\\msiexec.exe
+<id>  msiexec      <date and time>      C:\Windows\System32\msiexec.exe
 ```
 
 If an installer is still running and using CPU or disk, wait or inspect its own log. Killing it can leave a partial install.
@@ -820,3 +820,9 @@ Before promoting a Win32 app to broad deployment:
 - [Microsoft documentation: Intune Management Extension for Windows](https://learn.microsoft.com/en-us/intune/device-management/tools/management-extension-windows)
 - [Microsoft documentation: Troubleshooting Win32 app installations](https://learn.microsoft.com/en-us/troubleshoot/mem/intune/app-management/troubleshoot-win32-app-install)
 - [Microsoft documentation: Add Win32 app supersedence](https://learn.microsoft.com/en-us/intune/app-management/deployment/configure-win32-supersedence)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Clarified example status and used a verified Entra object ID to avoid ambiguous display-name matches. Code and output remain illustrative, not execution evidence.

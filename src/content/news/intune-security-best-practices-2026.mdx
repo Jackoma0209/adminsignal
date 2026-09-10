@@ -4,8 +4,8 @@ description: "Practical Intune tenant security hardening for enterprise admins: 
 category: "Microsoft Intune"
 date: "Jun 29, 2026"
 authorId: "jack"
-lastReviewed: "Jun 29, 2026"
-reviewNote: "Operational hardening guide based on Microsoft Intune Customer Success security guidance, Entra ID role management, Conditional Access, and PIM documentation. Checked against current portal paths and admin control options on 2026-06-29."
+lastReviewed: "2026-09-10"
+reviewNote: "Clarified emergency MFA and permanent active recovery roles, PIM boundaries, MAA prerequisites and safe validation."
 tags: ["Intune", "Security", "Zero Trust", "Admin Roles", "Conditional Access", "PIM"]
 image: "/images/article-covers/intune-security-best-practices-2026.svg"
 imageAlt: "Abstract Intune tenant security illustration with shield, role tiles, and policy nodes"
@@ -137,13 +137,13 @@ Maintain two or more break-glass accounts:
 
 - Stored offline with monitored usage alerts
 - Excluded from policies that would block recovery during an identity outage
-- Tested quarterly
+- Keep phishing-resistant MFA available and verify both accounts at least every 90 days; custom CA exclusions do not bypass Microsoft mandatory MFA
 
 Do not exclude regular admins "temporarily" and forget to remove the exclusion.
 
 ## Phase 4: Move Standing Privilege To PIM
 
-If you have Entra ID P2, convert permanent privileged assignments to **eligible** assignments with activation requirements.
+For ordinary admin roles, use PIM with the applicable Entra ID P2 or Governance entitlement. Keep designated emergency Global Administrator accounts permanently active, as [Microsoft’s emergency-access design](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access) requires, rather than making them depend on PIM activation.
 
 Typical candidates:
 
@@ -158,7 +158,7 @@ Activation requirements to consider:
 - Maximum activation duration of 1–8 hours
 - justification text required
 
-After migration, verify an admin cannot open destructive Intune blades without first activating the Entra role.
+After migration, verify effective permissions for the intended role. Direct Intune RBAC assignments and group-based access can still grant privileges independently of the Entra role being tested.
 
 ## Phase 5: Enable Multi Admin Approval For Destructive Workloads
 
@@ -178,7 +178,7 @@ Configuration path:
 3. Assign approvers who are not the same people as requestors
 4. Pilot with the endpoint engineering group before tenant-wide policy objects
 
-Document expected approval turnaround so operations teams do not bypass the control under pressure.
+Before enabling protection, validate the manager, requestor and approver permissions and directly assigned approver security group against [Microsoft’s current MAA requirements](https://learn.microsoft.com/en-us/intune/fundamentals/role-based-access-control/multi-admin-approval). After a second administrator approves, the requestor must complete the request. Document turnaround and recovery; configure working approver RBAC before protecting role changes.
 
 ## Phase 6: Validate The Controls
 
@@ -197,7 +197,7 @@ After each phase, collect evidence.
 
 ### MAA validation
 
-- Run a test wipe request against a lab device
+- Test approval with a reversible configuration change first; a wipe test requires a disposable device, verified recovery and explicit authorisation to erase it
 - Confirm the operation stays pending until a second admin approves
 - Confirm rejection leaves the device unchanged
 
@@ -233,3 +233,6 @@ Add these to quarterly access review:
 ## Source
 
 This operational plan is based on the official [Intune Customer Success security hardening post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/best-practices-for-securing-microsoft-intune/4502117) published by Microsoft on March 14, 2026, extended with Entra ID role management, Conditional Access, and PIM implementation steps for enterprise administrators.
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Clarified emergency MFA and permanent active recovery roles, PIM boundaries, MAA prerequisites and safe validation. Examples are illustrative; no lab or tenant execution is claimed.

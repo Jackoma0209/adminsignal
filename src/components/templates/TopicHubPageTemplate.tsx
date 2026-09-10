@@ -23,6 +23,7 @@ interface TopicHubPageTemplateProps {
   introSections?: { title: string; body: string }[]
   news: TopicContentItem[]
   tutorials: TopicContentItem[]
+  tutorialTitle?: string
   troubleshooting?: TopicContentItem[]
   /**
    * Legacy compatibility only. Incomplete script resources are deliberately not
@@ -39,7 +40,7 @@ function HubContentRow({
 }: {
   items: TopicContentItem[]
   sectionTitle: string
-  viewAllHref: string
+  viewAllHref?: string
 }) {
   const publicItems = items.filter((item) => !isNoindexHref(item.href))
   if (publicItems.length === 0) return null
@@ -49,14 +50,14 @@ function HubContentRow({
       <Container>
         <SectionHeader
           title={sectionTitle}
-          action={
+          action={viewAllHref ? (
             <Link
               href={viewAllHref}
               className="flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-primary"
             >
               View all <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
-          }
+          ) : undefined}
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {publicItems.map((item) => (
@@ -73,7 +74,7 @@ function HubContentRow({
               <p className="text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-primary">
                 {item.title}
               </p>
-              <p className="line-clamp-2 text-xs leading-relaxed text-muted">{item.excerpt}</p>
+              <p className="text-xs leading-relaxed text-muted">{item.excerpt}</p>
               <p className="mt-auto text-xs text-muted/60">{item.meta}</p>
             </Link>
           ))}
@@ -90,12 +91,19 @@ export default function TopicHubPageTemplate({
   introSections = [],
   news,
   tutorials,
+  tutorialTitle = 'Deep-Dive Tutorials',
   troubleshooting = [],
   relatedTopics,
 }: TopicHubPageTemplateProps) {
-  const publicNews = news.filter((item) => !isNoindexHref(item.href))
-  const publicTutorials = tutorials.filter((item) => !isNoindexHref(item.href))
-  const publicTroubleshooting = troubleshooting.filter((item) => !isNoindexHref(item.href))
+  const seen = new Set<string>()
+  const unique = (items: TopicContentItem[]) => items.filter(item => {
+    if (isNoindexHref(item.href) || seen.has(item.href)) return false
+    seen.add(item.href)
+    return true
+  })
+  const publicNews = unique(news)
+  const publicTutorials = unique(tutorials)
+  const publicTroubleshooting = unique(troubleshooting)
   const publicCount = publicNews.length + publicTutorials.length + publicTroubleshooting.length
 
   return (
@@ -111,7 +119,7 @@ export default function TopicHubPageTemplate({
           <p className="max-w-2xl text-base leading-relaxed text-muted">{description}</p>
           <p className="mt-4 text-xs text-muted/60">
             {publicCount > 0
-              ? `${publicCount} curated AdminSignal guide${publicCount === 1 ? '' : 's'} and signals on this topic`
+              ? `${publicCount} published article${publicCount === 1 ? '' : 's'} in this reading list`
               : 'Topic overview and decision guidance for Microsoft administrators'}
           </p>
         </Container>
@@ -138,8 +146,8 @@ export default function TopicHubPageTemplate({
       <HubContentRow items={publicNews} sectionTitle="Latest News" viewAllHref="/news" />
       <HubContentRow
         items={publicTutorials}
-        sectionTitle="Deep-Dive Tutorials"
-        viewAllHref="/tutorials"
+        sectionTitle={tutorialTitle}
+        viewAllHref={tutorialTitle === 'Deep-Dive Tutorials' ? '/tutorials' : undefined}
       />
       <HubContentRow
         items={publicTroubleshooting}

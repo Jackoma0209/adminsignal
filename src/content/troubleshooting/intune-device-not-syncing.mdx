@@ -3,8 +3,8 @@ title: "Intune Device Not Syncing: Last Check-in Stale, Sync Button Not Helping,
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
-reviewNote: "Initial practical guide covering Intune portal checks, Windows MDM enrolment state, Company Portal sync behaviour, scheduled tasks, event logs, registry evidence, Intune Management Extension health, network checks, Entra device objects, safe retry, and recovery."
+lastReviewed: "Sep 10, 2026"
+reviewNote: "Corrected dsregcmd MDM URL interpretation and replaced unsupported whole-procedure testing claims with scope and assumptions."
 tags: ["Intune", "Windows", "Device sync", "MDM", "Company Portal", "PowerShell"]
 ---
 
@@ -27,9 +27,9 @@ The useful question is not "did someone press Sync?" It is "can this device auth
 
 For wider context, see the [Intune hub](/intune), the [Microsoft Entra ID hub](/microsoft-entra-id), and the [PowerShell hub](/powershell).
 
-## Tested Environment and Scope
+## Scope and Assumptions
 
-This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2 and 25H2 devices enrolled in Microsoft Intune. It covers Microsoft Entra joined, Microsoft Entra hybrid joined, and co-managed Windows devices where Intune is expected to deliver MDM policy.
+This is documentation-based troubleshooting guidance, not a documented end-to-end lab test. The existing redacted portal capture illustrates one check-in screen only. Use a supported Windows release, or a Windows 10 device covered by applicable servicing rights, enrolled in Microsoft Intune. It covers Microsoft Entra joined, Microsoft Entra hybrid joined, and co-managed Windows devices where Intune is expected to deliver MDM policy.
 
 It focuses on device check-in, MDM enrolment health, Company Portal sync behaviour, Intune Management Extension health, local Windows evidence, network access, and stale Entra or Intune device records.
 
@@ -70,7 +70,7 @@ Use the symptom to choose the first diagnostic path.
 | Apps or remediations do not arrive | Intune Management Extension, IME logs, device check-in |
 | Compliance does not update | MDM sync, compliance assignment, local compliance evidence |
 | Device appears twice | Entra device object, Intune managed device object, stale records |
-| `dsregcmd /status` has no MDM URL | Enrolment is missing, broken, or not in the expected management path |
+| `dsregcmd /status` has no MDM URL | Check tenant MDM configuration and current-user enrolment scope; corroborate with device evidence |
 | Sync fails only on corporate network | Proxy, TLS inspection, firewall, DNS, captive portal |
 | Sync works after rebuild only | Old enrolment record, duplicate Entra object, Autopilot or hybrid join timing |
 
@@ -202,7 +202,7 @@ Read it in layers:
 | `DomainJoined` | `YES` on hybrid joined devices |
 | `WorkplaceJoined` | Can be `YES` for registered or user workplace join scenarios |
 | `DeviceAuthStatus` | `SUCCESS` means the device can authenticate as its Entra device object |
-| `MdmUrl` | Missing or blank often means MDM enrolment is missing or broken |
+| `MdmUrl` | Reflects tenant MDM configuration and user enrolment scope; presence does not prove device enrolment |
 | `AzureAdPrt` | Important for user-targeted policy and Company Portal behaviour |
 
 If `AzureAdJoined` and `DomainJoined` do not match your intended join model, do not chase Intune policy yet. Fix join and enrolment first.
@@ -439,7 +439,7 @@ Interpretation:
 | Evidence | Meaning |
 |---|---|
 | No enrolment keys | Device is probably not enrolled in MDM |
-| Enrolment keys exist but no `MdmUrl` in `dsregcmd` | Broken or partial enrolment |
+| Enrolment keys exist but no `MdmUrl` in `dsregcmd` | Check tenant MDM configuration and the current user’s enrolment scope; this alone does not establish broken enrolment |
 | OMA-DM account path missing | MDM client state may be incomplete |
 | PolicyManager has old policy but no new changes | Sync or assignment may be stale |
 | Multiple enrolment keys with conflicting UPNs | Re-enrolment or account change needs review |
@@ -625,10 +625,25 @@ Id                 DisplayName  DeviceId        AccountEnabled OperatingSystem O
 
 Then check the Intune managed device:
 
+Collection reads use the following helper in the same PowerShell session and follow [Microsoft Graph paging](https://learn.microsoft.com/en-us/graph/paging). This is an illustrative implementation, not a recorded tenant execution.
+
+```powershell
+function Get-GraphCollectionResponse {
+    param([Parameter(Mandatory)][string]$Uri)
+    $Items = [System.Collections.Generic.List[object]]::new()
+    do {
+        $Page = Invoke-MgGraphRequest -Method GET -Uri $Uri -ErrorAction Stop
+        foreach ($Item in $Page.value) { $Items.Add($Item) }
+        $Uri = $Page.'@odata.nextLink'
+    } while ($Uri)
+    return @{ value = $Items.ToArray() }
+}
+```
+
 ```powershell
 $Uri = "https://graph.microsoft.com/v1.0/deviceManagement/managedDevices?`$filter=deviceName eq '$DeviceName'&`$select=id,deviceName,azureADDeviceId,lastSyncDateTime,managementAgent,deviceEnrollmentType,deviceRegistrationState,complianceState,userPrincipalName,operatingSystem,osVersion,managedDeviceOwnerType,serialNumber"
 
-$ManagedDevices = Invoke-MgGraphRequest -Method GET -Uri $Uri
+$ManagedDevices = Get-GraphCollectionResponse -Uri $Uri
 
 $ManagedDevices.value |
     Select-Object id, deviceName, azureADDeviceId, lastSyncDateTime, managementAgent, deviceEnrollmentType, deviceRegistrationState, complianceState, userPrincipalName, operatingSystem, osVersion, serialNumber |
@@ -796,7 +811,7 @@ Work from least disruptive to most disruptive.
 | Company Portal stale only | Sign out and back in, update Company Portal, then sync |
 | IME stale only | Restart `IntuneManagementExtension`, then check IME logs |
 | EnterpriseMgmt tasks present but failing | Start one task manually and read the event log |
-| `MdmUrl` missing | Review automatic enrolment scope, licence and join state, then use `deviceenroller.exe` if eligible |
+| `MdmUrl` missing | Review tenant MDM configuration and user scope; do not trigger re-enrolment from this field alone |
 | Duplicate Intune objects | Identify active object by serial, Entra device ID and recent check-in before cleanup |
 | Entra device disabled | Re-enable only if the device is legitimate and should remain managed |
 | Enrolment state corrupt | Collect diagnostics, then plan re-enrolment or rebuild |
@@ -852,3 +867,7 @@ If you must re-enrol:
 - [Microsoft documentation: Diagnose MDM failures in Windows](https://learn.microsoft.com/en-us/windows/client-management/mdm/diagnose-mdm-failures-in-windows-10)
 - [Microsoft Graph documentation: managedDevice resource type](https://learn.microsoft.com/en-us/graph/api/resources/intune-devices-manageddevice?view=graph-rest-1.0)
 - [Microsoft Graph documentation: syncDevice action](https://learn.microsoft.com/en-us/graph/api/intune-devices-manageddevice-syncdevice?view=graph-rest-1.0)
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected dsregcmd MDM URL interpretation and replaced unsupported whole-procedure testing claims with scope and assumptions. Code and output remain illustrative, not execution evidence.

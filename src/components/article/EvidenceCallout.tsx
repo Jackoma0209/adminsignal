@@ -12,9 +12,8 @@ interface EvidenceCalloutProps {
 }
 
 /**
- * Practitioner evidence frame used in flagship articles.
- * Shows a redacted example capture of the portal blade or command output
- * an operator should collect, with identifiers masked.
+ * Evidence collection guidance with optional HTML-generated illustrations.
+ * These images are not real portal captures or execution evidence.
  */
 export default function EvidenceCallout({
   type = 'screenshot',
@@ -36,7 +35,7 @@ export default function EvidenceCallout({
         </div>
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">
-            Operator evidence
+            Evidence to collect
           </p>
           <p className="mt-1 text-sm font-semibold leading-snug text-foreground">{title}</p>
         </div>
@@ -47,26 +46,17 @@ export default function EvidenceCallout({
           <div className="overflow-hidden rounded-lg border border-border bg-background-soft">
             <Image
               src={image}
-              alt={imageAlt ?? title}
+              alt={`Illustrative example: ${imageAlt ?? title}`}
               width={1280}
               height={800}
               className="h-auto w-full"
             />
           </div>
           <figcaption className="mt-2 text-xs leading-relaxed text-muted">
-            Redacted example capture of the current portal or command layout. Tenant identifiers are
-            masked. Rebuild the same view from your own authorised session.
+            Illustrative example, generated from a local HTML layout. This is not a tenant screenshot or evidence that the procedure was executed. Collect the equivalent evidence from your authorised environment.
           </figcaption>
         </figure>
-      ) : (
-        <div className="mx-5 mt-4 flex min-h-[7.5rem] items-center justify-center rounded-lg border border-dashed border-border-strong bg-background-soft px-4 py-6 text-center">
-          <p className="max-w-sm text-xs leading-relaxed text-muted/80">
-            {isOutput
-              ? 'Redacted command output from an authorised admin session'
-              : 'Redacted tenant screenshot from the blade or report named above'}
-          </p>
-        </div>
-      )}
+      ) : null}
 
       <dl className="grid gap-4 px-5 py-4 text-sm leading-relaxed text-muted sm:grid-cols-2">
         <div>

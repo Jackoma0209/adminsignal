@@ -3,8 +3,8 @@ title: "Configuring Conditional Access for a Microsoft 365 Tenant: The Complete 
 category: "Microsoft Entra ID"
 date: "Mar 25, 2026"
 authorId: "jack"
-lastReviewed: "Apr 27, 2026"
-reviewNote: "Added prerequisite checklist, policy 6 (high-risk users), Named Locations, validation steps, known limitations, and lockout recovery procedure."
+lastReviewed: "September 10, 2026"
+reviewNote: "Corrected emergency MFA, compliant-device versus app-protection claims, risk-policy branching, compromise remediation and guest/workload-identity scope. This is a documentation review, not a tenant test."
 tags: ["Conditional Access", "Entra ID", "Microsoft 365", "Identity"]
 ---
 
@@ -12,9 +12,9 @@ tags: ["Conditional Access", "Entra ID", "Microsoft 365", "Identity"]
 
 Conditional Access is powerful but unforgiving. A misconfigured policy can lock out your entire tenant — including administrators. A policy that is too permissive provides no protection. This guide builds a baseline policy map that is defensible, recoverable, and covers the most common attack vectors against Microsoft 365 tenants.
 
-**Tested environment**: Entra ID P1 and P2 tenants, Microsoft 365 Business Premium and E3/E5 licensing, April 2026.
+**Illustrative environment (no execution evidence recorded)**: Entra ID P1 and P2 tenants, Microsoft 365 Business Premium and E3/E5 licensing, April 2026.
 
-**Before deploying any CA policy**: Create an emergency access account (break-glass account) that is excluded from all CA policies and stored in a physical safe. This is non-negotiable.
+**Before deploying a new CA policy**: Validate at least two cloud-only emergency accounts with phishing-resistant credentials, permanent active emergency roles and exclusions from blocking Conditional Access. Exclusions do not bypass Microsoft mandatory MFA. See the [emergency access design](/tutorials/entra-break-glass-emergency-access-accounts).
 
 ## What I Check First
 
@@ -55,13 +55,13 @@ Every policy in this guide should be deployed in **Report-only** mode first. Rep
 - Conditions: None (apply to all)
 - Grant: Require multi-factor authentication
 
-**Exclusions**: Emergency access accounts, service accounts using certificate-based authentication.
+**Exclusions**: The documented emergency access accounts. Certificate-based user authentication is not a reason for a blanket exemption. Service principals are a separate workload-identity scenario, not user accounts to exclude from this policy.
 
 **Deploy in Report-only mode first**. Review the CA sign-in logs for 7–14 days before switching to enforcement.
 
 ## Policy 2: Require Compliant or Hybrid-Joined Device
 
-**What it does**: Blocks access from devices that are not Intune-compliant or hybrid-joined. This prevents BYOD access from unmanaged endpoints.
+**What it does**: Blocks access from devices that are not Intune-compliant or hybrid-joined. A hybrid-join grant alone does not require Intune compliance. If the security requirement is a compliant device, configure that requirement explicitly. Devices meeting an OR alternative do not need to meet both controls.
 
 **Configuration**:
 - Users: All users (excluding emergency access accounts and service accounts)
@@ -71,11 +71,11 @@ Every policy in this guide should be deployed in **Report-only** mode first. Rep
 
 **Warning**: Before enabling, ensure all users have at least one compliant device. Use Report-only mode and review the affected sign-ins — devices that have not checked in recently will show as non-compliant.
 
-**Known issue**: iOS and Android users accessing Microsoft 365 apps must have Intune Company Portal installed and enrolled. BYOD users accessing only web apps via a browser may be able to satisfy the policy with the browser-based compliant registration if Intune app protection policies are deployed.
+**Platform scope**: MAM/app protection does not make an unmanaged device compliant. Mobile compliance requires supported enrolment and the appropriate platform/browser authentication path. Design a separate app-protection access path where needed. [Microsoft compliant-device policy guidance](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-all-users-device-compliance).
 
 ## Policy 3: Block Legacy Authentication
 
-**What it does**: Blocks authentication protocols that do not support MFA (SMTP AUTH, IMAP, POP3, Basic Auth). Legacy auth is used in the majority of password spray attacks.
+**What it does**: Blocks legacy authentication flows that cannot satisfy MFA. SMTP AUTH, IMAP and POP can also use OAuth; the protocol name alone does not prove Basic authentication. [Microsoft legacy-authentication policy](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-block-legacy-authentication).
 
 **Configuration**:
 - Users: All users
@@ -93,7 +93,7 @@ Filter: Status = Failure
 Filter: Failure reason = Conditional Access policy 'Block legacy auth'
 ```
 
-If you see unexpected legitimate services blocked, create an exclusion using a Named Location or a specific service account group.
+Investigate the client and authentication method before changing exclusions. Prefer a supported OAuth migration. Any temporary exception needs a narrow scope, owner, expiry and compensating controls; do not broadly exempt a trusted IP range.
 
 ## Policy 4: Require MFA for Azure Management
 
@@ -114,8 +114,8 @@ This is separate from Policy 1 because it targets Azure administration specifica
 **Configuration**:
 - Users: All users
 - Cloud apps: All cloud apps
-- Conditions: Sign-in risk — High (block), Medium (require MFA)
-- Grant: Block access (for High) / Require multi-factor authentication (for Medium)
+- For a simple pilot: Sign-in risk — Medium and High; Grant — Require multifactor authentication
+- If the approved design uses a different action for High risk, create a separate policy for that condition; one policy cannot branch between two grant actions by risk level
 
 **Note**: Blocking on High risk without an MFA-first fallback can permanently lock out legitimate users if Identity Protection misfires. Start with Require MFA for both Medium and High, then evaluate promotion to Block for High after reviewing false positives for 30 days.
 
@@ -129,7 +129,7 @@ This is separate from Policy 1 because it targets Azure administration specifica
 - Conditions: User risk — High
 - Grant: Block access
 
-**Remediation path**: When a user is blocked, an admin must navigate to **Entra admin centre → Identity Protection → Risky users**, locate the user, investigate the risk detections, and either **Confirm compromise** (disable the account and investigate) or **Dismiss user risk** if the detection is a false positive.
+**Remediation path**: When a user is blocked, an admin must navigate to **Entra admin centre → Identity Protection → Risky users**, locate the user, investigate the risk detections, and follow the documented remediation for the evidence found. Confirming compromise marks risk; it is not equivalent to disabling the account. Disable access, revoke sessions or require secure remediation as separate authorised actions when appropriate. Dismiss risk only after validating a false positive. [Microsoft risk remediation](https://learn.microsoft.com/en-us/entra/id-protection/howto-identity-protection-remediate-unblock).
 
 ## Named Locations
 
@@ -148,7 +148,7 @@ Your emergency access (break-glass) accounts must:
 2. Have **Global Administrator** role assigned directly (not via group)
 3. Be **excluded from all Conditional Access policies** — check this exclusion every time you create a new policy
 4. Use a **long, randomly generated password** (30+ characters) stored in a physical safe
-5. Have **no MFA device registered** — or a FIDO2 hardware key stored with the credentials
+5. Have **phishing-resistant MFA credentials**, such as FIDO2 keys or suitably configured certificate-based authentication, with dependencies distinct from normal administrators
 6. Be **monitored**: Create a Diagnostic Setting alert or Sentinel rule that fires any time these accounts sign in
 
 ## Validation: Reading Sign-in Logs
@@ -178,8 +178,8 @@ When moving from Report-only to On, change one policy at a time and watch sign-i
 
 ## Known Limitations
 
-- **Service principals and workload identities**: Standard CA policies do not apply to managed identities or service principals. Use **Workload Identity policies** (separate CA policy type) to enforce controls on those.
-- **Guest users**: All-user policies apply to guests if not explicitly excluded. Guest users cannot register MFA through their home tenant — they use their home tenant's authentication. Plan guest-specific CA policies if you have significant B2B access.
+- **Service principals and managed identities**: User CA policies do not protect service-principal calls. Workload-identity Conditional Access supports qualifying service principals, but does not cover managed identities. [Microsoft workload-identity scope](https://learn.microsoft.com/en-us/entra/identity/conditional-access/workload-identity).
+- **Guest users**: Evaluate the resource tenant’s policy and cross-tenant trust settings. Home-tenant MFA/device claims can be trusted when configured; otherwise additional resource-tenant requirements may apply. [Microsoft cross-tenant access](https://learn.microsoft.com/en-us/entra/external-id/cross-tenant-access-overview).
 - **Legacy Exchange Online connectors**: Some on-premises Exchange hybrid connectors authenticate with legacy protocols. Blocking legacy auth can break mail flow. Verify hybrid connector authentication before enforcing Policy 3.
 - **Report-only mode does not perfectly simulate enforcement**: Some policy conditions (particularly compliance state) reflect real-time values that may differ between testing and enforcement periods.
 
@@ -190,3 +190,9 @@ When moving from Report-only to On, change one policy at a time and watch sign-i
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
 - [Microsoft Conditional Access documentation](https://learn.microsoft.com/en-us/entra/identity/conditional-access/overview)
 - [Entra ID Identity Protection documentation](https://learn.microsoft.com/en-us/entra/id-protection/overview-identity-protection)
+
+## Correction Record
+
+**10 September 2026:** Corrected emergency MFA, compliant-device versus app-protection claims, risk-policy branching, compromise remediation and guest/workload-identity scope. This is a documentation review, not a tenant test.
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.

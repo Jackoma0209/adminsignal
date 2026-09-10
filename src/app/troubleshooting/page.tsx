@@ -12,11 +12,19 @@ const pageDescription =
   'Systematic diagnosis guides for common Windows, Intune, Group Policy, and Entra ID issues, with decision trees, log locations, validation steps, and practical fixes.'
 const pagePath = '/troubleshooting'
 
-export const metadata: Metadata = buildCategoryMetadata({
+const baseMetadata: Metadata = buildCategoryMetadata({
   title: pageTitle,
   description: pageDescription,
   path: pagePath,
 })
+
+export async function generateMetadata({ searchParams }: {
+  searchParams: Promise<{ category?: string }>
+}): Promise<Metadata> {
+  const { category } = await searchParams
+  return category ? { ...baseMetadata, robots: { index: false, follow: true } } : baseMetadata
+}
+
 
 const publicArticles = troubleshootingArticles.filter(
   (article) => !isNoindexTroubleshootingSlug(article.slug),

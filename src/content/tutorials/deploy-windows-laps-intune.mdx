@@ -1,177 +1,108 @@
 ---
-title: "Deploying Windows LAPS with Microsoft Intune: A Complete Walkthrough"
+title: "Deploying Windows LAPS with Intune: Pilot and Recovery Checks"
 category: "Microsoft Intune"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "Apr 27, 2026"
-reviewNote: "Added rollback/cleanup procedure, co-management and hybrid-join caveats, known limitations, and expanded troubleshooting section. Verified against Intune April 2026 service release."
+lastReviewed: "September 10, 2026"
+reviewNote: "Documentation review corrected hybrid join support, permissions, verification commands, event IDs and unsafe rollback advice. No tenant execution is claimed."
 tags: ["Intune", "LAPS", "Entra ID", "Security Baseline"]
 ---
 
-## Overview
+## Scope and Assumptions
 
-Windows Local Administrator Password Solution (LAPS) is a Microsoft-native control that generates unique, randomly-rotated local administrator passwords for each managed endpoint and escrows them to either Active Directory or Microsoft Entra ID. Without LAPS — or a comparable control — organisations risk lateral movement enabled by shared local administrator passwords.
+This guide plans a Windows LAPS pilot managed through Intune, with passwords backed up to Microsoft Entra ID. It is reviewed against documentation, not a report of an executed rollout. Example commands collect evidence; the policy steps change devices and require an approved pilot.
 
-This guide covers the **native Windows LAPS deployment for Intune-managed, Entra ID-joined devices** — the recommended path for cloud-first environments. If you are managing hybrid-joined devices or running legacy LAPS alongside native LAPS, see the notes in each section.
-
-**Tested environment**: Windows 11 22H2 and 24H2, Intune April 2026 service release, Entra ID with LAPS enabled at tenant level.
-
-## Production Rollout Advice
-
-Deploy LAPS as a control with an operational handover, not just as another Intune profile. Before assigning it broadly, agree who is allowed to retrieve passwords, where retrievals are audited, and what happens after a password is used for support or recovery.
-
-For the first rollout, use a small device group that includes ordinary user endpoints, a shared device if you support them, and at least one machine with your standard hardening baseline. Confirm the password appears in Entra ID, retrieval auditing is visible, and post-authentication rotation behaves as expected before expanding the assignment.
-
-Do not use LAPS to justify leaving shared local admin passwords in place. During rollout, remove old local admin credentials from build scripts, gold images, and helpdesk notes so the new control is not undermined by the old process.
+The decision is more than password rotation: the support team must be able to retrieve a current credential, use it through an approved recovery path and demonstrate that it rotates afterwards. Keep an existing recovery path until all three checks pass.
 
 ## Prerequisites
 
-Before starting, confirm:
+- Use a supported Windows release with Windows LAPS updates. Do not apply one Windows 11 KB number to Windows 10; verify the supported OS and update requirements in the [Windows LAPS overview](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-overview).
+- Confirm Intune enrolment, licensing, policy permissions and reachable Microsoft endpoints.
+- Establish whether the device is Entra joined or hybrid joined. Hybrid devices may back up to Entra ID **or** on-premises AD, not both. Entra registered devices are not supported for this scenario. [Join-state restrictions](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-overview#understand-device-join-state-restrictions).
+- Inventory existing password managers and legacy LAPS policy. Do not allow two products to rotate the same account. Follow the [legacy LAPS migration guidance](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-scenarios-legacy) before removing an existing agent or recovery path.
+- Identify the managed local account, its enabled state and the support process. A policy targeting an account does not by itself establish that the account is usable.
 
-- **Windows 11 22H2** with KB5025239 (April 2023 CU) or later, **or Windows 10 22H2** with the same. The built-in LAPS component requires this build minimum.
-- **Intune tenant** on March 2025 service release or later.
-- **Entra ID**: LAPS support must be enabled in the Entra portal. Navigate to **Devices > Device Settings** and enable **"Enable Microsoft Entra Local Administrator Password Solution (LAPS)"**.
-- **Your Intune role**: Endpoint Security Manager or higher.
-- **Legacy LAPS agent removed**: If the Microsoft LAPS v1.x agent is installed on any devices, remove it before enabling native LAPS to prevent policy conflicts. Check for the presence of `LAPS.exe` or `AdmPwd.dll` before proceeding.
-- **Entra-joined (not hybrid-joined)**: This guide targets pure Entra ID join. For hybrid-joined devices, LAPS must be configured to back up to on-premises Active Directory unless you have confirmed hybrid LAPS escrow support in your Intune version.
+## Separate Policy Administration From Password Recovery
 
-## Step 1: Enable LAPS in Entra ID
+Creating a LAPS policy, enabling the tenant setting and reading a password are different permissions. Use the documented Intune role permissions for policy management and the Entra permissions for password recovery; do not assume all Intune administrators can read credentials. The [Intune LAPS overview](https://learn.microsoft.com/en-us/intune/device-security/laps/overview) documents these requirements.
 
-1. Sign in to the [Entra admin centre](https://entra.microsoft.com) as a Privileged Role Administrator or Global Administrator.
-2. Navigate to **Identity > Devices > Overview > Device Settings**.
-3. Set **Enable Microsoft Entra Local Administrator Password Solution (LAPS)** to **Yes**.
-4. Click **Save**.
+Assign credential access narrowly. Use a delegated role such as Cloud Device Administrator, or an appropriate custom role, with the intended device scope. Check actual authorisation with a support operator account before a rollout. [Entra LAPS permissions and recovery](https://learn.microsoft.com/en-us/entra/identity/devices/howto-manage-local-admin-passwords).
 
-This is a tenant-wide setting — it does not automatically apply LAPS to any device. It enables the escrow capability that your Intune policy will activate on specific devices.
+Do not retrieve plaintext passwords merely to prove that escrow exists. Never place recovered passwords in screenshots, transcripts, CSV inventories or ordinary tickets.
 
-## Step 2: Create the Intune Configuration Profile
+## Enable the Tenant Capability
 
-1. Navigate to the [Intune admin centre](https://intune.microsoft.com).
-2. Go to **Endpoint security > Account protection**.
-3. Click **Create policy** and select:
-   - **Platform**: Windows 10 and later
-   - **Profile type**: Local admin password solution (Windows LAPS)
-4. Give the policy a clear name, e.g. `LAPS - Entra ID Joined Devices`.
+In Entra device settings, an authorised administrator enables the Windows LAPS tenant setting. This permits the backup capability; it does not configure every device. Record the existing value and obtain tenant-change approval before changing it.
 
-### Recommended Settings
+Do not switch this setting off to recover one failed pilot. That could affect password backup for unrelated devices.
 
-| Setting | Recommended Value | Notes |
+## Create a Narrow Intune Pilot
+
+In **Endpoint security > Account protection**, create a Windows LAPS policy for the appropriate Windows platform. Use an **assigned pilot device group** first, rather than a dynamic rule that silently targets every managed device.
+
+Decide the settings with the recovery owner:
+
+| Setting | Pilot decision | Validation |
 |---|---|---|
-| Backup Directory | Azure Active Directory | Use for Entra-joined devices |
-| Password Age Days | 30 | Rotate every 30 days |
-| Administrator Account Name | (blank) | Targets the built-in local Administrator account |
-| Password Complexity | Large letters + small letters + numbers + special characters | Maximum complexity |
-| Password Length | 20 | Minimum 14 for CIS compliance, 20 is stronger |
-| Post Authentication Actions | Reset password and log off managed account | Rotates after any use |
-| Post Authentication Reset Delay | 24 | Hours before rotation after post-auth use |
+| Backup directory | Microsoft Entra ID for this workflow | Credential metadata appears for the correct device |
+| Managed account | Built-in Administrator or an explicitly selected account | Account exists and enabled state matches the recovery design |
+| Password length and complexity | Approved values supported by the OS | Generated credential meets policy without being copied into the change record |
+| Age and post-authentication actions | Agreed rotation delay and logoff/reset behaviour | A controlled use produces the expected action at the expected time |
+| Assignment | Small, representative device group | Only intended devices receive the profile |
 
-5. Click **Next**, configure scope tags if required, then proceed to **Assignments**.
+Windows 11 24H2 and later offer additional automatic account-management capabilities; do not assume those exist on older clients. Check setting applicability in the [LAPS policy reference](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-policy-settings) and [Intune deployment guidance](https://learn.microsoft.com/en-us/intune/device-security/laps/deploy-policy).
 
-## Step 3: Assign to Device Groups
+For co-managed clients, review management authority and the effective policy on the device. **Account protection is an Intune policy area, not a co-management workload slider.** Check the supported [workloads](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads) and eliminate overlapping LAPS configuration before widening scope.
 
-Assign the policy to a device group, not a user group. LAPS is a device-level configuration.
+## Validate Policy and Escrow Separately
 
-**Recommended group structure:**
-- Create an Entra ID dynamic device group with the rule: `(device.managementType -eq "MDM") and (device.deviceTrustType -eq "AzureAD")`
-- This automatically captures all Entra-joined, Intune-managed devices
+Trigger an approved Windows or Intune sync and inspect per-setting policy status. A successful profile report is not sufficient evidence of password backup.
 
-Do not assign this policy to hybrid-joined devices unless you have confirmed there is no legacy LAPS agent present and your Intune version supports hybrid LAPS with Entra ID backup.
-
-## Step 4: Verify and Test
-
-After the policy syncs (allow up to 8 hours, or trigger a manual sync via the Intune portal or `Sync-MDMClientWithManagementService` on the device), verify:
-
-### On the device
-
-Open an elevated PowerShell prompt and check the LAPS state:
+On the pilot device, run this read-only example from an authorised elevated PowerShell session:
 
 ```powershell
-# Check current LAPS status using the built-in module (Windows 11 22H2+)
-Get-LapsAADPassword -DeviceNameOrId $env:COMPUTERNAME -AsPlainText
+Get-WinEvent -FilterHashtable @{
+    LogName = 'Microsoft-Windows-LAPS/Operational'
+    StartTime = (Get-Date).AddDays(-1)
+} -ErrorAction Stop |
+    Select-Object TimeCreated, Id, LevelDisplayName, Message
 ```
 
-If the LAPS PowerShell module is not present, check via registry:
+For directory backup, event **10029** records success to Entra ID; **10018** is success to Windows Server AD. Event **10005** signals policy-processing failure: use its error and surrounding events to diagnose the cause. These are not interchangeable with local password-change events. [Microsoft LAPS event reference](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-event-log).
 
-```powershell
-Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\LAPS\State"
-```
+In the Intune or Entra device record, confirm the device identity and password backup timestamp. A missing pane can indicate permissions, platform applicability or absent backup, not just a display delay.
 
-### In the Intune portal
+## Password Retrieval Is a Separate Recovery Action
 
-Navigate to **Devices > [device name] > Local admin password**. You should see a password with a rotation date. If this pane is absent, the policy has not yet synced — trigger a manual sync.
+Use the portal recovery workflow only when the approved support scenario needs a credential. If using PowerShell, Microsoft's cmdlet is `Get-LapsAADPassword` with `-DeviceIds`, and it requires Microsoft Graph dependencies and an authorised connection. It queries Entra; it is not a local LAPS health command. See the [cmdlet reference](https://learn.microsoft.com/en-us/powershell/module/laps/get-lapsaadpassword?view=windowsserver2025-ps) before choosing permissions or plaintext output.
 
-### In Entra ID
+Test one authorised recovery, then confirm the intended post-authentication action, subsequent backup timestamp and access audit. Record timestamps and outcomes, not secrets.
 
-Navigate to **Entra admin centre > Devices > All devices > [device name] > Local administrator password recovery**. The password should be visible to accounts with appropriate permissions. If the password field is blank, the device has not yet escrowed — check the event log (Step 5 troubleshooting).
+## Troubleshooting and Failure Modes
 
-### PowerShell bulk verification
+| Evidence | Next check | Avoid |
+|---|---|---|
+| Profile not applicable | OS support, join state and setting applicability | Assuming every hybrid device is unsupported |
+| Profile applied but no backup | Backup directory, tenant setting, connectivity and LAPS events | Recreating device objects to refresh a portal |
+| Password visible to one operator only | Entra role, scope and Intune permissions | Granting Global Administrator to fix a display issue |
+| Rotation conflicts | All password managers and policy sources targeting that account | Two tools rotating the same credential |
+| Credential works but does not rotate as expected | Post-authentication policy and its delay; event timeline | Concluding failure before the configured interval |
 
-To check LAPS escrow status across your fleet from a management workstation:
+## Recovery and Rollback
 
-```powershell
-# Requires Microsoft.Graph module
-Connect-MgGraph -Scopes "DeviceLocalCredential.Read.All", "Device.Read.All"
+1. Stop pilot expansion. Retain logs, assignment details and the current recovery owner.
+2. If a policy setting is wrong, correct it within the pilot and verify effective device state and escrow again.
+3. Before retiring LAPS management, establish and test the replacement credential-management and access process. Removing assignment does not restore a previous password.
+4. Remove or revise only the pilot assignment through change control. Confirm resultant policy and account state; do not assume every setting reverts immediately.
+5. If a credential was exposed, use the documented rotation action and verify a new backup. Deleting a device object or an imagined portal “delete password” control is not a substitute for rotation.
+6. Confirm unrelated devices continue backing up successfully. Preserve recovery access until the replacement passes validation.
 
-$Devices = Get-MgDevice -Filter "managementType eq 'MDM'" -All
-foreach ($Device in $Devices) {
-    $Cred = Get-MgDeviceLocalCredential -DeviceId $Device.Id -ErrorAction SilentlyContinue
-    [PSCustomObject]@{
-        DeviceName     = $Device.DisplayName
-        LAPSEscrowed   = if ($Cred) { "Yes" } else { "No" }
-        LastRotated    = $Cred.RefreshDateTime
-    }
-}
-```
+## Related Reading
 
-## Step 5: Configure Password Recovery Access
+- [BitLocker escrow diagnosis](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra): distinguish encryption state from recoverability.
+- [Selected Windows hardening controls](/tutorials/hardening-windows-11-cis-benchmark): resolve overlapping policies before enforcing a baseline.
+- [Intune and ConfigMgr decisions](/comparisons/intune-vs-sccm-mecm-2025): plan policy ownership separately from provisioning.
 
-By default, Global Administrators and Privileged Role Administrators can recover LAPS passwords. For operational use, create a delegated role:
+## Correction Record
 
-1. In Entra ID, navigate to **Roles and administrators > All roles**.
-2. Locate **Cloud Device Administrator** — this role has `microsoft.directory/deviceLocalCredentials/password/read` by default.
-3. Alternatively, create a custom role with only that permission for a tighter least-privilege model.
-4. Assign the role to your IT support team via PIM if you have Entra ID P2.
-
-**Auditing password retrievals**: Every time a LAPS password is retrieved, an entry is written to the Entra audit log under **Devices > Audit logs**, action type `Get local administrator password`. Set up a diagnostic setting to export these to Log Analytics or Sentinel for SOC visibility.
-
-## Troubleshooting
-
-**Policy shows as "Not applicable"**: Confirm the device is Entra-joined (not hybrid-joined). Run `dsregcmd /status` on the device and check `AzureAdJoined: YES`.
-
-**Password not escrowing**: Confirm LAPS is enabled in Entra Device Settings at the tenant level. Check the device event log under `Applications and Services Logs > Microsoft > Windows > LAPS > Operational`. Event ID 10020 indicates the policy was received; Event ID 10023 confirms escrow success; Event ID 10027 indicates an escrow failure with an error code.
-
-**Legacy LAPS conflicts**: If the device shows a LAPS policy conflict, check for the presence of the legacy `LAPS.exe` or `AdmPwd.dll`. Remove the legacy agent and run a policy sync. The native LAPS CSP and the legacy LAPS Group Policy extension cannot run simultaneously.
-
-**Password rotation not happening after use**: Confirm the Post Authentication Actions setting is configured in the Intune profile. If the local administrator account used for recovery is not the built-in Administrator (RID 500), you must specify the account name explicitly in the `Administrator Account Name` field.
-
-## Common Admin Mistakes
-
-- Assigning the policy to users instead of devices. LAPS is device configuration, so user targeting creates confusing coverage gaps.
-- Enabling LAPS in Entra ID but forgetting that this only enables escrow capability. Devices still need a Windows LAPS policy.
-- Letting too many roles retrieve passwords. Keep recovery access small, audited, and preferably time-bound through PIM.
-- Managing the same device with legacy LAPS, Group Policy, and Intune at the same time. Pick the management plane for each device population and document the exception path.
-
-## Known Limitations
-
-- **Hybrid-joined devices**: Native LAPS on hybrid-joined devices can back up to Entra ID (as of Windows 11 23H2 with the appropriate Intune CSP update), but requires explicit configuration. Do not apply this guide's Entra-only policy to hybrid-joined devices without testing.
-- **Co-management**: If the device is co-managed (Intune + SCCM) and the Account Protection workload is not set to Intune, the LAPS policy will not be applied by Intune. Move the Account Protection workload to Intune, or deploy LAPS via SCCM's separate integration path.
-- **The local administrator account must exist**: Native LAPS targets the built-in Administrator account (RID 500) unless you specify a name. If the built-in account is disabled (common in CIS hardening baselines), LAPS will manage it in a disabled state — the password rotates but the account cannot be used until re-enabled. Decide whether to keep the built-in account enabled or create a named admin account for LAPS to manage.
-- **Intune device-to-user assignment**: LAPS password recovery in Intune shows the password to Intune administrators on the device's page. There is no per-user delegation within Intune's LAPS recovery UI — use the Entra Cloud Device Administrator role for delegated access.
-- **Recovery key not visible in Intune but visible in Entra**: This is expected behaviour. The Intune portal retrieves the key from Entra ID on demand. If Entra ID shows the key and Intune does not, it is a display delay — refresh the page.
-
-## Rollback and Cleanup
-
-If you need to remove LAPS from a device or roll back the policy:
-
-1. **Remove the Intune policy**: In the Intune portal, navigate to the LAPS policy and remove the device or device group from the assignment. The policy will be removed on the next sync.
-2. **Clear the escrowed key**: After removing the policy, the password in Entra ID is not automatically deleted. To remove it: navigate to the device in Entra ID > Local administrator password recovery > Delete. This prevents stale keys from being used.
-3. **Disable LAPS at tenant level**: If you are removing LAPS entirely, toggle the Entra Device Settings back to No. This prevents any future policies from escrowing passwords but does not affect passwords already escrowed.
-4. **Restore the local administrator account state**: If LAPS was managing the built-in Administrator account, decide whether to re-disable it or leave it as-is after LAPS removal.
-
-## Related Resources
-
-- [Microsoft Entra ID hub](/microsoft-entra-id)
-- [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration)
-- [Windows Autopilot v1 vs v2](/comparisons/autopilot-v1-vs-v2-2026)
-- [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
-- [Microsoft Windows LAPS documentation](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-overview)
+**10 September 2026:** Removed undocumented testing claims, invalid sync/Graph examples and a nonexistent password-deletion rollback. Corrected hybrid support, LAPS event IDs and the invented Account Protection workload. Recovery now requires a verified replacement access path.

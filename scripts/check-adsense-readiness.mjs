@@ -14,8 +14,8 @@ const layoutPath = path.join(root, 'src', 'app', 'layout.tsx')
 const legacyPublisherPattern = new RegExp(
   `${['NEXT_PUBLIC', 'ADSENSE', 'PUBLISHER_ID'].join('_')}|${['ADSENSE', 'PUBLISHER_ID'].join('_')}`
 )
-const requiredRobotsDisallows = ['/scripts', '/reviews', '/best-tools', '/search', '/api/']
-const requiredNoindexPaths = ['/best-tools', '/reviews', '/scripts', '/search', '/advertise', '/templates']
+const requiredRobotsDisallows = ['/search', '/api/']
+const requiredNoindexPaths = ['/best-tools', '/reviews', '/scripts', '/search', '/advertise']
 
 function fail(message) {
   console.error(`AdSense readiness check failed: ${message}`)

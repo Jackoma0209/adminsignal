@@ -10,8 +10,8 @@ openGraphImage: "/images/article-covers/october-2026-windows-servicing-deadlines
 category: "Windows 11"
 date: "2026-08-22"
 authorId: "jack"
-lastReviewed: "2026-08-22"
-reviewNote: "Briefing checked against Microsoft supported-versions tables, lifecycle product pages, Windows message centre, KB5054156, and Secure Boot certificate guidance on 2026-08-22. Lifecycle product pages use Pacific end-of-day clocks that can read as the following calendar morning; admin communications use the Patch Tuesday calendar dates below."
+lastReviewed: "2026-09-10"
+reviewNote: "Corrected 24H2/25H2 build terminology, extended-support wording, certificate-state interpretation and the DisplayVersion inventory check."
 tags: ["Windows 11 24H2", "Windows 11 25H2", "Windows Server 2022", "Secure Boot", "Intune", "Windows Update for Business", "lifecycle"]
 keywords: ["Windows 11 24H2", "Windows 11 25H2", "Windows Server 2022", "Secure Boot", "Intune", "Windows Update for Business", "lifecycle"]
 image: "/images/article-covers/october-2026-windows-servicing-deadlines.svg"
@@ -52,7 +52,7 @@ Microsoft's admin communications use these calendar dates. The [lifecycle produc
       <tr>
         <td><strong>13 Oct 2026</strong></td>
         <td>Windows Server 2022 mainstream support</td>
-        <td><a href="https://learn.microsoft.com/en-us/windows-server/get-started/whats-new-windows-server-2025">Windows Server 2025</a>. Extended security updates continue through <strong>14 Oct 2031</strong> at no extra cost</td>
+        <td><a href="https://learn.microsoft.com/en-us/windows-server/get-started/whats-new-windows-server-2025">Windows Server 2025</a>. Security updates during extended support continue through <strong>14 Oct 2031</strong> at no extra cost</td>
         <td>Yes. Server upgrade or a documented extended-support stay.</td>
       </tr>
       <tr>
@@ -81,7 +81,7 @@ Do not put these five rows in one change record. Mix them and the wrong ring get
 
 [Supported Windows client versions](https://learn.microsoft.com/en-us/windows/release-health/supported-versions-windows-client) end 24H2 Home/Pro servicing on 2026-10-13. After that date those editions no longer get known-issue fixes, time zone updates, technical support, or monthly security and preview updates.
 
-Microsoft's current recommendation is 25H2. 24H2 and 25H2 share the 26200 platform. Devices already on 24H2 with a recent quality update take [KB5054156](https://support.microsoft.com/topic/kb5054156-feature-update-to-windows-11-version-25h2-by-using-an-enablement-package-4d307e2d-3028-4323-bb46-552cff491643), the enablement package, after the August 2025 preview [KB5064081](https://support.microsoft.com/help/5064081) or a later cumulative. One restart. That is not the path for 23H2.
+Microsoft's current recommendation is 25H2. 24H2 and 25H2 share a common core, but their reported build families differ: 26100 and 26200 respectively. Devices already on 24H2 with a recent quality update take [KB5054156](https://support.microsoft.com/topic/kb5054156-feature-update-to-windows-11-version-25h2-by-using-an-enablement-package-4d307e2d-3028-4323-bb46-552cff491643), the enablement package, after the August 2025 preview [KB5064081](https://support.microsoft.com/help/5064081) or a later cumulative. One restart. That is not the path for 23H2.
 
 Unmanaged Home/Pro 24H2 devices that are not IT-managed are offered 25H2 automatically. Managed devices are not. If Intune, WSUS, or Windows Update client policies hold feature updates, those Pro laptops stay on 24H2 until you target 25H2.
 
@@ -101,7 +101,7 @@ Microsoft Corporation KEK CA 2011 and Microsoft UEFI CA 2011 already hit their J
 
 Microsoft still says devices without the 2023 certificates will start and receive normal Windows updates. They may not receive future early-boot protections, Secure Boot database updates, revocation lists, or mitigations. August cumulatives expanded high-confidence automatic delivery. That is not estate visibility.
 
-Use the [Secure Boot CA 2023 readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) for clients, servers, Hyper-V Generation 2 VMs, and recovery media. Budget the extra restart Microsoft documents when a certificate actually applies. A leftover 2011 PCA is a certificate problem even on a fully patched 25H2 device.
+Use the [Secure Boot CA 2023 readiness guide](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) for clients, servers, Hyper-V Generation 2 VMs, and recovery media. Budget the extra restart Microsoft documents when a certificate actually applies. The presence of an older certificate alone does not prove failure. Check the required 2023 certificates and current servicing status; do not delete old trust anchors as a shortcut.
 
 ### 4. 23H2 Enterprise is a November problem with an October decision
 
@@ -152,8 +152,10 @@ On a sample of each ring, before you call the device "ready for October":
 ```powershell
 Get-ComputerInfo |
   Select-Object WindowsProductName, WindowsEditionId, OsName,
-                WindowsVersion, OsDisplayVersion, OsBuildNumber
+                WindowsVersion, OsBuildNumber
 ```
+
+For the feature version, read `DisplayVersion` from `HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion`; `WindowsVersion` is not a reliable substitute and `OsDisplayVersion` is not a Get-ComputerInfo property. Validate edition as well as build against [Microsoft’s release table](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information).
 
 Expected patterns:
 
@@ -213,3 +215,7 @@ A current quality-update build is necessary. It is not sufficient. The device th
 - [KB5054156: 25H2 enablement package](https://support.microsoft.com/topic/kb5054156-feature-update-to-windows-11-version-25h2-by-using-an-enablement-package-4d307e2d-3028-4323-bb46-552cff491643)
 - [Windows Secure Boot certificate expiration](https://support.microsoft.com/topic/windows-secure-boot-certificate-expiration-and-ca-updates-7ff40d33-95dc-4c3c-8725-a9b95457578e)
 - [August 2026 Patch Tuesday: Windows Admin Priorities](/news/august-2026-patch-tuesday-admin-priorities)
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected 24H2/25H2 build terminology, extended-support wording, certificate-state interpretation and the DisplayVersion inventory check. Examples are illustrative; no lab or tenant execution is claimed.

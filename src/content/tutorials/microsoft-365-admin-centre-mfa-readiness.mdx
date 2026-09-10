@@ -3,8 +3,8 @@ title: "Microsoft 365 Admin Centre Mandatory MFA Readiness for Admins"
 category: "Microsoft 365"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
-reviewNote: "Initial operational guide based on current Microsoft mandatory MFA guidance for Microsoft 365 admin centre, Microsoft admin portals, Azure Phase 2 clients, emergency access accounts, authentication methods, sign-in logs, and Graph PowerShell reporting as of May 7, 2026."
+lastReviewed: "2026-09-10"
+reviewNote: "Marked the July 2026 postponement deadline as passed and linked the current escalation guidance."
 tags: ["Microsoft 365", "MFA", "Microsoft Entra ID", "Conditional Access", "Graph PowerShell", "Admin Security"]
 ---
 
@@ -20,7 +20,7 @@ The enforcement applies when a user account signs in to the Microsoft 365 admin 
 
 The important operational detail is that this Microsoft enforcement is separate from your own Conditional Access design. If you already require MFA for admin centre access, users should see little change. If you excluded some admins from MFA, or relied on per-user MFA in an inconsistent way, Microsoft enforcement can expose the gap.
 
-Phase 2 Azure enforcement is still relevant for administrators who manage Azure or Microsoft 365 infrastructure through command-line and automation tooling. From 1 October 2025, Microsoft began enforcing MFA for user accounts that perform create, update, or delete operations through Azure CLI, Azure PowerShell, Azure mobile app, Infrastructure as Code tools, and Azure Resource Manager REST endpoints. Microsoft allows some tenants to postpone Phase 2 until 1 July 2026 where there are complex technical blockers.
+Phase 2 Azure enforcement is still relevant for administrators who manage Azure or Microsoft 365 infrastructure through command-line and automation tooling. From 1 October 2025, Microsoft began enforcing MFA for user accounts that perform create, update, or delete operations through Azure CLI, Azure PowerShell, Azure mobile app, Infrastructure as Code tools, and Azure Resource Manager REST endpoints. The documented postponement deadline was 1 July 2026 and has passed; it is not an available future planning window.
 
 For wider planning, use these internal references:
 
@@ -44,7 +44,7 @@ Official Microsoft references used for this guide:
 - [Get-MgUserAuthenticationMethod](https://learn.microsoft.com/en-us/powershell/module/microsoft.graph.identity.signins/get-mguserauthenticationmethod?view=graph-powershell-1.0)
 - [List Microsoft Entra role assignments](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/view-assignments)
 
-## Tested Environment Note
+## Scope and Verification Basis
 
 This guide is written for Microsoft 365 tenants backed by Microsoft Entra ID, with audit checks run through Microsoft Graph PowerShell in May 2026.
 
@@ -199,15 +199,30 @@ Do not jump straight to phishing-resistant MFA for every administrator without r
 
 Use Microsoft Graph to list active role assignments.
 
+Collection reads use the following helper in the same PowerShell session and follow [Microsoft Graph paging](https://learn.microsoft.com/en-us/graph/paging). This is an illustrative implementation, not a recorded tenant execution.
+
 ```powershell
-$RoleDefinitions = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/roleManagement/directory/roleDefinitions?`$select=id,displayName,isBuiltIn,isPrivileged"
+function Get-GraphCollectionResponse {
+    param([Parameter(Mandatory)][string]$Uri)
+    $Items = [System.Collections.Generic.List[object]]::new()
+    do {
+        $Page = Invoke-MgGraphRequest -Method GET -Uri $Uri -ErrorAction Stop
+        foreach ($Item in $Page.value) { $Items.Add($Item) }
+        $Uri = $Page.'@odata.nextLink'
+    } while ($Uri)
+    return @{ value = $Items.ToArray() }
+}
+```
+
+```powershell
+$RoleDefinitions = Get-GraphCollectionResponse -Uri "https://graph.microsoft.com/v1.0/roleManagement/directory/roleDefinitions?`$select=id,displayName,isBuiltIn,isPrivileged"
 $RoleDefinitionById = @{}
 
 foreach ($Role in $RoleDefinitions.value) {
     $RoleDefinitionById[$Role.id] = $Role
 }
 
-$Assignments = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?`$select=id,principalId,roleDefinitionId,directoryScopeId&`$top=999"
+$Assignments = Get-GraphCollectionResponse -Uri "https://graph.microsoft.com/v1.0/roleManagement/directory/roleAssignments?`$select=id,principalId,roleDefinitionId,directoryScopeId&`$top=999"
 
 $ActiveAdmins = foreach ($Assignment in $Assignments.value) {
     $Role = $RoleDefinitionById[$Assignment.roleDefinitionId]
@@ -231,7 +246,7 @@ $ActiveAdmins |
     Format-Table UserPrincipalName, DisplayName, Role, AccountEnabled, Scope
 ```
 
-For very large tenants, follow `@odata.nextLink` when using `Invoke-MgGraphRequest`, or split role and principal lookups into smaller batches. The shape above is intentionally readable for an operational audit.
+The helper follows every `@odata.nextLink` and stops on request errors. A partial or failed export is not a completed audit. Role-assignable groups still require a separate membership review.
 
 Expected output shape:
 
@@ -257,7 +272,7 @@ If you use Microsoft Entra ID P2 and PIM, active assignments are not enough. Eli
 
 ```powershell
 $EligibilityUri = "https://graph.microsoft.com/v1.0/roleManagement/directory/roleEligibilityScheduleInstances?`$select=id,principalId,roleDefinitionId,directoryScopeId,memberType,startDateTime,endDateTime&`$top=999"
-$Eligibility = Invoke-MgGraphRequest -Method GET -Uri $EligibilityUri
+$Eligibility = Get-GraphCollectionResponse -Uri $EligibilityUri
 
 $EligibleAdmins = foreach ($Item in $Eligibility.value) {
     $Role = $RoleDefinitionById[$Item.roleDefinitionId]
@@ -633,7 +648,7 @@ What not to do:
 - Do not exclude emergency accounts from every monitoring rule.
 - Do not keep user-based automation because "the script still works today".
 
-For Phase 2 Azure enforcement, if your tenant has complex technical blockers and enforcement has not yet started or is still postponable, Microsoft documents a Phase 2 postponement path until 1 July 2026. Treat that as a temporary risk acceptance, not as a permanent control.
+The 1 July 2026 Phase 2 postponement date is historical. If enforcement now blocks an essential workflow, follow the [current Microsoft support escalation guidance](https://learn.microsoft.com/en-us/entra/identity/authentication/concept-mandatory-multifactor-authentication) while migrating user-based automation to an appropriate workload identity. Do not assume an exception is available or granted.
 
 ## Prevention Checklist
 
@@ -667,3 +682,9 @@ Use this checklist monthly and before major admin policy changes:
 - [Verify that users are set up for mandatory MFA](https://learn.microsoft.com/en-us/entra/identity/authentication/how-to-mandatory-multifactor-authentication)
 - [Manage emergency access accounts in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)
 - [Require phishing-resistant MFA for administrator roles](https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-admin-phish-resistant-mfa)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Marked the July 2026 postponement deadline as passed and linked the current escalation guidance. Examples are illustrative; no lab or tenant execution is claimed.

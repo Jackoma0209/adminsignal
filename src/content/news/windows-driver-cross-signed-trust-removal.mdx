@@ -4,14 +4,14 @@ description: "Enterprise admin guide to Microsoft's cross-signed driver trust re
 category: "Windows Security"
 date: "Jun 29, 2026"
 authorId: "jack"
-lastReviewed: "Jun 29, 2026"
-reviewNote: "Operational readiness guide based on the Windows IT Pro Blog cross-signed driver program announcement, Secure Boot CA 2023 guidance, and April 2026 cumulative update rollout context. Checked on 2026-06-29."
+lastReviewed: "2026-09-10"
+reviewNote: "Corrected automatic per-device enforcement and current 250-hour criteria; distinguished PnP inventory and signature presence from kernel-policy trust."
 tags: ["Windows Security", "Drivers", "Windows 11", "Windows Server 2025", "Secure Boot", "Patch Management"]
 image: "/images/article-covers/windows-driver-cross-signed-trust-removal.svg"
 imageAlt: "Abstract driver security illustration with certificate nodes, kernel shield, and evaluation mode indicator"
 ---
 
-Microsoft is removing trust for kernel-mode drivers signed under the deprecated cross-signed root certificate program. The change arrives with the **April 2026 Windows cumulative update** on Windows 11 24H2, 25H2, 26H1, and Windows Server 2025. Enforcement starts in **evaluation mode**: Windows logs drivers that would be blocked but does not block them yet.
+Microsoft is removing trust for kernel-mode drivers signed under the deprecated cross-signed root certificate program. The change arrives with the **April 2026 Windows cumulative update** on Windows 11 24H2, 25H2, 26H1, and Windows Server 2025. The policy starts in **evaluation mode**, then can enforce automatically on each device when its evaluation criteria are met; it does not wait for a separate future enforcement update.
 
 That evaluation window is your only useful lead time. This guide explains what to audit, how to find affected drivers before enforcement, how to sequence rollout across Intune rings, and when to escalate to vendors.
 
@@ -36,16 +36,18 @@ The cross-signed driver program predates current WHCP requirements for EV code s
 | Phase | Behaviour |
 |---|---|
 | April 2026 update applied | Evaluation mode begins — affected drivers logged, not blocked |
-| Future enforcement update | Drivers failing the new trust bar can be blocked at load time |
+| Device passes evaluation | Policy activates automatically; untrusted drivers outside the allowed set can be blocked |
 
 Affected platforms per Microsoft:
 
 - Windows 11 24H2, 25H2, 26H1
 - Windows Server 2025
 
+Microsoft’s [updated announcement](https://techcommunity.microsoft.com/blog/windows-itpro-blog/advancing-windows-driver-security-removing-trust-for-the-cross-signed-driver-pro/4504818) specifies 250 system hours plus three restarts for Windows 11, or two for Server 2025. If audited drivers would fail the policy, evaluation resets instead of activating. Microsoft also maintains an allow list of selected cross-signed drivers. Test less-frequent peripheral and recovery workflows during evaluation; elapsed time alone is not an administrator sign-off.
+
 ## Operational Impact
 
-When enforcement eventually lands, a blocked driver can cause:
+When a device activates enforcement, a blocked driver can cause:
 
 - Boot failure or STOP error on critical systems
 - Loss of storage, network, or security agent functionality
@@ -58,7 +60,7 @@ Evaluation mode is the period to find these outcomes in logs — not after enfor
 
 ### 1. Confirm update ring order
 
-Deploy the April 2026 cumulative update through your normal rings:
+Deploy the current applicable cumulative security update through normal rings; April introduced the change, but it is not the current patch target:
 
 1. IT pilot devices with varied hardware vendors
 2. Security operations workstations
@@ -104,17 +106,18 @@ Record for each hit:
 
 ### PowerShell driver inventory
 
-Collect third-party kernel drivers on a pilot device:
+Collect PnP driver inventory on an authorised pilot device using an elevated PowerShell session. This includes Microsoft and third-party entries and does not enumerate every non-PnP kernel driver:
 
 ```powershell
-Get-WmiObject Win32_PnPSignedDriver |
+New-Item -ItemType Directory -Path C:\Temp -Force | Out-Null
+Get-CimInstance Win32_PnPSignedDriver |
     Where-Object { $_.DeviceClass -ne $null } |
     Select-Object DeviceName, DriverVersion, DriverProviderName, DriverDate, IsSigned |
     Sort-Object DriverProviderName, DeviceName |
     Export-Csv -Path "C:\Temp\driver-inventory.csv" -NoTypeInformation
 ```
 
-Expected output shape: one row per signed driver with provider and version. Compare providers against your approved vendor list.
+The CSV contains PnP driver records with provider, version and signature status. `IsSigned` does not establish acceptance by the new kernel trust policy; correlate actual Code Integrity events. Keep exports restricted.
 
 ### Intune reporting angle
 
@@ -141,7 +144,7 @@ Track responses in the same register as your patch exceptions.
 
 | Ring | Action |
 |---|---|
-| Ring 0 — IT engineering | Apply April update; collect evaluation logs for 7 days |
+| Ring 0 — IT engineering | Apply current applicable update; exercise boot/runtime scenarios and monitor actual evaluation state |
 | Ring 1 — Representative hardware sample | One device per OEM family minimum |
 | Ring 2 — Department pilot | Monitor helpdesk tickets for boot or agent failures |
 | Ring 3 — Production | Proceed only when Ring 2 shows no unresolved driver hits |
@@ -177,3 +180,7 @@ After rollout:
 ## Source
 
 This operational plan is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/advancing-windows-driver-security-removing-trust-for-the-cross-signed-driver-pro/4504818) published by Microsoft on March 26, 2026, extended with enterprise rollout and evidence collection steps for Windows administrators.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected automatic per-device enforcement and current 250-hour criteria; distinguished PnP inventory and signature presence from kernel-policy trust. Examples are illustrative; no lab or tenant execution is claimed.

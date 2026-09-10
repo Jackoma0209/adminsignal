@@ -4,8 +4,8 @@ description: "May 2026 Patch Tuesday deployment notes covering KB5089549 for Win
 category: "Patch Tuesday"
 date: "May 13, 2026"
 authorId: "jack"
-lastReviewed: "May 14, 2026"
-reviewNote: "Post-release admin briefing. Checked against the Microsoft Security Update Guide, the May 2026 Security Update Guide release note, Windows release health, Windows message centre, Windows 11 release information, Windows 10 release information, Windows Server release information, Microsoft support KBs, Microsoft Update Catalog, and Microsoft 365 service health guidance on May 14, 2026. Deliberately avoids CVE totals, severity totals, exploited status, and product impact claims not stated in the cited Microsoft sources."
+lastReviewed: "2026-09-10"
+reviewNote: "Removed the contradictory all-clear for releases with a documented BitLocker issue; labelled known-issue information as historical."
 tags: ["Patch Tuesday", "Windows", "Windows Server", "Intune", "Windows Update for Business", "WSUS", "MECM", "Microsoft 365", "Endpoint Security"]
 image: "/images/article-covers/may-2026-patch-tuesday-readiness.svg"
 imageAlt: "Abstract enterprise patch readiness illustration with a calendar window, shield, update flow lines, and endpoint nodes"
@@ -78,9 +78,7 @@ If you are already managing BitLocker recovery prompts caused by a previous upda
 
 This issue is listed as mitigated. WUSA installations can fail when an update is installed from a network share containing multiple `.msu` files. The issue does not affect installations with a single `.msu` or when the file is stored locally.
 
-**No current known issues confirmed for:**
-
-Microsoft states no current known issues for Windows 11 version 26H1 ([KB5089548](https://support.microsoft.com/help/5089548)) or the 25H2 and 24H2 versions covered by [KB5089549](https://support.microsoft.com/help/5089549). The Windows release health pages for Windows 10 version 22H2, Windows Server 2019, and Windows Server 2016 also showed no active known issues at time of checking. These statuses can change; verify the KB pages and release health pages again before each broad approval decision.
+**Historical known-issue snapshot:** The issue descriptions above belong to the May deployment context. They are not a current all-clear for 24H2/25H2 or any other release. Before a new rollout, check the applicable current cumulative update and [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/) for resolutions and new issues. This replaces the contradictory “no current known issues” paragraph that followed the BitLocker warning.
 
 ## Priority actions for admins
 
@@ -221,3 +219,7 @@ Check Microsoft 365 admin centre Service health for Exchange Online, Teams, Shar
 - [May 12, 2026 hotpatch KB5087423](https://support.microsoft.com/en-gb/topic/may-12-2026-hotpatch-kb5087423-os-build-26100-32772-6a3275dd-3206-42b4-ab09-515421b3f142)
 - [Microsoft Update Catalog](https://www.catalog.update.microsoft.com/Home.aspx)
 - [How to check Microsoft 365 service health](https://learn.microsoft.com/en-us/microsoft-365/enterprise/view-service-health?view=o365-worldwide)
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Removed the contradictory all-clear for releases with a documented BitLocker issue; labelled known-issue information as historical. Examples are illustrative; no lab or tenant execution is claimed.

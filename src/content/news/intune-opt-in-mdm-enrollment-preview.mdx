@@ -4,14 +4,14 @@ description: "Practical guide to Intune opt-in MDM enrollment preview: blocking 
 category: "Microsoft Intune"
 date: "Jun 29, 2026"
 authorId: "jack"
-lastReviewed: "Jun 29, 2026"
-reviewNote: "Operational guide based on Microsoft Intune Customer Success opt-in MDM enrollment preview guidance, Windows enrollment behaviour, and BYOD deployment patterns. Checked on 2026-06-29."
+lastReviewed: "2026-09-10"
+reviewNote: "Corrected app sign-in versus Windows Settings scope, removed unsupported pilot-group assignment steps and separated classic Autopilot from device preparation."
 tags: ["Intune", "MDM", "BYOD", "Enrollment", "Autopilot", "Windows 11"]
 image: "/images/article-covers/intune-opt-in-mdm-enrollment-preview.svg"
 imageAlt: "Abstract device enrollment illustration with opt-in toggle, personal and corporate device paths"
 ---
 
-When a user signs into Windows with a work or school account through the modern app sign-in flow, the device can automatically enroll into your Intune tenant. That is convenient for corporate-owned estates. It is painful for BYOD, shared devices, contractor laptops, and multi-tenant users who never intended full MDM management.
+When a user adds a work or school account through a modern Windows app sign-in flow, the device can automatically enroll into your Intune tenant. That is convenient for corporate-owned estates. It is painful for BYOD, shared devices, contractor laptops, and multi-tenant users who never intended full MDM management.
 
 Microsoft's **opt-in MDM enrollment** public preview lets administrators block automatic enrollment at sign-in and require an explicit enrollment action instead. This article explains when to enable it, how to pilot without breaking Autopilot, what to tell users, and how to verify the outcome.
 
@@ -32,7 +32,7 @@ The operational cost is not the enrollment itself. It is the cleanup: retire the
 
 With opt-in enrollment enabled:
 
-- Sign-in to Microsoft 365 apps or Windows work account **does not** silently trigger MDM enrollment
+- The documented modern app sign-in flow no longer offers MDM enrollment; Windows Settings enrolment is a separate path
 - Enrollment requires an explicit action: Company Portal enrollment, Settings enrollment path, Autopilot, or another approved method you document
 
 Corporate-owned Autopilot and pre-provisioned flows remain valid enrollment paths when you design them deliberately. The control targets the accidental enrollment path at interactive sign-in.
@@ -51,7 +51,7 @@ If you use [Conditional Access device compliance](/tutorials/conditional-access-
 
 ## Pilot Design
 
-Do not flip this tenant-wide on day one.
+Validate in a test tenant first. The documented control is an automatic-enrolment setting; this guide does not establish a separate per-group assignment capability for the toggle. A group of test users is a test cohort, not proof that the setting is limited to them.
 
 ### Pilot group
 
@@ -91,14 +91,9 @@ Clear comms reduce helpdesk volume more than any portal toggle.
 
 ## Portal Configuration Steps
 
-Exact preview UI labels can change. Use this sequence in the Intune admin centre:
+In the Intune admin centre, open the automatic MDM enrollment settings and locate **Disable MDM enrollment when adding a work or school account on Windows**. Setting it to Yes removes the app-sign-in MDM enrolment prompt while preserving intentional enrolment paths. The [Microsoft announcement](https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766) explicitly excludes Windows Settings-based enrolment from this control.
 
-1. Open **Devices > Enroll devices > Windows enrollment**
-2. Locate the opt-in / automatic MDM enrollment control for modern app sign-in (preview)
-3. Enable the setting that **blocks automatic MDM enrollment** for the pilot scope
-4. Assign to the pilot group first, not all users
-
-Record a screenshot and the policy name in your change record. Preview features move.
+Record the current toggle and MDM user scope, confirm the supported tenant controls and permissions, then validate the change in a test tenant. Do not invent a pilot-group assignment in this workflow or broaden MDM user scope simply to match an example. A production tenant-level change needs its own change window, user communications and rollback owner.
 
 ## Validation On The Device
 
@@ -124,8 +119,8 @@ Corporate-owned Autopilot devices should not depend on post-sign-in automatic en
 Checklist:
 
 - Hardware hash registered
-- Autopilot profile or Device Preparation policy assigned to device group
-- ESP configured with required apps only
+- Classic Autopilot profile assigned to the expected device group, or device preparation policy assigned to the intended users with its selected device group
+- Classic ESP blocking apps or the separate device preparation app list validated for that flow
 - Enrollment Status Page logs reviewed on a fresh test device
 
 See [Autopilot v1 vs Device Preparation v2](/comparisons/autopilot-v1-vs-v2-2026) for the corporate enrolment choice.
@@ -137,7 +132,7 @@ After pilot rollout, verify device counts:
 ```powershell
 Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
 
-Get-MgDeviceManagementManagedDevice -Filter "managementAgent eq 'mdm'" |
+Get-MgDeviceManagementManagedDevice -Filter "managementAgent eq 'mdm'" -All |
     Select-Object deviceName, managedDeviceOwnerType, enrolledDateTime, lastSyncDateTime |
     Sort-Object enrolledDateTime -Descending |
     Select-Object -First 20
@@ -149,8 +144,8 @@ Compare enrollment timestamps with the pilot enablement date. Unexpected new BYO
 
 If pilot fails:
 
-1. Remove the pilot assignment
-2. Re-enable prior automatic enrollment behaviour for the pilot group
+1. Restore the recorded tenant setting through the approved change process
+2. Verify the resulting app-sign-in and intentional-enrolment behaviour
 3. Retire incorrectly enrolled devices after confirming no compliance wipe actions are queued
 4. Update user comms with corrected instructions
 
@@ -174,3 +169,6 @@ Document whether failure was portal scope, cached device state, or user workflow
 ## Source
 
 This operational guide is based on the official [Intune Customer Success opt-in enrollment post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/rethinking-%E2%80%9Callow-my-organization-to-manage-my-device%E2%80%9D-why-opt%E2%80%91in-enrollment-wor/4499766) published by Microsoft on March 5, 2026, extended with pilot design, validation, and communication steps for enterprise administrators.
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected app sign-in versus Windows Settings scope, removed unsupported pilot-group assignment steps and separated classic Autopilot from device preparation. Examples are illustrative; no lab or tenant execution is claimed.

@@ -3,84 +3,34 @@ import StructuredData from '@/components/StructuredData'
 import TopicHubPageTemplate from '@/components/templates/TopicHubPageTemplate'
 import { buildTopicMetadata } from '@/lib/metadata'
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
-import { buildTopicContent } from '@/lib/topic-content'
 
-const topicName = 'Group Policy'
-const topicDescription =
-  'Published Group Policy coverage on AdminSignal is one canonical diagnosis guide for policies that do not apply, plus coexistence notes in the Intune Settings Catalog migration guide.'
-const topicPath = '/group-policy'
-const topicUrl = `https://www.adminsignal.com${topicPath}`
+const topicName = 'Group Policy diagnosis and Intune coexistence'
+const description = 'Diagnose Group Policy that does not apply, collect gpresult evidence, and map overlapping settings before an Intune Settings Catalog migration.'
+const items = [
+  { title: 'A Group Policy setting is not applying', href: '/troubleshooting/group-policy-not-applying-diagnosis', excerpt: 'Start with the affected user and computer, then use gpresult, scope checks and event logs to distinguish filtering, replication and processing failures.', meta: 'Published guidance' },
+  { title: 'Moving settings into Intune', href: '/tutorials/intune-admin-templates-to-settings-catalog-migration', excerpt: 'Use the coexistence and conflict checks to inventory existing settings and assign one owner before changing the management source.', meta: 'Published guidance' },
+]
+const url = 'https://www.adminsignal.com/group-policy'
+export const metadata: Metadata = buildTopicMetadata({ topicName, description, slug: 'group-policy' })
 
-export const metadata: Metadata = buildTopicMetadata({
-  topicName,
-  description: topicDescription,
-  slug: 'group-policy',
-})
-
-export default function GroupPolicyPage() {
-  const { news, tutorials, troubleshooting, allItems } = buildTopicContent({
-    newsTags: ['Group Policy', 'GPO'],
-    newsCategories: ['Group Policy'],
-    guideTags: ['Group Policy', 'GPO', 'RSoP'],
-    guideCategories: ['Group Policy'],
-    troubleshootingCategories: ['Group Policy'],
-    affectedProducts: ['Group Policy', 'Active Directory'],
-    guideLimit: 6,
-    troubleshootingLimit: 6,
-  })
-
-  const jsonLdCollection = collectionPageSchema({
-    title: topicName,
-    description: topicDescription,
-    url: topicUrl,
-    items: allItems.map((item) => ({
-      name: item.title,
-      url: `https://www.adminsignal.com${item.href}`,
-    })),
-  })
-
-  const jsonLdBreadcrumb = breadcrumbSchema([
-    { name: 'Home', url: 'https://www.adminsignal.com' },
-    { name: 'Topic Hubs', url: 'https://www.adminsignal.com/topics' },
-    { name: topicName, url: topicUrl },
-  ])
-
-  return (
-    <>
-      <StructuredData data={jsonLdCollection} />
-      <StructuredData data={jsonLdBreadcrumb} />
-      <TopicHubPageTemplate
-        topicName={topicName}
-        description={topicDescription}
-        introSections={[
-          {
-            title: 'Start with scope and evidence, not gpupdate',
-            body: 'Most Group Policy failures are scope problems: wrong OU, blocked inheritance, security filtering, WMI filters, loopback mode, or a competing cloud policy. Collect RSoP or gpresult evidence before forcing another refresh cycle.',
-          },
-          {
-            title: 'Coexistence with Intune and security baselines',
-            body: 'Treat GPO and Intune Settings Catalog as one control plane in design reviews. Duplicate settings create conflict winners that are hard to explain to helpdesk and auditors. Inventory overlapping controls before hardening or migrating baselines.',
-          },
-          {
-            title: 'What this hub currently publishes',
-            body: 'One diagnosis article is live: Group Policy not applying, including RSoP, gpresult, denied-GPO reasons, WMI filters, replication, and known tool limits. The previous standalone RSoP tutorial now redirects to that page. Coexistence with Intune is covered in the Settings Catalog migration guide. There is not a GPO design catalogue or a loopback-mode tutorial yet.',
-          },
-          {
-            title: 'When not to add another GPO',
-            body: 'Do not create one-off GPOs for single machines or temporary exceptions without an expiry owner. Prefer a pilot OU, security group filtering, or an Intune assignment group with a removal date. Unowned exceptions become permanent drift.',
-          },
-        ]}
-        news={news}
-        tutorials={tutorials}
-        troubleshooting={troubleshooting}
-        relatedTopics={[
-          { name: 'Windows Server', href: '/windows-server' },
-          { name: 'Microsoft Intune', href: '/intune' },
-          { name: 'Endpoint Security', href: '/endpoint-security' },
-          { name: 'PowerShell', href: '/powershell' },
-          { name: 'SCCM / MECM', href: '/sccm-mecm' },
-        ]}
-      />
-    </>
-  )
+export default function TopicPage() {
+  return <>
+    <StructuredData data={collectionPageSchema({ title: topicName, description, url,
+      items: items.map(item => ({ name: item.title, url: `https://www.adminsignal.com${item.href}` })),
+    })} />
+    <StructuredData data={breadcrumbSchema([
+      { name: 'Home', url: 'https://www.adminsignal.com' },
+      { name: 'Topics', url: 'https://www.adminsignal.com/topics' },
+      { name: topicName, url },
+    ])} />
+    <TopicHubPageTemplate topicName={topicName} description={description}
+      introSections={[{ title: 'Choose a starting point', body: 'Choose diagnosis for an existing failure, or migration guidance for a planned change. Both paths ask you to collect the current effective settings before changing policy; neither replaces a full domain design review.' }]}
+      news={[]} tutorials={items} tutorialTitle="Start with your administrative problem"
+      relatedTopics={[
+        { name: 'Microsoft Intune', href: '/intune' },
+        { name: 'Patch Management', href: '/patch-management' },
+        { name: 'Group Policy', href: '/group-policy' },
+        { name: 'Configuration Manager', href: '/sccm-mecm' },
+      ].filter(item => item.href !== '/group-policy')} />
+  </>
 }

@@ -20,7 +20,7 @@ export default function EditorialPolicyPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Editorial Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: August 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: 10 September 2026</p>
           <p className="mb-8 text-base leading-relaxed text-muted">
             This policy explains how AdminSignal produces and maintains content. For background on
             the site and who writes for it, see the{' '}
@@ -60,7 +60,7 @@ export default function EditorialPolicyPage() {
                 <li>
                   <strong className="text-foreground">Tested in a tenant or lab:</strong> the
                   commands, portal path, or procedure were run in a named class of environment. The
-                  article will say so.
+                  article must identify the scope and date and have supporting evidence. A screenshot of one portal screen does not establish that a complete procedure was tested.
                 </li>
                 <li>
                   <strong className="text-foreground">Reviewed against documentation:</strong> the
@@ -68,8 +68,7 @@ export default function EditorialPolicyPage() {
                   documentation. That is source review, not a claim that every command was executed.
                 </li>
                 <li>
-                  <strong className="text-foreground">Example output only:</strong> sample commands
-                  and expected output are illustrative. Adapt them to the estate and test before
+                  <strong className="text-foreground">Illustrative example:</strong> sample commands, output and diagrams illustrate a workflow and are not execution evidence. Adapt them to the estate and test before
                   production use.
                 </li>
                 <li>
@@ -84,8 +83,7 @@ export default function EditorialPolicyPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Corrections</h2>
               <p>
-                Factual errors are corrected promptly and noted inline when a correction changes
-                material advice. We do not silently rewrite published content.
+                Material corrections are recorded on the affected article with the changed advice and a meaningful modification date. Formatting alone does not advance review dates. Drafts stay outside published routes; a retired page keeps a removal response or a relevant permanent redirect.
               </p>
             </section>
 

@@ -73,6 +73,15 @@ export const topics: Topic[] = [
     iconColor: 'text-rose-400',
   },
   {
+    id: '9',
+    name: 'Configuration Manager',
+    slug: 'sccm-mecm',
+    description: 'ConfigMgr and Intune decisions, co-management ownership and app delivery troubleshooting.',
+    icon: 'Server',
+    iconBg: 'bg-primary-soft',
+    iconColor: 'text-primary',
+  },
+  {
     id: '8',
     name: 'Microsoft 365',
     slug: 'microsoft-365',
