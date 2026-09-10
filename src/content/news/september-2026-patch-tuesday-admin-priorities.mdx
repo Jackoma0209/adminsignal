@@ -1,0 +1,199 @@
+---
+title: "September 2026 Patch Tuesday: Windows Admin Priorities"
+description: "Windows admin guide to September 8 2026 Patch Tuesday: exploited CVE-2026-81963 and CVE-2026-85880, DNS RCE CVE-2026-69730, Exchange updates, KB targets, and Intune rollout checks."
+metaTitle: "September 2026 Patch Tuesday: Admin Checklist | AdminSignal"
+metaDescription: "September 8 2026 Patch Tuesday for Windows admins: two exploited EoPs, DNS Server RCE, Exchange SUs, official KBs and builds, and a ring plan that does not invent lab results."
+canonical: "https://www.adminsignal.com/news/september-2026-patch-tuesday-admin-priorities"
+openGraphTitle: "September 2026 Patch Tuesday: What Windows Admins Should Prioritise"
+openGraphDescription: "Record CVE count, two exploited local EoPs, a critical DNS RCE, Exchange SUs, and the September KBs to verify on the device."
+category: "Patch Tuesday"
+date: "2026-09-10"
+authorId: "jack"
+lastReviewed: "2026-09-11"
+reviewNote: "Checked against the September 2026 Security Update Guide release note, MSRC records for CVE-2026-81963, CVE-2026-85880, CVE-2026-69730, CVE-2026-69380 and CVE-2026-55007, Microsoft Support KB5124008, KB5122880, KB5122878, KB5122871 and KB5122882, and CISA’s 8 September 2026 KEV addition. CVE totals and exploit status can change if Microsoft revises the release."
+tags: ["September 2026 Patch Tuesday", "CVE-2026-81963", "CVE-2026-85880", "CVE-2026-69730", "Windows security updates", "Intune", "Windows Update for Business", "Exchange Server", "Secure Boot certificates"]
+keywords: ["September 2026 Patch Tuesday", "CVE-2026-81963", "CVE-2026-85880", "CVE-2026-69730", "Windows security updates", "Intune", "Windows Update for Business"]
+---
+
+Microsoft released the September security updates on 8 September 2026. The [September 2026 Security Update Guide release note](https://msrc.microsoft.com/update-guide/releaseNote/2026-Sep) is the count that matters: **974 Microsoft CVEs**, plus **25 republished non-Microsoft CVEs**. Product-family totals on that page include 723 Windows, 111 Office, 111 Office 2016, 62 SQL Server, 16 SharePoint Server, and 9 Exchange Server.
+
+Independent trackers publish different Critical and customer-action totals depending on whether they include cloud-only items. Do not treat a blog’s 964 / 966 / 973 figure as a substitute for the release note. Use the Security Update Guide when you need an authoritative list.
+
+Two Windows elevation-of-privilege vulnerabilities are marked **Exploitation Detected**:
+
+- [CVE-2026-81963](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-81963), Windows Update Stack
+- [CVE-2026-85880](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-85880), Windows Advanced Local Procedure Call (ALPC)
+
+[CISA added both to the Known Exploited Vulnerabilities catalog on 8 September 2026](https://www.cisa.gov/news-events/alerts/2026/09/08/cisa-adds-four-known-exploited-vulnerabilities-catalog). Federal civilian agencies following BOD 26-04 have a **22 September 2026** due date. That is a federal deadline, not an Intune SLA for every laptop in a private estate.
+
+The same LCU also carries [CVE-2026-69730](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69730), a Critical 9.8 Windows DNS Server remote code execution that Microsoft has **not** marked as exploited. Exchange has separate security updates. Those are different change records.
+
+For ring design, reuse the [Patch Tuesday Intune and WUfB operations guide](/tutorials/patch-tuesday-intune-wufb-operations). This page is the September-specific briefing.
+
+## What Microsoft actually said about the two exploited CVEs
+
+Both are local. Both are Important, CVSS 7.8. Both can reach SYSTEM. Neither is an unauthenticated network worm on its own.
+
+### CVE-2026-81963 — Windows Update Stack
+
+Microsoft’s summary: improper link resolution before file access in the Windows Update Stack allows an authorized attacker to elevate privileges locally. An attacker who succeeds can gain SYSTEM. Publicly disclosed: no. Exploited: yes.
+
+MSRC acknowledges Romain DEPERNE of the Microsoft Threat Intelligence Centre. Do not credit a separate Airbus disclosure unless Microsoft updates that acknowledgement.
+
+CISA describes the same issue as a Windows link-following vulnerability that lets a local attacker escalate to SYSTEM. Microsoft’s affected-product list for this CVE includes current Windows 11 servicing branches and Windows Server 2025. Confirm the exact SKU on the [MSRC record](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-81963) for the build you run.
+
+### CVE-2026-85880 — Windows ALPC
+
+Microsoft’s summary: a heap-based buffer overflow in Windows ALPC allows an authorized attacker to elevate privileges locally. Public reporting that quotes Microsoft adds that an attacker who can already execute code in a low-privilege AppContainer can use this to escape the sandbox. No extra user interaction is required.
+
+The [CVE record](https://www.cve.org/CVERecord?id=CVE-2026-85880) lists affected Windows 10 branches and Windows Server versions through Server 2022. Windows 11 and Windows Server 2025 are not on that affected list. That is a product-list fact, not a claim that Microsoft rewrote kernel IPC in Rust this month.
+
+Treat the two zero-days as an architectural split when you order rings: modern Windows 11 / Server 2025 fleets first for the Update Stack issue, supported Windows 10 ESU and Server 2012–2022 fleets first for ALPC. The September LCU still belongs on every supported build you keep.
+
+## DNS Server: patch the role, do not invent a workaround
+
+[CVE-2026-69730](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69730) is Critical, CVSS 9.8, CWE-416 use-after-free. Vector is network, no privileges, no user interaction. Microsoft assesses **Exploitation More Likely**. Exploited at publication: no.
+
+Microsoft’s own words: use-after-free in Windows DNS allows an unauthorized attacker to execute code over a network by sending a specially crafted packet. Successful exploitation can execute code on the target. That is enough to put DNS hosts and domain controllers that run the DNS Server role in the first server window.
+
+Zero Day Initiative compared the bug to SigRed (CVE-2020-1350). That comparison is ZDI’s, not a sentence on the MSRC advisory. Do not brief the CAB that “Microsoft called it SigRed.”
+
+There is no Microsoft-documented workaround that replaces the update. Checking `Get-DnsServerForwarder` tells you where recursion goes. It does not close the CVE. Patch the September LCU on the DNS host, then validate resolution, AD-integrated zones, and forwarders before the next DC.
+
+Tenable notes additional DNS Server RCEs in the same release with lower exploitability ratings. Those ride the same cumulative package. Do not open a separate change for each DNS CVE if the host already takes the September LCU.
+
+## Exchange is not the Windows LCU
+
+Microsoft lists four September Exchange packages on the release note:
+
+- [KB5121608](https://support.microsoft.com/help/5121608) — Exchange Server Subscription Edition
+- [KB5121609](https://support.microsoft.com/help/5121609) — Exchange Server 2019
+- [KB5121610](https://support.microsoft.com/help/5121610) — Exchange Server 2019 CU14
+- [KB5121611](https://support.microsoft.com/help/5121611) — Exchange Server 2016 CU23
+
+Two Exchange CVEs are worth separate tickets:
+
+- [CVE-2026-69380](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-69380), Important 8.1 elevation of privilege. Missing authorization. An attacker with a low-privilege mailbox can abuse request and identity-token validation to impersonate another user and access mailboxes. Microsoft assesses exploitation as **less likely**. Exploited at publication: no.
+- [CVE-2026-55007](https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-55007), Exchange remote code execution. Microsoft describes a double-free that allows an unauthorized attacker to execute code over a network. ZDI’s September review says a crafted Visio attachment can be enough when the server processes mail, and that Microsoft called exploitation unreliable. Schedule Exchange downtime. Do not wait for the Windows workstation ring to finish first.
+
+## Windows KBs and builds to verify
+
+Use the KB and OS build as the compliance target. An assigned Intune quality-update policy is not proof the device restarted onto the September build.
+
+<div className="my-5 max-w-full overflow-x-auto rounded-lg border border-border">
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>September 2026 update</th>
+        <th>Build to verify</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Windows 11, versions 25H2 and 24H2</td>
+        <td><a href="https://support.microsoft.com/help/5124008">KB5124008</a></td>
+        <td>26200.9445 / 26100.9445</td>
+      </tr>
+      <tr>
+        <td>Windows 11, version 23H2</td>
+        <td><a href="https://support.microsoft.com/help/5122880">KB5122880</a></td>
+        <td>Microsoft titles this package as 22621.7582. Confirm the live build against that article.</td>
+      </tr>
+      <tr>
+        <td>Windows 11, version 26H1</td>
+        <td><a href="https://support.microsoft.com/help/5124012">KB5124012</a></td>
+        <td>28000.2954</td>
+      </tr>
+      <tr>
+        <td>Supported Windows 10 22H2 / 21H2 ESU paths</td>
+        <td><a href="https://support.microsoft.com/help/5122878">KB5122878</a></td>
+        <td>19045.7725 / 19044.7725</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2025</td>
+        <td><a href="https://support.microsoft.com/help/5122871">KB5122871</a></td>
+        <td>26100.33438</td>
+      </tr>
+      <tr>
+        <td>Windows Server 2022</td>
+        <td><a href="https://support.microsoft.com/help/5122882">KB5122882</a></td>
+        <td>20348.5622</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Microsoft combines the latest servicing stack update with the LCU. The Windows 10 article documents [KB5122877](https://support.microsoft.com/help/5122878) (19041.7714) in the same package. The Server 2022 article documents [KB5122881](https://support.microsoft.com/help/5122882) (20348.5614). Record the SSU that applies before you service offline media.
+
+[KB5124008](https://support.microsoft.com/help/5124008) also repeats two operational notes that are not CVEs:
+
+- Secure Boot certificates used by most Windows devices started to expire in June 2026. Microsoft is still delivering replacement certificates through Windows Update.
+- Windows 11 version **24H2 Home and Pro** reach end of updates on **13 October 2026**, not 14 October. Enterprise and Education 24H2 remain supported until 12 October 2027. 23H2 Enterprise and Education end on 11 November 2026 per the 23H2 KB.
+
+SQL Server and Office have their own September packages on the release note. Those are not closed by installing KB5124008 on a workstation that happens to have SSMS installed.
+
+## What I would prioritise first
+
+1. Windows DNS Server hosts and domain controllers that run DNS, for CVE-2026-69730, in redundant waves with name resolution and AD replication checked between each wave.
+2. On-premises Exchange, as a separate change using the September Exchange SU for the CU you actually run.
+3. Privileged Windows 11 and Server 2025 endpoints for CVE-2026-81963: jump hosts, helpdesk devices, VDI, and any box where a low-privileged logon is plausible.
+4. Supported Windows 10 ESU and Server 2012–2022 endpoints for CVE-2026-85880, especially multi-user and sandbox-adjacent systems.
+5. The rest of the workstation estate through normal rings. Do not expedite every laptop because the headline is 974 CVEs.
+
+Confirmed exploitation of two local EoPs supports a controlled, evidence-led rollout. It does not support skipping server testing, and it does not support a one-day estate-wide deadline.
+
+## How to roll this month
+
+Keep the existing ring model from the [operations guide](/tutorials/patch-tuesday-intune-wufb-operations): canary, pilot, broad. For September, add three month-specific checks:
+
+- Confirm the device landed on the September build in the table, not only that a quality-update profile is assigned.
+- Expect an extra restart on some devices as part of the continuing Secure Boot certificate delivery. That is documented installation behaviour.
+- If you use Windows quality-update expedite policies in Intune, limit expedite to the privileged Windows 11 cohort that needs CVE-2026-81963 closed quickly after a pilot. Do not name a profile after a KB and then assign it tenant-wide on day one.
+
+WSUS and Configuration Manager estates should expect a larger catalog sync than August. Run your normal WSUS cleanup before the sync. Do not set the WSUS IIS application-pool private memory limit to unlimited unless that is already an approved change in your environment. That is operator practice, not a Microsoft September workaround.
+
+## Validate the build on the device
+
+```powershell
+Get-ComputerInfo |
+    Select-Object WindowsProductName, WindowsVersion, OsName, OsBuildNumber, OsHardwareAbstractionLayer
+
+Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' |
+    Select-Object CurrentBuild, UBR, DisplayVersion
+
+Get-HotFix |
+    Where-Object {
+        $_.HotFixID -in @(
+            'KB5124008',
+            'KB5122880',
+            'KB5124012',
+            'KB5122878',
+            'KB5122871',
+            'KB5122882'
+        )
+    } |
+    Select-Object HotFixID, InstalledOn, Description |
+    Sort-Object InstalledOn -Descending
+```
+
+Expected output is the target build from the table plus the matching `KB512xxxx` entry. `Get-HotFix` will not list every combined SSU the same way on every OS. If the build number matches and the device is on an Autopatch hotpatch path, treat that path’s KB as the compliance artefact rather than forcing an LCU hotfix ID.
+
+This is a sample check, not a fleet inventory.
+
+Rollback, if you need it after a failed pilot, is `wusa.exe /uninstall /kb:5124008` on a running Windows 11 24H2/25H2 device, or DISM package removal from WinRE after you have listed packages on that image. Read the package identity from the device. Do not paste a guessed `Package_for_RollupFix` string from a briefing.
+
+## Watch for known issues
+
+Re-check [Windows release health](https://learn.microsoft.com/en-us/windows/release-health/) and each KB before you promote a ring. Known-issue text can land after Tuesday.
+
+As of this review, [KB5124008](https://support.microsoft.com/help/5124008) states Microsoft is not aware of issues with that package. The same article is also the documented resolution for several August known issues, including Teams and new Outlook failing to start on some ARM devices after KB5121003.
+
+Windows Update Client operational log Event ID 19 (success) and Event ID 20 (failure) remain the usual client signals. `0x800f0922` is still the code to check when a servicing transaction cannot commit, often after System Reserved / EFI partition pressure during Secure Boot certificate work. Confirm the code against that device’s CBS log. Do not treat a single Event ID as estate-wide proof.
+
+## Related reading
+
+- [Patch Tuesday operations for Intune and WUfB](/tutorials/patch-tuesday-intune-wufb-operations)
+- [August 2026 Patch Tuesday admin priorities](/news/august-2026-patch-tuesday-admin-priorities)
+- [October 2026 Windows servicing deadlines](/news/october-2026-windows-servicing-deadlines)
+- [Patch management hub](/patch-management)
