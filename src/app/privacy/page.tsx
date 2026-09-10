@@ -20,13 +20,13 @@ export default function PrivacyPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Privacy Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: August 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: September 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
-              AdminSignal publishes technical guides, scripts, and analysis for enterprise
-              sysadmins, endpoint engineers, and Microsoft 365 administrators. This Privacy Policy
-              explains what we collect, how we use it, and how visitors can manage their privacy
-              and cookie choices.
+              AdminSignal publishes technical guides, worked examples inside those guides, and
+              analysis for enterprise sysadmins, endpoint engineers, and Microsoft 365
+              administrators. This Privacy Policy explains what we collect, how we use it, and how
+              visitors can manage their privacy and cookie choices.
             </p>
 
             <section>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
               </p>
               <ul className="mt-3 list-disc space-y-1 pl-5">
                 <li>Operate, maintain, and secure the website</li>
-                <li>Understand which articles, scripts, and technical topics are useful to readers</li>
+                <li>Understand which articles and technical topics are useful to readers</li>
                 <li>Diagnose technical issues and prevent abuse</li>
                 <li>Respond to messages submitted through the contact page</li>
                 <li>Send newsletter updates you requested and manage unsubscribes</li>
