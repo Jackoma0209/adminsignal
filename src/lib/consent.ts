@@ -4,25 +4,20 @@ import { isNoindexHref } from '@/lib/noindex'
  * Consent, analytics, advertising, and CMP configuration layer.
  *
  * Environment flags (set in .env.local or Vercel env vars):
- *   NEXT_PUBLIC_GA_ENABLED=true
+ *   NEXT_PUBLIC_GA_ENABLED=false
  *   NEXT_PUBLIC_ADSENSE_ENABLED=true
  *   NEXT_PUBLIC_ADS_ENABLED=true
  *   NEXT_PUBLIC_GOOGLE_CERTIFIED_CMP_ENABLED=false
- *   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-...
+ *   NEXT_PUBLIC_GA_MEASUREMENT_ID=G-384SHWN28J
  *
  * Google Funding Choices / Privacy & messaging is implemented in this repo as
  * the Google-certified CMP (IAB TCF v2.3). NEXT_PUBLIC_GOOGLE_CERTIFIED_CMP_ENABLED
  * gates that CMP loader only. Leave it unset to load Funding Choices. Set it to
  * "false" to disable the loader. It is not a switch for ads or Analytics.
  *
- * Keep NEXT_PUBLIC_GA_ENABLED, NEXT_PUBLIC_ADSENSE_ENABLED, and
- * NEXT_PUBLIC_ADS_ENABLED unset or false. Advertising tags must stay off.
- *
- * Production note: those three Vercel flags were true after the CMP merge, so
- * the client bundle folded adsenseScriptEnabled and analyticsEnabled onto the
- * CMP flag and preloaded adsbygoogle.js / gtag on article URLs. The hold below
- * keeps non-essential Google tags off until the live CMP banner is verified
- * and the Vercel flags are actually false.
+ * Advertising tags stay on the hold below. GA4 is on so the measurement ID can
+ * be detected. Consent Mode v2 still defaults analytics_storage to denied until
+ * Funding Choices records a choice.
  *
  * Publishing the European regulations (UK/EEA/CH) message still has to be done
  * in AdSense → Privacy & messaging. Include Google Advertising Products
@@ -48,7 +43,7 @@ export const fundingChoicesEnabled =
 export const googleCertifiedCmpConfigured = fundingChoicesEnabled
 
 export const googleTagsRequested =
-  process.env.NEXT_PUBLIC_GA_ENABLED === 'true' ||
+  process.env.NEXT_PUBLIC_GA_ENABLED !== 'false' ||
   process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true' ||
   process.env.NEXT_PUBLIC_ADS_ENABLED === 'true'
 
@@ -60,20 +55,22 @@ export const googleTagsRequested =
 export const consentDefaultsRequired = fundingChoicesEnabled || googleTagsRequested
 
 /**
- * Hard hold: do not inject adsbygoogle.js or GA4 until this is false.
- * Funding Choices is unaffected. Flip only after the live CMP banner is
- * verified and Vercel ads/GA flags are unset or false.
+ * Hard hold for advertising tags only. Flip after the live CMP banner is verified.
  */
 export const nonEssentialGoogleTagsHeld = true
 
 /**
- * Non-essential Google tags stay disabled unless their own flags are on and a
- * certified CMP is in place. Funding Choices loading does not enable ads.
+ * GA4 measurement ID used when Vercel does not override it.
+ */
+export const GA_MEASUREMENT_ID =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-384SHWN28J'
+
+/**
+ * Analytics loads with Consent Mode defaults denied. Set NEXT_PUBLIC_GA_ENABLED
+ * to "false" to remove the tag. Ads stay gated by the hold and their own flags.
  */
 export const analyticsEnabled =
-  !nonEssentialGoogleTagsHeld &&
-  process.env.NEXT_PUBLIC_GA_ENABLED === 'true' &&
-  googleCertifiedCmpConfigured
+  process.env.NEXT_PUBLIC_GA_ENABLED !== 'false' && Boolean(GA_MEASUREMENT_ID)
 export const adsenseScriptEnabled =
   !nonEssentialGoogleTagsHeld &&
   process.env.NEXT_PUBLIC_ADSENSE_ENABLED === 'true' &&
