@@ -21,9 +21,9 @@ const footerLinks = [
       { label: 'All Topics', href: '/topics' },
       { label: 'Microsoft Intune', href: '/intune' },
       { label: 'PowerShell', href: '/powershell' },
-      { label: 'Windows Server', href: '/windows-server' },
       { label: 'Endpoint Security', href: '/endpoint-security' },
       { label: 'Microsoft 365', href: '/microsoft-365' },
+      { label: 'Configuration Manager', href: '/sccm-mecm' },
     ],
   },
   {
@@ -31,8 +31,6 @@ const footerLinks = [
     links: [
       { label: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
       { label: 'Patch Management', href: '/patch-management' },
-      { label: 'Group Policy', href: '/group-policy' },
-      { label: 'SCCM / MECM', href: '/sccm-mecm' },
     ],
   },
   {

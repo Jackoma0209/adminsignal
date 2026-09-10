@@ -44,8 +44,8 @@ export default function AuthorBox({ author }: AuthorBoxProps) {
         </div>
         <p className="mb-2 text-xs text-muted">{author.role}</p>
         <p className="text-sm leading-relaxed text-muted">
-          Written by {author.name}, {author.role}. Technical claims are reviewed against current
-          Microsoft documentation. Lab or tenant checks are named only when they were done.
+          Technical claims are reviewed against current Microsoft documentation. Lab or tenant
+          checks are named only when they were done.
         </p>
         <p className="mt-3 text-xs text-muted/60">
           Independent publication.{' '}
