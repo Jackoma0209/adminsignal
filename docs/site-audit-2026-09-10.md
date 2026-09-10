@@ -94,7 +94,7 @@ Every one of the 37 currently published MDX articles was included in the content
 
 ## Resources, advertising and checks
 
-Both advertised CSV starter templates are real downloadable files; placeholders are intentionally documented. Dependencies, permissions, replacement values, expected use, validation and recovery are explained. Byte-for-byte download checks supplement browser download events. Retired scripts are not advertised as complete executable tools. Existing attribution and terms remain.
+Both advertised CSV starter templates are real downloadable files; placeholders are intentionally documented. Dependencies, permissions, replacement values, expected use, validation and recovery are explained. Download-content comparisons supplement browser download events; comparisons normalise Windows/Linux line endings. Retired scripts are not advertised as complete executable tools. Existing attribution and terms remain.
 
 Existing AdSense ownership verification is preserved. The existing nonessential Google-tag hold remains active, with no new service or publisher ID. Ads remain suppressed on error, navigation, legal and resource-library screens. The cookie control's `/cookies` fallback works. A live consent message and its Google-certified CMP/account publication settings cannot be certified from the repository; the owner must verify these in their account before enabling nonessential advertising tags. No consent or ad configuration was changed in the account.
 

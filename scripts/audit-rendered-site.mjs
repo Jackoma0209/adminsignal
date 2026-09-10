@@ -5,6 +5,10 @@ const baseUrl = (process.env.SITE_URL ?? 'http://127.0.0.1:3000').replace(/\/$/,
 const productionUrl = 'https://www.adminsignal.com'
 const errors = []
 const warnings = []
+// Optional locally supplied browser state for a protected preview. Never commit it.
+const previewCookies = process.env.PREVIEW_STATE_FILE
+  ? JSON.parse(readFileSync(process.env.PREVIEW_STATE_FILE, 'utf8')).cookies ?? []
+  : []
 
 function slugs(type) {
   const dir = path.join(process.cwd(), 'src', 'content', type)
@@ -27,7 +31,15 @@ function setSlugs(source, setName) {
 
 async function get(pathname, options = {}) {
   const url = pathname.startsWith('http') ? pathname : `${baseUrl}${pathname}`
-  const response = await fetch(url, { redirect: options.redirect ?? 'follow' })
+  const target = new URL(url)
+  const cookie = target.origin === new URL(baseUrl).origin
+    ? previewCookies.filter((item) => item.domain.replace(/^\./, '') === target.hostname)
+      .map((item) => `${item.name}=${item.value}`).join('; ')
+    : ''
+  const response = await fetch(url, {
+    redirect: options.redirect ?? 'follow',
+    headers: cookie ? { cookie } : undefined,
+  })
   const body = await response.text()
   return { url, response, body }
 }
@@ -289,8 +301,12 @@ for (const [from, to] of redirects) {
     errors.push(`${from}: permanent redirect to ${to} missing`)
   }
 }
-for (const archive of ['/news', '/tutorials', '/troubleshooting', '/comparisons']) {
-  const result = await get(`${archive}?category=Microsoft%20Intune`)
+for (const [archive, filter] of [
+  ['/news', 'category=Microsoft%20Intune'], ['/tutorials', 'category=Microsoft%20Intune'],
+  ['/troubleshooting', 'category=Microsoft%20Intune'], ['/comparisons', 'category=Microsoft%20Intune'],
+  ['/tutorials', 'difficulty=Intermediate'],
+]) {
+  const result = await get(`${archive}?${filter}`)
   if (result.response.status !== 200 || !robotsValue(result.body)?.includes('noindex') || canonicalValue(result.body) !== `${productionUrl}${archive}`) {
     errors.push(`${archive}: filter must be noindex with the base archive canonical`)
   }
@@ -298,7 +314,7 @@ for (const archive of ['/news', '/tutorials', '/troubleshooting', '/comparisons'
 for (const filename of ['autopilot-hardware-hash.csv', 'graph-migration-register.csv']) {
   const result = await get(`/templates/${filename}`)
   const local = readFileSync(path.join(process.cwd(), 'public', 'templates', filename), 'utf8')
-  if (result.response.status !== 200 || result.body !== local) errors.push(`${filename}: download differs from published file`)
+  if (result.response.status !== 200 || result.body.replace(/\r\n/g, '\n') !== local.replace(/\r\n/g, '\n')) errors.push(`${filename}: download differs from published file`)
 }
 
 const rss = await get('/rss.xml')

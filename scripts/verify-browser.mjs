@@ -15,11 +15,18 @@ try {
   for (const width of [1440, 390]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, permissions: ['clipboard-read', 'clipboard-write'] })
     const page = await context.newPage()
+    if (process.env.PREVIEW_ACCESS_FILE) {
+      const accessUrl = readFileSync(process.env.PREVIEW_ACCESS_FILE, 'utf8').trim()
+      assert.equal(new URL(accessUrl).origin, new URL(base).origin)
+      await page.goto(accessUrl, { waitUntil: 'networkidle' })
+      if (process.env.PREVIEW_STATE_FILE) await context.storageState({ path: process.env.PREVIEW_STATE_FILE })
+    }
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
     for (const route of ['/', '/sccm-mecm', '/group-policy', '/about', '/templates', '/comparisons/intune-vs-sccm-mecm-2025', '/troubleshooting/intune-device-not-syncing']) {
       const response = await page.goto(base + route, { waitUntil: 'networkidle' })
       assert.equal(response.status(), 200, route)
+      assert.equal(new URL(page.url()).origin, new URL(base).origin, 'Preview authentication required')
       assert.equal(await page.locator('h1').count(), 1, route + ' heading')
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), route + ' overflow at ' + width)
       await page.locator('footer').scrollIntoViewIfNeeded()
@@ -47,7 +54,7 @@ try {
           await link.click()
           const download = await pending
           assert.equal(await download.failure(), null)
-          assert.equal(readFileSync(await download.path(), 'utf8'), readFileSync('public' + href, 'utf8'))
+          assert.equal(readFileSync(await download.path(), 'utf8').replace(/\r\n/g, '\n'), readFileSync('public' + href, 'utf8').replace(/\r\n/g, '\n'))
         }
       }
       results.push(`${width}: ${route}`)
