@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Container from '@/components/layout/Container'
 import TopicCard from '@/components/cards/TopicCard'
 import StructuredData from '@/components/StructuredData'
-import { topics } from '@/data/topics'
+import { listedTopics } from '@/data/topics'
 import { buildCategoryMetadata } from '@/lib/metadata'
 import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
@@ -21,7 +21,7 @@ export default function TopicsPage() {
     title: pageTitle,
     description: pageDescription,
     url: 'https://www.adminsignal.com/topics',
-    items: topics.map((topic) => ({
+    items: listedTopics.map((topic) => ({
       name: topic.name,
       url: `https://www.adminsignal.com/${topic.slug}`,
     })),
@@ -50,7 +50,7 @@ export default function TopicsPage() {
             only claims the articles already published for that topic.
           </p>
           <p className="mt-4 text-xs text-muted/60">
-            Practical coverage across {topics.length} topic hubs
+            Practical coverage across {listedTopics.length} topic hubs
           </p>
 
           <div className="mt-8 grid gap-5 lg:grid-cols-3">
@@ -81,7 +81,7 @@ export default function TopicsPage() {
           </div>
 
           <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {topics.map((topic) => (
+            {listedTopics.map((topic) => (
               <TopicCard key={topic.id} topic={topic} />
             ))}
           </div>
