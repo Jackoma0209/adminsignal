@@ -5,7 +5,7 @@ import { buildCategoryMetadata } from '@/lib/metadata'
 export const metadata: Metadata = buildCategoryMetadata({
   title: 'Terms of Use',
   description:
-    'Terms governing access to AdminSignal articles, scripts, examples, advertising, and related resources.',
+    'Terms governing access to AdminSignal articles, worked examples, advertising, and related resources.',
   path: '/terms',
 })
 
@@ -20,7 +20,7 @@ export default function TermsPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Terms of Use
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: July 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: September 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
               These Terms of Use govern your access to and use of AdminSignal. By using this site,
@@ -30,9 +30,9 @@ export default function TermsPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Acceptance of Terms</h2>
               <p>
-                AdminSignal provides technical articles, scripts, examples, commentary, and related
-                resources for sysadmins, endpoint engineers, Microsoft 365 administrators, and other
-                technical professionals.
+                AdminSignal provides technical articles, worked examples inside those articles,
+                commentary, and related resources for sysadmins, endpoint engineers, Microsoft 365
+                administrators, and other technical professionals.
               </p>
               <p className="mt-3">
                 By accessing or using AdminSignal, you agree to follow these Terms of Use and any
@@ -43,9 +43,8 @@ export default function TermsPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Intellectual Property</h2>
               <p>
-                Unless otherwise stated, the original articles, guides, scripts, code examples,
-                layout, branding, and other content on AdminSignal are owned by AdminSignal or its
-                author.
+                Unless otherwise stated, the original articles, guides, code examples, layout,
+                branding, and other content on AdminSignal are owned by AdminSignal or its author.
               </p>
               <p className="mt-3">
                 You may not copy, republish, sell, scrape, syndicate, or redistribute substantial
@@ -60,28 +59,27 @@ export default function TermsPage() {
 
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">
-                Use of Content &amp; Scripts
+                Use of Content and Examples
               </h2>
               <p>
                 AdminSignal publishes practical technical material intended for experienced IT
                 professionals.
               </p>
               <p className="mt-3">
-                You may use code samples, scripts, commands, and configuration examples from
-                AdminSignal in your own internal lab, test, or production environments, provided
-                that you are responsible for reviewing, testing, and adapting them to your
-                requirements.
+                You may use code samples, commands, and configuration examples from AdminSignal in
+                your own internal lab, test, or production environments, provided that you are
+                responsible for reviewing, testing, and adapting them to your requirements.
               </p>
               <p className="mt-3">You may not:</p>
               <ul className="mt-3 list-disc space-y-1 pl-5">
                 <li>Repackage AdminSignal content as your own</li>
-                <li>Sell or resell AdminSignal articles, scripts, or guides</li>
+                <li>Sell or resell AdminSignal articles or guides</li>
                 <li>Use automated scraping to copy site content at scale</li>
                 <li>Remove attribution or copyright notices</li>
                 <li>Use the site in a way that disrupts, abuses, or overloads the service</li>
               </ul>
               <p className="mt-3">
-                Technical environments vary. Always review scripts and configuration changes before
+                Technical environments vary. Always review commands and configuration changes before
                 running them, especially where administrative privileges, production systems,
                 identity services, endpoint security, or tenant-wide settings are involved.
               </p>
@@ -93,17 +91,17 @@ export default function TermsPage() {
                 AdminSignal content is provided for informational and educational purposes only.
               </p>
               <p className="mt-3">
-                Although we aim to publish accurate, tested, practitioner-written technical
-                material, no article, script, or example can account for every environment,
-                dependency, policy, or business requirement.
+                Although we aim to publish accurate, practitioner-written technical material, no
+                article or example can account for every environment, dependency, policy, or
+                business requirement.
               </p>
               <p className="mt-3">
-                Content is provided &quot;as is&quot; without warranties of any kind, express or
+                Content is provided "as is" without warranties of any kind, express or
                 implied. AdminSignal does not guarantee that:
               </p>
               <ul className="mt-3 list-disc space-y-1 pl-5">
                 <li>Content will be error-free or complete</li>
-                <li>Scripts will work in every environment</li>
+                <li>Examples will work in every environment</li>
                 <li>Guidance will remain current after publication</li>
                 <li>The site will always be available</li>
                 <li>A configuration will be suitable for your specific organisation</li>
@@ -124,7 +122,7 @@ export default function TermsPage() {
               <p className="mt-3">
                 This includes, without limitation, loss of data, service interruption, security
                 incidents, tenant misconfiguration, business disruption, lost profits, or damage
-                caused by running scripts, commands, or configuration changes based on site content.
+                caused by running commands or configuration changes based on site content.
               </p>
             </section>
 
@@ -197,7 +195,7 @@ export default function TermsPage() {
                 Terms of Use from time to time.
               </p>
               <p className="mt-3">
-                The updated terms will be posted on this page with a revised &quot;Last updated&quot;
+                The updated terms will be posted on this page with a revised "Last updated"
                 date. Continued use of the site after changes are posted means you accept the
                 updated terms.
               </p>
