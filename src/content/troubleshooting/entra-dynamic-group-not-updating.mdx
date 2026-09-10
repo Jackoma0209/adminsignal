@@ -3,7 +3,7 @@ title: "Microsoft Entra Dynamic Group Not Updating: Users, Devices, and Intune A
 category: "Microsoft Entra ID"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
+lastReviewed: "2026-09-10"
 reviewNote: "Initial practical guide covering dynamic user and device groups, rule syntax, Microsoft Graph checks, processing state, expected delays, Intune assignment impact, Autopilot targeting, stale device objects, safe recovery, and prevention."
 tags: ["Microsoft Entra ID", "Dynamic groups", "Intune", "Autopilot", "PowerShell"]
 ---
@@ -26,7 +26,7 @@ Do not start by recreating the group. First prove whether the rule is valid, whe
 
 For related AdminSignal guidance, see the [Microsoft Entra ID hub](/microsoft-entra-id), the [Intune hub](/intune), and the [PowerShell hub](/powershell).
 
-## Tested Environment and Scope
+## Scope and Assumptions
 
 This guide is written for Microsoft Entra ID dynamic membership groups used with Microsoft Intune, Microsoft 365, Conditional Access planning and Windows Autopilot. It covers dynamic user groups, dynamic device groups, security groups and Microsoft 365 groups where dynamic membership is supported.
 
@@ -447,7 +447,7 @@ Check in this order:
 1. Confirm the user or device is in the Entra group.
 2. Confirm the group is assigned in Intune.
 3. Confirm no assignment filter excludes the device.
-4. Confirm there is no exclusion group with higher priority.
+4. Check supported include/exclude assignments for the workload. For apps, exclusions take precedence for the same group type; do not expect a device exclusion to cancel a user inclusion. See [Microsoft assignment rules](https://learn.microsoft.com/en-us/intune/app-management/deployment/apps-inc-exl-assignments).
 5. Trigger or wait for device check-in.
 6. Check the workload-specific status.
 
@@ -631,3 +631,8 @@ Before using a dynamic group for production assignments:
 - [Microsoft documentation: Create or update a dynamic membership group](https://learn.microsoft.com/en-us/entra/identity/users/groups-create-rule)
 - [Microsoft documentation: Troubleshooting dynamic group processing](https://learn.microsoft.com/en-us/troubleshoot/entra/entra-id/dir-dmns-obj/troubleshoot-dynamic-group-processing)
 - [Microsoft Graph documentation: Manage groups](https://learn.microsoft.com/en-us/graph/api/resources/groups-overview?view=graph-rest-1.0)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+
+**Correction — 10 September 2026:** Replaced a nonexistent exclusion priority rule with workload-specific include/exclude behaviour.

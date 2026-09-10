@@ -27,7 +27,7 @@ The important distinction is this: Autopilot registration, Intune enrolment, Mic
 
 For wider context, see the [Intune hub](/intune), the [Microsoft Entra ID hub](/microsoft-entra-id), and the [PowerShell hub](/powershell). If the device imports but then gets stuck during the user experience, use [Autopilot Enrollment Status Page Stuck](/troubleshooting/autopilot-enrollment-status-page-stuck). If the profile relies on a dynamic group, compare the evidence with [Microsoft Entra Dynamic Group Not Updating](/troubleshooting/entra-dynamic-group-not-updating).
 
-## Tested Environment and Scope
+## Scope and Assumptions
 
 This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2 and 25H2 devices using Windows Autopilot with Microsoft Intune. It covers manual hardware hash import, Autopilot device identity checks, Microsoft Graph checks, profile assignment, group tag targeting, dynamic groups, and hybrid Microsoft Entra join connector checks where they affect Autopilot.
 
@@ -693,3 +693,5 @@ Use this checklist before importing production devices:
 - [Windows Autopilot registration overview](https://learn.microsoft.com/en-us/autopilot/registration-overview)
 - [Manually register devices with Windows Autopilot](https://learn.microsoft.com/en-us/autopilot/add-devices)
 - [Windows Autopilot profiles](https://learn.microsoft.com/en-us/autopilot/profiles)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.

@@ -6,10 +6,9 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
 }
 
 /**
- * Accessible sections that are intentionally excluded from search while they are
- * incomplete, commercially weak, thin hub pages, or not a useful standalone
- * search result. AdSense reviewers still see linked thin pages, so keep these
- * out of the sitemap, ads, and indexation until they meet publication standard.
+ * Route exclusions shared by discovery and advertising. Several entries are
+ * retired routes that return 404 or redirect; membership does not make them
+ * public pages. Search and commercial utility pages are not indexable content.
  */
 export const NOINDEX_STATIC_PATHS = new Set<string>([
   '/best-tools',
@@ -17,7 +16,6 @@ export const NOINDEX_STATIC_PATHS = new Set<string>([
   '/scripts',
   '/search',
   '/advertise',
-  '/templates',
   '/guides/windows-11-25h2-autopilot-v2',
 ])
 

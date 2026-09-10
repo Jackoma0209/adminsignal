@@ -3,8 +3,8 @@ title: "Microsoft Intune vs. SCCM/MECM: Which Should You Use?"
 category: "Endpoint Management"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "July 5, 2026"
-reviewNote: "Disclosure, evaluation criteria, and licensing caveats refreshed. Confirm current Microsoft Intune, Configuration Manager, and co-management support details before planning migration."
+lastReviewed: "September 10, 2026"
+reviewNote: "Corrected ConfigMgr and SQL entitlement, removed OSD from workload migration, and qualified app delivery and cloud connectivity comparisons. Reviewed against Microsoft documentation; no comparative lab test claimed."
 tags: ["Intune", "SCCM", "MECM", "Endpoint Management"]
 ---
 This page is an operator decision framework based on documented product capabilities and the facts already in this article. It is not a lab test, benchmark, or fabricated evaluation.
@@ -19,46 +19,46 @@ That does not mean SCCM/MECM is obsolete. There are specific scenarios where Con
 
 | Capability | Microsoft Intune | SCCM / MECM |
 |---|---|---|
-| OS deployment (bare metal) | Limited (Autopilot v2) | Full (PXE, task sequences, WinPE) |
-| Software distribution scale | Good (Win32, LOB, Microsoft Store) | Strong (large packages, bandwidth throttling, BranchCache) |
-| Patch management | Good (WUfB integration, expedited rings) | Strong (WSUS integration, detailed reporting, custom deadlines) |
+| OS deployment (bare metal) | Autopilot configures an existing supported Windows installation | OS installation through PXE, task sequences and WinPE |
+| Software distribution | Win32, LOB and Store apps; Delivery Optimization | Distribution points, boundary groups and peer content options |
+| Patch management | Windows Update policies, update rings and supported expedited updates | WSUS software update points, deployment rules and maintenance windows |
 | Inventory and reporting | Good (Graph API reports, Endpoint Analytics) | Strong (SQL-backed, fully customisable) |
 | Complex task sequences | Not supported | Full support |
 | Co-management | Supported | Required for co-management |
-| Cloud-native | Native | Not designed for cloud |
-| Identity requirement | Entra ID required | On-premises AD sufficient |
-| Infrastructure overhead | Near-zero | Significant (site servers, SQL, WSUS, DP) |
-| Licensing | Included in M365 E3/E5, Intune Plan 1/2 | Requires ConfigMgr licence (part of EMS or standalone) |
+| Management connectivity | Internet access to Microsoft services | Site services, with a cloud management gateway option for internet clients |
+| Identity | Entra tenant and supported enrolment model | Supported client identity and site connectivity; co-management adds Entra requirements |
+| Infrastructure overhead | Microsoft hosts the service; policy and support still need owners | Site roles, SQL, distribution, backups and servicing |
+| Licensing | Intune Plan 1 included in qualifying Microsoft 365 subscriptions | Included in Microsoft 365 E3/E5 for covered clients; check agreement terms |
 
 ## Where SCCM Still Wins
 
-**Large-scale OS deployment**: If you are regularly imaging hundreds or thousands of devices with complex task sequences (BitLocker pre-provisioning, driver injection, multi-step customisation), SCCM's OSD capability is still significantly more capable than Autopilot. Autopilot v2 has improved but requires pre-provisioned hardware and internet connectivity. Neither condition works in every deployment scenario.
+**Large-scale OS deployment**: If you are regularly imaging hundreds or thousands of devices with complex task sequences (BitLocker pre-provisioning, driver injection, multi-step customisation), SCCM's OSD capability is still significantly more capable than Autopilot. Autopilot and device preparation configure Windows already installed on the device; neither is a bare-metal imaging engine. For a failed or blank disk, retain a separate installation/recovery path. [Microsoft Autopilot overview](https://learn.microsoft.com/en-us/autopilot/windows-autopilot) and [ConfigMgr imaging before Autopilot](https://learn.microsoft.com/en-us/autopilot/tutorial/existing-devices/existing-devices-workflow).
 
-**Large package distribution**: SCCM's distribution point infrastructure (including BranchCache and Peer Cache) is designed for large payloads in bandwidth-constrained environments. Intune's Win32 app distribution works well for most software but does not have an equivalent to SCCM's optimised distribution hierarchy for very large packages (multi-GB application installs, OS upgrade packages).
+**Large package distribution**: SCCM's distribution point infrastructure (including BranchCache and Peer Cache) is designed for large payloads in bandwidth-constrained environments. Intune also supports Delivery Optimization for Win32 content. A large package alone is not a reason to reject Intune: evaluate content control, peer behaviour and bandwidth at representative sites. [Microsoft Win32 app management](https://learn.microsoft.com/en-us/intune/intune-service/apps/apps-win32-app-management).
 
-**Complex software dependency management**: SCCM's application model supports complex dependency chains, detection methods, and supersedence relationships that go beyond what Intune's Win32 app model supports today.
+**Complex software dependency management**: Both products support detection, dependencies and supersedence. Compare the actual application graph, installation context, repair and uninstall behaviour rather than assuming Intune lacks these capabilities. [Microsoft Win32 app dependencies](https://learn.microsoft.com/en-us/intune/intune-service/apps/apps-win32-add).
 
 **On-premises-only environments**: Organisations with air-gapped or internet-restricted networks cannot use Intune as a primary management plane without significant architectural changes.
 
 ## Where Intune Wins
 
-**Cloud-native devices and remote workers**: Any device that is not permanently on-premises benefits enormously from Intune's cloud-native management plane. No VPN, no direct connectivity requirements, no infrastructure dependencies.
+**Cloud-native devices and remote workers**: Any device that is not permanently on-premises benefits enormously from Intune's cloud-native management plane. Intune management needs reachable Microsoft endpoints and identity services; application backends may still require a VPN. ConfigMgr can also manage internet clients through a [cloud management gateway](https://learn.microsoft.com/en-us/intune/configmgr/core/clients/manage/cmg/overview).
 
 **Zero-touch provisioning**: Autopilot, especially v2, provides a cleaner end-user provisioning experience than SCCM-based OSD for the scenarios it covers.
 
 **Operational overhead**: SCCM's infrastructure (site servers, distribution points, SQL, WSUS synchronisation, boundary groups) requires meaningful ongoing maintenance. Intune reduces that infrastructure work, although it still needs policy ownership, reporting review, app packaging discipline, and change control.
 
-**Modern security controls**: Intune integrates natively with Defender for Endpoint, Conditional Access, Entra ID, and the Microsoft Purview compliance stack. These integrations are first-class in Intune and bolt-on in SCCM.
+**Modern security controls**: Intune integrates natively with Defender for Endpoint, Conditional Access, Entra ID, and the Microsoft Purview compliance stack. Check the licence, supported platform and policy authority for each integration before designing enforcement.
 
-**Licensing simplicity**: For organisations already on Microsoft 365 E3 or E5, Intune is included. SCCM requires either an EMS licence bundle or a standalone ConfigMgr licence.
+**Existing entitlement**: Microsoft lists Microsoft 365 E3/E5, EMS E3/E5 and Intune user subscriptions as including Configuration Manager. Qualifying Microsoft 365 customers do not necessarily need a second EMS or standalone ConfigMgr licence. Office 365 E3/E5 is a different product, and Business Premium does not include ConfigMgr. Current branch requires active Software Assurance or equivalent subscription rights for covered clients. ConfigMgr includes restricted SQL Server rights for its supported components, not unrelated databases. The co-management benefit is not a full Intune licence for every scenario: Autopilot requires full Intune entitlement and relevant Entra requirements still apply. Confirm your agreement and current Product Terms with the licensing owner. [Microsoft licensing FAQ](https://learn.microsoft.com/en-us/intune/configmgr/core/understand/product-and-licensing-faq).
 
 ## The Migration Path
 
-Microsoft's co-management feature allows SCCM-managed devices to be co-managed by both SCCM and Intune simultaneously, with workload sliding between the two products on a per-capability basis. This is the recommended migration path:
+Microsoft's co-management feature allows SCCM-managed devices to be co-managed by both SCCM and Intune simultaneously, with workload sliding between the two products on a per-capability basis. Use a pilot plan appropriate to your dependencies; there is no mandatory workload order:
 
 1. Enrol co-managed devices in Intune (retain SCCM)
-2. Slide workloads progressively to Intune: compliance policies first, then configuration profiles, then app management, then OSD (or accept SCCM for OSD long-term)
-3. Decommission SCCM infrastructure as workloads migrate
+2. Move supported workloads only after the corresponding Intune policy, reporting and recovery process passes a pilot.
+3. Decide OS installation and provisioning separately. Retain infrastructure until imaging, content, server management and reporting dependencies have validated replacements.
 
 For new device deployments that fit Autopilot assumptions, Intune and Autopilot are usually the right starting architecture.
 
@@ -85,7 +85,11 @@ This does not have to be a permanent decision. It means the migration plan shoul
 
 Do not move workloads because the slider exists. Move them when the receiving process in Intune is documented, monitored, and supportable.
 
-## Recommended Workload Slide Order
+## Supported Workloads and a Pilot Sequence
+
+Microsoft documents compliance policies, Windows Update policies, endpoint protection, device configuration, Office Click-to-Run apps and client apps. The former resource access workload is unsupported from ConfigMgr 2203. **OSD/provisioning is not a co-management workload slider.** [Microsoft workload reference](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads).
+
+The sequence below is an illustrative planning order, not a Microsoft requirement. Confirm [co-management prerequisites](https://learn.microsoft.com/en-us/intune/configmgr/comanage/overview#prerequisites), permissions and healthy enrolment first.
 
 Use co-management as a controlled migration programme, not a single toggle:
 
@@ -96,9 +100,13 @@ Use co-management as a controlled migration programme, not a single toggle:
 | 3 | Windows Update policies | Pilot rings prove quality and feature update behaviour | ADRs, custom SQL patch reports, or maintenance windows still define production risk |
 | 4 | Endpoint protection | Defender onboarding and security baselines are owned in Intune/MDE | Existing antivirus or EDR coexistence is untested |
 | 5 | Client apps | Win32 packaging, detection, supersedence, and support runbooks are ready | Multi-GB packages or complex dependency chains still require DPs |
-| 6 | OSD / provisioning | Autopilot or hybrid provisioning covers the hardware classes you buy | Bare-metal PXE, offline builds, or factory imaging remain mandatory |
+| 6 | Office Click-to-Run apps | Office delivery and update ownership are agreed | Channel or update policy conflicts remain |
 
-Do not skip to apps or OSD because they are the most visible. They are usually the hardest to reverse cleanly.
+Moving a workload back does not automatically undo every Intune setting or installed application. Record cleanup and validation for the particular workload. [Microsoft switching guidance](https://learn.microsoft.com/en-us/intune/configmgr/comanage/how-to-switch-workloads).
+
+## Provisioning Is a Separate Architecture Decision
+
+Inventory bare-metal builds, failed-disk recovery, drivers, shared devices, join requirements and apps needed before sign-in. Select a provisioning mode for each device class using the [Autopilot scenario matrix](https://learn.microsoft.com/en-us/autopilot/tutorial/autopilot-scenarios). ConfigMgr can continue imaging while supported management workloads move to Intune. In the existing-device workflow, a ConfigMgr task sequence installs Windows before Autopilot configures it. Do not retire that recovery path just because policy sliders have moved.
 
 ## Decision Matrix By Estate Type
 
@@ -112,7 +120,7 @@ Do not skip to apps or OSD because they are the most visible. They are usually t
 
 ## Cost And Effort Reality Check
 
-Intune reduces site-server maintenance, but it does not remove packaging discipline, ring design, detection-rule quality, or support ownership. Configuration Manager keeps deep on-premises control, but you continue paying for SQL, site hierarchy health, boundary groups, DP content validation, and skilled operators.
+Intune reduces site-server maintenance, but it does not remove packaging discipline, ring design, detection-rule quality, or support ownership. Configuration Manager keeps deep on-premises control, but database hosting and maintenance, site health, boundary groups, content validation and skilled operators remain operational costs. Separate included software use rights from hosts, operating systems, storage, backup, cloud consumption and staff time; do not count an existing licence twice.
 
 A practical planning question is not “which product is better?” It is “which team owns each failure mode after the change?” If nobody owns Win32 detection failures, update ring exceptions, or Autopilot ESP timeouts, moving the slider increases ticket volume without improving security posture.
 
@@ -156,3 +164,7 @@ For new cloud-managed endpoints, Intune is usually the right starting point. SCC
 - [Windows Update for Business Deferral Not Respected](/troubleshooting/wufb-deferral-not-respected)
 - [SCCM / MECM topic hub](/sccm-mecm)
 - [Patch Management hub](/patch-management)
+
+## Correction Record
+
+**10 September 2026:** Corrected Microsoft 365 and SQL use rights; separated provisioning from co-management workloads; revised Intune dependencies, content delivery and ConfigMgr cloud-access claims. Existing URL retained.

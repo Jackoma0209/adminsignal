@@ -3,7 +3,7 @@ title: "Migrating Intune Administrative Templates to Settings Catalog Without Br
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
+lastReviewed: "2026-09-10"
 reviewNote: "Initial operational guide based on current Microsoft Intune Settings Catalog, Administrative Templates, device configuration, endpoint security, assignment, reporting, conflict, and Microsoft Graph guidance checked on May 7, 2026."
 tags: ["Intune", "Settings Catalog", "Administrative Templates", "Graph PowerShell", "Endpoint Management"]
 ---
@@ -44,9 +44,9 @@ Official Microsoft references used for this guide:
 - [List deviceConfigurationAssignments](https://learn.microsoft.com/en-us/graph/api/intune-deviceconfig-deviceconfigurationassignment-list?view=graph-rest-beta)
 - [Create a Settings Catalog policy from imported GPOs](https://learn.microsoft.com/en-us/intune/device-configuration/migrate-group-policy)
 
-## Tested Environment Note
+## Scope and Verification Basis
 
-This guide is written for Microsoft Intune tenants using Windows 10 and Windows 11 device management, with policy inventory and reporting checks run through Microsoft Graph PowerShell in May 2026.
+This guide is written for Microsoft Intune tenants using Windows 10 and Windows 11 device management, with illustrative policy inventory and reporting queries for Microsoft Graph PowerShell. Their inclusion does not establish tenant execution.
 
 The process assumes:
 
@@ -260,6 +260,21 @@ Migration safety depends on assignments more than names. You need to know exactl
 
 Use a helper that reads both old device configuration assignments and Settings Catalog assignments:
 
+Collection reads use the following helper in the same PowerShell session and follow [Microsoft Graph paging](https://learn.microsoft.com/en-us/graph/paging). This is an illustrative implementation, not a recorded tenant execution.
+
+```powershell
+function Get-GraphCollectionResponse {
+    param([Parameter(Mandatory)][string]$Uri)
+    $Items = [System.Collections.Generic.List[object]]::new()
+    do {
+        $Page = Invoke-MgGraphRequest -Method GET -Uri $Uri -ErrorAction Stop
+        foreach ($Item in $Page.value) { $Items.Add($Item) }
+        $Uri = $Page.'@odata.nextLink'
+    } while ($Uri)
+    return @{ value = $Items.ToArray() }
+}
+```
+
 ```powershell
 function Get-IntunePolicyAssignment {
     param(
@@ -277,7 +292,7 @@ function Get-IntunePolicyAssignment {
         $Uri = "https://graph.microsoft.com/beta/deviceManagement/configurationPolicies/$PolicyId/assignments"
     }
 
-    $Response = Invoke-MgGraphRequest -Method GET -Uri $Uri
+    $Response = Get-GraphCollectionResponse -Uri $Uri
 
     foreach ($Assignment in $Response.value) {
         $Target = $Assignment.target
@@ -500,7 +515,7 @@ function Get-SettingsCatalogSettingSummary {
     )
 
     $Uri = "https://graph.microsoft.com/beta/deviceManagement/configurationPolicies/$PolicyId/settings"
-    $Response = Invoke-MgGraphRequest -Method GET -Uri $Uri
+    $Response = Get-GraphCollectionResponse -Uri $Uri
 
     foreach ($Setting in $Response.value) {
         $Instance = $Setting.settingInstance
@@ -1038,3 +1053,8 @@ You are not trying to make the Intune console look tidy. You are trying to keep 
 - [See device configuration policies with Microsoft Intune](https://learn.microsoft.com/en-us/intune/device-configuration/monitor-device-profile)
 - [Common questions with policies and profiles in Microsoft Intune](https://learn.microsoft.com/en-us/intune/device-configuration/troubleshoot-device-profiles)
 - [Export Intune reports using Graph APIs](https://learn.microsoft.com/en-us/intune/device-management/reports/export-graph-apis)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+
+**Correction — 10 September 2026:** Added pagination to collection helper reads and clarified that examples are not execution evidence.

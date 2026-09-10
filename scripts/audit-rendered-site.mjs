@@ -156,6 +156,14 @@ if (sitemapResult.response.status !== 200) errors.push(`/sitemap.xml: expected 2
 const sitemapUrls = [...sitemapResult.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((urlMatch) => decode(urlMatch[1]))
 const sitemapPaths = new Set(sitemapUrls.map((url) => new URL(url).pathname))
 if (sitemapUrls.length === 0) errors.push('/sitemap.xml: no URLs found')
+if (new Set(sitemapUrls).size !== sitemapUrls.length) errors.push('/sitemap.xml: duplicate URLs')
+if (!sitemapPaths.has('/templates')) errors.push('/templates: missing from sitemap')
+for (const url of sitemapUrls) {
+  const parsed = new URL(url)
+  if (parsed.origin !== productionUrl || parsed.search || parsed.hash) {
+    errors.push(`/sitemap.xml: noncanonical URL ${url}`)
+  }
+}
 
 const titles = new Map()
 const descriptions = new Map()
@@ -163,7 +171,7 @@ const discoveredLinks = new Set()
 
 for (const url of sitemapUrls) {
   const pathname = new URL(url).pathname
-  const { response, body } = await get(pathname)
+  const { response, body } = await get(pathname, { redirect: 'manual' })
   if (response.status !== 200) {
     errors.push(`${pathname}: sitemap URL returned ${response.status}`)
     continue
@@ -178,7 +186,7 @@ for (const url of sitemapUrls) {
   if (!title) errors.push(`${pathname}: missing title`)
   if (!description) errors.push(`${pathname}: missing meta description`)
   if (!canonical) errors.push(`${pathname}: missing canonical`)
-  else if (new URL(canonical, baseUrl).pathname !== pathname) {
+  else if (canonical !== `${productionUrl}${pathname === '/' ? '/' : pathname}` && canonical !== url) {
     errors.push(`${pathname}: canonical points to ${canonical}`)
   }
   if (robots.includes('noindex')) errors.push(`${pathname}: sitemap URL is noindex`)
@@ -258,6 +266,40 @@ if (!(ads.response.headers.get('content-type') ?? '').startsWith('text/plain')) 
 const robots = await get('/robots.txt')
 if (robots.response.status !== 200) errors.push(`/robots.txt: expected 200, received ${robots.response.status}`)
 if (!robots.body.includes('Sitemap: https://www.adminsignal.com/sitemap.xml')) errors.push('/robots.txt: production sitemap declaration missing')
+for (const retired of ['/scripts', '/reviews']) {
+  if (new RegExp(`Disallow: ${retired}`, 'i').test(robots.body)) {
+    errors.push(`/robots.txt: blocks retired route ${retired}`)
+  }
+  const result = await get(retired, { redirect: 'manual' })
+  if (result.response.status !== 404 && result.response.status !== 410) {
+    errors.push(`${retired}: expected removal status, received ${result.response.status}`)
+  }
+}
+for (const rule of ['/api/', '/search']) {
+  if (!robots.body.includes(`Disallow: ${rule}`)) errors.push(`/robots.txt: lost ${rule} rule`)
+}
+const redirects = [
+  ['/tutorials/group-policy-troubleshooting-rsop-gpresult', '/troubleshooting/group-policy-not-applying-diagnosis'],
+  ['/comparisons/windows-defender-vs-crowdstrike-falcon', '/tutorials/microsoft-defender-for-endpoint-intune-rollout'],
+]
+for (const [from, to] of redirects) {
+  const result = await get(from, { redirect: 'manual' })
+  const location = result.response.headers.get('location')
+  if (![301, 308].includes(result.response.status) || !location || new URL(location, baseUrl).pathname !== to) {
+    errors.push(`${from}: permanent redirect to ${to} missing`)
+  }
+}
+for (const archive of ['/news', '/tutorials', '/troubleshooting', '/comparisons']) {
+  const result = await get(`${archive}?category=Microsoft%20Intune`)
+  if (result.response.status !== 200 || !robotsValue(result.body)?.includes('noindex') || canonicalValue(result.body) !== `${productionUrl}${archive}`) {
+    errors.push(`${archive}: filter must be noindex with the base archive canonical`)
+  }
+}
+for (const filename of ['autopilot-hardware-hash.csv', 'graph-migration-register.csv']) {
+  const result = await get(`/templates/${filename}`)
+  const local = readFileSync(path.join(process.cwd(), 'public', 'templates', filename), 'utf8')
+  if (result.response.status !== 200 || result.body !== local) errors.push(`${filename}: download differs from published file`)
+}
 
 const rss = await get('/rss.xml')
 if (rss.response.status !== 200) errors.push(`/rss.xml: expected 200, received ${rss.response.status}`)

@@ -3,8 +3,8 @@ title: "Intune Compliance Policy Not Evaluating: End-to-End Troubleshooting Chec
 category: "Microsoft Intune"
 date: "Jun 29, 2026"
 authorId: "jack"
-lastReviewed: "Jun 29, 2026"
-reviewNote: "Expanded operational guide covering Intune portal checks, assignment scope, per-setting evaluation, grace periods, MDM sync prerequisites, event logs, registry evidence, Graph API reporting, safe retry, and recovery."
+lastReviewed: "Sep 10, 2026"
+reviewNote: "Corrected custom compliance JSON semantics, quoted diagnostic areas, Windows platform applicability, event 814, aggregate Graph reporting and device identity selection."
 tags: ["Intune", "Compliance", "Entra ID", "Windows 11", "Conditional Access", "PowerShell"]
 ---
 
@@ -26,7 +26,7 @@ The useful question is not "is the policy assigned?" It is "has this device chec
 
 For wider context, see the [Intune hub](/intune), [Microsoft Entra ID hub](/microsoft-entra-id), and [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map).
 
-## Tested Environment and Scope
+## Scope and Assumptions
 
 This guide is written for Windows 10 22H2 and Windows 11 23H2, 24H2, and 25H2 devices enrolled in Microsoft Intune. It covers Microsoft Entra joined, Microsoft Entra hybrid joined, and co-managed Windows devices where Intune compliance is expected to feed Conditional Access.
 
@@ -97,7 +97,7 @@ If sync does not improve the state, collect MDM diagnostics before changing assi
 ```powershell
 $logPath = "C:\Temp\IntuneDiag"
 New-Item -ItemType Directory -Path $logPath -Force | Out-Null
-mdmdiagnosticstool.exe -area DeviceEnrollment;DeviceProvisioning;Policy -cab "$logPath\diag.cab"
+mdmdiagnosticstool.exe -area "DeviceEnrollment;DeviceProvisioning" -cab "$logPath\diag.cab"
 ```
 
 Expected result shape: a `.cab` file under `C:\Temp\IntuneDiag` containing MDM event logs and enrolment state.
@@ -108,7 +108,7 @@ Expected result shape: a `.cab` file under `C:\Temp\IntuneDiag` containing MDM e
 2. Search for the device. If it does not appear, the policy is not assigned to this device.
 3. Check the assignment: Is the policy assigned to a group? Is the device or the enrolled user a member of that group?
 4. Check for conflicting **exclusion groups** — the device may be in a group that is excluded from the policy.
-5. Confirm the policy platform matches the device OS. A Windows 10-only policy will not evaluate on Windows 11 and vice versa depending on configuration.
+5. Confirm the policy platform matches the device OS. The Windows 10 and later platform includes Windows 11; inspect individual setting applicability and minimum/maximum OS constraints.
 
 ### Tenant default: no policy means compliant
 
@@ -149,7 +149,7 @@ If BitLocker is required, confirm encryption state locally:
 manage-bde -status C:
 ```
 
-Expected output shape includes **Conversion Status: Fully Encrypted** or a clear reason encryption is suspended.
+Check both Conversion Status and Protection Status. Fully Encrypted does not establish that protectors are active or a recovery key is backed up.
 
 If Secure Boot is required on physical hardware, confirm in firmware and OS:
 
@@ -157,7 +157,7 @@ If Secure Boot is required on physical hardware, confirm in firmware and OS:
 Confirm-SecureBootUEFI
 ```
 
-Expected output: **True** on supported hardware. VMs and lab devices often need a policy exception.
+Expected result is True when Secure Boot is enabled on supported UEFI hardware. Supported virtual machines can also use Secure Boot; investigate their configuration before considering a scoped exception.
 
 ## Check 4: Grace Period and Noncompliance Actions
 
@@ -167,7 +167,7 @@ If the compliance state shows a yellow status or **In grace period**:
 2. Check the configured grace period. Default is 0 days (immediate noncompliance).
 3. If a grace period is set, the device shows as noncompliant-grace during the window — this is working as intended, not an evaluation failure.
 
-Document the grace period before escalating to the security team. Conditional Access may still block depending on how **Require compliant device** interprets grace state in your tenant configuration.
+Document the grace period before escalating to the security team. A grace period delays the configured mark-noncompliant action. Inspect the aggregate device compliance state and sign-in result; another failed policy can still block access. See [actions for noncompliance](https://learn.microsoft.com/en-us/intune/intune-service/protect/actions-for-noncompliance).
 
 ## Portal Evidence Collection
 
@@ -196,7 +196,7 @@ Use Microsoft Graph PowerShell when you need evidence at scale or the portal vie
 Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All","DeviceManagementConfiguration.Read.All"
 
 $deviceName = "<device-name>"
-$device = Get-MgDeviceManagementManagedDevice -Filter "deviceName eq '$deviceName'" | Select-Object -First 1
+$device = Get-MgDeviceManagementManagedDevice -ManagedDeviceId "<verified-intune-managed-device-id>" -ErrorAction Stop
 
 $device | Select-Object deviceName, complianceState, lastSyncDateTime, managementAgent, operatingSystem, osVersion
 ```
@@ -205,12 +205,12 @@ Expected output shape:
 
 ```text
 deviceName        : <name>
-complianceState   : noncompliant | compliant | inGracePeriod | configManager
+complianceState   : noncompliant | compliant | inGracePeriod | unknown
 lastSyncDateTime  : <timestamp>
 managementAgent   : mdm | eas | configurationManagerClient
 ```
 
-List noncompliant devices for one policy when you know the policy ID:
+Read aggregate compliance counts for one policy when you know its ID (this is not a device list):
 
 ```powershell
 $policyId = "<compliance-policy-id>"
@@ -230,7 +230,7 @@ Useful event patterns:
 | Event pattern | Likely meaning |
 |---|---|
 | Event ID 404 | CSP setting failed to apply or report |
-| Event ID 814 | Policy conflict or invalid payload |
+| Event ID 814 | PolicyManager setting information; read the actual message, not an assumed conflict |
 | Enrollment failures in Admin log | MDM channel unhealthy — fix sync first |
 
 Check whether compliance-related CSP state exists:
@@ -254,11 +254,11 @@ Custom compliance policies depend on a detection script returning valid JSON. Co
 Validate locally before re-uploading:
 
 ```powershell
-powershell.exe -ExecutionPolicy Bypass -File "C:\Path\Detect-Compliance.ps1"
+powershell.exe -NoProfile -File "C:\Path\Detect-Compliance.ps1"
 echo $LASTEXITCODE
 ```
 
-Expected exit code: **1** for compliant, **0** for noncompliant per Microsoft custom compliance script conventions. Verify against the exact documentation for your policy version before changing production scripts.
+A custom compliance discovery script returns a single compressed JSON object containing discovered values. Intune compares those values with the uploaded JSON rules. It does **not** use exit 1 for compliant and exit 0 for noncompliant; do not copy the Remediations exit-code contract here. Validate successful script execution and JSON keys, types and values against [Microsoft’s custom discovery-script requirements](https://learn.microsoft.com/en-us/intune/device-security/compliance/create-custom-script). Keep diagnostic chatter out of standard output.
 
 ## Safe Retry and Recovery
 
@@ -280,7 +280,7 @@ After recovery, add these checks to change control:
 - Pilot groups exist for new BitLocker, Secure Boot, and minimum OS version requirements.
 - Conditional Access policies that require compliant devices exclude break-glass accounts correctly.
 - New Autopilot profiles include enough time for first compliance evaluation before user reaches production apps.
-- Custom compliance scripts are version-controlled and tested with the same exit code convention as production.
+- Custom compliance scripts are version-controlled and their JSON output is validated against the policy rule schema.
 
 ## Related Resources
 
@@ -289,3 +289,9 @@ After recovery, add these checks to change control:
 - [Deploying Windows LAPS with Microsoft Intune](/tutorials/deploy-windows-laps-intune)
 - [Conditional Access Microsoft 365 Policy Map](/tutorials/conditional-access-m365-policy-map)
 - [Rolling Out Microsoft Defender for Endpoint with Intune](/tutorials/microsoft-defender-for-endpoint-intune-rollout)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected custom compliance JSON semantics, quoted diagnostic areas, Windows platform applicability, event 814, aggregate Graph reporting and device identity selection. Code and output remain illustrative, not execution evidence.

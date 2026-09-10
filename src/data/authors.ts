@@ -17,8 +17,8 @@ export interface Author {
 export const primaryAuthor: Author = {
   id: 'jack',
   name: 'Jack Hadcroft',
-  role: 'Endpoint specialist and author of AdminSignal',
-  bio: 'Jack Hadcroft is an endpoint specialist working with Microsoft Intune, Windows clients, Microsoft Entra ID, Group Policy, and PowerShell in Microsoft 365 estates. He publishes independent, source-backed guidance that focuses on prerequisites, validation evidence, operational risk, and safe rollout decisions, with examples and limitations labelled clearly.',
+  role: 'Band 6 Endpoint Specialist and author of AdminSignal',
+  bio: 'Jack Hadcroft has worked in NHS IT since 2013 and is a Band 6 Endpoint Specialist. His hands-on experience includes MECM/SCCM, Intune co-management, PowerShell, Windows deployment and large Windows estates in an NHS enterprise environment. AdminSignal is his independent publication; it does not represent employer endorsement.',
   initials: 'JH',
   avatarUrl: '/images/authors/jack.jpg',
   linkedIn: 'https://www.linkedin.com/in/jack-hadcroft-5710a068',

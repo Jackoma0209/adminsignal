@@ -3,8 +3,8 @@ title: "Selected CIS Windows 11 Level 1 Controls: Pilot, Apply, Validate"
 category: "Endpoint Security"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "Aug 31, 2026"
-reviewNote: "Narrowed title and lead to the selected Level 1 controls this page actually covers. This is not a complete CIS benchmark implementation."
+lastReviewed: "September 10, 2026"
+reviewNote: "Corrected Intune conflict precedence, Credential Guard values and rollback, GPO import assumptions, SMBv1 validation and the reference to an unreleased hardening tool. Examples are documentation-reviewed, not executed here."
 tags: ["CIS Benchmark", "Windows 11", "Hardening", "Endpoint Security"]
 ---
 
@@ -30,7 +30,7 @@ For Level 2 settings, create a separate project. Level 2 can be appropriate, but
 
 ## Prerequisites
 
-- Windows 11 22H2 or 24H2 (the benchmark versions differ slightly — confirm you are applying the correct benchmark revision for your OS version)
+- A currently supported Windows 11 release and edition, with a matching benchmark revision. Historical 22H2 examples are not a recommendation to deploy an unsupported release; check [Microsoft servicing dates](https://learn.microsoft.com/en-us/windows/release-health/windows11-release-information)
 - [PolicyAnalyzer](https://www.microsoft.com/en-us/download/details.aspx?id=55319) from Microsoft's Security Compliance Toolkit (for validation)
 - Intune Settings Catalog or Group Policy for automated application
 - Group Policy Management Console or Intune admin access
@@ -53,20 +53,12 @@ Applying a hardening baseline to production endpoints without testing is the fas
 
 ## Applying via Group Policy
 
-Download the CIS Windows 11 Benchmark GPO package from the CIS website (free with registration). The package includes importable `.PolicyRules` files for PolicyAnalyzer and a `PolicyDefinitions` folder.
+Use the benchmark for the exact OS and revision you are assessing. The downloadable CIS benchmark document and CIS Build Kits are different resources; do not assume the free PDF includes an importable GPO package. Confirm access and licensing at [CIS Build Kits](https://www.cisecurity.org/cis-securesuite/cis-securesuite-build-kit-content).
 
-### Import the ADMX Templates
-
-1. Copy the `PolicyDefinitions` folder contents to `%SystemRoot%\PolicyDefinitions` on your domain controller (or to the SYSVOL central store if you use one).
-2. Verify the templates load in the GPMC by opening any GPO and confirming the new settings appear in **Administrative Templates**.
-
-### Create and Link the GPO
-
-1. In the GPMC, create a new GPO: `CIS-Win11-Level1-Computer`.
-2. **Back up any existing baseline GPOs first**: `Backup-GPO -All -Path C:\GPOBackups\PreCIS`
-3. Import the CIS benchmark settings using **Group Policy Management Editor > Action > Import Settings** and point to the CIS-provided `.xml` backup.
-4. Link the GPO to your **pilot OU** only. Do not link to all workstations yet.
-5. After pilot validation, extend the link progressively: pilot → department 1 → department 2 → all workstations.
+1. Back up the existing baseline and record effective settings on representative devices.
+2. Create an unlinked pilot GPO. Configure the selected settings, or import an authorised, reviewed **GPO backup** using GPMC Import Settings or [Import-GPO](https://learn.microsoft.com/en-us/powershell/module/grouppolicy/import-gpo). An arbitrary XML or PolicyAnalyzer file is not a GPO backup.
+3. ADMX/ADML files define editor settings; copying them does not apply a baseline. Update the [Central Store](https://learn.microsoft.com/en-us/troubleshoot/windows-client/group-policy/create-and-manage-central-store) only through the domain change process.
+4. Link to the pilot OU, check gpresult and functional tests, then expand only after the agreed results pass.
 
 ## Applying via Microsoft Intune
 
@@ -86,7 +78,7 @@ For Intune-managed devices, use a combination of **Settings Catalog** and **Endp
 
 Microsoft provides a **Windows 11 Security Baseline** in Intune that covers many of the same areas as CIS Level 1. It is not identical but is a defensible starting point. Apply it first, then use Settings Catalog to close gaps.
 
-**Conflict warning**: If you apply both the Microsoft Security Baseline and a CIS-aligned Settings Catalog profile, check for conflicting settings. The last-applied policy wins — set the CIS profile to higher priority if you want CIS to take precedence.
+**Conflict warning**: If you apply both the Microsoft Security Baseline and a CIS-aligned Settings Catalog profile, check for conflicting settings. Intune does not provide a general priority slider for these configuration profiles. Resolve conflicting values or set the redundant setting to Not configured in its source policy. Check per-setting status and effective endpoint state. [Microsoft endpoint-security conflict handling](https://learn.microsoft.com/en-us/intune/device-configuration/endpoint-security/manage-policies).
 
 ## Key Controls at Level 1
 
@@ -108,7 +100,7 @@ Audit Credential Validation: Success and Failure
 Audit Logon: Success and Failure  
 Audit Account Lockout: Success and Failure
 Audit Process Creation: Success
-Audit PowerShell Script Block Logging: Success
+PowerShell Script Block Logging: enabled separately through its Administrative Template policy
 ```
 
 ### Windows Defender Settings
@@ -137,7 +129,7 @@ Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol
 Get-SmbSession | Where-Object { $_.Dialect -eq '1.0' }
 ```
 
-If no SMBv1 sessions are active, disable it:
+A quiet snapshot does not prove SMBv1 is unused. Collect [SMBv1 audit events and feature state](https://learn.microsoft.com/en-us/windows-server/storage/file-server/troubleshoot/detect-enable-and-disable-smbv1-v2-v3) over a representative business cycle and test application dependencies. The following changes the SMB **server** setting on one authorised pilot; it does not remove every SMBv1 client component:
 
 ```powershell
 Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
@@ -159,7 +151,7 @@ Credential Guard isolates LSASS in a virtualisation-based security environment. 
 (Get-CimInstance -Namespace root/Microsoft/Windows/DeviceGuard -ClassName Win32_DeviceGuard).SecurityServicesRunning
 ```
 
-A return value of `2` indicates Credential Guard is running. If it returns `0`, check that Virtualization Based Security is enabled in the UEFI settings and that the GPO setting is applied correctly.
+The returned array contains `1` when Credential Guard is running; `2` denotes memory integrity. Check for membership, not equality of the whole array. If `1` is absent, inspect policy, OS/hardware prerequisites and VBS state. [Microsoft Win32_DeviceGuard value definitions](https://learn.microsoft.com/en-us/windows/security/hardware-security/enable-virtualization-based-protection-of-code-integrity).
 
 ## Validating Compliance
 
@@ -170,11 +162,7 @@ After applying the baseline, validate with **PolicyAnalyzer**:
 3. Add the CIS benchmark `.PolicyRules` file as a reference.
 4. Compare and identify gaps or conflicts.
 
-For Intune-managed devices, use the `Invoke-WindowsHardening` script in audit mode to generate a compliance delta report:
-
-```powershell
-Invoke-WindowsHardening -Mode Audit -Level CIS1 -ReportPath C:\Temp\HardeningReport.html
-```
+For Intune-managed devices, compare per-setting reports with the effective endpoint settings below. `Invoke-WindowsHardening` is not a released downloadable tool on this site and is not required for these checks. Retain your approved policy export and validation results with the change record.
 
 ### Spot-checking critical settings
 
@@ -200,9 +188,9 @@ The CIS benchmark restricts NTLM and disables older TLS cipher suites. Older lin
 
 | Symptom | Likely CIS setting | Fix |
 |---|---|---|
-| App fails to authenticate against file share | NTLMv2 enforcement (LM Compatibility Level 5) | Update app to Kerberos or create a specific NTLM exception via Group Policy `Network security: Restrict NTLM: Add remote server exceptions for NTLM authentication` |
+| App fails to authenticate against file share | NTLMv2 enforcement (LM Compatibility Level 5) | Check the negotiated authentication protocol and modernise the dependency. A Restrict NTLM exception does not override the separate LAN Manager authentication-level policy |
 | HTTPS connection fails with cipher error | TLS cipher suite restrictions | Identify the app's required cipher, check if it is on the CIS-allowed list, create an exception if business-critical |
-| Older PowerShell scripts break | Script execution policy | Apply `Set-ExecutionPolicy RemoteSigned -Scope LocalMachine` and sign internal scripts |
+| Older PowerShell scripts break | Script execution policy | Inspect `Get-ExecutionPolicy -List`, signing and managed policy. Correct the approved policy or script; a local setting cannot override MachinePolicy/UserPolicy |
 
 ### BYOD and Guest Access Scenarios
 
@@ -232,8 +220,8 @@ If the baseline causes production issues, roll back cleanly:
 ### Settings that do not revert automatically
 
 - **BitLocker**: Once enabled, removing the policy does not decrypt the drive. This is intentional.
-- **Credential Guard**: Disabling via policy requires a registry change and a reboot. Use `bcdedit /set {0cb3b571-2f2e-4343-a879-d86a476d7215} loadoptions DISABLE-LSA-ISO` to disable it if needed.
-- **Audit policy**: Removing the GPO reverts audit policy at next refresh.
+- **Credential Guard**: Recovery differs depending on whether UEFI lock was enabled. Follow the complete [Microsoft disable procedure](https://learn.microsoft.com/en-us/windows/security/identity-protection/credential-guard/configure#disable-credential-guard), including physical confirmation where required. Do not run an isolated BCDEdit fragment as a rollback.
+- **Audit policy**: Check resultant policy after removal and explicitly restore approved values where necessary. Unlinking a GPO is not proof that every setting reverted.
 
 ## Related Resources
 
@@ -244,3 +232,7 @@ If the baseline causes production issues, roll back cleanly:
 - [BitLocker Recovery Key Not Backed Up to Entra ID](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra)
 - [CIS Windows 11 Benchmark](https://www.cisecurity.org/benchmark/microsoft_windows_desktop)
 - [Microsoft Security Compliance Toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=55319)
+
+## Correction Record
+
+**10 September 2026:** Corrected Intune conflict precedence, Credential Guard values and rollback, GPO import assumptions, SMBv1 validation and the reference to an unreleased hardening tool. Examples are documentation-reviewed, not executed here.

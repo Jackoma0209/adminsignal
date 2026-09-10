@@ -3,7 +3,7 @@ title: "Secure Boot CA 2023 Rollout Readiness for Enterprise Windows Fleets"
 category: "Endpoint Security"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
+lastReviewed: "2026-09-10"
 reviewNote: "Initial operational guide based on current Microsoft Secure Boot certificate expiration, IT-managed update, Intune, registry, event log, troubleshooting, Windows Server, and Hyper-V guidance as of May 7, 2026."
 tags: ["Secure Boot", "BitLocker", "Windows Server", "Intune", "Patch Management", "Firmware"]
 ---
@@ -37,7 +37,7 @@ Official Microsoft references used for this guide:
 - [Windows Server Secure Boot playbook](https://techcommunity.microsoft.com/blog/windowsservernewsandbestpractices/windows-server-secure-boot-playbook-for-certificates-expiring-in-2026/4495789)
 - [Hyper-V generation 2 virtual machine security features](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/generation-2-virtual-machine-security-features)
 
-## Tested Environment Note
+## Scope and Verification Basis
 
 This guide is written for supported Windows 10, Windows 11, Windows Server 2016, Windows Server 2019, Windows Server 2022, and Windows Server 2025 devices that boot with UEFI Secure Boot. It assumes Microsoft Secure Boot certificate servicing guidance current on May 7, 2026.
 
@@ -555,7 +555,8 @@ Before rollout, verify recovery key readiness:
 Get-BitLockerVolume -MountPoint C: |
     Select-Object MountPoint, ProtectionStatus, LockStatus, VolumeStatus
 
-manage-bde -protectors -get C:
+(Get-BitLockerVolume -MountPoint C:).KeyProtector |
+    Select-Object KeyProtectorId, KeyProtectorType
 ```
 
 Expected output shape:
@@ -565,11 +566,12 @@ MountPoint ProtectionStatus LockStatus VolumeStatus
 ---------- ---------------- ---------- ------------
 C:         On               Unlocked   FullyEncrypted
 
-Numerical Password:
-  ID: {<recovery-password-protector-id>}
-  Password:
-    <recovery-key-shape>
+KeyProtectorId                      KeyProtectorType
+--------------                      ----------------
+{<recovery-password-protector-id>}    RecoveryPassword
 ```
+
+This inventory deliberately selects protector IDs and types without printing recovery passwords. Match the current recovery-password protector ID to an authorised escrow record; the local listing alone does not prove backup. See [recovery-key validation](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra).
 
 For PCR7 and Secure Boot state, use `msinfo32` export where local GUI access is not practical:
 
@@ -729,3 +731,8 @@ Use this checklist before expanding beyond pilot:
 - [Secure Boot Certificate updates for IT professionals and organizations](https://support.microsoft.com/en-us/help/5062713)
 - [Secure Boot troubleshooting guide](https://support.microsoft.com/en-us/help/5085046)
 - [Windows Server Secure Boot playbook](https://techcommunity.microsoft.com/blog/windowsservernewsandbestpractices/windows-server-secure-boot-playbook-for-certificates-expiring-in-2026/4495789)
+
+**Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
+
+
+**Correction — 10 September 2026:** Selected BitLocker protector IDs without exposing recovery passwords; clarified escrow validation.

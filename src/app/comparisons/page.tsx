@@ -12,11 +12,19 @@ const pageDescription =
   'Side-by-side enterprise IT comparisons with decision criteria, caveats, freshness notes, and operational questions for Microsoft admin teams.'
 const pagePath = '/comparisons'
 
-export const metadata: Metadata = buildCategoryMetadata({
+const baseMetadata: Metadata = buildCategoryMetadata({
   title: pageTitle,
   description: pageDescription,
   path: pagePath,
 })
+
+export async function generateMetadata({ searchParams }: {
+  searchParams: Promise<{ category?: string }>
+}): Promise<Metadata> {
+  const { category } = await searchParams
+  return category ? { ...baseMetadata, robots: { index: false, follow: true } } : baseMetadata
+}
+
 
 const categories = [
   ...new Set(comparisons.filter((c) => !isNoindexComparisonSlug(c.slug)).map((c) => c.category)),

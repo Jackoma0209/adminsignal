@@ -4,8 +4,8 @@ description: "Operational playbook for migrating frontline Android and iOS devic
 category: "Microsoft Intune"
 date: "Jun 29, 2026"
 authorId: "jack"
-lastReviewed: "Jun 29, 2026"
-reviewNote: "Operational migration playbook based on Microsoft Intune Customer Success frontline mobile migration guidance. Checked on 2026-06-29."
+lastReviewed: "2026-09-10"
+reviewNote: "Corrected certificate delivery before enrollment, bootstrap connectivity, delivery-order assumptions, destructive migration safeguards and paged inventory."
 tags: ["Intune", "Frontline Workers", "Mobile", "Migration", "Android", "iOS"]
 image: "/images/article-covers/intune-frontline-mobile-migration.svg"
 imageAlt: "Abstract frontline mobile fleet illustration with handheld devices, Wi-Fi nodes, and migration path"
@@ -42,12 +42,12 @@ Confirm infrastructure before migration day:
 |---|---|
 | Intune licences for frontline devices | Count devices + spare pool in scope |
 | Apple ABM / ASM or Android Enterprise enrolled | Corporate-owned enrollment path confirmed |
-| Intune Certificate Connector or NDES | Test certificate issued to lab device |
+| Certificate delivery appropriate to the chosen CA | Validate AD CS connector/NDES, third-party CA or Cloud PKI requirements; these are different architectures |
 | Wi-Fi and VPN profiles built in Intune | SCEP/PKCS profile deploys on lab hardware |
 | Conditional Access reviewed | Shared devices and break-glass accounts documented |
 | Source MDM export | Full device list, apps, profiles, certificates |
 
-Do not start user migration until a lab device completes: enroll → receive Wi-Fi profile → receive cert → install critical LOB app → passes sign-in to required backend.
+Do not start a site migration until an Intune-enrolled pilot has obtained its trusted roots, client certificate and Wi-Fi configuration over an approved bootstrap connection, then installed and validated its critical apps. Intune cannot deliver these profiles to a device that is only enrolled in the source MDM. See [trusted profile dependencies](https://learn.microsoft.com/en-us/intune/device-configuration/certificates/trusted-root-profiles) and [SCEP infrastructure choices](https://learn.microsoft.com/en-us/intune/fundamentals/certificates/scep-infrastructure).
 
 ## Phase 1: App And Profile Inventory
 
@@ -77,13 +77,13 @@ Map dependencies explicitly. The most common frontline outage is Wi-Fi profile d
 
 ## Phase 2: Certificate And Wi-Fi Sequencing
 
-Recommended order:
+Recommended pilot sequence:
 
-1. Deploy **trusted root** and **SCEP/PKCS** certificate profiles to pilot group
-2. Deploy **Wi-Fi profile** referencing the same certificate template
-3. Confirm device connects automatically without manual cert install
-4. Deploy **VPN** if required by LOB apps
-5. Only then migrate enrollment from source MDM
+1. Prepare matching trusted-root, client-certificate and Wi-Fi profiles in Intune; validate CA/RADIUS dependencies and permissions.
+2. Preserve source-MDM configuration, required application data and a working spare. Confirm the platform's supported migration method, reset requirements and recovery access.
+3. Move an approved pilot device into Intune using a bootstrap network or cellular path that remains usable without the old MDM certificate.
+4. Verify certificate issuance, server trust and Wi-Fi profile delivery. Intune assignment order alone is not a guaranteed delivery order.
+5. Prove production Wi-Fi/VPN and application access before removing the bootstrap path or handing over the device.
 
 Test on one device per site where RADIUS policy differs. Retail and warehouse SSIDs often use different VLANs and cert templates.
 
@@ -99,12 +99,12 @@ Test on one device per site where RADIUS policy differs. Retail and warehouse SS
 
 - One store or warehouse with onsite champion
 - Migration window outside peak volume (not pre-holiday, not inventory week)
-- Spare device pool on site equal to 10% of fleet minimum
+- Size the spare pool from shift demand and observed pilot failure/recovery duration; 10% is only an example planning assumption
 
 ### Ring 2 — Regional rollout
 
 - Repeatable runbook per site
-- Same-day rollback: re-enroll to source MDM or swap to spare if Intune path fails
+- Recovery: use a validated spare first; re-enrolment to the source MDM may require a reset and cannot be promised within the same shift
 
 ### Ring 3 — Enterprise completion
 
@@ -112,11 +112,11 @@ Test on one device per site where RADIUS policy differs. Retail and warehouse SS
 
 ## Phase 4: Migration Day Runbook (Per Device)
 
-1. Remove device from source MDM (or wipe per vendor procedure)
+1. Follow the approved platform-specific migration procedure; preserve required data, verify recovery/activation access and obtain change approval before any retire or wipe
 2. Enroll into Intune via ABM/ASM or Android Enterprise workflow
 3. Wait for Wi-Fi and certificate profiles — confirm connectivity before handing to worker
 4. Confirm required apps show **Installed** in Intune
-5. Worker signs into LOB app and completes one real transaction (scan, pick, clock-in)
+5. Worker signs into LOB app and completes one authorised test transaction in the application’s test workflow (avoid creating a real order or clock entry merely to validate)
 6. Record serial, site, migration time, and technician in the register
 
 If step 3 fails, swap to spare device and troubleshoot offline — do not hand a non-networked device to frontline staff.
@@ -146,12 +146,12 @@ After each ring:
 ```powershell
 Connect-MgGraph -Scopes "DeviceManagementManagedDevices.Read.All"
 
-Get-MgDeviceManagementManagedDevice -Filter "operatingSystem eq 'iOS' or operatingSystem eq 'Android'" |
+Get-MgDeviceManagementManagedDevice -Filter "operatingSystem eq 'iOS' or operatingSystem eq 'Android'" -All |
     Select-Object deviceName, operatingSystem, complianceState, lastSyncDateTime, managementAgent |
     Sort-Object lastSyncDateTime -Descending
 ```
 
-Compare device count against site inventory. Gaps indicate incomplete enrollment or devices still on source MDM.
+Compare device count against site inventory. Investigate gaps before declaring incomplete enrolment: reconcile device IDs, paging, ownership and reporting delays. The Graph example reads management metadata and requires an approved SDK installation and consented read permission.
 
 ## Prevention Checks
 
@@ -171,3 +171,7 @@ Compare device count against site inventory. Gaps indicate incomplete enrollment
 ## Source
 
 This operational playbook is based on the official [Intune Customer Success frontline migration post](https://techcommunity.microsoft.com/blog/intunecustomersuccess/migrating-frontline-mobile-devices-a-frontline-first-approach-to-moving-to-micro/4501347) published by Microsoft on March 30, 2026, extended with certificate sequencing, pilot rings, and shift-continuity steps for enterprise administrators.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected certificate delivery before enrollment, bootstrap connectivity, delivery-order assumptions, destructive migration safeguards and paged inventory. Examples are illustrative; no lab or tenant execution is claimed.

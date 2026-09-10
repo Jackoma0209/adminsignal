@@ -12,11 +12,19 @@ const pageDescription =
   'Step-by-step technical guides for Windows administrators: Intune deployments, Group Policy, PowerShell, Entra ID, and endpoint security. Written for engineers managing business environments.'
 const pagePath = '/tutorials'
 
-export const metadata: Metadata = buildCategoryMetadata({
+const baseMetadata: Metadata = buildCategoryMetadata({
   title: pageTitle,
   description: pageDescription,
   path: pagePath,
 })
+
+export async function generateMetadata({ searchParams }: {
+  searchParams: Promise<{ category?: string; difficulty?: string }>
+}): Promise<Metadata> {
+  const { category, difficulty } = await searchParams
+  return category || difficulty ? { ...baseMetadata, robots: { index: false, follow: true } } : baseMetadata
+}
+
 
 const publicGuides = guides.filter(
   (guide) => !isNoindexHref(guide.href ?? `/tutorials/${guide.slug}`),

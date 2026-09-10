@@ -1,0 +1,474 @@
+[
+  {
+    "url": "https://www.adminsignal.com",
+    "status": 200,
+    "title": "AdminSignal — Practical Microsoft Administration Guidance",
+    "canonical": "https://www.adminsignal.com",
+    "robots": "index, follow",
+    "description": "Source-backed guides and analysis for endpoint specialists, Windows administrators, Microsoft Intune administrators, PowerShell users, and enterprise IT engineers."
+  },
+  {
+    "url": "https://www.adminsignal.com/news",
+    "status": 200,
+    "title": "IT News &amp; Security Alerts | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news",
+    "robots": "index, follow",
+    "description": "Current signals from the Microsoft ecosystem: Patch Tuesday analysis, vulnerability alerts, Intune updates, and enterprise IT news for Windows administrators."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials",
+    "status": 200,
+    "title": "Tutorials &amp; Deep-Dive Guides | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials",
+    "robots": "index, follow",
+    "description": "Step-by-step technical guides for Windows administrators: Intune deployments, Group Policy, PowerShell, Entra ID, and endpoint security. Written for engineers managing business environments."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting",
+    "status": 200,
+    "title": "Troubleshooting Guides | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting",
+    "robots": "index, follow",
+    "description": "Systematic diagnosis guides for common Windows, Intune, Group Policy, and Entra ID issues, with decision trees, log locations, validation steps, and practical fixes."
+  },
+  {
+    "url": "https://www.adminsignal.com/comparisons",
+    "status": 200,
+    "title": "Product Comparisons | AdminSignal",
+    "canonical": "https://www.adminsignal.com/comparisons",
+    "robots": "index, follow",
+    "description": "Side-by-side enterprise IT comparisons with decision criteria, caveats, freshness notes, and operational questions for Microsoft admin teams."
+  },
+  {
+    "url": "https://www.adminsignal.com/topics",
+    "status": 200,
+    "title": "Topic Hubs | AdminSignal",
+    "canonical": "https://www.adminsignal.com/topics",
+    "robots": "index, follow",
+    "description": "Browse AdminSignal topic hubs. Each hub lists the published tutorials, troubleshooting guides, and news that actually exist for that discipline."
+  },
+  {
+    "url": "https://www.adminsignal.com/intune",
+    "status": 200,
+    "title": "Microsoft Intune — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/intune",
+    "robots": "index, follow",
+    "description": "Published AdminSignal coverage for Microsoft Intune: Settings Catalog migration, Windows Update rings, Win32 app failures, device sync, remediations, Company Portal enrolment, and Autopilot hardware-hash imports."
+  },
+  {
+    "url": "https://www.adminsignal.com/powershell",
+    "status": 200,
+    "title": "PowerShell — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/powershell",
+    "robots": "index, follow",
+    "description": "Published PowerShell coverage currently on AdminSignal: AzureAD/MSOnline to Graph SDK migration, software inventory patterns, and Graph examples used in Intune and Microsoft 365 guides. This hub does not cover Desired State Configuration and is not a downloadable script catalogue."
+  },
+  {
+    "url": "https://www.adminsignal.com/windows-server",
+    "status": 200,
+    "title": "Windows Server — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/windows-server",
+    "robots": "index, follow",
+    "description": "Published Windows Server coverage currently on AdminSignal: Group Policy processing against Active Directory, and Secure Boot CA 2023 readiness for server fleets. This hub does not yet include DNS, DHCP, backup, or monitoring tutorials."
+  },
+  {
+    "url": "https://www.adminsignal.com/endpoint-security",
+    "status": 200,
+    "title": "Endpoint Security — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/endpoint-security",
+    "robots": "index, follow",
+    "description": "Published endpoint-security coverage currently on AdminSignal: Defender for Endpoint with Intune, BitLocker escrow, Windows LAPS, CIS Level 1 hardening, and Secure Boot CA 2023 readiness."
+  },
+  {
+    "url": "https://www.adminsignal.com/microsoft-365",
+    "status": 200,
+    "title": "Microsoft 365 — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/microsoft-365",
+    "robots": "index, follow",
+    "description": "Published Microsoft 365 coverage currently on AdminSignal: Exchange Online SMTP AUTH migration, admin-centre MFA readiness, and Conditional Access policy mapping. This hub does not yet include SharePoint or Teams tutorials."
+  },
+  {
+    "url": "https://www.adminsignal.com/microsoft-entra-id",
+    "status": 200,
+    "title": "Microsoft Entra ID — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/microsoft-entra-id",
+    "robots": "index, follow",
+    "description": "Published Microsoft Entra ID coverage currently on AdminSignal: Conditional Access baselines, emergency access accounts, and dynamic group troubleshooting. This hub does not yet include PIM or SSPR walkthroughs."
+  },
+  {
+    "url": "https://www.adminsignal.com/patch-management",
+    "status": 200,
+    "title": "Patch Management — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/patch-management",
+    "robots": "index, follow",
+    "description": "Published patch-management coverage currently on AdminSignal: Windows Update for Business rings in Intune, Patch Tuesday admin notes, and deferral-policy troubleshooting. This hub is not a WSUS administration manual."
+  },
+  {
+    "url": "https://www.adminsignal.com/group-policy",
+    "status": 200,
+    "title": "Group Policy — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/group-policy",
+    "robots": "index, follow",
+    "description": "Published Group Policy coverage on AdminSignal is one canonical diagnosis guide for policies that do not apply, plus coexistence notes in the Intune Settings Catalog migration guide."
+  },
+  {
+    "url": "https://www.adminsignal.com/sccm-mecm",
+    "status": 200,
+    "title": "SCCM / MECM — Guides, Troubleshooting &amp; Analysis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/sccm-mecm",
+    "robots": "index, follow",
+    "description": "Practical Configuration Manager decision guidance: when MECM still earns its place, how to sequence co-management, and which published Intune comparison and app-delivery articles to read next. This hub does not yet include standalone ConfigMgr task-sequence or DP tutorials."
+  },
+  {
+    "url": "https://www.adminsignal.com/about",
+    "status": 200,
+    "title": "About Jack Hadcroft and AdminSignal | AdminSignal",
+    "canonical": "https://www.adminsignal.com/about",
+    "robots": "index, follow",
+    "description": "Jack Hadcroft is an endpoint specialist and the author of AdminSignal, an independent publication for Microsoft Intune, Windows, Entra ID, PowerShell, and Microsoft 365 administrators."
+  },
+  {
+    "url": "https://www.adminsignal.com/contact",
+    "status": 200,
+    "title": "Contact | AdminSignal",
+    "canonical": "https://www.adminsignal.com/contact",
+    "robots": "index, follow",
+    "description": "Get in touch with Jack Hadcroft, author of AdminSignal."
+  },
+  {
+    "url": "https://www.adminsignal.com/editorial-policy",
+    "status": 200,
+    "title": "Editorial Policy | AdminSignal",
+    "canonical": "https://www.adminsignal.com/editorial-policy",
+    "robots": "index, follow",
+    "description": "How AdminSignal produces, reviews, and maintains content — our standards for accuracy, independence, and transparency."
+  },
+  {
+    "url": "https://www.adminsignal.com/privacy",
+    "status": 200,
+    "title": "Privacy Policy | AdminSignal",
+    "canonical": "https://www.adminsignal.com/privacy",
+    "robots": "index, follow",
+    "description": "What AdminSignal collects, how we use it, and how visitors can manage privacy and cookie choices."
+  },
+  {
+    "url": "https://www.adminsignal.com/cookies",
+    "status": 200,
+    "title": "Cookie Policy | AdminSignal",
+    "canonical": "https://www.adminsignal.com/cookies",
+    "robots": "index, follow",
+    "description": "How AdminSignal uses cookies and similar technologies for site operation, analytics, advertising, and consent management."
+  },
+  {
+    "url": "https://www.adminsignal.com/terms",
+    "status": 200,
+    "title": "Terms of Use | AdminSignal",
+    "canonical": "https://www.adminsignal.com/terms",
+    "robots": "index, follow",
+    "description": "Terms governing access to AdminSignal articles, scripts, examples, advertising, and related resources."
+  },
+  {
+    "url": "https://www.adminsignal.com/affiliate-disclosure",
+    "status": 200,
+    "title": "Affiliate Disclosure | AdminSignal",
+    "canonical": "https://www.adminsignal.com/affiliate-disclosure",
+    "robots": "index, follow",
+    "description": "AdminSignal may participate in affiliate programmes. This page explains how those relationships work and how they affect our content."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration",
+    "status": 200,
+    "title": "Migrating AzureAD and MSOnline PowerShell Scripts to Microsoft Graph PowerShell SDK | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration",
+    "robots": "index, follow",
+    "description": "A practical migration guide for replacing production AzureAD and MSOnline PowerShell scripts with Microsoft Graph PowerShell SDK, covering module strategy, delegated and app-only authentication, managed identity, permission discovery, cmdlet mapping, paging, OData filters, eventual consistency, throttling, beta endpoint risk, logging, rollback, and prevention checks."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/conditional-access-m365-policy-map",
+    "status": 200,
+    "title": "Configuring Conditional Access for a Microsoft 365 Tenant: The Complete Policy Map | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/conditional-access-m365-policy-map",
+    "robots": "index, follow",
+    "description": "A policy-by-policy walkthrough of building a Conditional Access baseline for Microsoft 365, from MFA requirements and compliant device enforcement to emergency access accounts."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/deploy-windows-laps-intune",
+    "status": 200,
+    "title": "Deploying Windows LAPS with Microsoft Intune: A Complete Walkthrough | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/deploy-windows-laps-intune",
+    "robots": "index, follow",
+    "description": "A step-by-step guide to rolling out Windows Local Administrator Password Solution across your Intune-managed fleet, including policy configuration, reporting, and migration from legacy LAPS."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/entra-break-glass-emergency-access-accounts",
+    "status": 200,
+    "title": "Entra ID Emergency Access Accounts: Break-Glass Design That Survives MFA Lockout | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/entra-break-glass-emergency-access-accounts",
+    "robots": "index, follow",
+    "description": "A practical operational guide to Microsoft Entra emergency access accounts: cloud-only design, Conditional Access exclusions, phishing-resistant factors, offline custody, monitoring, quarterly tests, and recovery when admins are locked out."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/exchange-online-smtp-auth-basic-auth-2026-migration",
+    "status": 200,
+    "title": "Exchange Online SMTP AUTH Basic Authentication 2026 Migration Planning | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/exchange-online-smtp-auth-basic-auth-2026-migration",
+    "robots": "index, follow",
+    "description": "A practical operational guide for planning Exchange Online SMTP AUTH Basic Authentication and credential-based Exchange Online PowerShell automation migrations, covering inventory, EAC and Entra checks, mailbox and tenant settings, OAuth, High Volume Email, Azure Communication Services Email, relay caveats, app-only PowerShell, managed identity, rollback, and prevention controls."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/hardening-windows-11-cis-benchmark",
+    "status": 200,
+    "title": "Selected CIS Windows 11 Level 1 Controls: Pilot, Apply, Validate | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/hardening-windows-11-cis-benchmark",
+    "robots": "index, follow",
+    "description": "Selected CIS Windows 11 Level 1 controls only — accounts, audit policy, Defender, SMBv1, and Credential Guard — with pilot, Intune or GPO application, validation, and rollback. Not a complete benchmark rollout."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/intune-admin-templates-to-settings-catalog-migration",
+    "status": 200,
+    "title": "Migrating Intune Administrative Templates to Settings Catalog Without Breaking Policy Behaviour | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/intune-admin-templates-to-settings-catalog-migration",
+    "robots": "index, follow",
+    "description": "A practical migration guide for moving Intune Administrative Templates and older configuration profiles to Settings Catalog, covering inventory, duplicate settings, assignments, Graph PowerShell checks, conflict detection, pilot design, validation, reporting, rollback, and prevention controls."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/intune-windows-update-rings-wufb",
+    "status": 200,
+    "title": "Windows Update for Business Rings in Intune: A Practical Ring Design for Production Fleets | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/intune-windows-update-rings-wufb",
+    "robots": "index, follow",
+    "description": "Design Windows Update for Business rings in Microsoft Intune: pilot-to-broad topology, quality and feature update ownership, deadlines, hold groups, reporting evidence, expedite process, coexistence warnings, and when not to broaden a wave."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/microsoft-365-admin-centre-mfa-readiness",
+    "status": 200,
+    "title": "Microsoft 365 Admin Centre Mandatory MFA Readiness for Admins | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/microsoft-365-admin-centre-mfa-readiness",
+    "robots": "index, follow",
+    "description": "A practical operational guide for Microsoft 365 admin centre mandatory MFA readiness, covering affected admins, break-glass accounts, security defaults, Conditional Access, per-user MFA, phishing-resistant methods, Graph PowerShell audits, sign-in checks, service-style admin accounts, Phase 2 tooling impact, safe rollout, and recovery planning."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/microsoft-defender-for-endpoint-intune-rollout",
+    "status": 200,
+    "title": "Rolling Out Microsoft Defender for Endpoint with Intune in a Managed Windows Fleet | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/microsoft-defender-for-endpoint-intune-rollout",
+    "robots": "index, follow",
+    "description": "A practical operational guide for rolling out Microsoft Defender for Endpoint with Intune across a managed Windows fleet, covering tenant connection, licensing, Plan 1 versus Plan 2, onboarding, endpoint security policies, antivirus, firewall, ASR, EDR, baselines, pilot rings, reporting, coexistence, rollback, and prevention checks."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/patch-tuesday-intune-wufb-operations",
+    "status": 200,
+    "title": "Patch Tuesday Operations for Intune and Windows Update for Business | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/patch-tuesday-intune-wufb-operations",
+    "robots": "index, follow",
+    "description": "Reusable Patch Tuesday operating model: ring promotion evidence, Intune and WUfB checks, build validation, known-issue watch, post-deploy monitoring, exception logs, and hold criteria. Monthly CVE pages link here instead of repeating this body."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/powershell-software-inventory-system",
+    "status": 200,
+    "title": "Collecting Installed Software with PowerShell on Unmanaged Endpoints | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/powershell-software-inventory-system",
+    "robots": "index, follow",
+    "description": "Collect installed software from registry uninstall keys, optional Win32_Product, and AppX packages, then export CSV or HTML. Point-in-time collection for unmanaged endpoints — not a persistent inventory database."
+  },
+  {
+    "url": "https://www.adminsignal.com/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness",
+    "status": 200,
+    "title": "Secure Boot CA 2023 Rollout Readiness for Enterprise Windows Fleets | AdminSignal",
+    "canonical": "https://www.adminsignal.com/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness",
+    "robots": "index, follow",
+    "description": "A practical enterprise readiness guide for the Secure Boot CA 2023 rollout, covering 2026 certificate expirations, client and server differences, Intune readiness checks, PowerShell verification, registry and event evidence, BitLocker risk, Hyper-V Generation 2 VMs, firmware coordination, rollout rings, and recovery planning."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/autopilot-device-not-importing-hardware-hash",
+    "status": 200,
+    "title": "Windows Autopilot Device Not Importing: Hardware Hash CSV, Duplicate Records, and Profile Assignment | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/autopilot-device-not-importing-hardware-hash",
+    "robots": "index, follow",
+    "description": "A practical troubleshooting guide for Windows Autopilot import failures, covering hardware hash collection, CSV validation, duplicate records, tenant permissions, Intune Connector checks, deployment profile assignment, dynamic groups, Graph, safe retry, and recovery."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/autopilot-enrollment-status-page-stuck",
+    "status": 200,
+    "title": "Windows Autopilot Enrollment Status Page Stuck at 0% — Causes and Fixes | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/autopilot-enrollment-status-page-stuck",
+    "robots": "index, follow",
+    "description": "The ESP hanging at 0% is one of the most common Autopilot failures. This guide walks through the diagnostic sequence: Event Viewer locations, MDM logs, and the six most frequent root causes."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/bitlocker-recovery-key-not-backed-up-entra",
+    "status": 200,
+    "title": "BitLocker Recovery Key Not Backed Up to Entra ID: Why and How to Fix It | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/bitlocker-recovery-key-not-backed-up-entra",
+    "robots": "index, follow",
+    "description": "BitLocker keys failing to escrow to Entra ID is a silent failure — no error on the device, no alert in Intune. Here is how to detect it, force escrow, and prevent it from recurring."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/entra-dynamic-group-not-updating",
+    "status": 200,
+    "title": "Microsoft Entra Dynamic Group Not Updating: Users, Devices, and Intune Assignments | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/entra-dynamic-group-not-updating",
+    "robots": "index, follow",
+    "description": "A practical troubleshooting guide for Microsoft Entra dynamic groups that do not update, including rule syntax, user and device attributes, Graph checks, processing delays, Intune assignment impact, Autopilot targeting, stale device objects, and safe recovery."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/group-policy-not-applying-diagnosis",
+    "status": 200,
+    "title": "Group Policy Not Applying to Users or Computers: A Systematic Diagnosis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/group-policy-not-applying-diagnosis",
+    "robots": "index, follow",
+    "description": "Before running gpupdate /force for the third time, follow this decision tree: scope filtering, link order, security filtering, loopback processing, and slow-link detection are all common culprits."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/intune-company-portal-enrollment-stuck",
+    "status": 200,
+    "title": "Intune Company Portal Stuck or Enrollment Not Completing: Practical Diagnosis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/intune-company-portal-enrollment-stuck",
+    "robots": "index, follow",
+    "description": "A practical troubleshooting guide for Company Portal hangs and incomplete MDM enrollment on Windows, covering Entra join state, licensing, automatic enrollment, Conditional Access catch-22s, logs, safe retry, and prevention."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/intune-compliance-policy-not-evaluating",
+    "status": 200,
+    "title": "Intune Compliance Policy Not Evaluating: End-to-End Troubleshooting Checklist | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/intune-compliance-policy-not-evaluating",
+    "robots": "index, follow",
+    "description": "When Intune reports a device as &quot;Not evaluated&quot; or stuck in a compliance state that does not reflect reality, the issue is usually one of four things — and this checklist covers all of them."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/intune-device-not-syncing",
+    "status": 200,
+    "title": "Intune Device Not Syncing: Last Check-in Stale, Sync Button Not Helping, or Policies Not Arriving | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/intune-device-not-syncing",
+    "robots": "index, follow",
+    "description": "A practical troubleshooting guide for Windows devices that stop syncing with Intune, covering portal checks, MDM enrolment state, Company Portal, scheduled tasks, event logs, registry evidence, IME health, network issues, Entra device objects, Graph checks, safe retry, and recovery."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/intune-remediation-script-not-running",
+    "status": 200,
+    "title": "Intune Remediation Script Not Running, Detecting, Remediating, or Reporting | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/intune-remediation-script-not-running",
+    "robots": "index, follow",
+    "description": "A practical troubleshooting guide for Intune Remediations that do not run, detect, remediate, or report correctly, covering licensing, exit codes, schedules, IME logs, PowerShell context, reporting delay, retry, and rollback."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/intune-win32-app-install-stuck-waiting",
+    "status": 200,
+    "title": "Intune Win32 App Install Stuck at Waiting, Pending, Installing, or Failed | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/intune-win32-app-install-stuck-waiting",
+    "robots": "index, follow",
+    "description": "A practical troubleshooting guide for stuck Intune Win32 app installs, covering IME health, AppWorkload.log, detection and requirement rules, targeting, dependencies, supersedence, Company Portal sync, retry, and rollback."
+  },
+  {
+    "url": "https://www.adminsignal.com/troubleshooting/wufb-deferral-not-respected",
+    "status": 200,
+    "title": "Windows Update for Business Deferral Policy Not Applying in Intune: Practical Diagnosis | AdminSignal",
+    "canonical": "https://www.adminsignal.com/troubleshooting/wufb-deferral-not-respected",
+    "robots": "index, follow",
+    "description": "A practical diagnostic guide for Windows Update for Business deferrals that are ignored, overwritten, or blocked by feature update policies, quality update policies, Group Policy, WSUS, MECM, or co-management."
+  },
+  {
+    "url": "https://www.adminsignal.com/comparisons/autopilot-v1-vs-v2-2026",
+    "status": 200,
+    "title": "Windows Autopilot v1 vs. Device Preparation v2 in 2026: Practical Intune Admin Comparison | AdminSignal",
+    "canonical": "https://www.adminsignal.com/comparisons/autopilot-v1-vs-v2-2026",
+    "robots": "index, follow",
+    "description": "A practical comparison for Intune admins choosing between classic Windows Autopilot and Windows Autopilot Device Preparation, including join types, app limits, ESP behaviour, registration, troubleshooting, and migration planning."
+  },
+  {
+    "url": "https://www.adminsignal.com/comparisons/entra-id-p1-vs-p2",
+    "status": 200,
+    "title": "Entra ID Premium P1 vs. P2: Is the Upgrade Worth It? | AdminSignal",
+    "canonical": "https://www.adminsignal.com/comparisons/entra-id-p1-vs-p2",
+    "robots": "index, follow",
+    "description": "P2 adds Privileged Identity Management, Identity Protection risk policies, and access reviews, but not every organisation needs all three. Here is how to make the call."
+  },
+  {
+    "url": "https://www.adminsignal.com/comparisons/intune-vs-sccm-mecm-2025",
+    "status": 200,
+    "title": "Microsoft Intune vs. SCCM/MECM: Which Should You Use? | AdminSignal",
+    "canonical": "https://www.adminsignal.com/comparisons/intune-vs-sccm-mecm-2025",
+    "robots": "index, follow",
+    "description": "Co-management has blurred the lines, but the strategic direction is clear. We break down when SCCM still earns its place and when Intune-only is the right call."
+  },
+  {
+    "url": "https://www.adminsignal.com/comparisons/windows-11-25h2-vs-26h1-2026",
+    "status": 200,
+    "title": "Windows 11 25H2 vs 26H1: 2026 Admin Comparison and Upgrade Guidance | AdminSignal",
+    "canonical": "https://www.adminsignal.com/comparisons/windows-11-25h2-vs-26h1-2026",
+    "robots": "index, follow",
+    "description": "Compare Windows 11 25H2 and 26H1 for admins in 2026, including Microsoft servicing scope, build numbers, Intune targeting, upgrade paths, and pilot guidance."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/august-2026-patch-tuesday-admin-priorities",
+    "status": 200,
+    "title": "August 2026 Patch Tuesday: Admin Checklist | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/august-2026-patch-tuesday-admin-priorities",
+    "robots": "index, follow",
+    "description": "Windows admin guide to August 2026 Patch Tuesday: exploited WinSock zero-day, WDS/DHCP RCEs, KB targets, Intune checks, Autopatch and Secure Boot."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/october-2026-windows-servicing-deadlines",
+    "status": 200,
+    "title": "October 2026 Windows Servicing Deadlines | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/october-2026-windows-servicing-deadlines",
+    "robots": "index, follow",
+    "description": "What Windows and Intune admins still need a plan for before 13 Oct 2026: 24H2 Home/Pro end of updates, Server 2022 mainstream, PCA 2011, and 23H2 Enterprise."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/june-2026-patch-tuesday-admin-priorities",
+    "status": 200,
+    "title": "June 2026 Patch Tuesday: Admin Checklist | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/june-2026-patch-tuesday-admin-priorities",
+    "robots": "index, follow",
+    "description": "Windows admin guide to June 2026 Patch Tuesday: CVEs, KB targets, Intune rollout checks, known issues and Secure Boot readiness."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/intune-security-best-practices-2026",
+    "status": 200,
+    "title": "Securing Your Intune Tenant: An Operational Hardening Plan for Enterprise Admins | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/intune-security-best-practices-2026",
+    "robots": "index, follow",
+    "description": "Turn Microsoft&#x27;s Intune security guidance into an operational plan: least-privilege roles, phishing-resistant MFA, PIM, Multi Admin Approval, audit checks, and rollout sequencing for enterprise admins."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/may-2026-patch-tuesday-readiness",
+    "status": 200,
+    "title": "May 2026 Patch Tuesday: admin deployment notes and checks | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/may-2026-patch-tuesday-readiness",
+    "robots": "index, follow",
+    "description": "May 2026 Patch Tuesday deployment notes covering KB5089549 for Windows 11, Windows Server updates, BitLocker PCR7 known issue, Secure Boot certificate readiness, Intune Autopatch hotpatch, and WSUS deployment checks."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/windows-app-rd-client-deprecation-2026",
+    "status": 200,
+    "title": "Windows App Migration Plan: Replacing Deprecated Remote Desktop Clients in Commercial Cloud | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/windows-app-rd-client-deprecation-2026",
+    "robots": "index, follow",
+    "description": "Enterprise admin guide to replacing the deprecated Remote Desktop MSI and web clients with Windows App: inventory, Intune deployment, pilot testing, and helpdesk cutover."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/intune-frontline-mobile-migration",
+    "status": 200,
+    "title": "Frontline Mobile Migration to Intune: A Shift-Ready Operational Playbook | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/intune-frontline-mobile-migration",
+    "robots": "index, follow",
+    "description": "Operational playbook for migrating frontline Android and iOS devices to Intune: reliability windows, app continuity, Wi-Fi and certificate sequencing, pilot rings, and rollback."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/windows-driver-cross-signed-trust-removal",
+    "status": 200,
+    "title": "Windows Cross-Signed Driver Trust Removal: Enterprise Readiness and Rollout Plan | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/windows-driver-cross-signed-trust-removal",
+    "robots": "index, follow",
+    "description": "Enterprise admin guide to Microsoft&#x27;s cross-signed driver trust removal: evaluation mode, Event Viewer checks, driver audit, Intune rollout sequencing, and vendor escalation."
+  },
+  {
+    "url": "https://www.adminsignal.com/news/intune-opt-in-mdm-enrollment-preview",
+    "status": 200,
+    "title": "Intune Opt-In MDM Enrollment: When To Block Automatic Enrollment at Sign-In | AdminSignal",
+    "canonical": "https://www.adminsignal.com/news/intune-opt-in-mdm-enrollment-preview",
+    "robots": "index, follow",
+    "description": "Practical guide to Intune opt-in MDM enrollment preview: blocking automatic enrollment at Windows sign-in, BYOD scenarios, pilot design, user comms, and validation checks."
+  }
+]

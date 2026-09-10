@@ -209,7 +209,7 @@ export const guides: Guide[] = [
   },
   {
     id: '1',
-    title: 'Deploying Windows LAPS with Microsoft Intune: A Complete Walkthrough',
+    title: 'Deploying Windows LAPS with Intune: Pilot and Recovery Checks',
     slug: 'deploy-windows-laps-intune',
     category: 'Microsoft Intune',
     excerpt:

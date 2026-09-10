@@ -24,7 +24,6 @@ const requiredNoindexStaticPaths = [
   '/scripts',
   '/search',
   '/advertise',
-  '/templates',
 ]
 const primarySourceHosts = new Set([
   'learn.microsoft.com', 'support.microsoft.com', 'www.microsoft.com',
@@ -305,7 +304,7 @@ for (const route of requiredNoindexStaticPaths) {
 if (!/DRAFT_NEWS_SLUGS\.has\(slug\)\s*\|\|\s*NOINDEX_NEWS_SLUGS\.has\(slug\)/.test(noindexSource)) {
   errors.push('src/lib/noindex.ts: draft news is not enforced by isNoindexNewsSlug')
 }
-if (/\$\{BASE\}\/scripts|\$\{BASE\}\/reviews|\$\{BASE\}\/templates/.test(sitemapSource)) {
+if (/\$\{BASE\}\/scripts|\$\{BASE\}\/reviews/.test(sitemapSource)) {
   errors.push('src/app/sitemap.ts: noindex archive included in sitemap')
 }
 if (!/isNoindexContentRoute\('guides', guide\.slug\)/.test(sitemapSource)) {

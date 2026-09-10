@@ -4,20 +4,17 @@ import { AlertTriangle, Download, FileSpreadsheet } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import ArticleNewsletter from '@/components/article/ArticleNewsletter'
 import { buildCategoryMetadata } from '@/lib/metadata'
-import { withNoindex } from '@/lib/noindex'
 import { primaryAuthor } from '@/data/authors'
 
 const pageTitle = 'Operator templates'
 const pageDescription =
   'Free starter CSVs for Autopilot hardware-hash import and Graph PowerShell migration registers. Replace placeholder values, redact identifying data, and test in a lab. These are not production automation.'
 
-export const metadata: Metadata = withNoindex(
-  buildCategoryMetadata({
+export const metadata: Metadata = buildCategoryMetadata({
     title: pageTitle,
     description: pageDescription,
     path: '/templates',
-  }),
-)
+})
 
 const templates = [
   {
@@ -92,6 +89,15 @@ export default function TemplatesPage() {
           </p>
           <p className="mt-3 text-sm leading-relaxed text-muted/80">
             Prepared by {primaryAuthor.name} for AdminSignal. Independent operator notes.
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Verification: the downloadable files are checked for delivery and CSV structure.
+            Their placeholder rows have not been imported into a tenant. A CSV reader is enough
+            to edit the register; Autopilot upload requires an Intune role with the relevant
+            enrollment-program permissions. Preserve the original file and validate one approved
+            device before a batch. An incorrect registration needs the identity checks in the
+            linked guide, rather than an automatic delete-and-reimport. See our{' '}
+            <Link href="/terms" className="underline">terms of use</Link>.
           </p>
         </div>
 

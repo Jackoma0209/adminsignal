@@ -4,8 +4,8 @@ description: "Enterprise admin guide to replacing the deprecated Remote Desktop 
 category: "Windows 365 / Remote Access"
 date: "Jun 29, 2026"
 authorId: "jack"
-lastReviewed: "Jun 29, 2026"
-reviewNote: "Operational migration guide based on Microsoft Windows IT Pro Blog Windows App update and Remote Desktop client deprecation guidance. Checked on 2026-06-29."
+lastReviewed: "2026-09-10"
+reviewNote: "Corrected cloud client retirement scope, MSTSC and RDS distinctions, removed the offline Store licence assumption, and clarified migration recovery."
 tags: ["Windows App", "Remote Desktop", "Windows 365", "Azure Virtual Desktop", "Intune"]
 image: "/images/article-covers/windows-app-rd-client-deprecation-2026.svg"
 imageAlt: "Abstract remote desktop migration illustration with client nodes, cloud session path, and keyboard protection shield"
@@ -13,12 +13,12 @@ imageAlt: "Abstract remote desktop migration illustration with client nodes, clo
 
 From **March 27, 2026**, Microsoft no longer supports two legacy remote access clients in commercial cloud environments:
 
-- **Remote Desktop client for Windows (MSI)** — the traditional MSTSC-based installer
-- **Remote Desktop web client** — browser-based RD Web Access
+- **Remote Desktop client for Windows (MSI)** — the separate MSI client for cloud resources, not the built-in MSTSC Remote Desktop Connection
+- **Remote Desktop web client** — the cloud Remote Desktop web client; this is not a blanket retirement of on-premises RD Web Access
 
-Microsoft's direction is the **Windows App** as the unified client for Azure Virtual Desktop, Windows 365 Cloud PC, and Remote Desktop Services in commercial cloud scenarios. The March 2026 Windows App update also adds **keyboard input protection** and reliability fixes.
+Microsoft’s direction is **Windows App** for Azure Virtual Desktop and Windows 365 access. The [current platform matrix](https://learn.microsoft.com/en-us/windows-app/overview) does not support RDS connections from Windows App on Windows; remote-PC connections on Windows are preview, and MSTSC remains the generally available remote-PC client. Do not remove RDS clients or RD Web bookmarks merely because the cloud MSI/web clients reached end of support. See the [precise retirement scope](https://learn.microsoft.com/en-us/previous-versions/remote-desktop-client/overview). The March 2026 Windows App update also adds **keyboard input protection** and reliability fixes.
 
-This guide is an admin cutover plan: inventory who still uses legacy clients, deploy Windows App through Intune, validate session scenarios, and update helpdesk documentation before users hit a dead client.
+This guide is an admin cutover plan: inventory who still uses legacy clients, deploy Windows App through Intune, validate session scenarios, and update helpdesk documentation before relying further on an unsupported cloud client.
 
 See the [Intune hub](/intune), [Intune vs SCCM comparison](/comparisons/intune-vs-sccm-mecm-2025), and [Conditional Access policy map](/tutorials/conditional-access-m365-policy-map) for related deployment context.
 
@@ -66,7 +66,7 @@ Build three groups:
 
 1. **AVD users** — full desktop or RemoteApp via feed
 2. **Windows 365 users** — Cloud PC connections
-3. **RDS gateway / RD Web users** — web client or MSI to on-premises or cloud-hosted collections
+3. **RDS gateway / RD Web users** — a separate compatibility review; retain the supported RDS client for their platform
 
 Each group may need different feed URLs, MFA behaviour, and test cases.
 
@@ -77,7 +77,7 @@ Each group may need different feed URLs, MFA behaviour, and test cases.
 | Method | When to use |
 |---|---|
 | Microsoft Store app (Intune) | Default for most managed Windows 11/10 devices |
-| Store app with offline license | Devices with restricted Store access |
+| Official Windows App package, where documented for the target platform | Restricted Store environments; validate the current package and update mechanism |
 | Required app assignment | Standard corporate remote-access users |
 | Available in Company Portal | Optional installs for infrequent users |
 
@@ -90,7 +90,7 @@ In Intune:
 
 ### Coexistence during pilot
 
-Do not remove the MSI client until Windows App is validated for each scenario. Run both briefly in pilot if policy allows, so users can fall back during testing.
+Validate Windows App for each affected cloud scenario before removing its old MSI package. Any temporary retention of an unsupported client needs a named owner and expiry; it is not a supported long-term fallback. The local registry sample requires read access and misses per-user installations, so reconcile it with service usage and management inventory.
 
 ## Phase 3: Pilot Test Matrix
 
@@ -101,7 +101,7 @@ Test every scenario your users actually run — not just "can I connect."
 | AVD full desktop | Session launches, audio, clipboard, drive redirection as policy allows |
 | AVD RemoteApp | Published app opens and reconnects after sleep |
 | Windows 365 Cloud PC | Cloud PC connects with expected MFA prompt |
-| RDS feed via gateway | Gateway sign-in and resource list load |
+| RDS feed via gateway | Keep a supported platform/client path; Windows App on Windows is not currently the RDS replacement |
 | Reconnect after network change | Session resumes or clean reconnect without data loss |
 | Keyboard input protection | Security team confirms control meets policy (per Microsoft release notes) |
 
@@ -123,7 +123,7 @@ With:
 
 ### Communication template
 
-> **What is changing:** The old Remote Desktop (MSI) app and browser web client are no longer supported for connecting to `<AVD / Windows 365 / RDS>`.
+> **What is changing:** The old Remote Desktop (MSI) app and browser web client are no longer supported for connecting to `<AVD / Windows 365>`.
 >
 > **What to do:** Use **Windows App** on your managed device. It is installed automatically. Sign in with your work account and open your usual desktop or app.
 >
@@ -131,7 +131,7 @@ With:
 
 ### Conditional Access check
 
-If CA policies target the legacy client or generic "Microsoft Remote Desktop" app IDs, update policies to include Windows App where Microsoft documents the new application identifier. Test sign-in from pilot users before broad removal of legacy client.
+Review the actual resource and Conditional Access results in pilot sign-in logs. A client rename is not evidence that a new cloud-app target or exclusion is required. Test sign-in from pilot users before broad removal of legacy client.
 
 ## Phase 5: Remove Legacy Client
 
@@ -139,14 +139,14 @@ After pilot sign-off:
 
 1. Create Intune **Uninstall** assignment for the MSI Remote Desktop package where you previously deployed it
 2. Block legacy client reinstall via App Control or software restriction policy if needed
-3. Retire RD Web portal bookmarks from the intranet landing page — redirect to Windows App guidance
+3. Update only the deprecated cloud-client links; preserve on-premises RD Web and other supported access paths
 4. Monitor helpdesk volume for two weeks
 
 ## Rollback
 
 | Issue | Response |
 |---|---|
-| Windows App fails for one app collection | Keep MSI for that pilot group only until platform team resolves; document exception |
+| Windows App fails for one app collection | Use an approved supported access path, such as Windows App web where the service supports it; do not make an unsupported MSI the routine rollback |
 | Store install blocked on network | Deploy via allowed offline package path; fix proxy/Store endpoints |
 | MFA loop on launch | Review CA policy and primary refresh token state before reverting client |
 
@@ -167,3 +167,7 @@ After pilot sign-off:
 ## Source
 
 This operational migration plan is based on the official [Windows IT Pro Blog post](https://techcommunity.microsoft.com/blog/windows-itpro-blog/windows-app-updates-reliability-productivity-and-security-improvements/4494681) published by Microsoft on March 30, 2026, extended with enterprise inventory, Intune deployment, and cutover steps for EUC administrators.
+
+## Correction record
+
+**10 September 2026 — Reviewed against documentation:** Corrected cloud client retirement scope, MSTSC and RDS distinctions, removed the offline Store licence assumption, and clarified migration recovery. Examples are illustrative; no lab or tenant execution is claimed.

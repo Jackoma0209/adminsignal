@@ -154,16 +154,21 @@ export default function AboutPage() {
                 About Jack Hadcroft and AdminSignal
               </h1>
               <p className="mt-5 text-lg leading-relaxed text-foreground-soft">
-                I am Jack Hadcroft, an endpoint specialist and the author of AdminSignal. AdminSignal
-                is independently operated. I work with Microsoft Intune, Windows clients, Microsoft
-                Entra ID, Group Policy, and PowerShell in Microsoft 365 estates, and I publish
-                independent technical guidance for administrators who have to make those platforms
-                survive a change window.
+                I am Jack Hadcroft, the author of AdminSignal. I have worked in NHS IT since 2013
+                and am a Band 6 Endpoint Specialist. My hands-on experience includes MECM/SCCM,
+                Intune co-management, PowerShell, Windows deployment and large Windows estates in
+                an NHS enterprise environment. These are the areas of administration behind the
+                publication’s focus on endpoint management and deployment decisions.
               </p>
               <p className="mt-4 text-base leading-relaxed text-muted">
-                AdminSignal exists to record the checks, evidence, risks, and decision points that
-                are often missing from a short product document or portal walkthrough. The site is
-                written for practising Microsoft administrators, not for generic IT round-ups.
+                AdminSignal is an independent publication. The articles below connect that subject
+                area to practical questions: how to plan co-management, investigate a failed
+                deployment and validate a change. My professional background is context for the
+                writing, not evidence that every example has been run in a workplace. Each article
+                should distinguish documentation review, illustrative examples and any supported
+                testing claim. Workplace systems and identifying details are not published here.
+                The site does not speak for the NHS or imply employer endorsement. For the
+                verification standard and correction process, see the editorial policy.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 <Link
@@ -322,7 +327,7 @@ export default function AboutPage() {
                 <li>No fabricated tests, ratings, credentials, or social proof.</li>
                 <li>Commercial relationships disclosed where they exist.</li>
                 <li>Corrections accepted through the contact page.</li>
-                <li>Weak or unfinished resources kept out of search until they are ready.</li>
+                <li>Unfinished drafts remain unpublished; retired pages return a removal response.</li>
               </ul>
             </div>
           </aside>
