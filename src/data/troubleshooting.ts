@@ -15,6 +15,34 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '15',
+    title: 'Prove which service owns Windows Update on a co-managed device',
+    slug: 'comanagement-windows-update-workload-ownership',
+    category: 'Configuration Manager',
+    excerpt:
+      'A documentation-reviewed path for co-managed devices where an Intune ring looks assigned but the ConfigMgr client still scans WSUS. Separates workload sliders from update deployments and from OSD.',
+    affectedProducts: ['Configuration Manager', 'Co-management', 'Windows Update', 'Microsoft Intune'],
+    difficulty: 'Intermediate',
+    date: 'Sep 10, 2026',
+    publishedAt: '2026-09-10',
+    readTime: '12 min read',
+    authorId: 'jack',
+  },
+  {
+    id: '14',
+    title: 'Separate ConfigMgr content failures from detection failures before you repackage for Intune',
+    slug: 'configmgr-app-content-vs-detection-before-intune',
+    category: 'Configuration Manager',
+    excerpt:
+      'Classify a Configuration Manager application failure as content, detection, requirement, or enforcement before wrapping the same source as Intune Win32.',
+    affectedProducts: ['Configuration Manager', 'Applications', 'Microsoft Intune', 'Win32 apps'],
+    difficulty: 'Intermediate',
+    date: 'Sep 10, 2026',
+    publishedAt: '2026-09-10',
+    readTime: '12 min read',
+    authorId: 'jack',
+  },
+  {
     id: '13',
     title: 'Intune Company Portal Stuck or Enrollment Not Completing: Practical Diagnosis',
     slug: 'intune-company-portal-enrollment-stuck',

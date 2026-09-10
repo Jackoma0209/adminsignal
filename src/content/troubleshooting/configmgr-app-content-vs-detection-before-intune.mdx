@@ -1,0 +1,179 @@
+---
+title: "Separate ConfigMgr content failures from detection failures before you repackage for Intune"
+category: "Configuration Manager"
+date: "September 10, 2026"
+authorId: "jack"
+lastReviewed: "September 10, 2026"
+reviewNote: "Reviewed against Microsoft Configuration Manager application deployment troubleshooting documentation. No AppDiscovery or AppEnforce logs from a live tenant are included."
+tags: ["Configuration Manager", "Applications", "Intune", "Win32", "MECM"]
+---
+
+## When to Use This Guide
+
+Use this guide when a Configuration Manager application installs from one distribution point and fails on remote clients, and the team is about to rebuild the same package as an Intune Win32 app.
+
+Typical signs:
+
+- The application works for clients on the same boundary group as the distribution point
+- Remote clients stay at downloading, waiting, or past due
+- Detection says installed on some clients and not installed on others after the same deployment
+- Someone has already exported the source files to wrap as `.intunewin`
+
+Do not treat an Intune Waiting state as proof that the ConfigMgr package was healthy. Fix or classify the ConfigMgr failure first.
+
+This article is documentation-reviewed. It does not include sanitised `AppDiscovery.log` or `AppEnforce.log` captures.
+
+For the Intune side after you have a known-good package, use [Intune Win32 app stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting). For the broader coexistence decision, use [Intune or Configuration Manager](/comparisons/intune-vs-sccm-mecm-2025).
+
+## Scope and Assumptions
+
+This guide covers Configuration Manager application deployments (not packages and programs, and not task-sequence steps).
+
+It assumes you can:
+
+- Open the application and deployment IDs in the console
+- Read client logs under `C:\Windows\CCM\Logs`
+- Check boundary groups and content distribution status
+- Compare the ConfigMgr detection method with the Intune Win32 detection rule you plan to use
+
+Primary source: [Troubleshoot application deployment in Configuration Manager](https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/app-management/troubleshoot-application-deployment).
+
+## Two different failures
+
+| Failure | What broke | What wrapping for Intune will do |
+|---|---|---|
+| Content | The client cannot locate or download the source | The same source will fail as `.intunewin` unless you also fix location, size, or network |
+| Detection | The install ran, but the rule does not match the installed state | Intune will retry or report Failed even if Windows already has the app |
+| Requirement / applicability | The deployment never started | Intune requirement rules can hide the same mismatch |
+| Enforcement / exit code | The installer ran and returned an unmapped code | Intune will need the same silent command and return-code map |
+
+Write down the application ID, deployment ID, collection, and distribution point topology before you change the package.
+
+## Step 1: Correlate the identifiers
+
+In the Configuration Manager console, open the application and record:
+
+- Application name and CI Unique ID
+- Deployment ID
+- Deployment purpose: Available or Required
+- Detection method type: MSI, file, registry, or script
+- Install context: system or user
+- Distribution point groups that should hold the content
+
+On the client, the same IDs appear in the logs. Search for the deployment ID rather than the friendly name.
+
+```powershell
+$LogRoot = "C:\Windows\CCM\Logs"
+$DeploymentId = "<deployment-id-from-console>"
+
+Select-String -Path "$LogRoot\AppDiscovery.log", "$LogRoot\AppEnforce.log", "$LogRoot\CAS.log", "$LogRoot\ContentTransferManager.log" `
+    -Pattern $DeploymentId -ErrorAction SilentlyContinue |
+    Select-Object Path, LineNumber, Line |
+    Select-Object -First 40
+```
+
+Expected output shape:
+
+```text
+Path       : C:\Windows\CCM\Logs\AppDiscovery.log
+LineNumber : <line>
+Line       : <timestamp> <application or deployment identifier>
+```
+
+If discovery never mentions the deployment, the client is not evaluating that assignment. Check collection membership and policy before you rebuild the source.
+
+## Step 2: Decide whether content ever arrived
+
+Read these logs in this order:
+
+| Log | Question it answers |
+|---|---|
+| `CAS.log` | Did the content access service find a location? |
+| `ContentTransferManager.log` | Did the download start and finish? |
+| `DataTransferService.log` | Was the BITS job blocked? |
+| `AppEnforce.log` | Did the install command run at all? |
+
+A client that never leaves downloading is a boundary group, distribution point, or network problem. Repackaging that content for Intune does not test those ConfigMgr location services, but it also does not prove the installer is sound.
+
+Check locally that the boundary group can see a distribution point that holds the application:
+
+- The device's IP and AD site match the expected boundary
+- The application content status is Success on that DP
+- Fallback to neighbour or default site-wide DPs is intended, not accidental
+
+Microsoft's application deployment troubleshooting article is the authority for which log covers location versus enforcement.
+
+## Step 3: Decide whether detection is the liar
+
+If `AppEnforce.log` shows a success exit code and `AppDiscovery.log` still reports not detected, stop wrapping the package. The detection method is wrong for the installed state.
+
+Common mismatches:
+
+- MSI product code from a bootstrapper, not the installed product
+- File rule pointed at the installer cache instead of the installed binary
+- Registry rule in the 32-bit view for a 64-bit install, or the reverse
+- Script detection that writes to STDERR on the success path
+
+For MSI detection, do not query `Win32_Product`. Use uninstall registry keys:
+
+```powershell
+$ProductCode = "{PRODUCT-CODE-GUID}"
+$Roots = @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
+)
+
+foreach ($Root in $Roots) {
+    Get-ChildItem $Root -ErrorAction SilentlyContinue |
+        Where-Object { $_.PSChildName -eq $ProductCode } |
+        ForEach-Object {
+            Get-ItemProperty $_.PSPath |
+                Select-Object DisplayName, DisplayVersion, Publisher, PSChildName
+        }
+}
+```
+
+Expected output shape:
+
+```text
+DisplayName    : <application name>
+DisplayVersion : <version>
+Publisher      : <publisher>
+PSChildName    : {PRODUCT-CODE-GUID}
+```
+
+If this key is present and ConfigMgr still says not installed, fix the detection method. The Intune Win32 rule will fail the same way if you copy it unchanged.
+
+## Step 4: Compare the Intune Win32 model before you migrate
+
+A working ConfigMgr application can still fail as Intune Win32 when:
+
+- The install command is not silent
+- The detection rule requires every listed condition, and you copied three ConfigMgr clauses that are never true together
+- User-context ConfigMgr installs become device-context Win32 assignments
+- The content is larger than the Win32 size limit or depends on a DP-side transform
+- A ConfigMgr dependency chain has no Intune equivalent yet
+
+Do not use an Intune Waiting state as the reason to rebuild the vendor source. Classify the ConfigMgr content and detection results first, then wrap a package that already installs and detects on one clean client.
+
+## Step 5: Recover one pilot deployment
+
+On one failing client:
+
+1. Confirm collection membership and that policy has arrived.
+2. Confirm a DP in the current boundary group has the content.
+3. If content is missing, distribute it and retry. Do not change detection yet.
+4. If content arrived and the installer ran, compare the exit code with the detection result.
+5. Correct the detection method against the installed state.
+6. Only then export source for an Intune pilot.
+
+Rollback:
+
+- Stop the ConfigMgr deployment to the pilot collection if you need a clean retry
+- Do not delete the application object to clear a detection mistake
+- Leave production collections on the last known-good revision
+
+## Sources
+
+- [Troubleshoot application deployment in Configuration Manager](https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/app-management/troubleshoot-application-deployment)
+- Related AdminSignal guides: [Intune Win32 stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting), [Intune vs ConfigMgr](/comparisons/intune-vs-sccm-mecm-2025), [Configuration Manager hub](/sccm-mecm)

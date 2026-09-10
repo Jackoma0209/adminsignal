@@ -43,9 +43,16 @@ export default function AuthorBox({ author }: AuthorBoxProps) {
           )}
         </div>
         <p className="mb-2 text-xs text-muted">{author.role}</p>
-        <p className="text-sm leading-relaxed text-muted">{author.bio}</p>
+        <p className="text-sm leading-relaxed text-muted">
+          Written by {author.name}, {author.role}. Technical claims are reviewed against current
+          Microsoft documentation. Lab or tenant checks are named only when they were done.
+        </p>
         <p className="mt-3 text-xs text-muted/60">
-          AdminSignal content is produced independently.{' '}
+          Independent publication.{' '}
+          <Link href="/about" className="underline underline-offset-2 hover:text-muted">
+            About
+          </Link>
+          {' · '}
           <Link href="/editorial-policy" className="underline underline-offset-2 hover:text-muted">
             Editorial policy
           </Link>

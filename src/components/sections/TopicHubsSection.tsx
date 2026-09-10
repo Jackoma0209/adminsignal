@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react'
 import Container from '@/components/layout/Container'
 import SectionHeader from '@/components/ui/SectionHeader'
 import TopicCard from '@/components/cards/TopicCard'
-import { topics } from '@/data/topics'
+import { listedTopics } from '@/data/topics'
 
 export default function TopicHubsSection() {
   return (
@@ -25,7 +25,7 @@ export default function TopicHubsSection() {
         />
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {topics.map((topic) => (
+          {listedTopics.map((topic) => (
             <TopicCard key={topic.id} topic={topic} />
           ))}
         </div>

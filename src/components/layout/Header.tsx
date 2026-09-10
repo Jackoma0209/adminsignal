@@ -7,8 +7,9 @@ import Image from 'next/image'
 import { Menu, X, Search, Sun, Moon, Rss } from 'lucide-react'
 
 const nav = [
-  { label: 'Troubleshooting', href: '/troubleshooting' },
   { label: 'Tutorials', href: '/tutorials' },
+  { label: 'Troubleshooting', href: '/troubleshooting' },
+  { label: 'Comparisons', href: '/comparisons' },
   { label: 'News', href: '/news' },
   { label: 'Topics', href: '/topics' },
   { label: 'About', href: '/about' },

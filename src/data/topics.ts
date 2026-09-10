@@ -6,6 +6,8 @@ export interface Topic {
   icon: string
   iconBg: string
   iconColor: string
+  /** When false, the hub URL stays live but the card is omitted from Topics and home grids. */
+  listedOnTopicsPage?: boolean
 }
 
 export const topics: Topic[] = [
@@ -26,6 +28,7 @@ export const topics: Topic[] = [
     icon: 'Server',
     iconBg: 'bg-muted/10',
     iconColor: 'text-muted',
+    listedOnTopicsPage: false,
   },
   {
     id: '3',
@@ -62,6 +65,7 @@ export const topics: Topic[] = [
     icon: 'Settings',
     iconBg: 'bg-amber-500/10',
     iconColor: 'text-amber-400',
+    listedOnTopicsPage: false,
   },
   {
     id: '7',
@@ -91,3 +95,5 @@ export const topics: Topic[] = [
     iconColor: 'text-indigo-400',
   },
 ]
+
+export const listedTopics = topics.filter((topic) => topic.listedOnTopicsPage !== false)
