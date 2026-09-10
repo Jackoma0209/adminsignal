@@ -1,0 +1,202 @@
+---
+title: "Prove which service owns Windows Update on a co-managed device"
+category: "Configuration Manager"
+date: "September 10, 2026"
+authorId: "jack"
+lastReviewed: "September 10, 2026"
+reviewNote: "Reviewed against Microsoft co-management workload and switch-workloads documentation. No tenant or client logs were captured for this article."
+tags: ["Configuration Manager", "Co-management", "Windows Update", "Intune", "MECM"]
+---
+
+## When to Use This Guide
+
+Use this guide when a co-managed Windows device reports an Intune update ring assignment, but the client still scans a Configuration Manager or WSUS source.
+
+Typical signs:
+
+- Intune shows the ring as assigned or succeeded, while the device installs from the software update point
+- `WUAHandler.log` still names a WSUS URL after the Windows Update workload slider moved to Intune
+- Pilot devices behave differently from co-managed production devices in the same ring
+- Moving the slider did not change scan source on the next policy cycle
+
+Do not start by deleting the Intune ring. First prove which management plane currently owns Windows Update policy on that device.
+
+This is a documentation-reviewed decision path. It does not include sanitised client logs from a lab transition.
+
+For ring deferral diagnosis after Intune actually owns the workload, use [Windows Update for Business deferral not applying](/troubleshooting/wufb-deferral-not-respected). For the licensing and provisioning boundary, use [Intune or Configuration Manager](/comparisons/intune-vs-sccm-mecm-2025).
+
+## Scope and Assumptions
+
+This guide is written for co-managed Windows 10 and Windows 11 clients that still have the Configuration Manager client installed.
+
+It assumes:
+
+- Co-management is already enabled
+- You can read co-management properties, client settings, and the device's local update policy
+- You will change workload ownership only on a pilot collection
+
+Microsoft documents seven co-management workloads. Operating system deployment is not one of them. Changing the Windows Update slider does not retire task sequences, boot media, or Autopilot.
+
+Primary sources:
+
+- [Co-management workloads](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads)
+- [How to switch Configuration Manager workloads to Intune](https://learn.microsoft.com/en-us/intune/configmgr/comanage/how-to-switch-workloads)
+
+## What the slider does not prove
+
+| Observation | What it actually means |
+|---|---|
+| Intune ring shows Succeeded | The device is in the assignment. It does not prove the Windows Update client is scanning Windows Update |
+| Workload slider is on Intune | New policy should come from Intune after the next client policy cycle. Existing WSUS or Group Policy values can still win |
+| ConfigMgr software update deployment is deployed to the collection | That deployment can still apply if the workload or scan source has not moved |
+| Device has an Intune update ring and a ConfigMgr ADR | You have two authorities until you prove one scan source |
+
+Record the pilot collection, the current Windows Update workload value, and the expected scan source before you change anything.
+
+## Step 1: Record the co-management authority
+
+In the Configuration Manager console:
+
+1. Open **Co-management properties**.
+2. Note the Pilot collection used for the Windows Update workload.
+3. Note whether the workload is Configuration Manager, Pilot Intune, or Intune.
+4. Confirm the device is a member of that pilot collection, not only an Intune device group.
+
+Microsoft's workload list is compliance policies, conditional access, endpoint protection, resource access, device configuration, office click-to-run apps, and Windows Update policies. Do not treat task-sequence OSD as an eighth slider.
+
+On the device, confirm the ConfigMgr client is still present and talking to the site:
+
+```powershell
+Get-Service CcmExec, wuauserv, usosvc |
+    Select-Object Name, Status, StartType
+```
+
+Expected output shape:
+
+```text
+Name     Status  StartType
+----     ------  ---------
+CcmExec  Running Automatic
+wuauserv Running Manual
+usosvc   Running Manual
+```
+
+If `CcmExec` is missing, this is not a co-management ownership problem. Treat it as an Intune-only or orphaned-client problem.
+
+## Step 2: Read the client logs that name the source
+
+Default log folder:
+
+```text
+C:\Windows\CCM\Logs
+```
+
+| Log | Use it for |
+|---|---|
+| `CoManagementHandler.log` | Workload values received from the site |
+| `WUAHandler.log` | Windows Update Agent scan source |
+| `UpdatesHandler.log` | Software update deployments from ConfigMgr |
+| `PolicyAgent.log` | Whether new client policy has arrived |
+
+Look for the Windows Update workload value and the scan URL. A successful Intune ring assignment in the portal is not a substitute for `WUAHandler.log` naming Windows Update rather than the software update point.
+
+```powershell
+$LogRoot = "C:\Windows\CCM\Logs"
+$Patterns = @(
+    "Windows Update",
+    "WUAHandler",
+    "WSUS",
+    "scan",
+    "workload"
+)
+
+Select-String -Path "$LogRoot\CoManagementHandler.log", "$LogRoot\WUAHandler.log" `
+    -Pattern $Patterns -ErrorAction SilentlyContinue |
+    Select-Object Path, LineNumber, Line |
+    Select-Object -First 40
+```
+
+Expected output shape:
+
+```text
+Path       : C:\Windows\CCM\Logs\WUAHandler.log
+LineNumber : <line>
+Line       : <timestamp> <scan source or WSUS URL>
+```
+
+Do not invent timestamps or success rates from this example. Use the lines the client actually wrote.
+
+## Step 3: Check local scan-source policy
+
+Intune rings control deferral and deadlines only when the device is scanning Windows Update. If Group Policy or ConfigMgr client settings still set `UseWUServer`, the ring is not the active decision point.
+
+```powershell
+$GpWuPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+$GpAuPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+
+foreach ($Path in @($GpWuPath, $GpAuPath)) {
+    Write-Output ""
+    Write-Output "[$Path]"
+    if (Test-Path $Path) {
+        Get-ItemProperty -Path $Path |
+            Select-Object WUServer, WUStatusServer, UseWUServer, DisableDualScan |
+            Format-List
+    } else {
+        Write-Output "Not present"
+    }
+}
+```
+
+Expected output shape:
+
+```text
+[HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate]
+WUServer        : http://<software-update-point>:8530
+UseWUServer     : 1
+DisableDualScan : <value or blank>
+```
+
+If `UseWUServer` is `1` on a device that should be on Windows Update for Business, the workload move is incomplete or another policy is rewriting scan source.
+
+Also check ConfigMgr software update client settings for that device: scan source, deployment package availability, and whether a maintenance window is hiding an otherwise successful scan.
+
+## Step 4: Separate workload transition from update deployment
+
+Moving the Windows Update workload to Intune does not:
+
+- Cancel an already downloaded ConfigMgr software update
+- Remove WSUS registry values written by Group Policy
+- Change feature-update target-release policy from a GPO
+- Prove that an Intune quality update expedite will apply
+
+Do one thing at a time on the pilot:
+
+1. Confirm collection membership.
+2. Move only the Windows Update workload to Pilot Intune.
+3. Wait for the ConfigMgr client policy cycle.
+4. Recheck `CoManagementHandler.log` and `WUAHandler.log`.
+5. Only then judge the Intune ring.
+
+Microsoft's switch-workloads guidance is the authority for the slider behaviour. Do not treat a single portal success state as the end of the transition.
+
+## Step 5: Validate and roll back
+
+Validation on one pilot device:
+
+- `CoManagementHandler.log` shows the Windows Update workload value you set
+- `WUAHandler.log` names the scan source you expected
+- Local `UseWUServer` matches that source
+- The next quality or feature update offer comes from the intended service
+
+Rollback:
+
+- Return the Windows Update workload to Configuration Manager for the pilot collection only
+- Do not rebuild the device
+- Do not delete the Intune ring to undo a ConfigMgr scan-source problem
+- Leave Office click-to-run, compliance, and endpoint protection workloads unchanged unless they were part of the same approved change
+
+## Sources
+
+- [Co-management workloads](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads)
+- [How to switch Configuration Manager workloads to Intune](https://learn.microsoft.com/en-us/intune/configmgr/comanage/how-to-switch-workloads)
+- Related AdminSignal guides: [WUfB deferral diagnosis](/troubleshooting/wufb-deferral-not-respected), [Intune vs ConfigMgr](/comparisons/intune-vs-sccm-mecm-2025), [Configuration Manager hub](/sccm-mecm)

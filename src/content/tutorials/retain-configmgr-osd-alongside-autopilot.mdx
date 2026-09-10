@@ -1,0 +1,133 @@
+---
+title: "When to keep ConfigMgr task-sequence OSD next to Autopilot"
+category: "Configuration Manager"
+date: "September 10, 2026"
+authorId: "jack"
+lastReviewed: "September 10, 2026"
+reviewNote: "Reviewed against Microsoft Autopilot existing-devices and Configuration Manager OSD documentation. No lab task sequence, driver matrix, or cost figures are claimed."
+tags: ["Configuration Manager", "OSD", "Autopilot", "Provisioning", "MECM"]
+---
+
+## When to Use This Guide
+
+Use this guide when a team plans to retire Configuration Manager task-sequence OSD because co-management or Autopilot is now in use.
+
+Typical mistakes:
+
+- Treating operating-system provisioning as a co-management workload slider
+- Replacing bare-metal recovery with an Autopilot profile that never sees the device
+- Assuming Autopilot existing-devices can stand in for every wipe-and-reload path
+- Costing the OSD role out before boot media, drivers, and BitLocker recovery have an owner
+
+Provisioning is a separate architectural decision from the seven co-management workloads. Moving Windows Update or device configuration to Intune does not retire task sequences.
+
+This article is documentation-reviewed. It does not include a tested hardware matrix or production cost figures.
+
+Related reading: [Autopilot v1 vs v2](/comparisons/autopilot-v1-vs-v2-2026), [Autopilot hardware-hash import failures](/troubleshooting/autopilot-device-not-importing-hardware-hash), [Intune vs ConfigMgr](/comparisons/intune-vs-sccm-mecm-2025).
+
+## Scope and Assumptions
+
+This guide compares four jobs that are often collapsed into one we-should-be-on-Autopilot sentence:
+
+| Job | Typical path today |
+|---|---|
+| Bare-metal build of an unknown device | ConfigMgr task sequence and boot media, or OEM Autopilot from the factory |
+| Existing-device refresh while the device is still on the old OS | ConfigMgr task sequence, Autopilot existing devices, or a wipe from Intune |
+| New-device provisioning for a known Autopilot registration | Autopilot profile and Enrollment Status Page |
+| Recovery after a failed build or stolen disk | Boot media, BitLocker recovery, or a new Autopilot registration |
+
+Primary sources:
+
+- [Introduction to operating system deployment in Configuration Manager](https://learn.microsoft.com/en-us/intune/configmgr/osd/understand/introduction-to-operating-system-deployment)
+- [Windows Autopilot for existing devices](https://learn.microsoft.com/en-us/autopilot/tutorial/existing-devices/existing-devices-workflow)
+
+## What Autopilot does not replace by itself
+
+Autopilot registers a device and applies an enrolment profile. It does not, on its own:
+
+- Boot a machine that has no working OS and no OEM Autopilot registration
+- Inject networking or storage drivers before Windows Setup
+- Own BitLocker recovery keys from a previous ConfigMgr build
+- Replace PXE, boot media, or offline driver libraries
+- Move because a co-management workload slider changed
+
+If the device must be rebuilt in a room with no OEM registration and no working OS, you still need an OSD path or an equivalent recovery image.
+
+## Step 1: Separate the four jobs
+
+Write the requirement as four lines, not one project name.
+
+1. **Bare-metal.** Unknown hardware, no hash in the tenant, or the disk is empty.
+2. **Existing-device refresh.** Device is on the old OS and must be rebuilt in place.
+3. **New-device Autopilot.** Hash is already registered and the ESP is the provisioning surface.
+4. **Recovery.** Failed sequence, failed ESP, or BitLocker lockout.
+
+Microsoft's Autopilot existing-devices workflow is an in-place conversion path. It is not the same as ConfigMgr bare-metal OSD, and it is not the same as a cloud-reset of an already enrolled device.
+
+## Step 2: Map the operational dependencies
+
+For each job, name the owner of:
+
+- Boot image or firmware boot method
+- Networking and storage drivers
+- Domain or Entra join
+- Device registration / hardware hash
+- Application and policy payload after the OS is up
+- BitLocker key escrow
+- Failed-build recovery
+
+A ConfigMgr task sequence can carry drivers, applications, and BitLocker in one sequence. Autopilot splits those across registration, ESP, Win32 apps, and compliance. Both can work. They fail in different places.
+
+If Autopilot hardware-hash import is already a live incident class in your estate, keep the OSD path until that import path is boring. See [Autopilot hardware-hash import failures](/troubleshooting/autopilot-device-not-importing-hardware-hash).
+
+## Step 3: Decide what to retain
+
+Keep ConfigMgr OSD while any of these remain true:
+
+- You still receive devices that are not Autopilot-registered by the OEM
+- You need bare-metal recovery media that works without a cloud enrolment
+- Driver or firmware steps still live only in a task sequence
+- BitLocker recovery for the current fleet is tied to the ConfigMgr build process
+- Existing-device Autopilot has not been proven on the hardware you refresh most often
+
+You can still:
+
+- Pilot Autopilot for new registered devices
+- Move co-management workloads that are not provisioning
+- Stop advertising the task sequence to collections that now use Autopilot only
+
+Do not invent a saving figure for retiring the OSD role. If you need a cost comparison, label every assumption and keep it out of this page until those numbers are yours.
+
+## Step 4: Exit criteria for retiring an OSD path
+
+Retire a specific task sequence only when all of these are documented:
+
+- Every hardware model in that sequence has a tested Autopilot or OEM path
+- Bare-metal recovery has an owner and a tested media or cloud-reset alternative
+- Driver and firmware updates have an Intune or vendor path
+- BitLocker escrow is verified in Entra or your chosen service, not only assumed
+- Failed-provisioning recovery no longer depends on that sequence
+- The collection advertisement is removed after the last pilot succeeds, not before
+
+Leave a read-only copy of the sequence and boot media until the first recovery incident on the new path has been handled.
+
+## Step 5: Validation and rollback
+
+Validation is per job, not per slogan:
+
+- New registered devices complete Autopilot ESP on the target model
+- Existing-device conversions follow Microsoft's published workflow, not an ad-hoc wipe
+- Bare-metal recovery still boots on the models you have not moved
+- A failed ESP does not strand the device without a rebuild path
+
+Rollback:
+
+- Re-advertise the last known-good task sequence to the recovery collection
+- Do not flip co-management workloads as a substitute for restoring boot media
+- Do not delete driver packages until the replacement path has survived one failed build
+
+## Sources
+
+- [Introduction to operating system deployment in Configuration Manager](https://learn.microsoft.com/en-us/intune/configmgr/osd/understand/introduction-to-operating-system-deployment)
+- [Windows Autopilot for existing devices](https://learn.microsoft.com/en-us/autopilot/tutorial/existing-devices/existing-devices-workflow)
+- Related AdminSignal guides: [Autopilot v1 vs v2](/comparisons/autopilot-v1-vs-v2-2026), [Hardware-hash import](/troubleshooting/autopilot-device-not-importing-hardware-hash), [Configuration Manager hub](/sccm-mecm)
