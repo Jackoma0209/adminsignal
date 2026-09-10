@@ -34,6 +34,7 @@ export const liveSignals: Signal[] = [
     authorId: 'jack',
     isNew: true,
     isFeatured: true,
+    image: '/images/article-covers/september-2026-patch-tuesday-admin-priorities.svg',
     tags: [
       'September 2026 Patch Tuesday',
       'CVE-2026-81963',
