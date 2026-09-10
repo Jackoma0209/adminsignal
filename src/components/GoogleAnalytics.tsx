@@ -3,7 +3,8 @@
 import Script from 'next/script'
 import { analyticsEnabled } from '@/lib/consent'
 
-const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
+const measurementId =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? 'G-384SHWN28J'
 
 export default function GoogleAnalytics() {
   if (!analyticsEnabled || !measurementId) return null
