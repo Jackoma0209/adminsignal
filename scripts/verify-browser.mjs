@@ -23,7 +23,13 @@ try {
     }
     const errors = []
     page.on('pageerror', error => errors.push(error.message))
-    for (const route of ['/', '/sccm-mecm', '/group-policy', '/about', '/templates', '/comparisons/intune-vs-sccm-mecm-2025', '/troubleshooting/intune-device-not-syncing']) {
+    for (const route of [
+      '/', '/topics', '/sccm-mecm', '/group-policy', '/about', '/templates',
+      '/comparisons/intune-vs-sccm-mecm-2025',
+      '/troubleshooting/comanagement-windows-update-workload-ownership',
+      '/troubleshooting/configmgr-app-content-vs-detection-before-intune',
+      '/tutorials/retain-configmgr-osd-alongside-autopilot',
+    ]) {
       const response = await page.goto(base + route, { waitUntil: 'networkidle' })
       assert.equal(response.status(), 200, route)
       assert.equal(new URL(page.url()).origin, new URL(base).origin, 'Preview authentication required')
@@ -36,13 +42,26 @@ try {
         await page.evaluate(() => window.scrollTo(0, 0))
         await page.screenshot({ path: `${output}/hub-${width}.png`, fullPage: true })
       }
-      if (route === '/troubleshooting/intune-device-not-syncing') {
+      if (route === '/troubleshooting/comanagement-windows-update-workload-ownership') {
+        assert.equal(await page.locator('[data-article-byline] a[href="/about"]').count(), 1)
+        assert.equal(await page.locator('[data-article-byline] a[href="/editorial-policy"]').count(), 1)
+        assert.equal(await page.locator('[data-article-byline]').getByText('Reviewed against documentation', { exact: true }).count(), 1)
         const code = (await page.locator('pre').first().innerText()).trim()
         await page.getByRole('button', { name: 'Copy code to clipboard', exact: true }).first().click()
         await page.getByRole('button', { name: 'Copied to clipboard', exact: true }).waitFor()
-        assert.equal((await page.evaluate(() => navigator.clipboard.readText())).trim(), code)
+        assert.equal(
+          (await page.evaluate(() => navigator.clipboard.readText())).trim().replace(/\r\n/g, '\n'),
+          code.replace(/\r\n/g, '\n'),
+        )
         await page.evaluate(() => window.scrollTo(0, 0))
         await page.screenshot({ path: `${output}/article-${width}.png`, fullPage: true })
+      }
+      if (route === '/topics') {
+        const topicCards = await page.locator('main article > a').evaluateAll(links => links.map(link => link.getAttribute('href')))
+        assert.deepEqual(topicCards, [
+          '/intune', '/microsoft-entra-id', '/endpoint-security', '/patch-management',
+          '/microsoft-365', '/powershell', '/sccm-mecm',
+        ])
       }
       if (route === '/templates') {
         const downloads = page.locator('a[download]')
@@ -60,14 +79,18 @@ try {
       results.push(`${width}: ${route}`)
     }
     await page.goto(base)
+    const expectedNav = ['/tutorials', '/troubleshooting', '/comparisons', '/news', '/topics', '/about']
     if (width < 1024) {
       await page.getByRole('button', { name: 'Toggle menu' }).click()
       const nav = page.getByRole('navigation', { name: 'Mobile navigation' })
+      assert.deepEqual(await nav.locator(':scope > a').evaluateAll(links => links.map(link => link.getAttribute('href'))), expectedNav)
       await nav.getByRole('link', { name: 'Tutorials', exact: true }).click()
       await page.waitForURL('**/tutorials')
       assert.equal(await nav.count(), 0)
     } else {
-      await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Tutorials', exact: true }).click()
+      const nav = page.getByRole('navigation', { name: 'Primary navigation' })
+      assert.deepEqual(await nav.locator(':scope > a').evaluateAll(links => links.map(link => link.getAttribute('href'))), expectedNav)
+      await nav.getByRole('link', { name: 'Tutorials', exact: true }).click()
       await page.waitForURL('**/tutorials')
     }
     await page.locator('a[href*="?category="]').first().click()

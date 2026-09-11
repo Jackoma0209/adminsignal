@@ -1,3 +1,4 @@
+import ArticleByline from '@/components/article/ArticleByline'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image'
@@ -145,8 +146,7 @@ export default async function ComparisonArticlePage({ params }: Props) {
                   {comparison.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
-                  {author && <span>{author.name}</span>}
-                  {author && <span aria-hidden="true">·</span>}
+                  <ArticleByline authorName={author?.name} />
                   <time dateTime={comparison.publishedAt}>{comparison.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{comparison.readTime}</span>

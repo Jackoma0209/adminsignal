@@ -1,3 +1,4 @@
+import ArticleByline from '@/components/article/ArticleByline'
 import { notFound } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import type { Metadata } from 'next'
@@ -167,8 +168,7 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
-                  {author && <span>{author.name}</span>}
-                  {author && <span aria-hidden="true">·</span>}
+                  <ArticleByline authorName={author?.name} />
                   <time dateTime={article.publishedAt}>{article.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{article.readTime}</span>

@@ -30,7 +30,7 @@ export default function TermsPage() {
             <section>
               <h2 className="mb-2 text-lg font-semibold text-foreground">Acceptance of Terms</h2>
               <p>
-                AdminSignal provides technical articles, worked examples inside those articles,
+                AdminSignal provides technical articles, worked examples inside guides,
                 commentary, and related resources for sysadmins, endpoint engineers, Microsoft 365
                 administrators, and other technical professionals.
               </p>
@@ -96,7 +96,7 @@ export default function TermsPage() {
                 business requirement.
               </p>
               <p className="mt-3">
-                Content is provided "as is" without warranties of any kind, express or
+                Content is provided &ldquo;as is&rdquo; without warranties of any kind, express or
                 implied. AdminSignal does not guarantee that:
               </p>
               <ul className="mt-3 list-disc space-y-1 pl-5">
@@ -195,7 +195,7 @@ export default function TermsPage() {
                 Terms of Use from time to time.
               </p>
               <p className="mt-3">
-                The updated terms will be posted on this page with a revised "Last updated"
+                The updated terms will be posted on this page with a revised &ldquo;Last updated&rdquo;
                 date. Continued use of the site after changes are posted means you accept the
                 updated terms.
               </p>

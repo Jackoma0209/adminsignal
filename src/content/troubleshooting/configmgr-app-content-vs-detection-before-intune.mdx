@@ -4,7 +4,7 @@ category: "Configuration Manager"
 date: "September 10, 2026"
 authorId: "jack"
 lastReviewed: "September 10, 2026"
-reviewNote: "Reviewed against Microsoft Configuration Manager application deployment troubleshooting documentation. No AppDiscovery or AppEnforce logs from a live tenant are included."
+reviewNote: "Reviewed against Microsoft Configuration Manager application deployment troubleshooting documentation. No lab tests were performed and no AppDiscovery or AppEnforce logs from a live tenant are included."
 tags: ["Configuration Manager", "Applications", "Intune", "Win32", "MECM"]
 ---
 
@@ -114,7 +114,7 @@ Common mismatches:
 - Registry rule in the 32-bit view for a 64-bit install, or the reverse
 - Script detection that writes to STDERR on the success path
 
-For MSI detection, do not query `Win32_Product`. Use uninstall registry keys:
+For MSI detection, avoid the Windows Installer WMI provider, which can trigger consistency checks. Use uninstall registry keys:
 
 ```powershell
 $ProductCode = "{PRODUCT-CODE-GUID}"
