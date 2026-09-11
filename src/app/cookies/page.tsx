@@ -21,7 +21,7 @@ export default function CookiesPage() {
           <h1 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             Cookie Policy
           </h1>
-          <p className="mb-8 text-sm text-muted">Last updated: August 2026</p>
+          <p className="mb-8 text-sm text-muted">Last updated: September 2026</p>
 
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
@@ -122,9 +122,10 @@ export default function CookiesPage() {
               <p className="mt-3">
                 AdminSignal uses Google Consent Mode v2 with analytics and advertising storage
                 denied by default. Google Funding Choices is implemented on this site as the
-                Google-certified consent management platform. Non-essential Google Analytics tags
-                stay off until a valid consent choice is recorded and those tags are actually
-                enabled. They are not loaded today. Advertisements are not currently served.
+                Google-certified consent management platform. The Google Analytics 4 tag loads
+                with those denied defaults. Until consent is granted, storage remains denied, and
+                Google may still receive cookieless consent or measurement pings. Non-essential
+                Google advertising tags are not loaded. Advertisements are not currently served.
               </p>
               <p className="mt-3">
                 You can opt out of Google Analytics using Google{"'"}s browser add-on:{' '}
@@ -224,8 +225,10 @@ export default function CookiesPage() {
                 The Funding Choices loader is in the site code. The consent banner itself appears
                 after the European regulations message for the UK, EEA, and Switzerland is published
                 in Google AdSense Privacy & messaging. Until that message is published, the
-                banner may not show. Consent Mode v2 remains default-denied. Non-essential Google
-                advertising and analytics tags stay off, and ads are not currently served.
+                banner may not show. Consent Mode v2 remains default-denied. The Google Analytics 4
+                tag still loads in that denied state, so Google may receive cookieless consent or
+                measurement pings. Non-essential Google advertising tags stay off, and ads are not
+                currently served.
               </p>
               <p className="mt-3">
                 Use Privacy and cookie settings in the site footer, or the control below, to review
