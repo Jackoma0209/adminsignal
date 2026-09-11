@@ -124,8 +124,78 @@ if (consentSource.includes("NEXT_PUBLIC_ADS_ENABLED === 'true'") === false) {
   fail('consent config must still gate adsEnabled on NEXT_PUBLIC_ADS_ENABLED')
 }
 
-if (consentSource.includes("NEXT_PUBLIC_GA_ENABLED === 'true'") === false) {
+if (consentSource.includes("NEXT_PUBLIC_GA_ENABLED !== 'false'") === false) {
   fail('consent config must still gate analyticsEnabled on NEXT_PUBLIC_GA_ENABLED')
+}
+
+const privacySource = readText(path.join(root, 'src', 'app', 'privacy', 'page.tsx'))
+const cookiesSource = readText(path.join(root, 'src', 'app', 'cookies', 'page.tsx'))
+
+function flatten(source) {
+  return source.replace(/\s+/g, ' ')
+}
+
+function assertGa4ConsentDisclosure(label, source) {
+  const flat = flatten(source)
+  const claimsAnalyticsTagNotLoaded =
+    /Google Analytics(?: 4)? tags? (?:stay off and )?are not loaded/i.test(flat) ||
+    /Non-essential Google Analytics and AdSense tags stay off and are not loaded today/i.test(flat) ||
+    /They are not loaded today\./i.test(flat) ||
+    /advertising and analytics tags stay off/i.test(flat)
+
+  if (claimsAnalyticsTagNotLoaded) {
+    fail(`${label} still claims Analytics tags are not loaded; disclose GA4 Consent Mode instead`)
+  }
+
+  if (!/Google Analytics 4 tag (?:loads|still loads)/i.test(flat)) {
+    fail(`${label} must state that the GA4 tag loads under Consent Mode`)
+  }
+
+  if (!/denied/i.test(flat) || !/storage/i.test(flat)) {
+    fail(`${label} must state that analytics/ad storage is denied by default until consent`)
+  }
+
+  if (!/cookieless consent or measurement pings/i.test(flat)) {
+    fail(`${label} must disclose cookieless consent or measurement pings while consent is denied`)
+  }
+}
+
+assertGa4ConsentDisclosure('/privacy', privacySource)
+assertGa4ConsentDisclosure('/cookies', cookiesSource)
+
+if (!consentSource.includes("analytics_storage: 'denied'")) {
+  fail('consent defaults must deny analytics_storage before GA4 loads')
+}
+
+if (!consentSource.includes("ad_storage: 'denied'")) {
+  fail('consent defaults must deny ad_storage before GA4 loads')
+}
+
+if (!consentSource.includes('export const analyticsEnabled')) {
+  fail('GA4 enablement must remain a separate analyticsEnabled export')
+}
+
+if (!consentSource.includes('export const nonEssentialGoogleTagsHeld = true')) {
+  fail('advertising hold must remain hard-coded as nonEssentialGoogleTagsHeld = true')
+}
+
+if (!consentSource.includes('!nonEssentialGoogleTagsHeld') || !consentSource.includes('adsenseScriptEnabled')) {
+  fail('AdSense page-ad loading must remain gated by the advertising hold')
+}
+
+if (!/Non-essential Google advertising tags (?:are not loaded|stay off)/i.test(flatten(privacySource))) {
+  fail('/privacy must keep the advertising-tag hold disclosure separate from GA4')
+}
+
+if (!/Non-essential Google advertising tags (?:are not loaded|stay off)/i.test(flatten(cookiesSource))) {
+  fail('/cookies must keep the advertising-tag hold disclosure separate from GA4')
+}
+
+if (
+  !/ads are not currently served/i.test(flatten(privacySource)) ||
+  !/ads are not currently served/i.test(flatten(cookiesSource))
+) {
+  fail('legal pages must still say ads are not currently served')
 }
 
 for (const file of files) {
