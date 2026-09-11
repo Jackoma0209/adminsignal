@@ -96,8 +96,10 @@ export default function PrivacyPage() {
                 AdminSignal uses Google Consent Mode v2 defaults that deny analytics and
                 advertising storage until a valid consent choice is recorded. Google Funding Choices
                 (Privacy & messaging) is implemented as the Google-certified consent management
-                platform. Non-essential Google Analytics and AdSense tags stay off and are not
-                loaded today. Ads are not currently served.
+                platform. The Google Analytics 4 tag loads with those denied defaults. Until
+                consent is granted, analytics and advertising storage remain denied, and Google
+                may still receive cookieless consent or measurement pings. Non-essential Google
+                advertising tags are not loaded, so ads are not currently served.
               </p>
               <p className="mt-3">
                 You can also opt out of Google Analytics using Google{"'"}s browser add-on:{' '}
@@ -206,7 +208,9 @@ export default function PrivacyPage() {
                 analytics or advertising cookies are used. Google Funding Choices is implemented in
                 the site code as the Google-certified CMP. The banner appears after the European
                 regulations message is published in AdSense. Until then, Consent Mode v2 remains
-                default-denied, and non-essential Google advertising and analytics tags stay off.
+                default-denied. The Google Analytics 4 tag still loads in that denied state, so
+                Google may receive cookieless consent or measurement pings. Non-essential Google
+                advertising tags stay off.
               </p>
               <p className="mt-3">
                 Use Privacy and cookie settings in the site footer to review or change your choices.
