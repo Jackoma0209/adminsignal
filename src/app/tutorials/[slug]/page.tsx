@@ -1,3 +1,4 @@
+import ArticleByline from '@/components/article/ArticleByline'
 import { notFound, permanentRedirect } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import type { Metadata } from 'next'
@@ -190,8 +191,7 @@ export default async function TutorialPage({ params }: Props) {
                   {guide.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
-                  {author && <span>{author.name}</span>}
-                  {author && <span aria-hidden="true">·</span>}
+                  <ArticleByline authorName={author?.name} />
                   <time dateTime={guide.publishedAt}>{guide.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{guide.readTime}</span>

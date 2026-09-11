@@ -158,6 +158,7 @@ const hiddenFromDiscoveryPaths = new Set([
   ...slugs('scripts').map((slug) => `/scripts/${slug}`),
   '/reviews',
   ...slugs('reviews').map((slug) => `/reviews/${slug}`),
+  '/best-tools',
   ...quarantinePaths,
 ])
 
@@ -170,6 +171,14 @@ const sitemapPaths = new Set(sitemapUrls.map((url) => new URL(url).pathname))
 if (sitemapUrls.length === 0) errors.push('/sitemap.xml: no URLs found')
 if (new Set(sitemapUrls).size !== sitemapUrls.length) errors.push('/sitemap.xml: duplicate URLs')
 if (!sitemapPaths.has('/templates')) errors.push('/templates: missing from sitemap')
+const newConfigMgrPaths = [
+  '/troubleshooting/comanagement-windows-update-workload-ownership',
+  '/troubleshooting/configmgr-app-content-vs-detection-before-intune',
+  '/tutorials/retain-configmgr-osd-alongside-autopilot',
+]
+for (const pathname of newConfigMgrPaths) {
+  if (!sitemapPaths.has(pathname)) errors.push(`${pathname}: missing from sitemap`)
+}
 for (const url of sitemapUrls) {
   const parsed = new URL(url)
   if (parsed.origin !== productionUrl || parsed.search || parsed.hash) {
@@ -286,6 +295,25 @@ for (const retired of ['/scripts', '/reviews']) {
   if (result.response.status !== 404 && result.response.status !== 410) {
     errors.push(`${retired}: expected removal status, received ${result.response.status}`)
   }
+}
+
+const topicsPage = await get('/topics')
+const topicCardPaths = [...topicsPage.body.matchAll(/<article\b[^>]*>[\s\S]*?href=["']([^"']+)["']/gi)]
+  .map((match) => match[1])
+const expectedTopicCards = [
+  '/intune', '/microsoft-entra-id', '/endpoint-security', '/patch-management',
+  '/microsoft-365', '/powershell', '/sccm-mecm',
+]
+if (JSON.stringify(topicCardPaths) !== JSON.stringify(expectedTopicCards)) {
+  errors.push(`/topics: expected cards ${expectedTopicCards.join(', ')}, found ${topicCardPaths.join(', ')}`)
+}
+
+const bylinePage = await get(newConfigMgrPaths[0])
+if (!/data-article-byline/.test(bylinePage.body) ||
+    !/href=["']\/about["']/.test(bylinePage.body) ||
+    !/href=["']\/editorial-policy["']/.test(bylinePage.body) ||
+    !/Reviewed against documentation/.test(bylinePage.body)) {
+  errors.push(`${newConfigMgrPaths[0]}: shared documentation-review byline is incomplete`)
 }
 for (const rule of ['/api/', '/search']) {
   if (!robots.body.includes(`Disallow: ${rule}`)) errors.push(`/robots.txt: lost ${rule} rule`)

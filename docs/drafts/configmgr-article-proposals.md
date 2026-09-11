@@ -1,6 +1,10 @@
-# Unpublished ConfigMgr article proposals
+# ConfigMgr source briefs
 
-These are research briefs, not completed articles. They are outside `src/content`, the content registries, sitemap and public navigation. No field experience, tenant test or screenshots are claimed.
+These research briefs became three documentation-reviewed articles on 10 September 2026. They remain as provenance for the evidence that would be required before any article could claim lab testing. No field experience, tenant test or screenshots are claimed.
+
+- `/troubleshooting/comanagement-windows-update-workload-ownership`
+- `/troubleshooting/configmgr-app-content-vs-detection-before-intune`
+- `/tutorials/retain-configmgr-osd-alongside-autopilot`
 
 ## 1. Prove which service owns Windows Update on a co-managed pilot
 

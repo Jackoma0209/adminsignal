@@ -23,7 +23,7 @@ export default function PrivacyPage() {
           <p className="mb-8 text-sm text-muted">Last updated: September 2026</p>
           <div className="space-y-6 text-base leading-relaxed text-muted">
             <p>
-              AdminSignal publishes technical guides, worked examples inside those guides, and
+              AdminSignal publishes technical guides, worked examples inside guides, and
               analysis for enterprise sysadmins, endpoint engineers, and Microsoft 365
               administrators. This Privacy Policy explains what we collect, how we use it, and how
               visitors can manage their privacy and cookie choices.
