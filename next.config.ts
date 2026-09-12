@@ -13,6 +13,26 @@ const nextConfig: NextConfig = {
         destination: '/tutorials/microsoft-defender-for-endpoint-intune-rollout',
         permanent: true,
       },
+      {
+        source: '/scripts',
+        destination: '/powershell',
+        permanent: true,
+      },
+      {
+        source: '/scripts/export-intune-device-report',
+        destination: '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration',
+        permanent: true,
+      },
+      {
+        source: '/scripts/get-stale-devices',
+        destination: '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration',
+        permanent: true,
+      },
+      {
+        source: '/scripts/:slug*',
+        destination: '/powershell',
+        permanent: true,
+      },
     ]
   },
   images: {

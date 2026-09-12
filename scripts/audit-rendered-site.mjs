@@ -50,11 +50,11 @@ function match(html, pattern) {
 
 function decode(value = '') {
   return value
-    .replaceAll('&amp;', '&')
-    .replaceAll('&quot;', '"')
+    .replaceAll('&', '&')
+    .replaceAll('"', '"')
     .replaceAll('&#x27;', "'")
-    .replaceAll('&lt;', '<')
-    .replaceAll('&gt;', '>')
+    .replaceAll('<', '<')
+    .replaceAll('>', '>')
 }
 
 function robotsValue(html) {
@@ -88,7 +88,7 @@ function parseJsonLd(html, pathname) {
   const blocks = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)]
   for (const [, raw] of blocks) {
     try {
-      JSON.parse(raw.replaceAll('&quot;', '"'))
+      JSON.parse(raw.replaceAll('"', '"'))
     } catch (error) {
       errors.push(`${pathname}: invalid JSON-LD (${error.message})`)
     }
@@ -144,8 +144,6 @@ const quarantinePaths = new Set([
 ])
 
 const noindexPaths = [
-  '/scripts',
-  ...slugs('scripts').map((slug) => `/scripts/${slug}`),
   '/reviews',
   ...slugs('reviews').map((slug) => `/reviews/${slug}`),
   '/best-tools',
@@ -287,7 +285,7 @@ if (!(ads.response.headers.get('content-type') ?? '').startsWith('text/plain')) 
 const robots = await get('/robots.txt')
 if (robots.response.status !== 200) errors.push(`/robots.txt: expected 200, received ${robots.response.status}`)
 if (!robots.body.includes('Sitemap: https://www.adminsignal.com/sitemap.xml')) errors.push('/robots.txt: production sitemap declaration missing')
-for (const retired of ['/scripts', '/reviews']) {
+for (const retired of ['/reviews']) {
   if (new RegExp(`Disallow: ${retired}`, 'i').test(robots.body)) {
     errors.push(`/robots.txt: blocks retired route ${retired}`)
   }
@@ -295,6 +293,9 @@ for (const retired of ['/scripts', '/reviews']) {
   if (result.response.status !== 404 && result.response.status !== 410) {
     errors.push(`${retired}: expected removal status, received ${result.response.status}`)
   }
+}
+if (new RegExp('Disallow: /scripts', 'i').test(robots.body)) {
+  errors.push('/robots.txt: blocks retired route /scripts')
 }
 
 const topicsPage = await get('/topics')
@@ -321,6 +322,9 @@ for (const rule of ['/api/', '/search']) {
 const redirects = [
   ['/tutorials/group-policy-troubleshooting-rsop-gpresult', '/troubleshooting/group-policy-not-applying-diagnosis'],
   ['/comparisons/windows-defender-vs-crowdstrike-falcon', '/tutorials/microsoft-defender-for-endpoint-intune-rollout'],
+  ['/scripts', '/powershell'],
+  ['/scripts/export-intune-device-report', '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration'],
+  ['/scripts/get-stale-devices', '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration'],
 ]
 for (const [from, to] of redirects) {
   const result = await get(from, { redirect: 'manual' })
