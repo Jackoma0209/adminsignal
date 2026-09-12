@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Windows Server'
 const topicDescription =
-  'Published Windows Server coverage currently on AdminSignal: Group Policy processing against Active Directory, and Secure Boot CA 2023 readiness for server fleets. This hub does not yet include DNS, DHCP, backup, or monitoring tutorials.'
+  'Published Windows Server coverage on AdminSignal: Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and related servicing notes. This hub is not a DNS, DHCP, backup, or monitoring library.'
 const topicPath = '/windows-server'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -54,7 +54,7 @@ export default function WindowsServerPage() {
         introSections={[
           {
             title: 'What this hub currently publishes',
-            body: 'AdminSignal’s Windows Server pages currently cover Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and related patch notes. They are not a DNS, DHCP, file-services, clustering, or backup tutorial library.',
+            body: 'AdminSignal’s Windows Server pages cover Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and related servicing notes. They are not a DNS, DHCP, file-services, clustering, or backup tutorial library.',
           },
           {
             title: 'Collect RSoP evidence before another gpupdate',
@@ -65,19 +65,18 @@ export default function WindowsServerPage() {
             body: 'The 2023 certificate authority rollout is a sequenced firmware and OS trust change, not a single BIOS tick-box. Use the published readiness guide for inventory and rollback ownership rather than assuming every server can flip in one window.',
           },
           {
-            title: 'What this hub will not claim',
-            body: 'There are no published DNS, DHCP, file-server, or clustering tutorials here yet. Those topics stay off this page until a complete, sourced article exists.',
+            title: 'Out of scope on this hub',
+            body: 'This hub does not publish DNS, DHCP, file-server, clustering, or backup runbooks. Those subjects stay off the page until a complete, sourced article exists.',
           },
         ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}
         relatedTopics={[
-          { name: 'Group Policy', href: '/group-policy' },
           { name: 'Patch Management', href: '/patch-management' },
           { name: 'Endpoint Security', href: '/endpoint-security' },
           { name: 'PowerShell', href: '/powershell' },
-          { name: 'SCCM / MECM', href: '/sccm-mecm' },
+          { name: 'Configuration Manager', href: '/sccm-mecm' },
         ]}
       />
     </>
