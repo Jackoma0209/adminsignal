@@ -32,6 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/intune`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/powershell`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/windows-server`, priority: 0.4, changeFrequency: 'monthly' },
+    { url: `${BASE}/group-policy`, priority: 0.4, changeFrequency: 'monthly' },
     { url: `${BASE}/endpoint-security`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/microsoft-365`, priority: 0.8, changeFrequency: 'weekly' },
     { url: `${BASE}/microsoft-entra-id`, priority: 0.8, changeFrequency: 'weekly' },
