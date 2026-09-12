@@ -10,6 +10,9 @@ const SITE_URL = 'https://www.adminsignal.com'
 const ABOUT_URL = `${SITE_URL}/about`
 const AUTHOR_ID = `${ABOUT_URL}#jack`
 const ORGANIZATION_ID = `${SITE_URL}#organization`
+const AUTHOR_IMAGE = primaryAuthor.avatarUrl
+  ? `${SITE_URL}${primaryAuthor.avatarUrl}`
+  : undefined
 
 const title = 'About Jack Hadcroft and AdminSignal'
 const description =
@@ -70,33 +73,33 @@ const methodology = [
 
 const selectedReading = [
   {
+    title: 'September 2026 Patch Tuesday: admin priorities',
+    href: '/news/september-2026-patch-tuesday-admin-priorities',
+    type: 'News',
+  },
+  {
+    title: 'Windows Update for Business deferral not respected',
+    href: '/troubleshooting/wufb-deferral-not-respected',
+    type: 'Troubleshooting',
+  },
+  {
+    title: 'Autopilot v1 versus Device Preparation v2',
+    href: '/comparisons/autopilot-v1-vs-v2-2026',
+    type: 'Comparison',
+  },
+  {
+    title: 'Secure Boot CA 2023 rollout readiness',
+    href: '/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness',
+    type: 'Tutorial',
+  },
+  {
     title: 'Migrating AzureAD and MSOnline scripts to Microsoft Graph PowerShell',
     href: '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration',
     type: 'Tutorial',
   },
   {
-    title: 'Migrating Intune Administrative Templates to Settings Catalog',
-    href: '/tutorials/intune-admin-templates-to-settings-catalog-migration',
-    type: 'Tutorial',
-  },
-  {
-    title: 'Rolling out Microsoft Defender for Endpoint with Intune',
-    href: '/tutorials/microsoft-defender-for-endpoint-intune-rollout',
-    type: 'Tutorial',
-  },
-  {
-    title: 'Exchange Online SMTP AUTH Basic Authentication migration',
-    href: '/tutorials/exchange-online-smtp-auth-basic-auth-2026-migration',
-    type: 'Tutorial',
-  },
-  {
     title: 'Windows Autopilot device not importing a hardware hash',
     href: '/troubleshooting/autopilot-device-not-importing-hardware-hash',
-    type: 'Troubleshooting',
-  },
-  {
-    title: 'Intune Win32 app install stuck at waiting or failed',
-    href: '/troubleshooting/intune-win32-app-install-stuck-waiting',
     type: 'Troubleshooting',
   },
 ]
@@ -121,6 +124,7 @@ export default function AboutPage() {
     url: ABOUT_URL,
     jobTitle: primaryAuthor.role,
     description: primaryAuthor.bio,
+    image: AUTHOR_IMAGE,
     knowsAbout: coverageTopics,
     sameAs: [primaryAuthor.linkedIn, primaryAuthor.github].filter(Boolean),
   }
@@ -185,6 +189,28 @@ export default function AboutPage() {
                   <Mail className="h-4 w-4" aria-hidden="true" />
                   Contact
                 </Link>
+                {primaryAuthor.linkedIn && (
+                  <a
+                    href={primaryAuthor.linkedIn}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
+                  >
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    LinkedIn
+                  </a>
+                )}
+                {primaryAuthor.github && (
+                  <a
+                    href={primaryAuthor.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-border-strong hover:text-foreground"
+                  >
+                    <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                    GitHub
+                  </a>
+                )}
               </div>
             </div>
 
@@ -301,6 +327,11 @@ export default function AboutPage() {
               <h2 id="reading-heading" className="text-2xl font-bold tracking-tight text-foreground">
                 Representative reading
               </h2>
+              <p className="mt-4 text-base leading-relaxed text-muted">
+                These are the pages a reviewer should open first. Each one starts from an admin
+                decision or failure state, cites current Microsoft documentation, and stays inside
+                published evidence.
+              </p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {selectedReading.map((item) => (
                   <Link
