@@ -78,7 +78,7 @@ export const topics: Topic[] = [
     id: '6',
     name: 'Group Policy',
     slug: 'group-policy',
-    description: 'One canonical GPO diagnosis runbook covering gpresult, RSoP, scope, replication, and Intune coexistence.',
+    description: 'Prove why a setting is not applying, then decide whether Active Directory or Intune owns it. Not a domain-design library.',
     icon: 'Settings',
     iconBg: 'bg-amber-500/10',
     iconColor: 'text-amber-400',
