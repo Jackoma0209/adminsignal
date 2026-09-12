@@ -14,6 +14,8 @@ export const NOINDEX_STATIC_PATHS = new Set<string>([
   '/best-tools',
   '/reviews',
   '/scripts',
+  '/scripts/export-intune-device-report',
+  '/scripts/get-stale-devices',
   '/search',
   '/advertise',
   '/guides/windows-11-25h2-autopilot-v2',
