@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ShieldCheck, Rss } from 'lucide-react'
 import PrivacySettingsButton from '@/components/PrivacySettingsButton'
+import { listedTopics } from '@/data/topics'
 
 const footerLinks = [
   {
@@ -19,18 +20,10 @@ const footerLinks = [
     heading: 'Topics',
     links: [
       { label: 'All Topics', href: '/topics' },
-      { label: 'Microsoft Intune', href: '/intune' },
-      { label: 'PowerShell', href: '/powershell' },
-      { label: 'Endpoint Security', href: '/endpoint-security' },
-      { label: 'Microsoft 365', href: '/microsoft-365' },
-      { label: 'Configuration Manager', href: '/sccm-mecm' },
-    ],
-  },
-  {
-    heading: 'Administration',
-    links: [
-      { label: 'Microsoft Entra ID', href: '/microsoft-entra-id' },
-      { label: 'Patch Management', href: '/patch-management' },
+      ...listedTopics.map((topic) => ({
+        label: topic.name,
+        href: `/${topic.slug}`,
+      })),
     ],
   },
   {
@@ -76,7 +69,7 @@ export default function Footer() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-4">
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-4">
             {footerLinks.map((column) => (
               <div key={column.heading}>
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted/60">
