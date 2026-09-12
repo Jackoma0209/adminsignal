@@ -22,7 +22,7 @@ const editorialChecks = [
 const internalLinks = [
   { label: 'Intune guides', href: '/intune' },
   { label: 'Troubleshooting', href: '/troubleshooting' },
-  { label: 'Windows Server', href: '/windows-server' },
+  { label: 'Patch management', href: '/patch-management' },
   { label: 'All topics', href: '/topics' },
   { label: 'About Jack Hadcroft', href: '/about' },
 ]
@@ -131,7 +131,7 @@ export default function AuthorBioSection() {
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm text-muted transition-colors hover:border-border-strong hover:text-foreground"
                   >
                     {label}
-                    <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                    <ArrowRight className="h-3 w-3" />
                   </Link>
                 ))}
               </div>
