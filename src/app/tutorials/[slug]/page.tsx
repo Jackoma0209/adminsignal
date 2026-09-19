@@ -73,6 +73,8 @@ export default async function TutorialPage({ params }: Props) {
   let headings: { id: string; text: string; level: number }[] = []
   let lastReviewed: string | undefined
   let reviewNote: string | undefined
+  let labTested: string | undefined
+  let labScope: string | undefined
 
   try {
     const item = getContentItem('tutorials', slug)
@@ -80,6 +82,8 @@ export default async function TutorialPage({ params }: Props) {
     headings = item.headings
     lastReviewed = item.frontmatter.lastReviewed as string | undefined
     reviewNote = item.frontmatter.reviewNote as string | undefined
+    labTested = item.frontmatter.labTested as string | undefined
+    labScope = item.frontmatter.labScope as string | undefined
   } catch {
     notFound()
   }
@@ -179,7 +183,14 @@ export default async function TutorialPage({ params }: Props) {
               </div>
             </div>
           ) : (
-            lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
+            lastReviewed && (
+              <TrustBanner
+                lastReviewed={lastReviewed}
+                note={reviewNote}
+                labTested={labTested}
+                labScope={labScope}
+              />
+            )
           )}
 
           <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -193,7 +204,7 @@ export default async function TutorialPage({ params }: Props) {
                   {guide.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
-                  <ArticleByline authorName={author?.name} />
+                  <ArticleByline authorName={author?.name} labTested={labTested} />
                   <time dateTime={guide.publishedAt}>{guide.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{guide.readTime}</span>

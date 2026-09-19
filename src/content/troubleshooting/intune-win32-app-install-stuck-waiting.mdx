@@ -3,8 +3,8 @@ title: "Intune Win32 App Install Stuck at Waiting, Pending, Installing, or Faile
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "Sep 10, 2026"
-reviewNote: "Clarified example status and used a verified Entra object ID to avoid ambiguous display-name matches."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Intune", "Win32 apps", "Intune Management Extension", "Company Portal", "PowerShell"]
 ---
 
@@ -808,6 +808,29 @@ Before promoting a Win32 app to broad deployment:
 - [ ] A rollback group and uninstall path are prepared before replacing an app used by many users.
 - [ ] Intune app reporting is exported after pilot deployment. See [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration).
 
+## Home lab notebook (one freeware Win32 app)
+
+Package 7-Zip or Notepad++ only if the licence allows redistribution. Do not wrap paid software. This revision does not claim the notebook was executed.
+
+1. Download the vendor installer to the lab PC, not a work device.
+2. Wrap it with the Microsoft Win32 Content Prep Tool. Keep install and uninstall command lines that you actually tested locally (`msiexec` or the silent EXE switch from the vendor).
+3. In Intune, add a Windows app (Win32) assigned as **Required** to the lab VM only.
+4. Detection: a file exists rule for the real binary path, for example `C:\Program Files\7-Zip\7z.exe`. Do not detect on a directory that already exists.
+5. On the VM, wait for IME. Capture `IntuneManagementExtension.log` and `AppWorkload.log` lines for the app's GUID when status is Success.
+6. Induce a miss: change detection to a path that does not exist, sync, capture Failed, then restore the good rule.
+
+Microsoft's [Win32 app troubleshooting](https://learn.microsoft.com/en-us/troubleshoot/mem/intune/app-management/troubleshoot-win32-app-install) is the log map; this notebook is the one-app proof.
+
+<EvidenceCallout
+  type="output"
+  title="IME install status for the lab Win32 app"
+  capture="Intune device install status Success, then Failed after the broken detection rule, plus the IME log snippet for that app GUID"
+  redact="Device name, tenant, app GUID if it identifies a production package, and user UPN"
+  why="Waiting is not a diagnosis. Success then a deliberate Failed detection is the smallest original evidence this page can grow from."
+/>
+
+Do not set `labTested` until both statuses exist. Do not commit the `.intunewin` file.
+
 ## Related Resources
 
 - [Microsoft Intune hub](/intune)
@@ -824,5 +847,7 @@ Before promoting a Win32 app to broad deployment:
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
 
 ## Correction record
+
+**19 September 2026:** Added a one-device home-lab notebook for a licensed freeware Win32 app and a broken detection rule. No tenant execution is claimed.
 
 **10 September 2026 — Reviewed against documentation:** Clarified example status and used a verified Entra object ID to avoid ambiguous display-name matches. Code and output remain illustrative, not execution evidence.

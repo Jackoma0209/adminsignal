@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Home-lab evidence dumps (may contain serials, hashes, UPNs)
+/scripts/lab/evidence/*
+!/scripts/lab/evidence/.gitkeep
+!/scripts/lab/evidence/README.md
+
 # vercel
 .vercel
 

@@ -3,8 +3,8 @@ title: "Migrating AzureAD and MSOnline PowerShell Scripts to Microsoft Graph Pow
 category: "PowerShell"
 date: "May 8, 2026"
 authorId: "jack"
-lastReviewed: "May 8, 2026"
-reviewNote: "Initial operational guide based on current Microsoft Graph PowerShell SDK, Microsoft Entra, AzureAD and MSOnline retirement, authentication, query, permission discovery, paging, beta endpoint, and throttling guidance checked on May 8, 2026."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a read-only home-lab notebook for app-only Graph. This revision does not claim that notebook was executed."
 tags: ["PowerShell", "Microsoft Graph", "Microsoft Entra ID", "MSOnline", "AzureAD"]
 ---
 
@@ -1317,6 +1317,35 @@ The practical pattern is:
 
 The goal is not only to make the old script run again. The goal is to leave behind a script that uses modern authentication, explicit permissions, predictable Graph queries, safe logging, and a supportable operational path.
 
+## Home lab notebook (app-only device count)
+
+Register an app in the personal developer tenant only. Least privilege: `Device.Read.All` or `User.Read.All`, not `Directory.ReadWrite.All`. This revision does not claim the notebook was executed.
+
+1. App registration, client secret or certificate, admin consent for the one read permission.
+2. `Connect-MgGraph` with client credentials. Record `Get-MgContext` AuthType, TenantId (redact), and Scopes.
+3. Run one count, not a dump:
+
+```powershell
+# Replace the three values from the lab app registration. Do not commit them.
+Connect-MgGraph -ClientId $clientId -TenantId $tenantId -CertificateThumbprint $thumbprint -NoWelcome
+Get-MgContext | Select-Object AuthType, Scopes
+Get-MgDevice -CountVariable deviceCount -ConsistencyLevel eventual -Top 1 | Out-Null
+Write-Output "DeviceCount=$deviceCount"
+Disconnect-MgGraph | Out-Null
+```
+
+4. Rotate or delete the secret or certificate after the capture. Do not commit it.
+
+<EvidenceCallout
+  type="output"
+  title="App-only Graph context and a single count"
+  capture="Get-MgContext AuthType and Scopes, plus one DeviceCount or UserCount integer"
+  redact="TenantId, ClientId, certificate thumbprint, and any object lists"
+  why="A delegated Connect-MgGraph in the author's session is not app-only. The AuthType and a single count are the notebook."
+/>
+
+Do not set `labTested` until AuthType is app-only and the secret has been disposed. Do not paste a client secret into the article.
+
 ## Related Resources
 
 - [PowerShell](/powershell)
@@ -1331,5 +1360,7 @@ The goal is not only to make the old script run again. The goal is to leave behi
 - [Use query parameters to customise PowerShell query outputs](https://learn.microsoft.com/en-us/powershell/microsoftgraph/use-query-parameters?view=graph-powershell-1.0)
 - [Advanced query capabilities on Microsoft Entra ID objects](https://learn.microsoft.com/en-us/graph/aad-advanced-queries)
 - [Microsoft Graph throttling guidance](https://learn.microsoft.com/en-us/graph/throttling)
+
+**Verification clarification, 19 September 2026:** Added a read-only app-only Graph notebook. No tenant execution is claimed.
 
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.

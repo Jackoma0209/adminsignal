@@ -3,8 +3,8 @@ title: "Windows Autopilot Device Not Importing: Hardware Hash CSV, Duplicate Rec
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "May 7, 2026"
-reviewNote: "Initial practical guide covering Windows Autopilot hardware hash capture, CSV validation, duplicate import conflicts, manual import checks, tenant permissions, Intune Connector checks, deployment profile assignment, dynamic groups, cleanup, Graph and PowerShell checks, safe retry, and prevention."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Windows Autopilot", "Hardware hash", "Intune", "Microsoft Entra ID", "PowerShell"]
 ---
 
@@ -680,6 +680,27 @@ Use this checklist before importing production devices:
 - Capture `dsregcmd /status`, Autopilot diagnostics, and relevant event logs before resetting a failed device.
 - Build a monthly stale-device review using the [Microsoft Graph PowerShell migration](/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration) script and your normal asset inventory.
 
+## Home lab notebook (one VM hash, one induced CSV miss)
+
+Collect the hash on a home Hyper-V or physical spare PC. Never publish a work-device hash. This revision does not claim the notebook was executed.
+
+1. On the lab VM, collect the hardware hash with `Get-WindowsAutopilotInfo` from the current [PowerShell Gallery script](https://www.powershellgallery.com/packages/Get-WindowsAutoPilotInfo). Use `-OutputFile` to a one-row CSV.
+2. Compare that file to the starter headers in the [Autopilot hardware-hash template](/templates). Replace every `REPLACE-` value. Do not invent a hash.
+3. Import the one-row CSV in **Intune > Devices > Windows > Windows enrollment > Devices**. Record the serial as a lab label if you do not want the raw serial in notes.
+4. Assign a user-driven Entra join profile to a group that contains only that Autopilot device. Wait for profile assignment status, not just import success.
+5. Induce one miss: upload a CSV with a truncated hash or a duplicate serial, capture the portal error, then import the good row.
+6. When finished, delete the lab device from Autopilot devices **and** the Entra device object if you created one. Do not leave a home VM registered in a tenant you later reuse for work.
+
+<EvidenceCallout
+  type="screenshot"
+  title="Autopilot import result for the lab VM"
+  capture="Intune Windows Autopilot devices row showing serial, manufacturer, profile status, and import time"
+  redact="Serial number if it identifies a work device, tenant name, object IDs, and the hardware hash"
+  why="Registration is not enrolment. Profile status is the proof this notebook is about, not a later Company Portal sign-in."
+/>
+
+Do not set `labTested` until the good row assigns a profile and the bad row has a named error. Do not attach the `.csv` with a real hash to this repository.
+
 ## Related Resources
 
 - [Intune hub](/intune)
@@ -693,5 +714,7 @@ Use this checklist before importing production devices:
 - [Windows Autopilot registration overview](https://learn.microsoft.com/en-us/autopilot/registration-overview)
 - [Manually register devices with Windows Autopilot](https://learn.microsoft.com/en-us/autopilot/add-devices)
 - [Windows Autopilot profiles](https://learn.microsoft.com/en-us/autopilot/profiles)
+
+**Verification clarification, 19 September 2026:** Added a one-device home-lab notebook. No hash collection or import is claimed.
 
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.

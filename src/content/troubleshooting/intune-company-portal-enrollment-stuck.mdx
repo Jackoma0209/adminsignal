@@ -4,8 +4,8 @@ description: "Troubleshoot Microsoft Intune Company Portal hangs, MDM enrollment
 category: "Microsoft Intune"
 date: "Aug 11, 2026"
 authorId: "jack"
-lastReviewed: "Aug 11, 2026"
-reviewNote: "Enrollment and Company Portal troubleshooting guide for Windows endpoints. Log paths and portal labels can change by Windows build and Intune service release; verify against current Microsoft documentation during an incident."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Intune", "Company Portal", "Enrollment", "MDM", "Windows"]
 metaTitle: "Intune Company Portal Stuck: Enrollment Troubleshooting"
 metaDescription: "Diagnose Intune Company Portal hangs and incomplete MDM enrollment with ordered checks, event logs, Entra device state, and recovery steps that avoid making the device worse."
@@ -251,6 +251,27 @@ More retries will not create a licence or open a firewall.
 - Train helpdesk to capture `dsregcmd /status` before reinstall loops
 - Monitor enrollment failure codes weekly during major Windows feature waves
 
+## Home lab notebook (join, enrol, one induced miss)
+
+Use a clean home VM. This revision does not claim the notebook was executed.
+
+1. Create a cloud-only lab user with an Intune licence. Do not use a work UPN.
+2. Configure Windows automatic MDM enrollment for that user, or enrol through Company Portal after Entra join.
+3. On the VM, record `dsregcmd /status` AzureAdJoined, WorkplaceJoined, and MDMUrl **before** retrying anything.
+4. Complete enrollment until the device appears in Intune as managed and Last check-in is current.
+5. Induce one miss: remove the Intune licence, or exclude the user from automatic enrollment, then try Company Portal again. Capture the failure text and the Entra device record (joined, not managed).
+6. Restore the licence or assignment and enrol once. Stop if you are about to reset the VM to hide a CA catch-22 you have not named.
+
+<EvidenceCallout
+  type="output"
+  title="dsregcmd join and MDM URL on the lab VM"
+  capture="AzureAdJoined, WorkplaceJoined, MDMUrl, and the Intune device Last check-in after a successful enrol"
+  redact="DeviceId, TenantId, computer name, and user UPN"
+  why="Entra join is not Intune management. Company Portal spinning without a managed device record is the failure this notebook is for."
+/>
+
+Do not set `labTested` until you have a managed device record and a named miss. Do not enrol this publication's author workstation if it is domain-joined to an employer.
+
 ## Primary Sources
 
 - [Enroll Windows devices in Intune](https://learn.microsoft.com/en-us/mem/intune/enrollment/windows-enrollment-methods)
@@ -264,3 +285,7 @@ More retries will not create a licence or open a firewall.
 - [Intune compliance policy not evaluating](/troubleshooting/intune-compliance-policy-not-evaluating)
 - [Entra dynamic group not updating](/troubleshooting/entra-dynamic-group-not-updating)
 - [Intune topic hub](/intune)
+
+## Correction record
+
+**19 September 2026:** Added a one-device home-lab notebook for enrollment success and one induced miss. No tenant execution is claimed.

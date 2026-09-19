@@ -64,6 +64,8 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
   let headings: { id: string; text: string; level: number }[] = []
   let lastReviewed: string | undefined
   let reviewNote: string | undefined
+  let labTested: string | undefined
+  let labScope: string | undefined
 
   try {
     const item = getContentItem('troubleshooting', slug)
@@ -71,6 +73,8 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
     headings = item.headings
     lastReviewed = item.frontmatter.lastReviewed as string | undefined
     reviewNote = item.frontmatter.reviewNote as string | undefined
+    labTested = item.frontmatter.labTested as string | undefined
+    labScope = item.frontmatter.labScope as string | undefined
   } catch {
     notFound()
   }
@@ -147,7 +151,14 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
           {underReview ? (
             <EditorialReviewNotice reason="The current version describes a broader Windows endpoint recovery-loop scenario than Microsoft documents for the cited update. Its technical body has been withdrawn pending a source-led rewrite." />
           ) : (
-            lastReviewed && <TrustBanner lastReviewed={lastReviewed} note={reviewNote} />
+            lastReviewed && (
+              <TrustBanner
+                lastReviewed={lastReviewed}
+                note={reviewNote}
+                labTested={labTested}
+                labScope={labScope}
+              />
+            )
           )}
 
           <div className="grid min-w-0 grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -171,7 +182,7 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-muted/70">
-                  <ArticleByline authorName={author?.name} />
+                  <ArticleByline authorName={author?.name} labTested={labTested} />
                   <time dateTime={article.publishedAt}>{article.date}</time>
                   <span aria-hidden="true">·</span>
                   <span>{article.readTime}</span>

@@ -3,8 +3,8 @@ title: "BitLocker Recovery Key Not Backed Up to Entra ID: Why and How to Fix It"
 category: "Endpoint Security"
 date: "Mar 24, 2026"
 authorId: "jack"
-lastReviewed: "Sep 10, 2026"
-reviewNote: "Corrected escrow versus rotation, Graph permissions and identity matching; removed unsupported event-only detection, AD fallback, MBAM claims and automatic fleet repair."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["BitLocker", "Entra ID", "Microsoft Intune", "Endpoint Security", "PowerShell"]
 ---
 
@@ -104,6 +104,31 @@ If backup fails, retain the error and check join health, connectivity and policy
 
 Keep the existing protector until a replacement is confirmed backed up through your approved rotation process. Use the [Intune BitLocker key rotation action](https://learn.microsoft.com/en-us/intune/device-management/actions/rotate-bitlocker-keys) only on eligible devices with the required policy and RBAC permissions. A normal device sync is not that action. Validate the new protector and cloud record after rotation; never undo a backup by deleting the only available recovery information.
 
+## Home lab notebook (encrypt, escrow, one controlled miss)
+
+Use a personal lab VM with a virtual TPM, not a work laptop. This revision does not claim the notebook was executed.
+
+Success on this notebook is two records: a recovery-password protector ID that matches Entra, and one induced miss you can explain.
+
+1. Entra-join the VM first. Encrypting before join is a valid **miss** to capture, not the success path.
+2. Enable BitLocker on the OS volume with a recovery password protector. Do not print the 48-digit password into a transcript.
+3. Run `Get-BitLockerVolume` and record MountPoint, ProtectionStatus, and KeyProtectorId values only.
+4. Confirm the same protector ID under the matching Entra device **Recovery keys** pane. Match DeviceId from `dsregcmd /status`, not the newest similar name.
+5. Induce one miss on a **second** snapshot or after a controlled policy pause: encrypt with backup disabled, or backup after disconnecting the VM from the network, then capture the error from `BackupToAAD-BitLockerKeyProtector`.
+6. Restore policy and connectivity. Confirm the protector ID is present in Entra before you treat the VM as recoverable.
+
+`Collect-LabDeviceEvidence.ps1` records protector types and IDs without the recovery password, and exits if you run it on a NORFOLK, NHS, NCHC, or EEC domain.
+
+<EvidenceCallout
+  type="output"
+  title="BitLocker protector IDs versus Entra recovery metadata"
+  capture="Get-BitLockerVolume protector IDs, dsregcmd DeviceId, and the Entra Recovery keys key ID"
+  redact="Computer name, DeviceId, TenantId, protector IDs if they identify the estate, and the 48-digit password"
+  why="Encryption percentage is not recoverability. A key on a different device object is not a key for this installation."
+/>
+
+Do not set `labTested` until you can recover the VM from the Entra key without guessing. Do not publish the recovery password.
+
 ## Related resources
 
 - [Secure Boot certificate readiness](/tutorials/secure-boot-ca-2023-rollout-enterprise-readiness) explains why recovery preparation belongs before firmware work.
@@ -111,5 +136,7 @@ Keep the existing protector until a replacement is confirmed backed up through y
 - [Windows LAPS pilot and recovery checks](/tutorials/deploy-windows-laps-intune) covers a different recovery secret and its permissions.
 
 ## Correction record
+
+**19 September 2026:** Added a one-device home-lab notebook for escrow success and one controlled miss. No tenant execution is claimed.
 
 **10 September 2026 — Reviewed against documentation.** Corrected escrow versus rotation, Graph permissions and identity matching; removed unsupported event-only detection, AD fallback, MBAM claims and automatic fleet repair. Examples are illustrative; no endpoint or tenant execution is claimed.

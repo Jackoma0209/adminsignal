@@ -3,8 +3,8 @@ title: "Intune Remediation Script Not Running, Detecting, Remediating, or Report
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "Sep 10, 2026"
-reviewNote: "Made the illustrative marker fail on write errors, separated failed reads from missing values, and used an isolated PowerShell process and verified device identity."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Intune", "Remediations", "Intune Management Extension", "PowerShell", "Endpoint Analytics"]
 ---
 
@@ -791,6 +791,29 @@ Before assigning a remediation broadly:
 - [ ] `HealthScripts.log`, `AgentExecutor.log`, and `IntuneManagementExtension.log` are checked on a pilot device.
 - [ ] A rollback script or exclusion group exists before a remediation changes many devices.
 
+## Home lab notebook (harmless registry probe)
+
+Use the detect and remediate scripts in this repository under `scripts/lab`. They only write `HKLM:\SOFTWARE\AdminSignalLab\Probe`. Do not point a remediation at a security control you cannot roll back. This revision does not claim the notebook was executed.
+
+1. Confirm Intune Remediations licensing on the lab user.
+2. Create a remediation with 64-bit PowerShell, assigned to the lab VM only, run once or on a short schedule you can wait for.
+3. Detect script: `Detect-AdminSignalLabProbe.ps1` (exit 1 when the value is missing).
+4. Remediate script: `Remediate-AdminSignalLabProbe.ps1` (creates `Probe=healthy`).
+5. Capture three Intune statuses: issue detected, remediated, then healthy on the next detect. Also capture `HealthScripts.log` lines for that run.
+6. Roll back by deleting `HKLM:\SOFTWARE\AdminSignalLab` and removing the assignment.
+
+Microsoft's [Remediations](https://learn.microsoft.com/en-us/intune/device-management/tools/deploy-remediations) document is the product contract; this notebook is the one-script proof.
+
+<EvidenceCallout
+  type="output"
+  title="Remediation detect then remediate on the lab VM"
+  capture="Intune device status for the probe script across detect-unhealthy, remediated, and detect-healthy, plus HealthScripts.log timestamps"
+  redact="Device name, UPN, and tenant"
+  why="A remediation that never leaves Pending is not evidence. Three statuses on one device are."
+/>
+
+Do not set `labTested` until those three statuses exist.
+
 ## Related Resources
 
 - [Microsoft Intune hub](/intune)
@@ -806,5 +829,7 @@ Before assigning a remediation broadly:
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
 
 ## Correction record
+
+**19 September 2026:** Added a one-device home-lab notebook using the AdminSignalLab registry probe scripts. No tenant execution is claimed.
 
 **10 September 2026 — Reviewed against documentation:** Made the illustrative marker fail on write errors, separated failed reads from missing values, and used an isolated PowerShell process and verified device identity. Code and output remain illustrative, not execution evidence.
