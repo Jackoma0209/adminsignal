@@ -296,7 +296,7 @@ const topicCardPaths = [...topicsPage.body.matchAll(/<article\b[^>]*>[\s\S]*?hre
   .map((match) => match[1])
 const expectedTopicCards = [
   '/intune', '/microsoft-entra-id', '/endpoint-security', '/patch-management',
-  '/microsoft-365', '/powershell', '/sccm-mecm',
+  '/microsoft-365', '/powershell', '/sccm-mecm', '/group-policy',
 ]
 if (JSON.stringify(topicCardPaths) !== JSON.stringify(expectedTopicCards)) {
   errors.push(`/topics: expected cards ${expectedTopicCards.join(', ')}, found ${topicCardPaths.join(', ')}`)
@@ -326,6 +326,16 @@ const redirects = [
   ['/scripts', '/powershell'],
   ['/scripts/export-intune-device-report', '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration'],
   ['/scripts/get-stale-devices', '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration'],
+  ['/topics/microsoft-intune', '/intune'],
+  ['/topics/intune', '/intune'],
+  ['/topics/microsoft-entra-id', '/microsoft-entra-id'],
+  ['/topics/powershell', '/powershell'],
+  ['/topics/configuration-manager', '/sccm-mecm'],
+  ['/topics/group-policy', '/group-policy'],
+  ['/topics/windows-server', '/windows-server'],
+  ['/topics/endpoint-security', '/endpoint-security'],
+  ['/topics/patch-management', '/patch-management'],
+  ['/topics/microsoft-365', '/microsoft-365'],
 ]
 for (const [from, to] of redirects) {
   const result = await get(from, { redirect: 'manual' })

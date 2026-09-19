@@ -6,7 +6,7 @@ import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const topicName = 'Group Policy diagnosis and Intune coexistence'
 const description =
-  'Published Group Policy coverage on AdminSignal: prove why a setting is not applying, then decide whether that setting should stay in Active Directory or move to Intune Settings Catalog. This hub is not a domain-design library or a GPO tool catalogue.'
+  'Prove why a Group Policy setting is not applying, then decide whether Active Directory or Intune Settings Catalog owns it. Use the three published paths: diagnosis, dual-channel conflict, and Settings Catalog migration.'
 const topicPath = '/group-policy'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -18,6 +18,13 @@ const troubleshooting = [
       'Start with the affected user and computer, then use gpresult, scope checks and event logs to distinguish filtering, replication and processing failures.',
     meta: 'Published guidance',
   },
+  {
+    title: 'Group Policy and Intune both apply',
+    href: '/troubleshooting/group-policy-intune-conflict-which-policy-won',
+    excerpt:
+      'When a GPO and an Intune profile target the same Windows setting, prove the winning channel before anyone enables MDMWinsOverGP.',
+    meta: 'Published guidance',
+  },
 ]
 
 const tutorials = [
@@ -25,7 +32,7 @@ const tutorials = [
     title: 'Moving settings into Intune',
     href: '/tutorials/intune-admin-templates-to-settings-catalog-migration',
     excerpt:
-      'Use the coexistence and conflict checks to inventory existing settings and assign one owner before changing the management source.',
+      'Inventory the current Administrative Template or GPO value, assign one owner, then move only that setting into Settings Catalog.',
     meta: 'Published guidance',
   },
 ]
@@ -76,8 +83,8 @@ export default function TopicPage() {
             body: 'Do not migrate a setting you cannot prove is in effect. Inventory the current Administrative Template or GPO value, decide whether Active Directory or Intune Settings Catalog owns it, then move only that setting. Dual-source the same control and you will spend the next incident arguing about which policy won.',
           },
           {
-            title: 'Out of scope on this hub',
-            body: 'This hub does not publish forest design, SYSVOL rebuild, AGPM, or third-party GPO-tool reviews. Those subjects stay off the page until a complete, sourced article exists. The two published paths are diagnosis of an existing failure, and ownership when a setting is moving to Intune.',
+            title: 'How to use the published paths',
+            body: 'Use the diagnosis guide when RSoP is empty or the GPO is filtered. Use the conflict guide when both a GPO and an Intune profile are assigned. Use the Settings Catalog migration guide only after the current winner is proven and you have picked one owner.',
           },
         ]}
         news={[]}

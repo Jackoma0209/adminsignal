@@ -94,9 +94,9 @@ export default function EditorialPolicyPage() {
               <p>
                 Some articles may contain affiliate links or be produced in partnership with a
                 vendor. Sponsored or affiliate content is always clearly labelled. Commercial
-                relationships do not affect editorial scores or recommendations. Advertisers,
-                sponsors, and affiliate partners do not control reviews, comparisons, ratings,
-                verdicts, rankings, or conclusions.
+                relationships do not affect editorial recommendations. Advertisers,
+                sponsors, and affiliate partners do not control tutorials, troubleshooting
+                guides, comparisons, verdicts, or conclusions.
               </p>
             </section>
 

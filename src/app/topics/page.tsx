@@ -71,11 +71,11 @@ export default function TopicsPage() {
               </p>
             </section>
             <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-              <h2 className="mb-2 text-sm font-semibold text-foreground">No hidden drafts</h2>
+              <h2 className="mb-2 text-sm font-semibold text-foreground">Published articles only</h2>
               <p>
-                Hubs point to public, reviewed material only. Drafts, incomplete resources, and
-                pages under source review stay out of navigation until they are ready to help an
-                administrator act safely.
+                Each hub lists the tutorials, troubleshooting guides, and news already on the
+                public site for that discipline. Cards link to finished pages an administrator
+                can use.
               </p>
             </section>
           </div>

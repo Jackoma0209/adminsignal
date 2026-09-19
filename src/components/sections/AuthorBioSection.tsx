@@ -25,6 +25,7 @@ const internalLinks = [
   { label: 'Patch management', href: '/patch-management' },
   { label: 'All topics', href: '/topics' },
   { label: 'About Jack Hadcroft', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 export default function AuthorBioSection() {

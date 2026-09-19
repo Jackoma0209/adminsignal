@@ -78,11 +78,6 @@ const selectedReading = [
     type: 'News',
   },
   {
-    title: 'Windows Update for Business deferral not respected',
-    href: '/troubleshooting/wufb-deferral-not-respected',
-    type: 'Troubleshooting',
-  },
-  {
     title: 'Autopilot v1 versus Device Preparation v2',
     href: '/comparisons/autopilot-v1-vs-v2-2026',
     type: 'Comparison',
@@ -100,6 +95,11 @@ const selectedReading = [
   {
     title: 'Windows Autopilot device not importing a hardware hash',
     href: '/troubleshooting/autopilot-device-not-importing-hardware-hash',
+    type: 'Troubleshooting',
+  },
+  {
+    title: 'Group Policy and Intune both apply',
+    href: '/troubleshooting/group-policy-intune-conflict-which-policy-won',
     type: 'Troubleshooting',
   },
 ]
@@ -347,19 +347,42 @@ export default function AboutPage() {
             </section>
           </main>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="lg:sticky lg:top-24 lg:self-start space-y-5">
             <div className="rounded-xl border border-border bg-surface p-5">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-                <h2 className="font-semibold text-foreground">Publication commitments</h2>
+                <h2 className="font-semibold text-foreground">How we work</h2>
               </div>
               <ul className="mt-4 space-y-3 text-sm leading-relaxed text-muted">
                 <li>Named author, public contact address, and editorial policy on every article.</li>
+                <li>Primary Microsoft documentation cited where it supports a technical claim.</li>
+                <li>Lab or tenant execution is named only when it was done.</li>
                 <li>No fabricated tests, ratings, credentials, or social proof.</li>
-                <li>Commercial relationships disclosed where they exist.</li>
-                <li>Corrections accepted through the contact page.</li>
-                <li>Unfinished drafts remain unpublished; retired pages return a removal response.</li>
+                <li>Corrections go to editorial@adminsignal.com and are recorded on the affected page.</li>
               </ul>
+            </div>
+            <div className="rounded-xl border border-border bg-surface p-5">
+              <div className="flex items-center gap-2">
+                <Mail className="h-5 w-5 text-primary" aria-hidden="true" />
+                <h2 className="font-semibold text-foreground">Contact</h2>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                Questions and topic requests:{' '}
+                <a href="mailto:hello@adminsignal.com" className="text-primary hover:underline">
+                  hello@adminsignal.com
+                </a>
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Corrections:{' '}
+                <a href="mailto:editorial@adminsignal.com" className="text-primary hover:underline">
+                  editorial@adminsignal.com
+                </a>
+              </p>
+              <p className="mt-3 text-sm">
+                <Link href="/contact" className="text-primary hover:underline">
+                  All contact addresses
+                </Link>
+              </p>
             </div>
           </aside>
         </div>

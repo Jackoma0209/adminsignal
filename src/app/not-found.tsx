@@ -51,6 +51,16 @@ export default function NotFound() {
               </Link>{' '}
               — browse by product or technology
             </li>
+            <li>
+              <Link href="/about" className="text-primary hover:underline">
+                About
+              </Link>
+              {' · '}
+              <Link href="/contact" className="text-primary hover:underline">
+                Contact
+              </Link>{' '}
+              — who writes this site and how to reach them
+            </li>
           </ul>
           <Link
             href="/"

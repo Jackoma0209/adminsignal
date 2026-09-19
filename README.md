@@ -1,6 +1,6 @@
 # AdminSignal
 
-AdminSignal is a Next.js App Router site for authorised enterprise IT administration content: Microsoft Intune, Windows endpoints, Microsoft 365, PowerShell, troubleshooting, scripts, reviews, comparisons, and security-hardening guidance.
+AdminSignal is a Next.js App Router site for authorised enterprise IT administration content: Microsoft Intune, Windows endpoints, Microsoft 365, PowerShell, troubleshooting, comparisons, and security-hardening guidance.
 
 ## Development
 
@@ -26,7 +26,7 @@ google.com, pub-5563142788194204, DIRECT, f08c47fec0942fa0
 - AdSense ad code uses the client value `ca-pub-5563142788194204`.
 - Do not use the AdSense Customer ID in `ads.txt`.
 - Do not replace these IDs with placeholder or fake publisher IDs.
-- The AdSense loader is route-gated so it stays off legal pages, search/noindex pages, topic/listing pages, and script library pages while those remain implementation guides.
+- The AdSense loader is route-gated so it stays off legal pages, search/noindex pages, topic/listing pages, and utility pages. Ads stay off until the owner enables them.
 - Retired archives (`/reviews`, `/best-tools`, `/scripts`, withdrawn Autopilot and Patch Tuesday URLs) permanently redirect to a live page. Only `/search` and `/api/` remain robots-disallowed. Do not leave those old URLs as 404s.
 - Unknown URLs must 404 with a `noindex` robots directive. Do not let the root layout advertise `index, follow` as the only crawler signal on `not-found`.
 - `/templates` contains two complete starter CSV downloads, is indexable and included in the sitemap. It stays in `AD_SCRIPT_SUPPRESSED_PATHS`.
@@ -72,15 +72,15 @@ Verify after deploy:
 - After the AdSense message is published: `?fc=alwaysshow&fctype=gdpr` should preview the banner
 - Footer control should open the CMP, not `/cookies#manage-consent`
 
-## Script Library Status
+## Scripts, Reviews, And Best Tools
 
-The `/scripts` pages currently provide implementation notes: prerequisites, permissions, example fragments, validation steps, safety notes, and expected output. They are not a downloadable script catalogue. Complete `.ps1` source files are not in this repo, so every script page states that it is notes rather than a script release:
+There is no public script catalogue, reviews section, or best-tools list. Guessed URLs permanently redirect:
 
-```text
-This page is an implementation note with example fragments, not a complete script release.
-```
+- `/scripts` and `/scripts/:slug` → `/powershell` (Graph and inventory examples live inside guides)
+- `/reviews` and `/reviews/:slug` → `/comparisons`
+- `/best-tools` → `/topics`
 
-Add real GitHub or source-file links only after the complete script source exists and has been reviewed.
+Do not add those sections back as empty shells.
 
 ## Newsletter Status
 
@@ -88,4 +88,4 @@ The homepage newsletter form posts to `/api/newsletter`, which only returns succ
 
 ## Legal And Disclosure Pages
 
-Sitewide footer links include Privacy Policy, Cookie Policy, Terms, Editorial Policy, Affiliate Disclosure, Contact, About, and Advertise. Update these pages whenever analytics, advertising, affiliate relationships, sponsorship options, or editorial standards change.
+Sitewide footer links include Privacy Policy, Cookie Policy, Terms, Editorial Policy, Affiliate Disclosure, Contact, and About. `/advertise` exists as a noindex partnerships page linked from Contact. Update these pages whenever analytics, advertising, affiliate relationships, sponsorship options, or editorial standards change.

@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Microsoft Entra ID'
 const topicDescription =
-  'Published Microsoft Entra ID coverage currently on AdminSignal: Conditional Access baselines, emergency access accounts, and dynamic group troubleshooting. This hub does not yet include PIM or SSPR walkthroughs.'
+  'Microsoft Entra ID work published on AdminSignal: Conditional Access policy maps, emergency access account design, and dynamic group troubleshooting for assignment misses.'
 const topicPath = '/microsoft-entra-id'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -65,8 +65,8 @@ export default function MicrosoftEntraIdPage() {
             body: 'Emergency accounts need cloud-only identities, phishing-resistant factors or offline custody, Conditional Access exclusions that are monitored, and a quarterly live test. An unused Global Administrator in a password manager is not a recovery plan.',
           },
           {
-            title: 'What this hub will not claim',
-            body: 'There are no published PIM, SSPR, or app-registration hardening tutorials here yet. Those topics stay off this page until a complete, sourced article exists.',
+            title: 'How to use these articles',
+            body: 'Start with the Conditional Access policy map when you are changing who can reach cloud apps. Use the emergency-access guide before tightening MFA. Use the dynamic-group article when Intune, Autopilot, or licence assignment silently misses a user or device.',
           },
         ]}
         news={news}

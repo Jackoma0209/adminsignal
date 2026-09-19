@@ -73,6 +73,87 @@ const nextConfig: NextConfig = {
         destination: '/powershell',
         permanent: true,
       },
+      // Reviewer and old-internal guesses under /topics/{name} → canonical hub.
+      {
+        source: '/topics/microsoft-intune',
+        destination: '/intune',
+        permanent: true,
+      },
+      {
+        source: '/topics/intune',
+        destination: '/intune',
+        permanent: true,
+      },
+      {
+        source: '/topics/microsoft-entra-id',
+        destination: '/microsoft-entra-id',
+        permanent: true,
+      },
+      {
+        source: '/topics/entra-id',
+        destination: '/microsoft-entra-id',
+        permanent: true,
+      },
+      {
+        source: '/topics/entra',
+        destination: '/microsoft-entra-id',
+        permanent: true,
+      },
+      {
+        source: '/topics/powershell',
+        destination: '/powershell',
+        permanent: true,
+      },
+      {
+        source: '/topics/configuration-manager',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/topics/sccm-mecm',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/topics/sccm',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/topics/mecm',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/topics/configmgr',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/topics/group-policy',
+        destination: '/group-policy',
+        permanent: true,
+      },
+      {
+        source: '/topics/windows-server',
+        destination: '/windows-server',
+        permanent: true,
+      },
+      {
+        source: '/topics/endpoint-security',
+        destination: '/endpoint-security',
+        permanent: true,
+      },
+      {
+        source: '/topics/patch-management',
+        destination: '/patch-management',
+        permanent: true,
+      },
+      {
+        source: '/topics/microsoft-365',
+        destination: '/microsoft-365',
+        permanent: true,
+      },
     ]
   },
   images: {

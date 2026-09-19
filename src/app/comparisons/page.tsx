@@ -9,7 +9,7 @@ import { breadcrumbSchema, collectionPageSchema } from '@/lib/schema'
 
 const pageTitle = 'Product Comparisons'
 const pageDescription =
-  'Side-by-side enterprise IT comparisons with decision criteria, caveats, freshness notes, and operational questions for Microsoft admin teams.'
+  'Four admin decisions: Intune versus Configuration Manager, Autopilot versus Device Preparation, Windows 11 25H2 versus 26H1, and Entra ID P1 versus P2.'
 const pagePath = '/comparisons'
 
 const baseMetadata: Metadata = buildCategoryMetadata({
@@ -68,35 +68,39 @@ export default async function ComparisonsPage({
       <CategoryPageTemplate
         eyebrow="Comparisons"
         title={pageTitle}
-        description="Side-by-side analysis for enterprise IT teams, focused on operating model, migration risk, licensing caveats, supportability, and the questions to validate in your own environment."
+        description="Each comparison starts from a decision an administrator has to make this year: which management plane, which enrolment path, which Windows 11 target, and which Entra ID SKU."
         itemCount={filtered.length}
         categories={categories}
         activeCategory={category}
         basePath="/comparisons"
       >
-        <div className="mb-10 grid gap-5 lg:grid-cols-3">
+        <div className="mb-10 grid gap-5 sm:grid-cols-2">
           <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-            <h2 className="mb-2 text-sm font-semibold text-foreground">How comparisons are structured</h2>
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Intune or Configuration Manager?</h2>
             <p>
-              Each comparison starts with the admin decision being made, then looks at capability,
-              operating model, migration effort, support boundaries, and what to validate before
-              committing to a direction.
+              Start here when you are choosing a management plane or planning co-management.
+              Licensing entitlement is not the same as retiring task-sequence OSD.
             </p>
           </section>
           <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-            <h2 className="mb-2 text-sm font-semibold text-foreground">What not to assume</h2>
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Autopilot v1 or Device Preparation?</h2>
             <p>
-              A product can be the better fit for one tenant and the wrong fit for another. Treat
-              the recommendation as a starting position, then test it against your estate size,
-              licensing, network constraints, support model, and audit requirements.
+              Start here when you are picking an enrolment path for new Windows 11 devices.
+              Hybrid join, pre-provisioning, and ESP control still keep classic Autopilot in play.
             </p>
           </section>
           <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
-            <h2 className="mb-2 text-sm font-semibold text-foreground">Freshness caveat</h2>
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Windows 11 25H2 or 26H1?</h2>
             <p>
-              Microsoft and vendor packaging changes quickly. Comparison pages include review
-              dates and official source links where useful, but current documentation should be
-              checked before procurement or migration planning.
+              Start here when you are setting the feature-update target for a managed fleet.
+              26H1 is a device-scoped release, not a broad in-place upgrade from 24H2 or 25H2.
+            </p>
+          </section>
+          <section className="rounded-lg border border-border bg-surface p-5 text-sm leading-relaxed text-muted">
+            <h2 className="mb-2 text-sm font-semibold text-foreground">Entra ID P1 or P2?</h2>
+            <p>
+              Start here when Conditional Access is already in use and you are deciding whether
+              privileged-identity and access-review features change the SKU.
             </p>
           </section>
         </div>

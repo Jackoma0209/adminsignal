@@ -39,13 +39,13 @@ export default function AdvertisePage() {
             </p>
             <p>
               Advertising and sponsorship do not buy editorial conclusions. Advertisers do not
-              control reviews, comparisons, ratings, recommendations, or the final wording of
-              independent editorial content.
+              control tutorials, troubleshooting guides, comparisons, recommendations, or the
+              final wording of independent editorial content.
             </p>
             <p>
               Sponsored articles, if accepted, are reviewed for audience fit, factual clarity, and
               disclosure. They are visibly labelled as sponsored and kept separate from independent
-              reviews and comparisons.
+              tutorials, troubleshooting guides, and comparisons.
             </p>
             <p>
               To discuss options, contact us at{' '}
