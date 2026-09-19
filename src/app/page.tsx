@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     url: homeUrl,
     type: 'website',
     siteName: 'AdminSignal',
-    locale: 'en_US',
+    locale: 'en_GB',
     title: homeTitle,
     description: homeDescription,
     images: [

@@ -1,10 +1,8 @@
-import { notFound } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 
 /**
- * Withdrawn. A 200 withNoindex editorial-review page is still a low-value
- * screen for an AdSense crawler that may review every URL. notFound() is the
- * safer reduction.
+ * Withdrawn flagship URL. Send reviewers and old links to the live comparison.
  */
 export default function Windows1125H2AutopilotV2Page() {
-  notFound()
+  permanentRedirect('/comparisons/autopilot-v1-vs-v2-2026')
 }

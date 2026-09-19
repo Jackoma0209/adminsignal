@@ -52,10 +52,30 @@ export default async function SearchPage({ searchParams }: Props) {
           </h1>
 
           {!hasQuery && (
-            <p className="text-base leading-relaxed text-muted">
-              Use the search box in the header to find verified guides, news, comparisons,
-              troubleshooting articles, and topic hubs across AdminSignal.
-            </p>
+            <div className="space-y-4">
+              <p className="text-base leading-relaxed text-muted">
+                Use the search box in the header to find verified guides, news, comparisons,
+                troubleshooting articles, and topic hubs across AdminSignal.
+              </p>
+              <p className="text-sm text-muted/60">
+                Or browse by section:{' '}
+                <Link href="/tutorials" className="text-primary underline underline-offset-2">
+                  Tutorials
+                </Link>
+                {' · '}
+                <Link href="/troubleshooting" className="text-primary underline underline-offset-2">
+                  Troubleshooting
+                </Link>
+                {' · '}
+                <Link href="/news" className="text-primary underline underline-offset-2">
+                  News
+                </Link>
+                {' · '}
+                <Link href="/topics" className="text-primary underline underline-offset-2">
+                  All Topics
+                </Link>
+              </p>
+            </div>
           )}
 
           {tooShort && (

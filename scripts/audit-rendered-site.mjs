@@ -144,11 +144,8 @@ const quarantinePaths = new Set([
 ])
 
 const noindexPaths = [
-  '/reviews',
-  ...slugs('reviews').map((slug) => `/reviews/${slug}`),
-  '/best-tools',
   '/search?q=intune',
-  ...quarantinePaths,
+  '/advertise',
 ]
 
 const hiddenFromDiscoveryPaths = new Set([
@@ -289,10 +286,6 @@ for (const retired of ['/reviews']) {
   if (new RegExp(`Disallow: ${retired}`, 'i').test(robots.body)) {
     errors.push(`/robots.txt: blocks retired route ${retired}`)
   }
-  const result = await get(retired, { redirect: 'manual' })
-  if (result.response.status !== 404 && result.response.status !== 410) {
-    errors.push(`${retired}: expected removal status, received ${result.response.status}`)
-  }
 }
 if (new RegExp('Disallow: /scripts', 'i').test(robots.body)) {
   errors.push('/robots.txt: blocks retired route /scripts')
@@ -322,6 +315,14 @@ for (const rule of ['/api/', '/search']) {
 const redirects = [
   ['/tutorials/group-policy-troubleshooting-rsop-gpresult', '/troubleshooting/group-policy-not-applying-diagnosis'],
   ['/comparisons/windows-defender-vs-crowdstrike-falcon', '/tutorials/microsoft-defender-for-endpoint-intune-rollout'],
+  ['/tutorials/windows-11-25h2-autopilot-v2', '/comparisons/autopilot-v1-vs-v2-2026'],
+  ['/tutorials/autopilot-v2-enrollment-esp-troubleshooting', '/troubleshooting/autopilot-enrollment-status-page-stuck'],
+  ['/guides/windows-11-25h2-autopilot-v2', '/comparisons/autopilot-v1-vs-v2-2026'],
+  ['/news/april-2026-patch-tuesday-breakdown', '/news'],
+  ['/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063', '/troubleshooting/bitlocker-recovery-key-not-backed-up-entra'],
+  ['/reviews', '/comparisons'],
+  ['/reviews/crowdstrike-falcon-go-review', '/comparisons'],
+  ['/best-tools', '/topics'],
   ['/scripts', '/powershell'],
   ['/scripts/export-intune-device-report', '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration'],
   ['/scripts/get-stale-devices', '/tutorials/azuread-msonline-to-microsoft-graph-powershell-migration'],
@@ -369,6 +370,11 @@ for (const hiddenPath of hiddenFromDiscoveryPaths) {
 const missingPath = '/this-route-must-not-exist-adsense-audit'
 const missing = await get(missingPath)
 if (missing.response.status !== 404) errors.push(`Unknown route: expected 404, received ${missing.response.status}`)
+const missingRobots = [...missing.body.matchAll(/<meta[^>]+name=["']robots["'][^>]+content=["']([^"']+)["'][^>]*>/gi)]
+  .map((match) => match[1].toLowerCase())
+if (!missingRobots.some((value) => value.includes('noindex'))) {
+  errors.push(`${missingPath}: 404 page is missing a noindex robots directive`)
+}
 checkHiddenLinks(missing.body, missingPath, hiddenFromDiscoveryPaths)
 if (/href=["']\/#newsletter["']/i.test(missing.body)) {
   errors.push(`${missingPath}: links to a missing newsletter anchor`)

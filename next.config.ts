@@ -14,6 +14,46 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: '/tutorials/windows-11-25h2-autopilot-v2',
+        destination: '/comparisons/autopilot-v1-vs-v2-2026',
+        permanent: true,
+      },
+      {
+        source: '/tutorials/autopilot-v2-enrollment-esp-troubleshooting',
+        destination: '/troubleshooting/autopilot-enrollment-status-page-stuck',
+        permanent: true,
+      },
+      {
+        source: '/guides/windows-11-25h2-autopilot-v2',
+        destination: '/comparisons/autopilot-v1-vs-v2-2026',
+        permanent: true,
+      },
+      {
+        source: '/news/april-2026-patch-tuesday-breakdown',
+        destination: '/news',
+        permanent: true,
+      },
+      {
+        source: '/troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063',
+        destination: '/troubleshooting/bitlocker-recovery-key-not-backed-up-entra',
+        permanent: true,
+      },
+      {
+        source: '/reviews',
+        destination: '/comparisons',
+        permanent: true,
+      },
+      {
+        source: '/reviews/:slug*',
+        destination: '/comparisons',
+        permanent: true,
+      },
+      {
+        source: '/best-tools',
+        destination: '/topics',
+        permanent: true,
+      },
+      {
         source: '/scripts',
         destination: '/powershell',
         permanent: true,

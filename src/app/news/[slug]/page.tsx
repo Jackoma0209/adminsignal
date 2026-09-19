@@ -1,5 +1,5 @@
 import ArticleByline from '@/components/article/ArticleByline'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import Image from 'next/image'
 import type { Metadata } from 'next'
@@ -10,6 +10,7 @@ import { getContentItem, getContentSlugs } from '@/lib/content'
 import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
 import {
+  getRetiredContentRedirect,
   isDraftNewsSlug,
   isEditorialReviewNewsSlug,
   isNoindexNewsSlug,
@@ -117,6 +118,8 @@ export default async function NewsArticlePage({ params }: Props) {
   const { slug } = await params
   const signal = signals.find((item) => item.slug === slug)
   if (!signal) notFound()
+  const retiredRedirect = getRetiredContentRedirect('news', slug)
+  if (retiredRedirect) permanentRedirect(retiredRedirect)
   if (isNoindexNewsSlug(slug)) notFound()
   const underReview = isNoindexNewsSlug(slug)
   const draft = isDraftNewsSlug(slug)
