@@ -82,7 +82,7 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: SITE_NAME,
     type: 'website',
-    locale: 'en_US',
+    locale: 'en_GB',
     url: SITE_URL,
     title: `${SITE_NAME} — Practical Microsoft Administration Guidance`,
     description: SITE_DESCRIPTION,
@@ -97,8 +97,6 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    site: '@adminsignal',
-    creator: '@adminsignal',
     title: `${SITE_NAME} — Practical Microsoft Administration Guidance`,
     description: SITE_DESCRIPTION,
     images: [OG_IMAGE],

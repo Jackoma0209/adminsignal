@@ -7,7 +7,7 @@ export const NOINDEX_ROBOTS: NonNullable<Metadata['robots']> = {
 
 /**
  * Route exclusions shared by discovery and advertising. Several entries are
- * retired routes that return 404 or redirect; membership does not make them
+ * retired routes that permanently redirect; membership does not make them
  * public pages. Search and commercial utility pages are not indexable content.
  */
 export const NOINDEX_STATIC_PATHS = new Set<string>([
@@ -29,9 +29,9 @@ export const NOINDEX_STATIC_PATHS = new Set<string>([
 export const DRAFT_NEWS_SLUGS = new Set<string>([])
 
 /**
- * Published records held out of search while an official-source review is in
- * progress. These routes remain addressable so old links do not become opaque,
- * but they are excluded from listings, sitemap output, ads, and rich-result data.
+ * Published records held out of search. Matching routes permanently redirect
+ * to a live page so old links are not 404s. They stay out of listings,
+ * sitemap output, ads, and rich-result data.
  */
 export const NOINDEX_NEWS_SLUGS = new Set<string>([
   'april-2026-patch-tuesday-breakdown',
@@ -55,11 +55,25 @@ export const NOINDEX_GUIDE_SLUGS = new Set<string>([
 ])
 
 const DUPLICATE_TUTORIAL_REDIRECTS = new Map([
-  ['windows-11-25h2-autopilot-v2', '/guides/windows-11-25h2-autopilot-v2'],
+  ['windows-11-25h2-autopilot-v2', '/comparisons/autopilot-v1-vs-v2-2026'],
   [
     'group-policy-troubleshooting-rsop-gpresult',
     '/troubleshooting/group-policy-not-applying-diagnosis',
   ],
+])
+
+const RETIRED_CONTENT_REDIRECTS = new Map([
+  ['news/april-2026-patch-tuesday-breakdown', '/news'],
+  [
+    'troubleshooting/april-2026-bitlocker-recovery-loop-kb5082063',
+    '/troubleshooting/bitlocker-recovery-key-not-backed-up-entra',
+  ],
+  [
+    'tutorials/autopilot-v2-enrollment-esp-troubleshooting',
+    '/troubleshooting/autopilot-enrollment-status-page-stuck',
+  ],
+  ['tutorials/windows-11-25h2-autopilot-v2', '/comparisons/autopilot-v1-vs-v2-2026'],
+  ['guides/windows-11-25h2-autopilot-v2', '/comparisons/autopilot-v1-vs-v2-2026'],
 ])
 
 export function withNoindex(metadata: Metadata): Metadata {
@@ -71,6 +85,10 @@ export function withNoindex(metadata: Metadata): Metadata {
 
 export function getDuplicateTutorialRedirect(slug: string): string | undefined {
   return DUPLICATE_TUTORIAL_REDIRECTS.get(slug)
+}
+
+export function getRetiredContentRedirect(segment: string, slug: string): string | undefined {
+  return RETIRED_CONTENT_REDIRECTS.get(`${segment}/${slug}`)
 }
 
 export function isNoindexPath(path: string): boolean {
@@ -111,7 +129,7 @@ export function isNoindexContentRoute(segment: string, slug: string): boolean {
       return isNoindexNewsSlug(slug)
     case 'reviews':
     case 'scripts':
-      // These archives 404 on the public surface until they meet publication standard.
+      // These archives redirect away from the public surface until they meet publication standard.
       return true
     case 'troubleshooting':
       return isNoindexTroubleshootingSlug(slug)

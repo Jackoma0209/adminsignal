@@ -27,11 +27,12 @@ google.com, pub-5563142788194204, DIRECT, f08c47fec0942fa0
 - Do not use the AdSense Customer ID in `ads.txt`.
 - Do not replace these IDs with placeholder or fake publisher IDs.
 - The AdSense loader is route-gated so it stays off legal pages, search/noindex pages, topic/listing pages, and script library pages while those remain implementation guides.
-- Retired sections return removal responses and remain crawlable. Only `/search` and `/api/` retain robots exclusions; editorial drafts stay outside published content.
+- Retired archives (`/reviews`, `/best-tools`, `/scripts`, withdrawn Autopilot and Patch Tuesday URLs) permanently redirect to a live page. Only `/search` and `/api/` remain robots-disallowed. Do not leave those old URLs as 404s.
+- Unknown URLs must 404 with a `noindex` robots directive. Do not let the root layout advertise `index, follow` as the only crawler signal on `not-found`.
 - `/templates` contains two complete starter CSV downloads, is indexable and included in the sitemap. It stays in `AD_SCRIPT_SUPPRESSED_PATHS`.
 - Sitewide metadata must not claim unverifiable years of experience; author claims stay aligned with `/about`.
 - Keep the inactive newsletter form hidden until MailerLite credentials are configured.
-- Before re-applying to AdSense: run `npm run check:release`, confirm legal pages load, and browse the site as a first-time visitor for thin or unfinished pages.
+- Before re-applying to AdSense: run `npm run check:release`, confirm retired URLs 301 to live pages, confirm a random 404 is `noindex`, and do not apply until the lab-tested briefs in `docs/drafts/lab-tested-article-briefs.md` have produced published evidence.
 - Do not promise that Google will approve AdSense.
 
 ## CMP And Consent Status

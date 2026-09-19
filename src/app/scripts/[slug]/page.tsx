@@ -1,9 +1,8 @@
-import { notFound } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 
 /**
- * Withdrawn from the public surface. A 200 unfinished archive is still a
- * low-value screen for an AdSense crawler.
+ * Withdrawn archive. Permanent redirect so old links do not land on a 404.
  */
-export default function WithdrawnArchivePage() {
-  notFound()
+export default function WithdrawnScriptPage() {
+  permanentRedirect('/powershell')
 }

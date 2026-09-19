@@ -1,5 +1,5 @@
 import ArticleByline from '@/components/article/ArticleByline'
-import { notFound } from 'next/navigation'
+import { notFound, permanentRedirect } from 'next/navigation'
 import { MDXRemote } from 'next-mdx-remote/rsc'
 import type { Metadata } from 'next'
 import { mdxComponents } from '@/components/ui/MdxComponents'
@@ -9,6 +9,7 @@ import { getContentItem, getContentSlugs } from '@/lib/content'
 import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
 import {
+  getRetiredContentRedirect,
   isNoindexTroubleshootingSlug,
   withNoindex,
 } from '@/lib/noindex'
@@ -54,6 +55,8 @@ export default async function TroubleshootingArticlePage({ params }: Props) {
   const { slug } = await params
   const article = troubleshootingArticles.find((item) => item.slug === slug)
   if (!article) notFound()
+  const retiredRedirect = getRetiredContentRedirect('troubleshooting', slug)
+  if (retiredRedirect) permanentRedirect(retiredRedirect)
   if (isNoindexTroubleshootingSlug(slug)) notFound()
   const underReview = isNoindexTroubleshootingSlug(slug)
 

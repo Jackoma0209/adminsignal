@@ -11,6 +11,7 @@ import { articleMdxOptions } from '@/lib/mdx'
 import { buildArticleMetadata } from '@/lib/metadata'
 import {
   getDuplicateTutorialRedirect,
+  getRetiredContentRedirect,
   isNoindexHref,
   isNoindexTutorialSlug,
   withNoindex,
@@ -58,10 +59,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TutorialPage({ params }: Props) {
   const { slug } = await params
-  if (isNoindexTutorialSlug(slug)) notFound()
-
   const duplicateRedirect = getDuplicateTutorialRedirect(slug)
   if (duplicateRedirect) permanentRedirect(duplicateRedirect)
+  const retiredRedirect = getRetiredContentRedirect('tutorials', slug)
+  if (retiredRedirect) permanentRedirect(retiredRedirect)
+  if (isNoindexTutorialSlug(slug)) notFound()
 
   const guide = guides.find((item) => item.slug === slug)
   if (!guide) notFound()
