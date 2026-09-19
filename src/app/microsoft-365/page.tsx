@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Microsoft 365'
 const topicDescription =
-  'Published Microsoft 365 coverage currently on AdminSignal: Exchange Online SMTP AUTH migration, admin-centre MFA readiness, and Conditional Access policy mapping. This hub does not yet include SharePoint or Teams tutorials.'
+  'Microsoft 365 work published on AdminSignal: Exchange Online SMTP AUTH retirement, admin-centre MFA readiness, and Conditional Access policy mapping for the same cutover.'
 const topicPath = '/microsoft-365'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -65,8 +65,8 @@ export default function Microsoft365Page() {
             body: 'Admin MFA readiness is incomplete if emergency access accounts, security defaults, and Conditional Access exclusions are still undecided. Locking out the only remaining admin role is a change-control failure, not a security win.',
           },
           {
-            title: 'What this hub will not claim',
-            body: 'There are no published Teams voice, SharePoint migration, or Microsoft 365 Copilot tutorials here yet. Those topics stay off this page until a complete, sourced article exists.',
+            title: 'How to use these articles',
+            body: 'Start with the SMTP AUTH inventory if printers, scanners, or stored-credential scripts still send mail. Use the admin-centre MFA guide before you close the last password-only admin path. Use the Conditional Access map when those two projects change who can reach Exchange Online.',
           },
         ]}
         news={news}

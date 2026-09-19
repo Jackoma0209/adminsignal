@@ -13,6 +13,7 @@ const nav = [
   { label: 'News', href: '/news' },
   { label: 'Topics', href: '/topics' },
   { label: 'About', href: '/about' },
+  { label: 'Contact', href: '/contact' },
 ]
 
 function useTheme() {
@@ -103,7 +104,7 @@ export default function Header() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-md px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
+                className="rounded-md px-2.5 py-2 text-sm text-muted transition-colors hover:bg-surface-elevated hover:text-foreground"
               >
                 {item.label}
               </Link>

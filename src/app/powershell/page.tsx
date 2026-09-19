@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'PowerShell'
 const topicDescription =
-  'Published PowerShell coverage currently on AdminSignal: AzureAD/MSOnline to Graph SDK migration, software inventory patterns, and Graph examples used in Intune and Microsoft 365 guides. This hub does not cover Desired State Configuration and is not a downloadable script catalogue.'
+  'PowerShell work published on AdminSignal: AzureAD/MSOnline to Graph SDK migration, software inventory patterns, and Graph examples used inside Intune and Microsoft 365 guides.'
 const topicPath = '/powershell'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -61,8 +61,8 @@ export default function PowerShellPage() {
             body: 'Map the Graph resource, delegated versus application permissions, paging, and throttling for each script. A renamed cmdlet that still pulls every user in the tenant, or that silently uses the beta endpoint, is not a completed migration.',
           },
           {
-            title: 'Example fragments are not a script library',
-            body: 'AdminSignal PowerShell pages show command shape, expected output, and safety notes. They are not signed releases, copy-and-run production tools, or a Desired State Configuration (DSC) library. Rebuild any automation from reviewed requirements and test it in an authorised lab first.',
+            title: 'Worked examples live inside the guides',
+            body: 'AdminSignal PowerShell pages show command shape, expected output, and safety notes for Graph migration and inventory. Rebuild any automation from reviewed requirements and test it in an authorised lab first. These examples are not signed releases or copy-and-run production tools.',
           },
           {
             title: 'When not to automate yet',

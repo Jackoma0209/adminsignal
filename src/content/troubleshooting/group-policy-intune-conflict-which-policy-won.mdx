@@ -1,0 +1,208 @@
+---
+title: "Group Policy and Intune both apply: prove which channel won"
+category: "Group Policy"
+date: "19 September 2026"
+authorId: "jack"
+lastReviewed: "19 September 2026"
+reviewNote: "Reviewed against Microsoft ControlPolicyConflict, Group Policy analytics, Settings Catalog, and MDM diagnostic-report documentation. No tenant or client logs were captured for this article."
+tags: ["Group Policy", "Intune", "MDMWinsOverGP", "Settings Catalog", "Active Directory", "Windows 11"]
+---
+
+## When to Use This Guide
+
+Use this guide when a Windows setting is wrong on a hybrid-joined or co-managed device, and both Active Directory Group Policy and Microsoft Intune appear to target the same control.
+
+Typical tickets:
+
+- Intune shows **Succeeded**, `gpresult` still names a GPO, and the effective registry value matches neither portal
+- A Settings Catalog profile and a domain GPO both set BitLocker, Defender, or an Administrative Template
+- Someone enabled **MDM wins over Group Policy** last week and a different CSE still wins
+- Group Policy analytics says the setting is MDM-supported, but the device behaviour did not change
+
+Do not start by flipping `MDMWinsOverGP`. First name the setting, prove both channels actually target the device, then read the winning value on that device.
+
+If the GPO is not applying at all, use [Group Policy not applying](/troubleshooting/group-policy-not-applying-diagnosis) first. If the intended end state is Intune ownership, use [Administrative Templates to Settings Catalog](/tutorials/intune-admin-templates-to-settings-catalog-migration) after you can prove the current winner.
+
+## Scope and Assumptions
+
+This is documentation-reviewed diagnosis for domain-joined or Microsoft Entra hybrid joined Windows 10 and Windows 11 devices that also have an Intune MDM enrolment. Examples and command output are illustrative. They are not a recorded lab run.
+
+It assumes:
+
+- You can identify the affected computer, the affected user if the setting is user-scoped, and the exact setting name
+- You can read GPMC, Intune device configuration, and local event logs on a pilot device
+- You will not unlink a production GPO or assign a tenant-wide conflict policy from the first failing device
+
+It does not cover iOS, Android, macOS, or Intune-only Entra-joined devices that never process domain Group Policy.
+
+Primary sources:
+
+- [ControlPolicyConflict Policy CSP](https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-controlpolicyconflict)
+- [Policies in Policy CSP supported by Group Policy](https://learn.microsoft.com/en-us/windows/client-management/mdm/policies-in-policy-csp-supported-by-group-policy)
+- [Import and analyze Group Policy with Intune](https://learn.microsoft.com/en-us/intune/device-configuration/import-group-policy-analytics)
+- [Migrate imported Group Policy to a Settings Catalog policy](https://learn.microsoft.com/en-us/intune/device-configuration/migrate-group-policy)
+- [Use the Intune settings catalog](https://learn.microsoft.com/en-us/intune/device-configuration/settings-catalog/)
+- [Applying Group Policy troubleshooting guidance](https://learn.microsoft.com/en-us/troubleshoot/windows-server/group-policy/applying-group-policy-troubleshooting-guidance)
+
+## What dual-source actually means
+
+| Observation | What it does not prove |
+|---|---|
+| Intune profile status is Succeeded | The MDM channel delivered a payload. It does not prove that payload is the effective OS value |
+| `gpresult` lists the GPO as Applied | The GPO was in scope. It does not prove that CSE wrote the value you are looking at |
+| Group Policy analytics MDM Support is high | Intune has a matching setting. It does not mean the GPO has been unlinked |
+| `MDMWinsOverGP` is 1 | Policy CSP equivalents can be blocked from GP. Defender CSP, Windows Update CSP, and other non-Policy CSP settings can still race |
+
+Microsoft documents that the same setting should not be configured in both GPO and MDM unless that setting is under `MDMWinsOverGP`. Otherwise there is a race and no guarantee which channel wins.
+
+AdminSignal interpretation: treat dual-source as the incident. The switch is not a substitute for picking one owner.
+
+## Step 1: Name the setting and the expected value
+
+Record four facts before you open another console:
+
+1. Computer name and whether the setting is **computer** or **user** configuration
+2. The GPO name and the Administrative Template or registry path it sets
+3. The Intune profile name, profile type (Settings Catalog, Endpoint security, Templates, custom OMA-URI), and assignment
+4. The value you expect to see on a healthy device
+
+Do not compare “BitLocker is on in Intune” with “there is a BitLocker GPO”. Compare one CSP or registry value.
+
+If you cannot name the setting, stop. Collect RSoP with the [diagnosis guide](/troubleshooting/group-policy-not-applying-diagnosis) until the GPO side is a specific winning GPO, not a feeling that “policy is broken”.
+
+## Step 2: Prove both channels actually target this device
+
+On the Group Policy side, confirm the computer (and user, if needed) is in scope: OU, security filtering, WMI filter, link enabled, GPO not All Settings Disabled.
+
+```cmd
+gpresult /R
+```
+
+On the Intune side, open the device in **Intune admin centre > Devices > Windows > [device] > Device configuration** and confirm the competing profile is assigned to this object, not only to a group the device should have joined.
+
+If either channel does not target the device, you do not have a conflict. You have a scope miss. Fix scope first.
+
+## Step 3: Read the winning value on the device
+
+Collect three artefacts from the same reboot or sync cycle:
+
+1. **RSoP / gpresult HTML** for the winning GPO and the specific setting
+2. **Intune per-setting status** for the competing profile
+3. **MDM diagnostic report** from **Settings > Accounts > Access work or school > Info > Advanced Diagnostic Report > Create Report**
+
+Microsoft documents that the MDM diagnostic report includes applied configuration state and, when `MDMWinsOverGP` has blocked an equivalent, a list of blocked Group Policy settings.
+
+Compare the three. The useful outcomes are:
+
+- GP value matches the live OS setting, Intune is assigned but not effective
+- Intune value matches the live OS setting, the GPO is Applied but blocked or overwritten
+- Neither matches, which usually means a third writer: another GPO, a security baseline, a custom OMA-URI, a script, or a local change
+
+Do not treat a portal timestamp as proof. The OS value is the proof.
+
+## Step 4: Check whether MDMWinsOverGP even applies
+
+`ControlPolicyConflict/MDMWinsOverGP` is a **device** Policy CSP setting. Microsoft documents:
+
+- Path: `./Device/Vendor/MSFT/Policy/Config/ControlPolicyConflict/MDMWinsOverGP`
+- Default: `0`
+- `1`: MDM policy is used and the equivalent GP policy is blocked
+- Scope: Policy CSP only
+- It does **not** apply to other CSPs with equivalent GP settings, including Defender CSP
+- Dual-source outside that control is a race with no documented winner
+
+Search Settings Catalog for the Control policy conflict setting in your service release. If you must set the CSP directly, Microsoft’s documented OMA-URI is the Policy CSP path above, integer `1` or `0`. Prefer Catalog when the setting is present so you are not maintaining a custom payload.
+
+On a 1803-era image, Microsoft documents that the policy did not support Delete and did not support setting the value back to `0` after it had been `1`. Confirm the Windows build before you treat the switch as reversible.
+
+Illustrative check of the Policy Manager value (device context, elevated). Adapt the path if your build stores the area elsewhere:
+
+```powershell
+Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\current\device\ControlPolicyConflict' -ErrorAction SilentlyContinue |
+    Select-Object MDMWinsOverGP
+```
+
+Expected output shape when the CSP is configured:
+
+```text
+MDMWinsOverGP
+-------------
+            1
+```
+
+Absence of the value is not a failure. The documented default is `0` (unset). Do not invent a winner from a missing key.
+
+## Step 5: Confirm the setting is actually a Policy CSP equivalent
+
+`MDMWinsOverGP` only helps when the Intune setting is in Policy CSP and Microsoft maps it to a Group Policy equivalent. Microsoft tags those mappings in the Policy DDF (`ADMXBacked`, `ADMXMapped`, `GPRegistryMappedName`, `GPDBMappedName`) and publishes a Policy CSP to Group Policy list.
+
+If the Intune payload lives in Defender CSP, BitLocker CSP, Windows Update CSP, or another non-Policy CSP, flipping the switch will not make Intune win. The documented fix is to stop dual-sourcing that setting.
+
+Use [Group Policy analytics](https://learn.microsoft.com/en-us/intune/device-configuration/import-group-policy-analytics) to see whether the on-prem setting has an MDM match:
+
+1. Export the GPO as XML from GPMC (keep the export under Microsoft’s documented size limit)
+2. **Intune admin centre > Devices > Manage devices > Group Policy analytics > Import**
+3. Read **MDM Support** for that GPO, then open the setting list
+4. **Yes** means Settings Catalog can express the setting. **No** or deprecated means Intune is not a drop-in replacement
+
+Analytics is an inventory. It does not unlink the GPO.
+
+## Step 6: Pick one owner, then remove the other
+
+On a pilot device or OU, choose one:
+
+- **AD keeps the setting.** Unassign or exclude the Intune profile from that group. Re-read RSoP and the OS value.
+- **Intune keeps the setting.** Deploy the Settings Catalog (or Endpoint security) profile, prove it on the pilot, then unlink or security-filter the GPO setting so it no longer writes that value.
+
+Do not leave both assigned “because MDMWinsOverGP is on”. That is still dual-source for every setting outside Policy CSP.
+
+For the migration mechanics, follow [Administrative Templates to Settings Catalog](/tutorials/intune-admin-templates-to-settings-catalog-migration). For imported GPO XML, Microsoft documents a **Migrate** action from Group Policy analytics into a Settings Catalog policy. Review each setting; analytics can flag conflicts when two imported values compete.
+
+## When not to enable MDMWinsOverGP
+
+Do not turn the switch on when:
+
+- You have not named the conflicting setting
+- The competing Intune payload is Defender, Windows Update, or another non-Policy CSP
+- You intend it as a forest-wide workaround for GPO sprawl
+- You cannot reverse the assignment on the Windows build you actually run
+- The device is still failing basic GP processing (no RSoP, DC discovery failure, filtering)
+
+Microsoft’s own guidance is not “MDM always wins”. It is “do not configure the same setting in both channels unless `MDMWinsOverGP` controls that setting”.
+
+## Blast radius and rollback
+
+Changing conflict behaviour is a fleet change. Pilot one OU or one Intune group.
+
+Rollback, in order:
+
+1. Remove the pilot assignment for the Intune conflict profile or the competing Settings Catalog profile
+2. Restore the GPO link or security filter you changed, from the backup you took first
+3. Sync the device and collect a new diagnostic report and `gpresult`
+4. Only then consider setting `MDMWinsOverGP` back to `0` on builds that support it
+
+```powershell
+New-Item -ItemType Directory -Path C:\GPOBackups -Force | Out-Null
+Backup-GPO -Name 'Contoso-Win11-Computer' -Path C:\GPOBackups -ErrorAction Stop
+```
+
+Secure the backup. Restoration is a separate write. Taking a backup must not immediately restore old links.
+
+## Validation
+
+On the pilot device, after one approved sync and any restart the setting requires:
+
+- The live OS value matches the chosen owner
+- The losing channel no longer writes that value (`gpresult` denied/filtered, or Intune assignment gone)
+- The MDM diagnostic report no longer shows an unexplained block list for unrelated settings
+- A control device outside the pilot is unchanged
+
+If the value still does not match, you are not finished. Return to Step 3 rather than adding a third profile.
+
+## Related reading
+
+- [Group Policy not applying](/troubleshooting/group-policy-not-applying-diagnosis)
+- [Administrative Templates to Settings Catalog](/tutorials/intune-admin-templates-to-settings-catalog-migration)
+- [Intune device not syncing](/troubleshooting/intune-device-not-syncing)
+- [Group Policy hub](/group-policy)
+- [Microsoft Intune hub](/intune)

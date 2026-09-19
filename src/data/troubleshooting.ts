@@ -15,6 +15,21 @@ export interface TroubleshootingArticle {
 
 export const troubleshootingArticles: TroubleshootingArticle[] = [
   {
+    id: '16',
+    title: 'Group Policy and Intune both apply: prove which channel won',
+    slug: 'group-policy-intune-conflict-which-policy-won',
+    category: 'Group Policy',
+    excerpt:
+      'A documentation-reviewed path for hybrid devices where a GPO and an Intune profile both target the same Windows setting. Prove the winner before anyone enables MDMWinsOverGP.',
+    affectedProducts: ['Group Policy', 'Microsoft Intune', 'Active Directory', 'Windows 11', 'Windows 10'],
+    difficulty: 'Intermediate',
+    date: '19 Sep 2026',
+    publishedAt: '2026-09-19',
+    readTime: '16 min read',
+    authorId: 'jack',
+    isFeatured: true,
+  },
+  {
     id: '15',
     title: 'Prove which service owns Windows Update on a co-managed device',
     slug: 'comanagement-windows-update-workload-ownership',

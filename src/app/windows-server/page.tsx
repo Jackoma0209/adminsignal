@@ -7,7 +7,7 @@ import { buildTopicContent } from '@/lib/topic-content'
 
 const topicName = 'Windows Server'
 const topicDescription =
-  'Published Windows Server coverage on AdminSignal: Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and related servicing notes. This hub is not a DNS, DHCP, backup, or monitoring library.'
+  'Windows Server work published on AdminSignal: Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and servicing notes that change those two jobs.'
 const topicPath = '/windows-server'
 const topicUrl = `https://www.adminsignal.com${topicPath}`
 
@@ -53,8 +53,8 @@ export default function WindowsServerPage() {
         description={topicDescription}
         introSections={[
           {
-            title: 'What this hub currently publishes',
-            body: 'AdminSignal’s Windows Server pages cover Group Policy processing against Active Directory, Secure Boot CA 2023 readiness for server fleets, and related servicing notes. They are not a DNS, DHCP, file-services, clustering, or backup tutorial library.',
+            title: 'What this hub is for',
+            body: 'Use these pages when a domain-joined server is not processing Group Policy as expected, when Secure Boot CA 2023 is a fleet change rather than a BIOS tick-box, or when a servicing note changes those two jobs. Start from the published article that matches the ticket.',
           },
           {
             title: 'Collect RSoP evidence before another gpupdate',
@@ -62,21 +62,21 @@ export default function WindowsServerPage() {
           },
           {
             title: 'Secure Boot CA 2023 is a fleet change',
-            body: 'The 2023 certificate authority rollout is a sequenced firmware and OS trust change, not a single BIOS tick-box. Use the published readiness guide for inventory and rollback ownership rather than assuming every server can flip in one window.',
+            body: 'The 2023 certificate authority rollout is a sequenced firmware and OS trust change. Use the published readiness guide for inventory and rollback ownership rather than assuming every server can flip in one window.',
           },
           {
-            title: 'Out of scope on this hub',
-            body: 'This hub does not publish DNS, DHCP, file-server, clustering, or backup runbooks. Those subjects stay off the page until a complete, sourced article exists.',
+            title: 'Servicing notes that affect this work',
+            body: 'Patch Tuesday and Windows servicing articles on this site call out CA 2023 restarts, Server SKU coverage, and driver-trust changes when those items change Group Policy or Secure Boot work. Read them as operational notes for the same two jobs, not as a separate Server textbook.',
           },
         ]}
         news={news}
         tutorials={tutorials}
         troubleshooting={troubleshooting}
         relatedTopics={[
+          { name: 'Group Policy', href: '/group-policy' },
           { name: 'Patch Management', href: '/patch-management' },
           { name: 'Endpoint Security', href: '/endpoint-security' },
           { name: 'PowerShell', href: '/powershell' },
-          { name: 'Configuration Manager', href: '/sccm-mecm' },
         ]}
       />
     </>
