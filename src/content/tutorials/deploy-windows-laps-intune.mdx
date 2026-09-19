@@ -3,8 +3,8 @@ title: "Deploying Windows LAPS with Intune: Pilot and Recovery Checks"
 category: "Microsoft Intune"
 date: "Mar 31, 2026"
 authorId: "jack"
-lastReviewed: "September 10, 2026"
-reviewNote: "Documentation review corrected hybrid join support, permissions, verification commands, event IDs and unsafe rollback advice. No tenant execution is claimed."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Intune", "LAPS", "Entra ID", "Security Baseline"]
 ---
 
@@ -97,6 +97,32 @@ Test one authorised recovery, then confirm the intended post-authentication acti
 5. If a credential was exposed, use the documented rotation action and verify a new backup. Deleting a device object or an imagined portal “delete password” control is not a substitute for rotation.
 6. Confirm unrelated devices continue backing up successfully. Preserve recovery access until the replacement passes validation.
 
+## Home lab notebook (one Entra-joined VM)
+
+Use this notebook on a personal Microsoft 365 developer tenant and a home Windows 11 VM. Do not use an NHS, EEC, NORFOLK, or customer device. This revision does not claim the notebook was executed.
+
+Goal: prove three things on **one** device — policy delivered, password backed up to Entra, delegated retrieval and rotation afterwards.
+
+1. Enable Windows LAPS in **Entra ID > Devices > Device settings**. Record the previous value.
+2. Create an assigned device group that contains only the lab VM.
+3. In **Intune > Endpoint security > Account protection**, create a Windows LAPS policy: backup directory Microsoft Entra ID, managed account you actually use, and a post-authentication action you can wait for.
+4. Sync the VM. On the VM, collect LAPS operational events. Event **10029** is Entra backup success; **10005** is policy processing failure. See the [LAPS event reference](https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-event-log).
+5. Confirm a backup timestamp on the Entra or Intune device record. A profile-success report is not that timestamp.
+6. Retrieve the password with a delegated role that is not Global Administrator. Record the retrieval time, not the secret.
+7. Use the credential through an approved recovery path, then confirm the post-authentication action and a new backup timestamp.
+
+`Collect-LabDeviceEvidence.ps1` in this repository writes a redacted device snapshot, including recent LAPS event IDs, and refuses common work domains.
+
+<EvidenceCallout
+  type="output"
+  title="LAPS operational events on the lab VM"
+  capture="Microsoft-Windows-LAPS/Operational events 10029 or 10005, plus the Entra device backup timestamp"
+  redact="Device name, DeviceId, TenantId, and any password material"
+  why="Policy assignment without a backup timestamp is not escrow. Retrieval without rotation evidence is not a completed recovery design."
+/>
+
+Do not set `labTested` on this page until those three proofs exist. Do not paste the recovered password into the article, a ticket, or a screenshot.
+
 ## Related Reading
 
 - [BitLocker escrow diagnosis](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra): distinguish encryption state from recoverability.
@@ -104,5 +130,7 @@ Test one authorised recovery, then confirm the intended post-authentication acti
 - [Intune and ConfigMgr decisions](/comparisons/intune-vs-sccm-mecm-2025): plan policy ownership separately from provisioning.
 
 ## Correction Record
+
+**19 September 2026:** Added a one-device home-lab notebook and a local evidence collector. No tenant execution is claimed.
 
 **10 September 2026:** Removed undocumented testing claims, invalid sync/Graph examples and a nonexistent password-deletion rollback. Corrected hybrid support, LAPS event IDs and the invented Account Protection workload. Recovery now requires a verified replacement access path.

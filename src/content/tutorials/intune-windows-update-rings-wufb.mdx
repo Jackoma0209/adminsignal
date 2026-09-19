@@ -4,8 +4,8 @@ description: "Design Windows Update for Business rings in Microsoft Intune: pilo
 category: "Microsoft Intune"
 date: "Aug 11, 2026"
 authorId: "jack"
-lastReviewed: "Aug 11, 2026"
-reviewNote: "Operational WUfB ring design guide for Intune-managed Windows fleets. Product names and portal paths change; confirm current Windows Update for Business and Intune policy options in Microsoft Learn before production rollout."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Intune", "Windows Update for Business", "Patch Management", "Windows 11", "Update Rings"]
 metaTitle: "Intune Windows Update Rings: WUfB Design Guide"
 metaDescription: "Build Windows Update for Business rings in Intune with pilot design, deadlines, feature update control, reporting checks, and recovery when deferrals do not behave."
@@ -203,6 +203,27 @@ Your rollback plan is often “stop the blast and remediate,” not “uninstall
 - [ ] Expedite path is written and rarely used
 - [ ] Competing GPO/ConfigMgr update authorities inventoried
 
+## Home lab notebook (Ring 0, one quality update)
+
+A home tenant will not look like Autopatch. Treat one VM as Ring 0. This revision does not claim the notebook was executed.
+
+1. Record `Get-ComputerInfo` WindowsProductName, OsName, and OsBuildNumber before you assign policy.
+2. Create a device group with only the lab VM.
+3. Assign a Windows update ring: quality deferral 0 days, a deadline you can wait for, and **no** feature update policy that would move the VM to a new Windows release during the test.
+4. Confirm Autopatch is not also targeting the VM. If it is, this notebook is invalid.
+5. After the quality update installs and the VM has restarted if required, record the new build and the Intune update report status.
+6. If the build does not move, collect the WUfB diagnosis evidence from [deferral not respected](/troubleshooting/wufb-deferral-not-respected) instead of widening the group.
+
+<EvidenceCallout
+  type="output"
+  title="OS build before and after the Ring 0 quality update"
+  capture="Get-ComputerInfo OsBuildNumber before and after, plus Intune Windows update status for that device"
+  redact="Device name, UPN, and tenant"
+  why="A deferral of zero days is not proof the update installed. The build number is."
+/>
+
+Do not set `labTested` until the before and after builds differ, or you have a named reason they did not.
+
 ## Primary Sources
 
 - [Windows Update for Business overview](https://learn.microsoft.com/en-us/windows/deployment/update/waas-manage-updates-wufb)
@@ -216,3 +237,7 @@ Your rollback plan is often “stop the blast and remediate,” not “uninstall
 - [Windows 11 25H2 vs 26H1 admin comparison](/comparisons/windows-11-25h2-vs-26h1-2026)
 - [Patch management topic hub](/patch-management)
 - [Intune topic hub](/intune)
+
+## Correction record
+
+**19 September 2026:** Added a one-device home-lab notebook for a Ring 0 quality update. No tenant execution is claimed.

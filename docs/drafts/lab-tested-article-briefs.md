@@ -1,6 +1,8 @@
 # Lab-tested article briefs
 
-These are the next content pieces AdminSignal needs before another AdSense application. They are briefs only. Do not publish them until each one has been run in a **personal Microsoft 365 developer tenant or home Hyper-V lab**, with redacted screenshots and a named OS/build.
+Status as of 19 September 2026: each brief now has a **Home lab notebook** on the live article, plus `scripts/lab` for local collection. Pages stay **Reviewed against documentation** until `labTested` and `labScope` are set after a real personal-tenant run.
+
+Do not publish a Tested-in-a-lab label until the notebook has been run in a **personal Microsoft 365 developer tenant or home Hyper-V lab**, with redacted screenshots and a named OS/build.
 
 Do not use NHS, EEC, or any employer tenant. Do not invent portal screenshots, tenant IDs, or success rates.
 

@@ -3,8 +3,8 @@ title: "Migrating Intune Administrative Templates to Settings Catalog Without Br
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "2026-09-10"
-reviewNote: "Initial operational guide based on current Microsoft Intune Settings Catalog, Administrative Templates, device configuration, endpoint security, assignment, reporting, conflict, and Microsoft Graph guidance checked on May 7, 2026."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Intune", "Settings Catalog", "Administrative Templates", "Graph PowerShell", "Endpoint Management"]
 ---
 
@@ -1038,6 +1038,26 @@ The safest migration pattern is:
 
 You are not trying to make the Intune console look tidy. You are trying to keep device behaviour stable while moving policy ownership to the current Microsoft control plane.
 
+## Home lab notebook (one setting, two sources)
+
+Create a conflict on purpose, then remove one source. Use Delivery Optimization **Download mode** because it exists in Administrative Templates and in Settings Catalog. See [Delivery Optimization reference](https://learn.microsoft.com/en-us/windows/deployment/do/waas-delivery-optimization-reference). This revision does not claim the notebook was executed.
+
+1. Assign an Administrative Templates profile to the lab VM: Download mode HTTP only (0).
+2. Assign a Settings Catalog profile to the same VM: Download mode LAN (1).
+3. Sync. On the device, record per-setting status in Intune for both profiles. Expect a conflict, not a silent winner you guessed.
+4. Record the effective value from the policy store or `Get-DeliveryOptimizationStatus` / DO registry so you know which source won, if either did.
+5. Remove the Administrative Templates assignment. Sync again. Confirm the Settings Catalog value is now the only owner and the conflict has cleared.
+
+<EvidenceCallout
+  type="screenshot"
+  title="Per-setting conflict then single owner"
+  capture="Intune per-setting status showing conflict while both profiles are assigned, then Success after the Admin Template is removed, plus the effective Download mode value"
+  redact="Device name, profile names if they identify a production tenant, and tenant name"
+  why="A tidy Settings Catalog profile is not a migration. Proof is the conflict you created and the owner you left behind."
+/>
+
+Do not set `labTested` until the conflict and the cleared state both exist. Do not run this against a production ring.
+
 ## Related Resources
 
 - [Microsoft Intune](/intune)
@@ -1056,5 +1076,7 @@ You are not trying to make the Intune console look tidy. You are trying to keep 
 
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
 
+
+**Correction — 19 September 2026:** Added a one-device home-lab notebook that creates a Delivery Optimization Download mode conflict. No tenant execution is claimed.
 
 **Correction — 10 September 2026:** Added pagination to collection helper reads and clarified that examples are not execution evidence.

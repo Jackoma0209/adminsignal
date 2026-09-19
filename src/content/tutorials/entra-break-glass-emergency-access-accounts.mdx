@@ -4,8 +4,8 @@ description: "Practical guide to Microsoft Entra emergency access accounts: acco
 category: "Microsoft Entra ID"
 date: "Aug 11, 2026"
 authorId: "jack"
-lastReviewed: "September 10, 2026"
-reviewNote: "Clarified mandatory MFA, security-defaults limitations, permanent active roles and validation of both emergency accounts. Removed advice to put existing production protection into report-only during redesign."
+lastReviewed: "19 September 2026"
+reviewNote: "Added a developer-tenant home-lab notebook. This revision does not claim that notebook was executed."
 tags: ["Microsoft Entra ID", "Break Glass", "Emergency Access", "Conditional Access", "MFA", "Identity"]
 metaTitle: "Entra ID Emergency Access Accounts: Break-Glass Design Guide"
 metaDescription: "Design Microsoft Entra emergency access accounts that still work during MFA outages, Conditional Access mistakes, and federation failures — with monitoring and test procedures."
@@ -267,6 +267,29 @@ If you are replacing an old informal break-glass design:
 
 Do not delete the only working emergency path before the replacement has passed a live sign-in test.
 
+## Home lab notebook (two cloud-only accounts in a developer tenant)
+
+A Microsoft 365 developer tenant is enough. Do not create these accounts in an employer directory. This revision does not claim the notebook was executed.
+
+1. Create `breakglass-01` and `breakglass-02` as cloud-only users with long random passwords stored in a password manager you own, not in a screenshot.
+2. Assign Global Administrator as a **permanent active** role, not PIM-eligible-only. Register a phishing-resistant method if the tenant can; do not publish SMS as the finished design.
+3. Exclude both accounts from every Conditional Access policy you actually use in the lab tenant. Confirm Security defaults are off or that the accounts still work under the tenant's current MFA requirement.
+4. Create an alert for sign-in success on those UPNs.
+5. Sign in once with `breakglass-01`, confirm the alert, sign out. Repeat for `breakglass-02` on a different day or session.
+6. Record the 90-day test reminder. Delete the lab accounts only when you retire the developer tenant.
+
+Microsoft's [emergency access guidance](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access) is the design contract.
+
+<EvidenceCallout
+  type="screenshot"
+  title="Two cloud-only emergency accounts and a sign-in alert"
+  capture="Entra users showing both accounts enabled, cloud-only, Global Administrator, plus the monitoring alert from one successful sign-in"
+  redact="UPNs if they identify a production tenant, object IDs, and any credential material"
+  why="An unused break-glass account is a story. A monitored sign-in from both accounts is the notebook."
+/>
+
+Do not set `labTested` until both accounts have a monitored sign-in. Do not paste passwords into this repository.
+
 ## Primary Sources
 
 - [Manage emergency access accounts in Microsoft Entra ID](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/security-emergency-access)
@@ -281,5 +304,7 @@ Do not delete the only working emergency path before the replacement has passed 
 - [Microsoft Entra ID topic hub](/microsoft-entra-id)
 
 ## Correction Record
+
+**19 September 2026:** Added a developer-tenant home-lab notebook for two emergency accounts and a monitored sign-in. No tenant execution is claimed.
 
 **10 September 2026:** Clarified mandatory MFA, security-defaults limitations, permanent active roles and validation of both emergency accounts. Removed advice to put existing production protection into report-only during redesign.
