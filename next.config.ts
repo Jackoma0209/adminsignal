@@ -154,6 +154,47 @@ const nextConfig: NextConfig = {
         destination: '/microsoft-365',
         permanent: true,
       },
+      // Short-name guesses for canonical hubs. Exact paths only; no wildcards.
+      {
+        source: '/entra',
+        destination: '/microsoft-entra-id',
+        permanent: true,
+      },
+      {
+        source: '/entra-id',
+        destination: '/microsoft-entra-id',
+        permanent: true,
+      },
+      {
+        source: '/gpo',
+        destination: '/group-policy',
+        permanent: true,
+      },
+      {
+        source: '/configuration-manager',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/mecm',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/configmgr',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/sccm',
+        destination: '/sccm-mecm',
+        permanent: true,
+      },
+      {
+        source: '/windows',
+        destination: '/windows-server',
+        permanent: true,
+      },
     ]
   },
   images: {

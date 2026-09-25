@@ -3,7 +3,7 @@ title: "Prove which service owns Windows Update on a co-managed device"
 category: "Configuration Manager"
 date: "September 10, 2026"
 authorId: "jack"
-lastReviewed: "September 10, 2026"
+lastReviewed: "September 25, 2026"
 reviewNote: "Reviewed against Microsoft co-management workload and switch-workloads documentation. No lab tests were performed and no tenant or client logs were captured for this article."
 tags: ["Configuration Manager", "Co-management", "Windows Update", "Intune", "MECM"]
 ---
@@ -53,6 +53,19 @@ Primary sources:
 
 Record the pilot collection, the current Windows Update workload value, and the expected scan source before you change anything.
 
+## What evidence you must capture
+
+Capture these on one affected device before anyone moves a slider, edits a ring or deletes a deployment. Each item answers a different question, and none of them is replaced by a green status in either portal.
+
+- [ ] **Co-management properties (console):** the Windows Update workload value and the pilot collection it points at, plus proof the device is a member of that collection. This is what the site intends; it is not proof the client has received it.
+- [ ] **`CoManagementHandler.log`** in `C:\Windows\CCM\Logs`: the workload state the client has actually received from the site. If this still shows Configuration Manager owning Windows Update, the Intune ring is not in charge yet, whatever Intune reports.
+- [ ] **`WUAHandler.log`** in the same folder: the update source the ConfigMgr client registers with the Windows Update Agent when it searches for updates. A software update point URL here means ConfigMgr is still driving scans.
+- [ ] **`UseWUServer`** under `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU`: the effective local policy. `1` tells the Windows Update Agent to use the server named in `WUServer`; absent or `0` means it is not being pointed at a WSUS server by policy.
+- [ ] **`WUServer`** (and `WUStatusServer`) under `HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate`: the configured WSUS or scan server URL. Compare it with your software update point FQDN. A URL that is not your SUP points to a Group Policy object or another tool, not ConfigMgr, setting scan source.
+- [ ] **Time of capture and last policy cycle:** note when you read each item. A log read before the client's next policy cycle cannot prove a slider change failed.
+
+Read the logs and registry directly and record what they say. Do not paraphrase them into the ticket as "looks fine"; the value or URL itself is the evidence.
+
 ## Step 1: Record the co-management authority
 
 In the Configuration Manager console:
@@ -62,7 +75,7 @@ In the Configuration Manager console:
 3. Note whether the workload is Configuration Manager, Pilot Intune, or Intune.
 4. Confirm the device is a member of that pilot collection, not only an Intune device group.
 
-Microsoft's workload list is compliance policies, conditional access, endpoint protection, resource access, device configuration, office click-to-run apps, and Windows Update policies. Do not treat task-sequence OSD as an eighth slider.
+Microsoft's workload list is compliance policies, Windows Update policies, resource access policies, Endpoint Protection, device configuration, Office Click-to-Run apps, and client apps. Do not treat task-sequence OSD as an eighth slider.
 
 On the device, confirm the ConfigMgr client is still present and talking to the site:
 

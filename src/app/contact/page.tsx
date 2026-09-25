@@ -33,6 +33,40 @@ export default function ContactPage() {
             </p>
           </div>
 
+          <section
+            aria-labelledby="contact-expectations"
+            className="mt-8 rounded-lg border border-border bg-surface p-6"
+          >
+            <h2 id="contact-expectations" className="mb-3 text-base font-semibold text-foreground">
+              Who you are writing to, and what to expect
+            </h2>
+            <ul className="space-y-2 text-sm leading-relaxed text-muted">
+              <li>
+                <span className="font-medium text-foreground-soft">Who:</span> Jack Hadcroft, the
+                independent author of AdminSignal. I have worked in NHS IT since 2013 and am a Band 6
+                Endpoint Specialist. AdminSignal does not speak for the NHS or Microsoft, and nothing
+                here implies employer endorsement.
+              </li>
+              <li>
+                <span className="font-medium text-foreground-soft">Corrections:</span> send them to{' '}
+                <a href="mailto:editorial@adminsignal.com" className="text-primary hover:underline">
+                  editorial@adminsignal.com
+                </a>{' '}
+                with the page URL and the Microsoft source or observation that contradicts it.
+                Material corrections are recorded on the affected article, as described in the{' '}
+                <Link href="/editorial-policy" className="text-primary hover:underline">
+                  editorial policy
+                </Link>
+                .
+              </li>
+              <li>
+                <span className="font-medium text-foreground-soft">Replies:</span> this is a
+                one-person publication, so there is no service desk behind it. Replies usually take a
+                few working days, and corrections are looked at first.
+              </li>
+            </ul>
+          </section>
+
           <div className="mt-10 grid gap-6 sm:grid-cols-2">
             <div className="rounded-lg border border-border bg-surface p-6">
               <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-muted/60">

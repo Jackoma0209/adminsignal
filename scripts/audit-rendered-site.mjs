@@ -336,6 +336,14 @@ const redirects = [
   ['/topics/endpoint-security', '/endpoint-security'],
   ['/topics/patch-management', '/patch-management'],
   ['/topics/microsoft-365', '/microsoft-365'],
+  ['/entra', '/microsoft-entra-id'],
+  ['/entra-id', '/microsoft-entra-id'],
+  ['/gpo', '/group-policy'],
+  ['/configuration-manager', '/sccm-mecm'],
+  ['/mecm', '/sccm-mecm'],
+  ['/configmgr', '/sccm-mecm'],
+  ['/sccm', '/sccm-mecm'],
+  ['/windows', '/windows-server'],
 ]
 for (const [from, to] of redirects) {
   const result = await get(from, { redirect: 'manual' })

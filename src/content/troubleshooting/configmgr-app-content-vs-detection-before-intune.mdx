@@ -3,7 +3,7 @@ title: "Separate ConfigMgr content failures from detection failures before you r
 category: "Configuration Manager"
 date: "September 10, 2026"
 authorId: "jack"
-lastReviewed: "September 10, 2026"
+lastReviewed: "September 25, 2026"
 reviewNote: "Reviewed against Microsoft Configuration Manager application deployment troubleshooting documentation. No lab tests were performed and no AppDiscovery or AppEnforce logs from a live tenant are included."
 tags: ["Configuration Manager", "Applications", "Intune", "Win32", "MECM"]
 ---
@@ -23,7 +23,9 @@ Do not treat an Intune Waiting state as proof that the ConfigMgr package was hea
 
 This article is documentation-reviewed. It does not include sanitised `AppDiscovery.log` or `AppEnforce.log` captures.
 
-For the Intune side after you have a known-good package, use [Intune Win32 app stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting). For the broader coexistence decision, use [Intune or Configuration Manager](/comparisons/intune-vs-sccm-mecm-2025).
+**Already wrapped and assigned in Intune?** This page is the ConfigMgr side. If the Win32 app is already in Intune and sits at Waiting, Pending or Failed, go to [Intune Win32 app install stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting) and work through the Intune Management Extension evidence there.
+
+For the broader coexistence decision, use [Intune or Configuration Manager](/comparisons/intune-vs-sccm-mecm-2025).
 
 ## Scope and Assumptions
 
@@ -36,7 +38,7 @@ It assumes you can:
 - Check boundary groups and content distribution status
 - Compare the ConfigMgr detection method with the Intune Win32 detection rule you plan to use
 
-Primary source: [Troubleshoot application deployment in Configuration Manager](https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/app-management/troubleshoot-application-deployment).
+Primary sources: [Troubleshoot application deployment in Configuration Manager](https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/app-management/troubleshoot-application-deployment) and the [Configuration Manager log file reference](https://learn.microsoft.com/en-us/intune/configmgr/core/plan-design/hierarchy/log-files).
 
 ## Two different failures
 
@@ -48,6 +50,30 @@ Primary source: [Troubleshoot application deployment in Configuration Manager](h
 | Enforcement / exit code | The installer ran and returned an unmapped code | Intune will need the same silent command and return-code map |
 
 Write down the application ID, deployment ID, collection, and distribution point topology before you change the package.
+
+## Content miss or detection lie: the checklist
+
+Tick the boxes on one failing client. The logs live in `C:\Windows\CCM\Logs`; the descriptions of what each log records come from Microsoft's log file reference. Record what the client actually wrote, not what you expected it to write.
+
+**It is a content miss if:**
+
+- [ ] `LocationServices.log` or `CAS.log` shows the client never obtained a distribution point location for the content. `LocationServices.log` records the client looking for DPs; `CAS.log` is the Content Access service that maintains the local cache.
+- [ ] `ContentTransferManager.log` shows the download was never scheduled, or started and never finished.
+- [ ] `DataTransferService.log` shows the BITS transfer failing or stalling.
+- [ ] `AppEnforce.log` has no enforcement entry for this deployment type: the installer never ran.
+- [ ] The console shows the content is not in Success state on a DP that the client's boundary group can use.
+
+**It is a detection lie if:**
+
+- [ ] `AppEnforce.log` shows the install command ran and the exit code was treated as success.
+- [ ] `AppDiscovery.log` still reports the deployment type as not detected after that enforcement, or reports it detected before anything was installed.
+- [ ] The installed state you can verify on disk (uninstall key, file version, registry value) does not match what the detection method checks.
+
+**It is neither, yet, if:**
+
+- [ ] `AppDiscovery.log` never mentions the deployment and `AppIntentEval.log` shows no applicability or requirement evaluation for it. That is a policy, collection or requirement problem. Fix targeting before you touch content or detection.
+
+A content miss is fixed in ConfigMgr distribution and boundaries, and it does not justify repackaging. A detection lie is fixed in the detection method, and it will follow the package into Intune if you copy the rule unchanged.
 
 ## Step 1: Correlate the identifiers
 
@@ -101,8 +127,6 @@ Check locally that the boundary group can see a distribution point that holds th
 - The application content status is Success on that DP
 - Fallback to neighbour or default site-wide DPs is intended, not accidental
 
-Microsoft's application deployment troubleshooting article is the authority for which log covers location versus enforcement.
-
 ## Step 3: Decide whether detection is the liar
 
 If `AppEnforce.log` shows a success exit code and `AppDiscovery.log` still reports not detected, stop wrapping the package. The detection method is wrong for the installed state.
@@ -154,8 +178,6 @@ A working ConfigMgr application can still fail as Intune Win32 when:
 - The content is larger than the Win32 size limit or depends on a DP-side transform
 - A ConfigMgr dependency chain has no Intune equivalent yet
 
-Do not use an Intune Waiting state as the reason to rebuild the vendor source. Classify the ConfigMgr content and detection results first, then wrap a package that already installs and detects on one clean client.
-
 ## Step 5: Recover one pilot deployment
 
 On one failing client:
@@ -176,4 +198,5 @@ Rollback:
 ## Sources
 
 - [Troubleshoot application deployment in Configuration Manager](https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/app-management/troubleshoot-application-deployment)
+- [Log file reference for Configuration Manager](https://learn.microsoft.com/en-us/intune/configmgr/core/plan-design/hierarchy/log-files)
 - Related AdminSignal guides: [Intune Win32 stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting), [Intune vs ConfigMgr](/comparisons/intune-vs-sccm-mecm-2025), [Configuration Manager hub](/sccm-mecm)

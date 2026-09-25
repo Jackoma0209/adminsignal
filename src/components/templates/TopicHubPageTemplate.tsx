@@ -21,6 +21,16 @@ interface TopicHubPageTemplateProps {
    * Use this on thin hubs so the page is not just a short doorway of links.
    */
   introSections?: { title: string; body: string }[]
+  /**
+   * Optional single-column orientation prose for decision hubs. Each section
+   * renders as an H2 with paragraphs and an optional bullet list.
+   */
+  guideSections?: { title: string; paragraphs: string[]; bullets?: string[] }[]
+  /** Optional one-line "Start here if…" routing list to published children. */
+  startHere?: { condition: string; title: string; href: string }[]
+  startHereTitle?: string
+  /** Optional honest verification sentence shown near the bottom of the hub. */
+  verificationNote?: string
   news: TopicContentItem[]
   tutorials: TopicContentItem[]
   tutorialTitle?: string
@@ -89,6 +99,10 @@ export default function TopicHubPageTemplate({
   description,
   eyebrow = 'Topic Hub',
   introSections = [],
+  guideSections = [],
+  startHere = [],
+  startHereTitle = 'Start here if…',
+  verificationNote,
   news,
   tutorials,
   tutorialTitle = 'Deep-Dive Tutorials',
@@ -105,6 +119,7 @@ export default function TopicHubPageTemplate({
   const publicTutorials = unique(tutorials)
   const publicTroubleshooting = unique(troubleshooting)
   const publicCount = publicNews.length + publicTutorials.length + publicTroubleshooting.length
+  const publicStartHere = startHere.filter((item) => !isNoindexHref(item.href))
 
   return (
     <>
@@ -143,6 +158,56 @@ export default function TopicHubPageTemplate({
         </div>
       )}
 
+      {guideSections.length > 0 && (
+        <div className="border-b border-border py-12">
+          <Container>
+            <div className="mx-auto max-w-3xl space-y-10">
+              {guideSections.map((section) => (
+                <section key={section.title}>
+                  <h2 className="mb-4 text-xl font-semibold tracking-tight text-foreground">
+                    {section.title}
+                  </h2>
+                  <div className="space-y-4 text-base leading-relaxed text-muted">
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+                    ))}
+                  </div>
+                  {section.bullets && section.bullets.length > 0 && (
+                    <ul className="mt-4 list-disc space-y-2 pl-5 text-base leading-relaxed text-muted">
+                      {section.bullets.map((bullet) => (
+                        <li key={bullet.slice(0, 48)}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              ))}
+            </div>
+          </Container>
+        </div>
+      )}
+
+      {publicStartHere.length > 0 && (
+        <div className="border-b border-border py-12">
+          <Container>
+            <section className="mx-auto max-w-3xl">
+              <h2 className="mb-4 text-xl font-semibold tracking-tight text-foreground">
+                {startHereTitle}
+              </h2>
+              <ul className="space-y-3 text-base leading-relaxed text-muted">
+                {publicStartHere.map((item) => (
+                  <li key={item.href}>
+                    {item.condition}{' '}
+                    <Link href={item.href} className="font-medium text-primary hover:underline">
+                      {item.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </Container>
+        </div>
+      )}
+
       <HubContentRow items={publicNews} sectionTitle="Latest News" viewAllHref="/news" />
       <HubContentRow
         items={publicTutorials}
@@ -154,6 +219,17 @@ export default function TopicHubPageTemplate({
         sectionTitle="Troubleshooting Guides"
         viewAllHref="/troubleshooting"
       />
+
+      {verificationNote && (
+        <div className="border-t border-border py-8">
+          <Container>
+            <p className="mx-auto max-w-3xl text-sm leading-relaxed text-muted/80">
+              <span className="font-semibold text-foreground-soft">Verification:</span>{' '}
+              {verificationNote}
+            </p>
+          </Container>
+        </div>
+      )}
 
       {relatedTopics.length > 0 && (
         <div className="border-t border-border py-12">

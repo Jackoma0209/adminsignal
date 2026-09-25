@@ -3,8 +3,8 @@ title: "Windows Autopilot Enrollment Status Page Stuck at 0% — Causes and Fixe
 category: "Microsoft Intune"
 date: "Mar 28, 2026"
 authorId: "jack"
-lastReviewed: "Sep 10, 2026"
-reviewNote: "Separated classic ESP from device preparation, corrected the diagnostics shortcut, and replaced unsupported error mappings and TPM/reset advice with evidence-led checks."
+lastReviewed: "Sep 25, 2026"
+reviewNote: "Expanded the ESP phase decision tree against Microsoft's ESP setup and troubleshooting documentation. The previous revision separated classic ESP from device preparation, corrected the diagnostics shortcut, and replaced unsupported error mappings and TPM/reset advice with evidence-led checks."
 tags: ["Autopilot", "Intune", "Windows 11", "Enrollment"]
 ---
 
@@ -42,6 +42,49 @@ Keep the CAB in an approved support location. It can contain user, device and te
 | Attestation-specific error in self-deploying or pre-provisioned mode | Check supported TPM/firmware and the documented attestation path | TPM clearing is a safe general repair |
 
 This ordering prevents a common diagnostic loop: rebuilding the same device while the unchanged blocking app or tenant assignment fails again.
+
+## Phase decision tree
+
+Microsoft's [ESP documentation](https://learn.microsoft.com/en-us/intune/device-enrollment/windows/setup-status-page) splits classic ESP into three phases: device preparation, device setup and account setup. Each phase waits for different things, so the phase on screen narrows the search before you open a single log. Work through these questions in order.
+
+### 1. Is this classic ESP at all?
+
+- **Windows Autopilot device preparation** does not use ESP. If the tenant uses device preparation policies, this page is the wrong branch; use the [Autopilot deployment comparison](/comparisons/autopilot-v1-vs-v2-2026) to confirm the model.
+- **Wrong branding, no organisation sign-in page, or a profile that never arrives** is a registration or profile-assignment problem, not an ESP problem. Check the device in Windows Autopilot devices and its profile assignment, then use [Autopilot hardware-hash import diagnosis](/troubleshooting/autopilot-device-not-importing-hardware-hash) if the device is not registered correctly.
+- **Record the deployment mode**: user-driven, self-deploying, or pre-provisioning (technician flow or user flow). Several checks below apply to only one mode.
+
+### 2. Device preparation
+
+Microsoft lists three tasks here: securing the hardware, joining the organisation's network, and registering for mobile management. After enrolment the device works out which policies and apps to track and installs the Intune Management Extension.
+
+- **Secure your hardware (TPM key attestation)** applies to self-deploying and pre-provisioning only. It is not needed for user-driven mode. An attestation error in those two modes points at TPM, firmware and the documented attestation path; see the TPM section below.
+- **Join and register** are only tracked in this phase for self-deploying and pre-provisioning. In user-driven mode the user has already joined Entra ID and enrolled before ESP opens, so a user-driven failure here is more likely IME installation or tracking-policy creation than join.
+- **Local evidence**: the diagnostics CAB's `MDMDiagReport_RegistryDump.Reg` contains `HKLM\SOFTWARE\Microsoft\Windows\Autopilot\EnrollmentStatusTracking\Device\DevicePreparation`, which records the Intune Management Extension installation state (1 NotInstalled, 2 NotRequired, 3 Completed, 4 Error).
+- For self-deploying and pre-provisioned devices, Microsoft's ESP troubleshooting article collects the TPM area as well: add `TPM` to the `-area` list in the `mdmdiagnosticstool.exe` command above.
+
+### 3. Device setup
+
+This phase tracks device-targeted work: SCEP certificate profiles, VPN and Wi-Fi profiles, a small set of policies (Microsoft Edge, Assigned Access, Kiosk Browser), and device-context apps. Most security policies apply in the background and are not tracked.
+
+- **Which app?** Blocking apps are the usual culprit. `EnrollmentStatusTracking\Device\Setup\Apps\Tracking\Sidecar\Win32App_{AppID}` holds an `InstallationState` per tracked Win32 app (1 NotInstalled, 2 InProgress, 3 Completed, 4 Error). Microsoft states that ESP stops installing apps once any app reaches 4; take that app ID to the IME logs.
+- **LOB and Win32 mixed?** Microsoft says not to mix line-of-business MSI and Win32 apps with classic ESP. Both use TrustedInstaller, one fails with "another installation is in progress", and ESP fails. Pick one app type for ESP-tracked apps, or move that scenario to device preparation.
+- **Microsoft 365 Apps** added with the Microsoft 365 Apps app type can hang ESP if it starts while another tracked Win32 app is installing. Microsoft recommends the Win32 app type for that case.
+- **Blocking-app list behaviour**: the list filters which assigned apps ESP waits for; it does not assign anything. An assigned app that is not on the list is not waited for, and in user-driven and self-deploying mode Win32 and Store apps outside the list install after ESP completes. For pre-provisioning, check the "Only fail selected blocking apps in technician phase" setting.
+- **Reboots** are supported in device setup only when Intune manages them through the app's return codes. A reboot packaged inside the installer can hang ESP. After a device-setup reboot the user must enter credentials again before account setup.
+
+### 4. Account setup
+
+This phase tracks user-targeted work: SCEP user certificates, user Wi-Fi profiles and user-assigned apps.
+
+- **Stuck at Identifying**: Intune calculates what to track here. Microsoft documents that this can fail to complete when the signing-in user has no Intune licence. Check the licence before anything else.
+- **Reboots are not supported** in account setup. An app that restarts the device here is a packaging problem.
+- **Hybrid Entra join**: Win32 and UWP apps assigned to the device with user install context are not tracked, and Microsoft documents that hybrid Autopilot ESP runs about 40 minutes beyond the configured timeout while the device object syncs. Do not diagnose a hybrid timeout against the raw profile value.
+- **User-context scripts** might not run during ESP. Microsoft's workaround is to run them in System context.
+- **Sign-in and Conditional Access** failures surface here for the user phase. Use the sign-in record approach in the next section rather than widening exclusions.
+
+### 5. Then change one thing
+
+Once the phase and the category (network, authentication, app or TPM) are clear, make one scoped change on a pilot device, as described in [Validation and recovery](#validation-and-recovery). Increasing the timeout, adding exclusions or letting users continue past errors are not diagnoses.
 
 ## Network, time and authentication
 
@@ -87,5 +130,7 @@ If the same error returns, retain both sets of diagnostics and undo the specific
 - [BitLocker recovery-key verification](/troubleshooting/bitlocker-recovery-key-not-backed-up-entra) belongs before destructive recovery work.
 
 ## Correction record
+
+**25 September 2026 — Reviewed against documentation.** Added a phase decision tree for device preparation, device setup and account setup, including blocking-app, LOB/Win32 mixing and TPM attestation scope, based on Microsoft's ESP setup and troubleshooting articles. No endpoint or tenant execution is claimed.
 
 **10 September 2026 — Reviewed against documentation.** Separated classic ESP from device preparation, corrected the diagnostics shortcut, and replaced unsupported error mappings and TPM/reset advice with evidence-led checks. Examples are illustrative; no endpoint or tenant execution is claimed.
