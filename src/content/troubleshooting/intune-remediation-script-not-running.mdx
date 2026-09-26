@@ -3,8 +3,10 @@ title: "Intune Remediation Script Not Running, Detecting, Remediating, or Report
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "19 September 2026"
-reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
+lastReviewed: "26 September 2026"
+labTested: "26 September 2026"
+labScope: "home-lab"
+reviewNote: "Home-lab HealthScripts report for three policies. Results were sent. Portal status names were not captured, and this is not a full procedure test."
 tags: ["Intune", "Remediations", "Intune Management Extension", "PowerShell", "Endpoint Analytics"]
 ---
 
@@ -419,6 +421,24 @@ LineNumber : <line number>
 Line       : <timestamp> <script execution message>
 ```
 
+### Recorded evidence (26 Sep 2026)
+
+HealthScripts on one home-lab device started a report, sent it, and recorded that the reports were sent. The payload had three policies. This is a summary, not the JSON blob, and it omits account, policy and user identifiers. Portal status names were not captured. The next runner was queued for UTC 27/09/2026 00:00:00. Agent version 1.105.152.0, OS 10.0.26200.
+
+Redacted excerpt:
+
+```text
+<![LOG[[HS] starting to send report]LOG]!><time="15:26:44.8158057" date="9-26-2026" component="HealthScripts" context="" type="1" thread="50" file="">
+<![LOG[[HS] sending results to service..]LOG]!><time="15:28:42.9048681" date="9-26-2026" component="HealthScripts" context="" type="1" thread="75" file="">
+<![LOG[[HS] Reports are sent successfully, mark them as sent in local cache.]LOG]!><time="15:28:43.5816892" date="9-26-2026" component="HealthScripts" context="" type="1" thread="75" file="">
+```
+
+| Detect output | Remediate output | Post-detect | Exit codes | What it shows |
+|---|---|---|---|---|
+| WARNING: App Compat not run in last 24 hours | App Compat Assessment started | same warning | detect 1 / remediate 1 / last detect 1 | Detect ran, remediate ran, issue remained |
+| Windows Store Apps updated. | none | none | first detect 0 | Detect healthy, no remediate |
+| Windows Telemetry registry settings are incorrect | Windows Telemetry registry settings are correct | correct | first detect 1 / remediate 0 / last detect 0 | Full detect → remediate → healthy trio |
+
 If the log files have not updated since before the assignment, restart IME and wait several minutes:
 
 ```powershell
@@ -793,7 +813,7 @@ Before assigning a remediation broadly:
 
 ## Home lab notebook (harmless registry probe)
 
-Use the detect and remediate scripts in this repository under `scripts/lab`. They only write `HKLM:\SOFTWARE\AdminSignalLab\Probe`. Do not point a remediation at a security control you cannot roll back. This revision does not claim the notebook was executed.
+Use the detect and remediate scripts in this repository under `scripts/lab`. They only write `HKLM:\SOFTWARE\AdminSignalLab\Probe`. Do not point a remediation at a security control you cannot roll back. The recorded HealthScripts report earlier on this page is the three-policy summary, not output from these probe scripts.
 
 1. Confirm Intune Remediations licensing on the lab user.
 2. Create a remediation with 64-bit PowerShell, assigned to the lab VM only, run once or on a short schedule you can wait for.
@@ -812,7 +832,7 @@ Microsoft's [Remediations](https://learn.microsoft.com/en-us/intune/device-manag
   why="A remediation that never leaves Pending is not evidence. Three statuses on one device are."
 />
 
-Do not set `labTested` until those three statuses exist.
+The 26 September 2026 home-lab label covers that HealthScripts report only. It does not include the three portal statuses named above.
 
 ## Related Resources
 
@@ -828,8 +848,12 @@ Do not set `labTested` until those three statuses exist.
 
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
 
+**26 September 2026 — Home-lab:** A redacted HealthScripts report shows the send started, the results went to the service, and the reports were marked sent. Three policies are summarised in Step 6. That capture does not verify the rest of this procedure. Other examples remain illustrative.
+
 ## Correction record
+
+**26 September 2026 — Home-lab:** Added the redacted HealthScripts send lines and the three-policy summary. Portal status names were not captured.
 
 **19 September 2026:** Added a one-device home-lab notebook using the AdminSignalLab registry probe scripts. No tenant execution is claimed.
 
-**10 September 2026 — Reviewed against documentation:** Made the illustrative marker fail on write errors, separated failed reads from missing values, and used an isolated PowerShell process and verified device identity. Code and output remain illustrative, not execution evidence.
+**10 September 2026 — Reviewed against documentation:** Made the illustrative marker fail on write errors, separated failed reads from missing values, and used an isolated PowerShell process and verified device identity. The code samples from that pass remain illustrative.

@@ -3,8 +3,10 @@ title: "Separate ConfigMgr content failures from detection failures before you r
 category: "Configuration Manager"
 date: "September 10, 2026"
 authorId: "jack"
-lastReviewed: "September 25, 2026"
-reviewNote: "Reviewed against Microsoft Configuration Manager application deployment troubleshooting documentation. No lab tests were performed and no AppDiscovery or AppEnforce logs from a live tenant are included."
+lastReviewed: "26 September 2026"
+labTested: "26 September 2026"
+labScope: "home-lab"
+reviewNote: "Home-lab AppEnforce excerpt: installer exit 0, status Success, application not discovered, status Failure. Exit 0 is not detection."
 tags: ["Configuration Manager", "Applications", "Intune", "Win32", "MECM"]
 ---
 
@@ -21,7 +23,7 @@ Typical signs:
 
 Do not treat an Intune Waiting state as proof that the ConfigMgr package was healthy. Fix or classify the ConfigMgr failure first.
 
-This article is documentation-reviewed. It does not include sanitised `AppDiscovery.log` or `AppEnforce.log` captures.
+The recorded evidence in Step 3 is one redacted home-lab `AppEnforce.log` excerpt from 26 September 2026. It shows installer exit 0, then a detection miss. It is not a content-distribution survey.
 
 **Already wrapped and assigned in Intune?** This page is the ConfigMgr side. If the Win32 app is already in Intune and sits at Waiting, Pending or Failed, go to [Intune Win32 app install stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting) and work through the Intune Management Extension evidence there.
 
@@ -131,6 +133,21 @@ Check locally that the boundary group can see a distribution point that holds th
 
 If `AppEnforce.log` shows a success exit code and `AppDiscovery.log` still reports not detected, stop wrapping the package. The detection method is wrong for the installed state.
 
+### Recorded evidence (26 Sep 2026)
+
+Redacted home-lab AppEnforce excerpt. The lines are dated 09-25-2026. The process exited 0, that code was matched to Success, and status switched to Success. Detection then reported the application was not discovered, and status switched to Failure. Installer exit 0 is not detection. Discovery can still fail after a successful enforce.
+
+Redacted excerpt:
+
+```text
+<![LOG[    Process 28780 terminated with exitcode: 0]LOG]!><time="15:19:54.261-60" date="09-25-2026" component="AppEnforce" context="" type="1" thread="35016" file="appexcnlib.cpp:2023">
+<![LOG[    Matched exit code 0 to a Success entry in exit codes table.]LOG]!><time="15:19:54.265-60" date="09-25-2026" component="AppEnforce" context="" type="1" thread="35016" file="appexcnlib.cpp:589">
+<![LOG[Status is switching to Success]LOG]!><time="15:19:54.270-60" date="09-25-2026" component="AppEnforce" context="" type="1" thread="35016" file="appenforcestatus.cpp:312">
+<![LOG[    Performing detection of app deployment type LineOfBusiness Shortcut(..., revision 11) for system.]LOG]!><time="15:19:54.293-60" date="09-25-2026" component="AppEnforce" context="" type="1" thread="35016" file="appprovider.cpp:2539">
+<![LOG[+++ Application not discovered. [AppDT Id: ScopeId_<redacted-id>/DeploymentType_<redacted-id>, Revision: 11]]LOG]!><time="15:19:54.378-60" date="09-25-2026" component="AppEnforce" context="" type="1" thread="35016" file="localapphandler.cpp:291">
+<![LOG[Status is switching to Failure]LOG]!><time="15:19:54.380-60" date="09-25-2026" component="AppEnforce" context="" type="1" thread="35016" file="appenforcestatus.cpp:312">
+```
+
 Common mismatches:
 
 - MSI product code from a bootstrapper, not the installed product
@@ -200,3 +217,7 @@ Rollback:
 - [Troubleshoot application deployment in Configuration Manager](https://learn.microsoft.com/en-us/troubleshoot/mem/configmgr/app-management/troubleshoot-application-deployment)
 - [Log file reference for Configuration Manager](https://learn.microsoft.com/en-us/intune/configmgr/core/plan-design/hierarchy/log-files)
 - Related AdminSignal guides: [Intune Win32 stuck at Waiting](/troubleshooting/intune-win32-app-install-stuck-waiting), [Intune vs ConfigMgr](/comparisons/intune-vs-sccm-mecm-2025), [Configuration Manager hub](/sccm-mecm)
+
+## Correction record
+
+**26 September 2026 — Home-lab:** Added a redacted AppEnforce excerpt. Installer exit 0 was treated as Success, then the application was not discovered and status switched to Failure. Installer exit 0 is not detection.

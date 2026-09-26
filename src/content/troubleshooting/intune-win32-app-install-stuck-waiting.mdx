@@ -3,8 +3,8 @@ title: "Intune Win32 App Install Stuck at Waiting, Pending, Installing, or Faile
 category: "Microsoft Intune"
 date: "May 7, 2026"
 authorId: "jack"
-lastReviewed: "19 September 2026"
-reviewNote: "Added a one-device home-lab notebook. This revision does not claim that notebook was executed."
+lastReviewed: "26 September 2026"
+reviewNote: "Partial IME capture. IME is running: TLS pin Success and Proxy Poller Failed 1008 / 0x80004005. Not a Win32 install or detection transition. Documentation-reviewed; the waiting, pending and failed install path was not lab-tested."
 tags: ["Intune", "Win32 apps", "Intune Management Extension", "Company Portal", "PowerShell"]
 ---
 
@@ -711,6 +711,19 @@ C:\Temp\IME-Logs-DEVICE-NAME.zip
 
 You can also use Intune's **Collect diagnostics** action. Microsoft's Win32 app troubleshooting documentation explains that diagnostic collection can include Win32 app logs and has file count and size limits: [Troubleshooting Win32 app installations with Intune](https://learn.microsoft.com/en-us/troubleshoot/mem/intune/app-management/troubleshoot-win32-app-install).
 
+### Recorded evidence (26 Sep 2026)
+
+Partial IME capture. This is IME health and proxy activity, not AppWorkload. It shows the extension running: TLS pin Success, then Proxy Poller Failed 1008 / 0x80004005. It is not a Win32 install or detection transition. The waiting, pending and failed install path was not lab-tested.
+
+Redacted excerpt:
+
+```text
+<![LOG[Managed TLS pinning completed. Scenario=SidecarGateway, Hostname=LabPC, Success=True, Failure=None, HResult=0x00000000, SslPolicyErrors=None, Status=Trusted, IsPinned=True, StaticPinEvaluationEnabled=True, StaticHostnameMatched=True, StaticPinTrusted=True, UsedStaticPinFallback=False, ErrorFlags=0x0000000000000000, DurationMs=3.]LOG]!><time="12:48:08.5567620" date="9-26-2026" component="IntuneManagementExtension" context="" type="1" thread="3" file="">
+<![LOG[[Proxy Poller] LogonUser failed with error code : 1008]LOG]!><time="14:36:20.4166534" date="9-26-2026" component="IntuneManagementExtension" context="" type="3" thread="83" file="">
+<![LOG[[Proxy Poller] Failed to get proxy info for session id 1, exception is System.ComponentModel.Win32Exception (0x80004005): An attempt was made to reference a token that does not exist
+<![LOG[Successfully updated throttling info. workload AgentCheckIn, currentCnt = 1]LOG]!><time="15:20:07.8931963" date="9-26-2026" component="IntuneManagementExtension" context="" type="1" thread="64" file="">
+```
+
 ## Safe Retry Steps
 
 Use the least disruptive retry first.
@@ -846,8 +859,12 @@ Do not set `labTested` until both statuses exist. Do not commit the `.intunewin`
 
 **Verification clarification, 10 September 2026:** Environment descriptions are assumptions or documentation-review context. No complete lab/tenant execution is established by the material retained with this article; example commands and output are illustrative. Genuine individual captures do not verify the whole procedure.
 
+**26 September 2026 — Partial IME capture:** A redacted `IntuneManagementExtension.log` slice shows IME health and proxy activity, including TLS pin Success and Proxy Poller Failed 1008 / 0x80004005. This page stays documentation-reviewed. The slice is not a Win32 install or detection transition, and the waiting, pending and failed install path was not lab-tested. Other examples remain illustrative.
+
 ## Correction record
+
+**26 September 2026 — Partial IME capture:** Added the redacted IME health and proxy lines in Step 13. Label stays documentation-reviewed.
 
 **19 September 2026:** Added a one-device home-lab notebook for a licensed freeware Win32 app and a broken detection rule. No tenant execution is claimed.
 
-**10 September 2026 — Reviewed against documentation:** Clarified example status and used a verified Entra object ID to avoid ambiguous display-name matches. Code and output remain illustrative, not execution evidence.
+**10 September 2026 — Reviewed against documentation:** Clarified example status and used a verified Entra object ID to avoid ambiguous display-name matches. The code samples from that pass remain illustrative.
