@@ -66,7 +66,7 @@ const startHere = [
   { condition: 'Someone wants to switch off task sequences because Autopilot exists:', title: 'Keep ConfigMgr OSD alongside Autopilot', href: '/tutorials/retain-configmgr-osd-alongside-autopilot' },
 ]
 
-const verificationNote = 'This hub summarises the six linked guides and Microsoft Learn’s co-management workload documentation. The guides are reviewed against Microsoft documentation; neither this page nor those guides include captured tenant or client logs.'
+const verificationNote = 'This hub summarises the six linked guides and Microsoft Learn’s co-management workload documentation. This hub was not tenant-tested. Two child guides now carry redacted home-lab excerpts from 26 September 2026.'
 
 const url = 'https://www.adminsignal.com/sccm-mecm'
 export const metadata: Metadata = buildTopicMetadata({ topicName, description, slug: 'sccm-mecm' })

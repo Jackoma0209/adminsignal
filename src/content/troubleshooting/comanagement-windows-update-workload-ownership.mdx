@@ -3,8 +3,10 @@ title: "Prove which service owns Windows Update on a co-managed device"
 category: "Configuration Manager"
 date: "September 10, 2026"
 authorId: "jack"
-lastReviewed: "September 25, 2026"
-reviewNote: "Reviewed against Microsoft co-management workload and switch-workloads documentation. No lab tests were performed and no tenant or client logs were captured for this article."
+lastReviewed: "26 September 2026"
+labTested: "26 September 2026"
+labScope: "home-lab, handler and scan excerpt only"
+reviewNote: "Home-lab handler and scan excerpt only. Device provisioned, MDM enrolled, AutoEnroll true, capabilities 8223. WUAHandler recorded scan failure 0x80240438 and a later successful scan. UseWUServer was not set, so this does not prove scan-source ownership."
 tags: ["Configuration Manager", "Co-management", "Windows Update", "Intune", "MECM"]
 ---
 
@@ -21,7 +23,7 @@ Typical signs:
 
 Do not start by deleting the Intune ring. First prove which management plane currently owns Windows Update policy on that device.
 
-This is a documentation-reviewed decision path. It does not include sanitised client logs from a lab transition.
+The workload-slider decision path on this page was not lab-tested. The recorded evidence in Step 2 is a redacted home-lab handler and scan excerpt only. UseWUServer and WUServer were not present, so that excerpt does not prove scan-source ownership.
 
 For ring deferral diagnosis after Intune actually owns the workload, use [Windows Update for Business deferral not applying](/troubleshooting/wufb-deferral-not-respected). For the licensing and provisioning boundary, use [Intune or Configuration Manager](/comparisons/intune-vs-sccm-mecm-2025).
 
@@ -139,6 +141,27 @@ Line       : <timestamp> <scan source or WSUS URL>
 
 Do not invent timestamps or success rates from this example. Use the lines the client actually wrote.
 
+### Recorded evidence (26 Sep 2026)
+
+Redacted home-lab excerpt. CoManagementHandler shows the device provisioned, AutoEnroll true, merged capabilities 8223, and the machine already enrolled with MDM. The WUAHandler lines are dated 09-05-2026 and show a scan that failed with 0x80240438, then a later scan that completed successfully. UseWUServer and WUServer were not present on this device, so this excerpt does not prove scan-source ownership by itself.
+
+Redacted excerpt, CoManagementHandler:
+
+```text
+<![LOG[Device is provisioned]LOG]!><time="12:41:57.327-60" date="09-26-2026" component="CoManagementHandler" context="" type="1" thread="10480" file="mdmreglib.cpp:708">
+<![LOG[Merged value for setting 'CoManagementSettings_AutoEnroll' is 'true']LOG]!><time="13:28:33.573-60" date="09-26-2026" component="CoManagementHandler" context="" type="1" thread="20004" file="handler.cpp:218">
+<![LOG[Merged value for setting 'CoManagementSettings_Capabilities' is '8223']LOG]!><time="13:28:33.573-60" date="09-26-2026" component="CoManagementHandler" context="" type="1" thread="20004" file="handler.cpp:218">
+<![LOG[Machine is already enrolled with MDM]LOG]!><time="13:28:33.745-60" date="09-26-2026" component="CoManagementHandler" context="" type="1" thread="20004" file="handler.cpp:396">
+```
+
+Redacted excerpt, WUAHandler:
+
+```text
+<![LOG[OnSearchComplete - Failed to end search job. Error = 0x80240438.]LOG]!><time="13:33:10.628-60" date="09-05-2026" component="WUAHandler" context="" type="3" thread="11804" file="cwuahandler.cpp:3831">
+<![LOG[Scan failed with error = 0x80240438.]LOG]!><time="13:33:10.629-60" date="09-05-2026" component="WUAHandler" context="" type="3" thread="11804" file="cwuahandler.cpp:4286">
+<![LOG[Successfully completed scan.]LOG]!><time="14:30:30.891-60" date="09-05-2026" component="WUAHandler" context="" type="1" thread="25100" file="cwuahandler.cpp:4323">
+```
+
 ## Step 3: Check local scan-source policy
 
 Intune rings control deferral and deadlines only when the device is scanning Windows Update. If Group Policy or ConfigMgr client settings still set `UseWUServer`, the ring is not the active decision point.
@@ -213,3 +236,7 @@ Rollback:
 - [Co-management workloads](https://learn.microsoft.com/en-us/intune/configmgr/comanage/workloads)
 - [How to switch Configuration Manager workloads to Intune](https://learn.microsoft.com/en-us/intune/configmgr/comanage/how-to-switch-workloads)
 - Related AdminSignal guides: [WUfB deferral diagnosis](/troubleshooting/wufb-deferral-not-respected), [Intune vs ConfigMgr](/comparisons/intune-vs-sccm-mecm-2025), [Configuration Manager hub](/sccm-mecm)
+
+## Correction record
+
+**26 September 2026 — Home-lab, handler and scan excerpt only:** Added redacted CoManagementHandler and WUAHandler lines. The handler shows the device provisioned, MDM enrolled, AutoEnroll true, and merged capabilities 8223. WUAHandler shows scan failure 0x80240438 and a later successful scan. UseWUServer and WUServer were not present, so this does not prove scan-source ownership. The workload-slider decision path was not lab-tested.

@@ -35,7 +35,7 @@ export const troubleshootingArticles: TroubleshootingArticle[] = [
     slug: 'comanagement-windows-update-workload-ownership',
     category: 'Configuration Manager',
     excerpt:
-      'A documentation-reviewed path for co-managed devices where an Intune ring looks assigned but the ConfigMgr client still scans WSUS. Separates workload sliders from update deployments and from OSD.',
+      'Includes a redacted home-lab CoManagementHandler and WUAHandler excerpt for the handler and scan only. The workload-slider decision path was not lab-tested, and UseWUServer was not set.',
     affectedProducts: ['Configuration Manager', 'Co-management', 'Windows Update', 'Microsoft Intune'],
     difficulty: 'Intermediate',
     date: 'Sep 10, 2026',
