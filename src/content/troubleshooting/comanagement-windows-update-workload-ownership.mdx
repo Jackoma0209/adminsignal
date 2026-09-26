@@ -4,9 +4,7 @@ category: "Configuration Manager"
 date: "September 10, 2026"
 authorId: "jack"
 lastReviewed: "26 September 2026"
-labTested: "26 September 2026"
-labScope: "home-lab, handler and scan excerpt only"
-reviewNote: "Home-lab handler and scan excerpt only. Device provisioned, MDM enrolled, AutoEnroll true, capabilities 8223. WUAHandler recorded scan failure 0x80240438 and a later successful scan. UseWUServer was not set, so this does not prove scan-source ownership."
+reviewNote: "Reviewed against documentation. Home-lab handler and scan excerpt only. Device provisioned, MDM enrolled, AutoEnroll true, capabilities 8223. WUAHandler recorded scan failure 0x80240438 and a later successful scan. UseWUServer was not set, so this does not prove scan-source ownership."
 tags: ["Configuration Manager", "Co-management", "Windows Update", "Intune", "MECM"]
 ---
 
@@ -23,7 +21,7 @@ Typical signs:
 
 Do not start by deleting the Intune ring. First prove which management plane currently owns Windows Update policy on that device.
 
-The workload-slider decision path on this page was reviewed against documentation and was not lab-tested. The recorded evidence in Step 2 is a redacted home-lab handler and scan excerpt only. UseWUServer and WUServer were not present, so that excerpt does not prove scan-source ownership.
+Reviewed against documentation. The workload-slider decision path on this page was not lab-tested. The recorded evidence in Step 2 is a redacted home-lab handler and scan excerpt only. UseWUServer and WUServer were not present, so that excerpt does not prove scan-source ownership.
 
 For ring deferral diagnosis after Intune actually owns the workload, use [Windows Update for Business deferral not applying](/troubleshooting/wufb-deferral-not-respected). For the licensing and provisioning boundary, use [Intune or Configuration Manager](/comparisons/intune-vs-sccm-mecm-2025).
 
@@ -239,4 +237,4 @@ Rollback:
 
 ## Correction record
 
-**26 September 2026 — Home-lab, handler and scan excerpt only:** Added redacted CoManagementHandler and WUAHandler lines. The handler shows the device provisioned, MDM enrolled, AutoEnroll true, and merged capabilities 8223. WUAHandler shows scan failure 0x80240438 and a later successful scan. UseWUServer and WUServer were not present, so this does not prove scan-source ownership. The workload-slider decision path was not lab-tested.
+**26 September 2026 — Home-lab excerpt, page remains documentation-reviewed:** Added redacted CoManagementHandler and WUAHandler lines. The handler shows the device provisioned, MDM enrolled, AutoEnroll true, and merged capabilities 8223. WUAHandler shows scan failure 0x80240438 and a later successful scan. UseWUServer and WUServer were not present, so this does not prove scan-source ownership. The workload-slider decision path was not lab-tested.
